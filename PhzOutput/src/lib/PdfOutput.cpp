@@ -18,8 +18,7 @@ namespace PhzOutput {
 
 
 void PdfOutput::handleSourceOutput(const SourceCatalog::Source& source,
-                                   PhzDataModel::PhotometryGrid::const_iterator,
-                                   const PhzDataModel::Pdf1D& pdf) {
+                                   const result_type& results) {
   // Count the number of sources saved
   ++m_counter;
 
@@ -31,6 +30,7 @@ void PdfOutput::handleSourceOutput(const SourceCatalog::Source& source,
 
   // Transfer pdf data to rows
   std::vector<Table::Row> row_list {};
+  auto& pdf = std::get<1>(results);
   for (auto iter=pdf.begin(); iter!=pdf.end(); ++iter) {
 	  row_list.push_back(Table::Row{{iter.axisValue<0>(), *iter}, column_info});
   }

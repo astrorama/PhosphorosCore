@@ -17,12 +17,10 @@ namespace PhzLikelihood {
 // This is a helper class which is keeping the results for a single source
 struct ResultType {
   ResultType(const SourceCatalog::Source& source,
-             const PhzDataModel::PhotometryGrid::const_iterator best_match,
-             PhzDataModel::Pdf1D pdf)
-        : source(source), best_match(best_match), pdf(std::move(pdf)) { }
+             SourcePhzFunctor::result_type results)
+        : source(source), results(std::move(results)) { }
   const SourceCatalog::Source& source;
-  const PhzDataModel::PhotometryGrid::const_iterator best_match;
-  PhzDataModel::Pdf1D pdf;
+  SourcePhzFunctor::result_type results;
 };
 
 // This is a helper class which handles the execution of a part of the catalog.
@@ -48,15 +46,25 @@ private:
   public :
     Output(std::vector<ResultType>& result_vector, std::atomic<size_t>& progress) : m_result_vector(result_vector), m_progress(progress) {}
     void handleSourceOutput(const SourceCatalog::Source& source,
-                            PhzDataModel::PhotometryGrid::const_iterator best_model,
-                            const PhzDataModel::Pdf1D& pdf) override {
-      // We need to make a copy of the pdf because the results will be handled
+                            const PhzOutput::OutputHandler::result_type& results) override {
+      // We need to make a copy of the results, because they will be handled
       // by a different thread when the refered object will be already deleted
+      auto& pdf = std::get<1>(results);
       PhzDataModel::Pdf1D pdf_copy {pdf.getAxis<0>()};
       for (size_t i=0; i<pdf.size(); ++i) {
         pdf_copy(i) = pdf(i);
       }
-      m_result_vector.push_back(ResultType{source, best_model, std::move(pdf_copy)});
+      auto& likelihood = std::get<2>(results);
+      PhzDataModel::LikelihoodGrid likelihood_copy {likelihood.getAxesTuple()};
+      auto likelihood_iter = likelihood.begin();
+      auto likelihood_copy_iter = likelihood_copy.begin();
+      for (; likelihood_iter!=likelihood.end(); ++likelihood_iter, ++likelihood_copy_iter) {
+        *likelihood_copy_iter = *likelihood_iter;
+      }
+      PhzOutput::OutputHandler::result_type results_copy {
+        std::get<0>(results), std::move(pdf_copy), std::move(likelihood_copy)
+      };
+      m_result_vector.push_back(ResultType{source, std::move(results_copy)});
       ++m_progress;
     }
   private:
@@ -105,7 +113,7 @@ void ParallelCatalogHandler::handleSources(SourceIter source_begin, SourceIter s
   logger.info() << "Thread jobs finished. Handling output...";
   for (auto& f : futures) {
     for (auto& result : f.get()) {
-      out_handler.handleSourceOutput(result.source, result.best_match, result.pdf);
+      out_handler.handleSourceOutput(result.source, result.results);
     }
   }
 }

@@ -24,8 +24,7 @@ public:
   virtual ~BestModelCatalog();
   
   void handleSourceOutput(const SourceCatalog::Source& source,
-                          PhzDataModel::PhotometryGrid::const_iterator best_model,
-                          const PhzDataModel::Pdf1D& pdf);
+                          const result_type& results);
   
 private:
   

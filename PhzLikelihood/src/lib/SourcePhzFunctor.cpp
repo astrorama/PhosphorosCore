@@ -55,7 +55,7 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
   // Calculate the 1D PDF
   auto pdf_1D = m_marginalization_func(likelihood_grid);
   // Return the result
-  return result_type{best_fit_result, std::move(pdf_1D)};
+  return result_type{best_fit_result, std::move(pdf_1D), std::move(likelihood_grid)};
 }
 
 } // end of namespace PhzLikelihood

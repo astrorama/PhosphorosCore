@@ -16,6 +16,7 @@
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzDataModel/Pdf1D.h"
+#include "PhzOutput/OutputHandler.h"
 #include "PhzLikelihood/LikelihoodAlgorithm.h"
 #include "PhzLikelihood/ScaleFactorFunctor.h"
 #include "PhzLikelihood/ChiSquareFunctor.h"
@@ -43,13 +44,7 @@ class SourcePhzFunctor {
 
 public:
 
-  /**
-   * Defines the type of the PHZ results as following:
-   * - An iterator pointing to the model photometry which is the best match
-   * - A grid representing the 1D PDF over the redshift
-   */
-  typedef std::tuple<PhzDataModel::PhotometryGrid::const_iterator,
-                     PhzDataModel::Pdf1D> result_type;
+  typedef PhzOutput::OutputHandler::result_type result_type;
 
   /**
    * Definition of the STL-like algorithm for calculating the likelihood grid.

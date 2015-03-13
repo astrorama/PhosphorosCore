@@ -19,7 +19,7 @@ void CatalogHandler::handleSources(SourceIter source_begin, SourceIter source_en
     auto source_phot_ptr = (*source).template getAttribute<SourceCatalog::Photometry>();
     auto phz_results = m_source_phz_func(*source_phot_ptr);
     // Pass them to the handler
-    out_handler.handleSourceOutput(*source, std::get<0>(phz_results), std::get<1>(phz_results));
+    out_handler.handleSourceOutput(*source, phz_results);
   }
 }
 

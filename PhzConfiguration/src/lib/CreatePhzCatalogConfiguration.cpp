@@ -10,6 +10,7 @@
 #include "PhzLikelihood/SumMarginalizationFunctor.h"
 #include "PhzLikelihood/MaxMarginalizationFunctor.h"
 #include "PhzConfiguration/CreatePhzCatalogConfiguration.h"
+#include "PhzOutput/LikelihoodHandler.h"
 
 namespace po = boost::program_options;
 
@@ -25,7 +26,9 @@ po::options_description CreatePhzCatalogConfiguration::getProgramOptions() {
   ("output-pdf-file", po::value<std::string>(),
         "The filename of the PDF data")
   ("marginalization-type", po::value<std::string>(),
-        "The type of marginalization algorithm (one of SUM, MAX)");
+        "The type of marginalization algorithm (one of SUM, MAX)")
+  ("output-likelihood-dir", po::value<std::string>(),
+        "The directory where the likelihood grids are stored");
 
   options.add(PhotometricCorrectionConfiguration::getProgramOptions());
   options.add(PhotometryCatalogConfiguration::getProgramOptions());
@@ -47,10 +50,9 @@ public:
 	  m_handlers.emplace_back(std::move(handler));
 	}
 	void handleSourceOutput(const SourceCatalog::Source& source,
-	                                  PhzDataModel::PhotometryGrid::const_iterator best_model,
-	                                  const PhzDataModel::Pdf1D& pdf) override {
+	                                  const result_type& results) override {
 		for (auto& handler : m_handlers) {
-			handler->handleSourceOutput(source, best_model, pdf);
+			handler->handleSourceOutput(source, results);
 		}
 	}
 private:
@@ -66,6 +68,10 @@ std::unique_ptr<PhzOutput::OutputHandler> CreatePhzCatalogConfiguration::getOutp
   if (!m_options["output-pdf-file"].empty()) {
     std::string out_file = m_options["output-pdf-file"].as<std::string>();
     result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::PdfOutput{out_file}});
+  }
+  if (!m_options["output-likelihood-dir"].empty()) {
+    std::string out_dir = m_options["output-likelihood-dir"].as<std::string>();
+    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::LikelihoodHandler{out_dir}});
   }
   return std::unique_ptr<PhzOutput::OutputHandler>{result.release()};
 }

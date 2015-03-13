@@ -42,8 +42,11 @@ public:
   void expectFunctorCall() {
       EXPECT_CALL(*this, FunctorCall(_)).WillOnce(Return(
           new PhzLikelihood::SourcePhzFunctor::result_type{
-        m_phot_grid.begin(),
-            PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}}}));
+            m_phot_grid.begin(),
+            PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}},
+            PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{}))
+          }
+      ));
   };
 
 

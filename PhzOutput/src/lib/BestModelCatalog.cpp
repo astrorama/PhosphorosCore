@@ -22,8 +22,8 @@ BestModelCatalog::~BestModelCatalog() {
 }
 
 void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
-                                          PhzDataModel::PhotometryGrid::const_iterator best_model,
-                                          const PhzDataModel::Pdf1D&) {
+                                          const result_type& results) {
+  auto& best_model = std::get<0>(results);
   auto sed = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
   auto reddening_curve = best_model.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>().qualifiedName();
   auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();

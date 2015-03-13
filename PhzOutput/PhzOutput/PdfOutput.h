@@ -14,8 +14,6 @@
 #include "Table/Row.h"
 #include "PhzOutput/OutputHandler.h"
 
-namespace fs = boost::filesystem;
-
 namespace Euclid {
 namespace PhzOutput {
 
@@ -42,10 +40,10 @@ public:
    * @details
    *
    * @param out_file
-   * The path and filename of the FITS file of type fs::path
+   * The path and filename of the FITS file of type boost::filesystem::path
    *
    */
-	PdfOutput(fs::path out_file) :m_out_file{out_file},
+	PdfOutput(boost::filesystem::path out_file) :m_out_file{out_file},
 	                              m_fits_file{new CCfits::FITS{"!"+out_file.string(), CCfits::RWmode::Write}},
 	                              m_counter(0) {}
 
@@ -56,18 +54,15 @@ public:
    * This function puts all 1D PDFs of a source into a FITS extension
    * @param source
    * A Source object
-   * @param best_model
-   * It is a const iterator to the best model(grid object), this is not used here.
-   * @param pdf
-   * The Pdf1D object to be stored associated to the source object
+   * @param results
+   *    The results of the template fitting for the source
    */
   void handleSourceOutput(const SourceCatalog::Source& source,
-                          PhzDataModel::PhotometryGrid::const_iterator best_model,
-                          const PhzDataModel::Pdf1D& pdf);
+                          const result_type& results);
 
 private:
 
-  fs::path                      m_out_file;  // Filename of the output fits file
+  boost::filesystem::path       m_out_file;  // Filename of the output fits file
   std::unique_ptr<CCfits::FITS> m_fits_file; // Unique pointer to the FITS file object
   int64_t                       m_counter;   // Counting the number of sources
 
