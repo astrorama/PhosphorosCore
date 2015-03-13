@@ -62,6 +62,17 @@ public:
       const SourceCatalog::Catalog& calibration_catalog,
       const PhzDataModel::PhotometryGrid& model_photometric_grid,
       const PhzDataModel::PhotometricCorrectionMap& photometric_correction);
+
+  /**
+   * @brief The const UNSETZ is used as an initialization vwhen looking for the redshift
+   */
+  static constexpr double UNSETZ =-1.;
+
+  /**
+   * @brief The const MAXIMALZ is used as the initialization value for the
+   * redshift difference when looking for minimal difference value.
+   */
+  static constexpr double MAXIMALZ=1100.;
 };
 
 } // end of namespace PhzPhotometricCorrection

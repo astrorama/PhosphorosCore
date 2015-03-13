@@ -46,8 +46,8 @@ map<int64_t, PhzDataModel::PhotometryGrid::const_iterator> FindBestFitModels<sou
 
     auto& z_axis = model_photometric_grid.getAxis<PhzDataModel::ModelParameter::Z>();
 
-    double closest_z = -1.;
-    double zs_diff = 10000.;
+    double closest_z = UNSETZ;
+    double zs_diff = MAXIMALZ;
     for (auto& z_value : z_axis) {
       double curr_diff = abs(z_value - expected_redshift);
       if (curr_diff < zs_diff) {
