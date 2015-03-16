@@ -34,7 +34,8 @@ private:
       Table::ColumnInfo::info_type("SED", typeid(std::string)),
       Table::ColumnInfo::info_type("ReddeningCurve", typeid(std::string)),
       Table::ColumnInfo::info_type("E(B-V)", typeid(double)),
-      Table::ColumnInfo::info_type("Z", typeid(double))
+      Table::ColumnInfo::info_type("Z", typeid(double)),
+      Table::ColumnInfo::info_type("Scale", typeid(double))
     }}};
   std::vector<Table::Row> m_row_list;
   

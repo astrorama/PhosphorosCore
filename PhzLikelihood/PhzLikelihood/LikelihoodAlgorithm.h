@@ -91,6 +91,10 @@ public:
    *    The type of the iterator which is used for returning
    *    the likelihood values. It must be an iterator over a collection of
    *    doubles, which has the same size as the number of models.
+   * @tparam ScaleFactorIter
+   *    The type of the iterator which is used for returning
+   *    the scale factor values. It must be an iterator over a collection of
+   *    doubles, which has the same size as the number of models.
    * @param source_photometry 
    *    The photometry of the source to calculate the likelihood for
    * @param model_begin
@@ -100,11 +104,15 @@ public:
    * @param likelihood_begin
    *    The iterator pointing at the first element of the collection which will
    *    be used as the likelihood output
+   * @param scale_factor_begin
+   *    The iterator pointing at the first element of the collection which will
+   *    be used as the scale factor output
    */
-  template<typename ModelIter, typename LikelihoodIter>
+  template<typename ModelIter, typename LikelihoodIter, typename ScaleFactorIter>
   void operator()(const SourceCatalog::Photometry& source_photometry,
                   ModelIter model_begin, ModelIter model_end,
-                  LikelihoodIter likelihood_begin) const;
+                  LikelihoodIter likelihood_begin,
+                  ScaleFactorIter scale_factor_begin) const;
 
 private:
   /**

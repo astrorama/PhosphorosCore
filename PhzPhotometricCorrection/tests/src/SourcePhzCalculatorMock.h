@@ -44,7 +44,8 @@ public:
           new PhzLikelihood::SourcePhzFunctor::result_type{
             m_phot_grid.begin(),
             PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}},
-            PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{}))
+            PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{})),
+            0
           }
       ));
   };

@@ -28,7 +28,8 @@ void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
   auto reddening_curve = best_model.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>().qualifiedName();
   auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
   auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
-  m_row_list.push_back(Table::Row{{source.getId(), sed, reddening_curve, ebv, z}, m_column_info});
+  auto scale = std::get<3>(results);
+  m_row_list.push_back(Table::Row{{source.getId(), sed, reddening_curve, ebv, z, scale}, m_column_info});
 }
 
 } // end of namespace PhzOutput

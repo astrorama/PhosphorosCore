@@ -62,6 +62,7 @@ BOOST_FIXTURE_TEST_CASE(SameFilterOrder, LikelihoodAlgorithmFixture) {
   ScaleFactorCalcMock scale_factor_calc_mock;
   LikelihoodCalcMock likelihood_calc_mock;
   std::vector<double> likelihood_list (model_no);
+  std::vector<double> scale_factor_list (model_no);
   
   // Expect
   InSequence in_sequence;
@@ -74,7 +75,8 @@ BOOST_FIXTURE_TEST_CASE(SameFilterOrder, LikelihoodAlgorithmFixture) {
   PhzLikelihood::LikelihoodAlgorithm likelihood_algo {
             std::bind(&ScaleFactorCalcMock::FunctorCall, &scale_factor_calc_mock, _1, _2, _3),
             std::bind(&LikelihoodCalcMock::FunctorCall, &likelihood_calc_mock, _1, _2, _3, _4)};
-  likelihood_algo(source_phot, model_phot_list.begin(), model_phot_list.end(), likelihood_list.begin());
+  likelihood_algo(source_phot, model_phot_list.begin(), model_phot_list.end(),
+                  likelihood_list.begin(), scale_factor_list.begin());
   
   // Then
   for (int i=0; i<model_no; ++i) {
@@ -106,6 +108,7 @@ BOOST_FIXTURE_TEST_CASE(DifferentFilterOrder, LikelihoodAlgorithmFixture) {
   LikelihoodCalcMock likelihood_calc_mock;
   
   std::vector<double> likelihood_list (model_no);
+  std::vector<double> scale_factor_list (model_no);
   
   // Expect
   InSequence in_sequence;
@@ -118,7 +121,8 @@ BOOST_FIXTURE_TEST_CASE(DifferentFilterOrder, LikelihoodAlgorithmFixture) {
   PhzLikelihood::LikelihoodAlgorithm likelihood_algo {
             std::bind(&ScaleFactorCalcMock::FunctorCall, &scale_factor_calc_mock, _1, _2, _3),
             std::bind(&LikelihoodCalcMock::FunctorCall, &likelihood_calc_mock, _1, _2, _3, _4)};
-  likelihood_algo(source_phot_unordered, model_phot_list.begin(), model_phot_list.end(), likelihood_list.begin());
+  likelihood_algo(source_phot_unordered, model_phot_list.begin(), model_phot_list.end(),
+                  likelihood_list.begin(), scale_factor_list.begin());
   
   // Then
   for (int i=0; i<model_no; ++i) {
@@ -145,6 +149,7 @@ BOOST_FIXTURE_TEST_CASE(MissingSourcePhotometry, LikelihoodAlgorithmFixture) {
   LikelihoodCalcMock likelihood_calc_mock;
   
   std::vector<double> likelihood_list (model_no);
+  std::vector<double> scale_factor_list (model_no);
   
   // When
   PhzLikelihood::LikelihoodAlgorithm likelihood_algo {
@@ -153,7 +158,8 @@ BOOST_FIXTURE_TEST_CASE(MissingSourcePhotometry, LikelihoodAlgorithmFixture) {
   
   // Then
   BOOST_CHECK_THROW(likelihood_algo(source_phot_missing, model_phot_list.begin(),
-                                    model_phot_list.end(), likelihood_list.begin()),
+                                    model_phot_list.end(), likelihood_list.begin(),
+                                    scale_factor_list.begin()),
                     Elements::Exception);
   
 }

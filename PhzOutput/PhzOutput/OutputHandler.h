@@ -25,9 +25,11 @@ public:
    * - An iterator pointing to the model photometry which is the best match
    * - A grid representing the 1D PDF over the redshift
    * - A grid representing the multi dimensional likelihood
+   * - A double with the value of the alpha scale factor used for the fitting
    */
   typedef std::tuple<PhzDataModel::PhotometryGrid::const_iterator,
-                     PhzDataModel::Pdf1D, PhzDataModel::LikelihoodGrid> result_type;
+                     PhzDataModel::Pdf1D, PhzDataModel::LikelihoodGrid,
+                     double> result_type;
   
   virtual ~OutputHandler() {}
   

@@ -7,6 +7,7 @@
 #include <tuple>
 #include "ElementsKernel/Exception.h"
 #include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
 
 namespace Euclid {
@@ -42,20 +43,25 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
 auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) const -> result_type {
   // Apply the photometric correction to the given source photometry
   auto cor_source_phot = applyPhotCorr(m_phot_corr_map, source_phot);
-  // Create a new likelihood grid, with all cells set to 0
+  // Create new likelihood and scale factor grids, with all cells set to 0
   PhzDataModel::LikelihoodGrid likelihood_grid {m_phot_grid.getAxesTuple()};
+  PhzDataModel::ScaleFactordGrid scale_factor_grid {m_phot_grid.getAxesTuple()};
   // Calculate the likelihood over the grid
-  m_likelihood_func(cor_source_phot, m_phot_grid.begin(), m_phot_grid.end(), likelihood_grid.begin());
+  m_likelihood_func(cor_source_phot, m_phot_grid.begin(), m_phot_grid.end(),
+                    likelihood_grid.begin(), scale_factor_grid.begin());
   // Select the best fitted model
   auto best_fit = m_best_fit_search_func(likelihood_grid.begin(), likelihood_grid.end());
   // Create an iterator of PhotometryGrid instead of the LikelihoodGrid that we have
   auto best_fit_result = m_phot_grid.begin();
   best_fit_result.fixAllAxes(best_fit);
+  // Get an iterator to the scale factor of the best fit model
+  auto scale_factor_result = scale_factor_grid.begin();
+  scale_factor_result.fixAllAxes(best_fit);
 
   // Calculate the 1D PDF
   auto pdf_1D = m_marginalization_func(likelihood_grid);
   // Return the result
-  return result_type{best_fit_result, std::move(pdf_1D), std::move(likelihood_grid)};
+  return result_type{best_fit_result, std::move(pdf_1D), std::move(likelihood_grid), *scale_factor_result};
 }
 
 } // end of namespace PhzLikelihood

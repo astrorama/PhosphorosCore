@@ -14,6 +14,7 @@
 #include "XYDataset/XYDataset.h"
 #include "PhzDataModel/LikelihoodGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
+#include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzDataModel/Pdf1D.h"
 #include "PhzOutput/OutputHandler.h"
@@ -49,13 +50,14 @@ public:
   /**
    * Definition of the STL-like algorithm for calculating the likelihood grid.
    * It is a function which gets a source photometry and an iterator over the
-   * model photometries and populates the likelihood results using a likelihood
-   * iterator.
+   * model photometries and populates the likelihood and scale factor results,
+   * using a likelihood iterator and a scale factor iterator.
    */
   typedef std::function<void(const SourceCatalog::Photometry& source_photometry,
                              PhzDataModel::PhotometryGrid::const_iterator model_begin,
                              PhzDataModel::PhotometryGrid::const_iterator model_end,
-                             PhzDataModel::LikelihoodGrid::iterator likelihood_begin)
+                             PhzDataModel::LikelihoodGrid::iterator likelihood_begin,
+                             PhzDataModel::ScaleFactordGrid::iterator scale_factor_begin)
                        > LikelihoodFunction;
 
   /**

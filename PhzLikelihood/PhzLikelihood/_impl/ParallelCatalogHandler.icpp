@@ -62,7 +62,10 @@ private:
         *likelihood_copy_iter = *likelihood_iter;
       }
       PhzOutput::OutputHandler::result_type results_copy {
-        std::get<0>(results), std::move(pdf_copy), std::move(likelihood_copy)
+        std::get<0>(results),
+        std::move(pdf_copy),
+        std::move(likelihood_copy),
+        std::get<3>(results)
       };
       m_result_vector.push_back(ResultType{source, std::move(results_copy)});
       ++m_progress;
