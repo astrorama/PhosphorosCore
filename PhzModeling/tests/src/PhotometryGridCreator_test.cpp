@@ -11,6 +11,7 @@
 
 
 #include "PhzModeling/PhotometryGridCreator.h"
+#include "PhzModeling/NoIgmFunctor.h"
 
 struct PhotometryGridCreator_Fixture {
 
@@ -142,7 +143,8 @@ BOOST_FIXTURE_TEST_CASE(Constructor_test, PhotometryGridCreator_Fixture) {
   Euclid::PhzModeling::PhotometryGridCreator gridCreator {
     std::move(sed_provider),
     std::move(reddening_provider),
-    std::move(filter_provider)
+    std::move(filter_provider),
+    Euclid::PhzModeling::NoIgmFunctor{}
   };
 }
 
@@ -164,7 +166,8 @@ BOOST_FIXTURE_TEST_CASE(throw_SED_test, PhotometryGridCreator_Fixture) {
   BOOST_CHECK_THROW(Euclid::PhzModeling::PhotometryGridCreator(
     std::move(sed_provider),
     std::move(reddening_provider),
-    std::move(filter_provider)
+    std::move(filter_provider),
+    Euclid::PhzModeling::NoIgmFunctor{}
   ).createGrid(axes, filter_name_list), Elements::Exception);
 }
 
@@ -186,7 +189,8 @@ BOOST_FIXTURE_TEST_CASE(throw_curve_test, PhotometryGridCreator_Fixture) {
   BOOST_CHECK_THROW(Euclid::PhzModeling::PhotometryGridCreator(
     std::move(sed_provider),
     std::move(reddening_provider),
-    std::move(filter_provider)
+    std::move(filter_provider),
+    Euclid::PhzModeling::NoIgmFunctor{}
   ).createGrid(axes, filter_name_list), Elements::Exception);
 }
 
@@ -208,7 +212,8 @@ BOOST_FIXTURE_TEST_CASE(throw_filter_test, PhotometryGridCreator_Fixture) {
   BOOST_CHECK_THROW(Euclid::PhzModeling::PhotometryGridCreator(
     std::move(sed_provider),
     std::move(reddening_provider),
-    std::move(filter_provider)
+    std::move(filter_provider),
+    Euclid::PhzModeling::NoIgmFunctor{}
   ).createGrid(axes, filter_name_list), Elements::Exception);
 }
 
@@ -228,7 +233,8 @@ BOOST_FIXTURE_TEST_CASE(execution_test, PhotometryGridCreator_Fixture) {
   Euclid::PhzModeling::PhotometryGridCreator gridCreator{
     std::move(sed_provider),
     std::move(reddening_provider),
-    std::move(filter_provider)
+    std::move(filter_provider),
+    Euclid::PhzModeling::NoIgmFunctor{}
   };
   double sum_filter_1=0.;
   auto photometry_grid = gridCreator.createGrid(axes, filter_name_list);

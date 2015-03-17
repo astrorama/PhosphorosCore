@@ -12,6 +12,8 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/CreatePhotometryGridConfiguration.h"
+#include "PhzModeling/MadauIgmFunctor.h"
+#include "PhzModeling/NoIgmFunctor.h"
 
 namespace po = boost::program_options;
 
@@ -50,7 +52,9 @@ po::options_description CreatePhotometryGridConfiguration::getProgramOptions() {
 
   options.add_options()
   ("output-photometry-grid", boost::program_options::value<std::string>(),
-      "The filename of the file to export in binary format the photometry grid");
+      "The filename of the file to export in binary format the photometry grid")
+  ("igm-absorption-type", po::value<std::string>(),
+        "The type of IGM absorption to apply (one of OFF, MADAU)");
 
   options.add(ParameterSpaceConfiguration::getProgramOptions());
   options.add(FilterConfiguration::getProgramOptions());
@@ -66,6 +70,19 @@ po::options_description CreatePhotometryGridConfiguration::getProgramOptions() {
   };
 }
 
+PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction CreatePhotometryGridConfiguration::getIgmAbsorptionFunction() {
+  if (m_options["igm-absorption-type"].empty()) { 
+    throw Elements::Exception() << "Missing mandatory parameter igm-absorption-type";
+  }
+  if (m_options["igm-absorption-type"].as<std::string>() == "OFF") {
+    return PhzModeling::NoIgmFunctor{};
+  }
+  if (m_options["igm-absorption-type"].as<std::string>() == "MADAU") {
+    return PhzModeling::MadauIgmFunctor{};
+  }
+  throw Elements::Exception() << "Unknown IGM absorption type \"" 
+                    << m_options["igm-absorption-type"].as<std::string>() << "\"";
+}
 
 } // end of namespace PhzConfiguration
 } // end of namespace Euclid

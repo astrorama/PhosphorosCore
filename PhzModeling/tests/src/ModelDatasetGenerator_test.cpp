@@ -14,6 +14,7 @@
 #include "XYDataset/XYDataset.h"
 #include "PhzModeling/ModelDatasetGenerator.h"
 #include "MathUtils/function/Function.h"
+#include "PhzModeling/NoIgmFunctor.h"
 #include "PhzModeling/ExtinctionFunctor.h"
 
 struct ModelDatasetGenerator_Fixture {
@@ -126,6 +127,8 @@ struct ModelDatasetGenerator_Fixture {
       = std::function<Euclid::XYDataset::XYDataset(
           const Euclid::XYDataset::XYDataset& ,
           double)>(DummyRedshift{});
+  
+  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)>  m_igm_function {Euclid::PhzModeling::NoIgmFunctor{}};
 
   std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&
       ,const Euclid::MathUtils::Function&,
@@ -196,7 +199,8 @@ BOOST_FIXTURE_TEST_CASE(constructor_test, ModelDatasetGenerator_Fixture) {
     m_reddening_curve_map,
     0,
     m_reddening_function,
-    m_redshift_function
+    m_redshift_function,
+    m_igm_function
   };
 
   BOOST_CHECK(model_generator==0);
@@ -218,7 +222,8 @@ BOOST_FIXTURE_TEST_CASE(operator_int_test, ModelDatasetGenerator_Fixture) {
     m_reddening_curve_map,
     0,
     m_reddening_function,
-    m_redshift_function
+    m_redshift_function,
+    m_igm_function
   };
 
   BOOST_CHECK(model_generator==0);
@@ -245,7 +250,8 @@ BOOST_FIXTURE_TEST_CASE(operator_generator_test, ModelDatasetGenerator_Fixture) 
     m_reddening_curve_map,
     0,
     m_reddening_function,
-    m_redshift_function
+    m_redshift_function,
+    m_igm_function
   };
   Euclid::PhzModeling::ModelDatasetGenerator other_model_generator{model_generator};
 
@@ -280,7 +286,8 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
     m_reddening_curve_map,
     0,
     m_no_reddening_function,
-    m_no_redshift_function
+    m_no_redshift_function,
+    m_igm_function
   };
   for (auto& sed : seds) {
     for (size_t i=0; i<extinction_functions.size()*ebvs.size()*zs.size(); ++i) {
@@ -305,7 +312,8 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
       m_reddening_curve_map,
       0,
       m_no_reddening_function,
-      m_redshift_function
+      m_redshift_function,
+    m_igm_function
   };
   for (auto& sed : seds) {
     for (size_t i=0; i<extinction_functions.size()*ebvs.size(); ++i) {
@@ -333,7 +341,8 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
       m_reddening_curve_map,
       0,
       m_reddening_function,
-      m_no_redshift_function
+      m_no_redshift_function,
+    m_igm_function
   };
   for (auto& sed : seds) {
     for (auto& reddening : extinction_functions) {

@@ -31,37 +31,43 @@ class ModelDatasetGenerator {
 public:
   
   typedef std::function<XYDataset::XYDataset(const XYDataset::XYDataset&,
-                            const MathUtils::Function&, double )> ReddeningFunction;
+                                             const MathUtils::Function&,
+                                             double)> ReddeningFunction;
   
   typedef std::function<XYDataset::XYDataset(const XYDataset::XYDataset& ,
-                            double)> RedshiftFunction;
+                                             double)> RedshiftFunction;
   
+  typedef std::function<XYDataset::XYDataset(const XYDataset::XYDataset& ,
+                                             double)> IgmAbsorptionFunction;
+
   /**
-  * @brief Constructor
-  * @details
-  * Constructor.
-  *
-  * @param parameter_space
-  * A ModelAxesTuple defining the axes of the the Grid.
-  *
-  * @param sed_map
-  * A map storing the SED template and giving access to them through
-  * the QualifiedName.
-  *
-  * @param reddening_curve_map
-  * A map storing the extinction curve as a Function and giving access to them
-  * through the QualifiedName.
-  *
-  * @param current_index
-  * The current index.
-  *
-  * @param reddening_function
-  * A function used to apply the extinction to a SED
-  *
-  * @param redshift_function
-  * A function used to apply the redshit to a SED
-  *
-  */
+   * @brief Constructor
+   * @details
+   * Constructor.
+   *
+   * @param parameter_space
+   * A ModelAxesTuple defining the axes of the the Grid.
+   *
+   * @param sed_map
+   * A map storing the SED template and giving access to them through
+   * the QualifiedName.
+   *
+   * @param reddening_curve_map
+   * A map storing the extinction curve as a Function and giving access to them
+   * through the QualifiedName.
+   *
+   * @param current_index
+   * The current index.
+   *
+   * @param reddening_function
+   * A function used to apply the extinction to a SED
+   *
+   * @param redshift_function
+   * A function used to apply the redshit to a SED
+   *
+   * @param igm_function
+   * A function used to apply the IGM absorption to a redshifted SED
+   */
   ModelDatasetGenerator(const PhzDataModel::ModelAxesTuple& parameter_space,
                         const std::map<XYDataset::QualifiedName,
                                        XYDataset::XYDataset>& sed_map,
@@ -69,7 +75,8 @@ public:
                           std::unique_ptr<MathUtils::Function> >& reddening_curve_map,
                         size_t current_index,
                         const ReddeningFunction& reddening_function,
-                        const RedshiftFunction& redshift_function);
+                        const RedshiftFunction& redshift_function,
+                        const IgmAbsorptionFunction& igm_function);
 
   /**
     * @brief Copy constructor.
@@ -241,6 +248,7 @@ private:
 
   ReddeningFunction m_reddening_function;
   RedshiftFunction m_redshift_function;
+  IgmAbsorptionFunction m_igm_function;
 
 
 }; // End of ModelDatasetGenerator class

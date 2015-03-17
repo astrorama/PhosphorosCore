@@ -61,6 +61,8 @@ public:
   
   typedef ModelDatasetGenerator::RedshiftFunction RedshiftFunction;
   
+  typedef ModelDatasetGenerator::IgmAbsorptionFunction IgmAbsorptionFunction;
+  
   /**
    * @brief Constructor
    * @details
@@ -85,13 +87,16 @@ public:
    * @param redshift_function
    * A function used to apply the redshit to a SED
    *
+   * @param igm_function
+   * A function used to apply the IGM absorption to a redshifted SED
    */
   ModelDatasetGrid(const PhzDataModel::ModelAxesTuple& parameter_space,
                    std::map<XYDataset::QualifiedName,XYDataset::XYDataset> sed_map,
                    std::map<XYDataset::QualifiedName,
                      std::unique_ptr<MathUtils::Function> > reddening_curve_map,
                    ReddeningFunction reddening_function,
-                   RedshiftFunction redshift_function);
+                   RedshiftFunction redshift_function,
+                   IgmAbsorptionFunction igm_function);
 
   /**
   * @brief begin function for the iteration.
@@ -110,6 +115,7 @@ private:
   std::map<XYDataset::QualifiedName,std::unique_ptr<MathUtils::Function> > m_reddening_curve_map;
   ReddeningFunction m_reddening_function;
   RedshiftFunction m_redshift_function;
+  IgmAbsorptionFunction m_igm_function;
 };
 
 }

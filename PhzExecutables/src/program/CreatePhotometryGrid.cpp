@@ -11,6 +11,7 @@
 #include "ElementsKernel/ProgramHeaders.h"
 #include "PhzConfiguration/CreatePhotometryGridConfiguration.h"
 #include "PhzModeling/PhotometryGridCreator.h"
+#include "PhzModeling/MadauIgmFunctor.h"
 
 using namespace std;
 using namespace Euclid;
@@ -54,7 +55,8 @@ public:
     
     PhzModeling::PhotometryGridCreator creator {conf.getSedDatasetProvider(),
                                                 conf.getReddeningDatasetProvider(),
-                                                conf.getFilterDatasetProvider()};
+                                                conf.getFilterDatasetProvider(),
+                                                conf.getIgmAbsorptionFunction()};
     
     auto param_space = PhzDataModel::createAxesTuple(conf.getZList(), conf.getEbvList(),
                                                      conf.getReddeningCurveList(),

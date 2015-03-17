@@ -14,6 +14,7 @@
 #include "XYDataset/XYDataset.h"
 #include "PhzModeling/ModelDatasetGrid.h"
 #include "MathUtils/function/Function.h"
+#include "PhzModeling/NoIgmFunctor.h"
 #include "PhzModeling/ExtinctionFunctor.h"
 
 struct ModelDatasetGrid_Fixture {
@@ -86,6 +87,7 @@ struct ModelDatasetGrid_Fixture {
 
   std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset& ,const Euclid::MathUtils::Function&, double)> m_reddening_function =  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset& ,const Euclid::MathUtils::Function&, double)>(DummyReddening{});
   std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset& , double)> m_redshift_function=std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset& , double)>(DummyRedshift{});
+  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)>  m_igm_function {Euclid::PhzModeling::NoIgmFunctor{}};
 
   std::vector<std::pair<double, double>> sed1 {std::make_pair(10000.,0.004),std::make_pair(12000.,0.002),std::make_pair(14000.,0.001)};
   std::vector<std::pair<double, double>> sed2 {std::make_pair(10000.,0.005),std::make_pair(12000.,0.003),std::make_pair(14000.,0.002)};
@@ -116,7 +118,7 @@ BOOST_FIXTURE_TEST_CASE(constructor_test, ModelDatasetGrid_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing constructor");
   BOOST_TEST_MESSAGE(" ");
 
-  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space,std::move(m_sed_map),std::move(m_reddening_curve_map),m_reddening_function,m_redshift_function);
+  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space,std::move(m_sed_map),std::move(m_reddening_curve_map),m_reddening_function,m_redshift_function,m_igm_function);
 
   BOOST_CHECK_EQUAL(4,model_grid.axisNumber());
   BOOST_CHECK_EQUAL(990,model_grid.size()); //3*3*11*10
@@ -127,7 +129,7 @@ BOOST_FIXTURE_TEST_CASE(iterator_test, ModelDatasetGrid_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing iterator");
   BOOST_TEST_MESSAGE(" ");
 
-  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space,std::move(m_sed_map),std::move(m_reddening_curve_map),m_reddening_function,m_redshift_function);
+  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space,std::move(m_sed_map),std::move(m_reddening_curve_map),m_reddening_function,m_redshift_function,m_igm_function);
 
   auto iterator = model_grid.begin();
 

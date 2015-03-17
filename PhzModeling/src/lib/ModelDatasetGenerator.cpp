@@ -18,7 +18,8 @@ namespace PhzModeling {
         std::unique_ptr<MathUtils::Function> >& reddening_curve_map,
       size_t current_index,
       const ReddeningFunction& reddening_function,
-      const RedshiftFunction& redshift_function)
+      const RedshiftFunction& redshift_function,
+      const IgmAbsorptionFunction& igm_function)
       : m_index_helper{GridContainer::makeGridIndexHelper(parameter_space)},
         m_parameter_space(parameter_space),
         m_current_index{current_index},
@@ -26,7 +27,8 @@ namespace PhzModeling {
         m_sed_map(sed_map),
         m_reddening_curve_map(reddening_curve_map),
         m_reddening_function(reddening_function),
-        m_redshift_function(redshift_function)
+        m_redshift_function(redshift_function),
+        m_igm_function(igm_function)
         { }
 
   ModelDatasetGenerator::ModelDatasetGenerator(const ModelDatasetGenerator& other)
@@ -37,7 +39,8 @@ namespace PhzModeling {
         m_sed_map(other.m_sed_map),
         m_reddening_curve_map(other.m_reddening_curve_map),
         m_reddening_function(other.m_reddening_function),
-        m_redshift_function(other.m_redshift_function){ }
+        m_redshift_function(other.m_redshift_function),
+        m_igm_function(other.m_igm_function){ }
 
   ModelDatasetGenerator& ModelDatasetGenerator::operator=(const ModelDatasetGenerator& other) {
     m_current_index = other.m_current_index;
@@ -136,8 +139,8 @@ namespace PhzModeling {
     if (new_sed_index != m_current_sed_index || new_reddening_curve_index != m_current_reddening_curve_index
         || new_ebv_index != m_current_ebv_index || new_z_index != m_current_z_index || !m_current_redshifted_sed) {
       double z = std::get<PhzDataModel::ModelParameter::Z>(m_parameter_space)[new_z_index];
-
-      m_current_redshifted_sed.reset( new XYDataset::XYDataset(m_redshift_function(*m_current_reddened_sed,z)));
+      XYDataset::XYDataset redshifted_sed = m_redshift_function(*m_current_reddened_sed,z);
+      m_current_redshifted_sed.reset( new XYDataset::XYDataset(m_igm_function(redshifted_sed,z)));
     }
     m_current_sed_index = new_sed_index;
     m_current_reddening_curve_index = new_reddening_curve_index;

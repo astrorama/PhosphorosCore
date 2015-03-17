@@ -11,6 +11,7 @@
 #include "PhzModeling/ModelDatasetGrid.h"
 #include "PhzModeling/ExtinctionFunctor.h"
 #include "PhzModeling/RedshiftFunctor.h"
+#include "PhzModeling/MadauIgmFunctor.h"
 
 using namespace std;
 using namespace Euclid;
@@ -65,7 +66,8 @@ class PrintModelDataset : public Elements::Program {
                                             red_curve_list.begin(), red_curve_list.end()));
     
     PhzModeling::ModelDatasetGrid grid {param_space, move(sed_map), move(red_curve_map),
-                               PhzModeling::ExtinctionFunctor{}, PhzModeling::RedshiftFunctor{}};
+                               PhzModeling::ExtinctionFunctor{}, PhzModeling::RedshiftFunctor{},
+                               PhzModeling::MadauIgmFunctor{}};
                                
     for (auto iter=grid.begin(); iter!=grid.end(); ++iter) {
       cout << "\nDataset for model with:\n";

@@ -14,6 +14,7 @@
 #include <boost/program_options.hpp>
 
 #include "PhzDataModel/PhotometryGrid.h"
+#include "PhzModeling/PhotometryGridCreator.h"
 #include "PhzConfiguration/ParameterSpaceConfiguration.h"
 #include "PhzConfiguration/FilterConfiguration.h"
 
@@ -89,6 +90,8 @@ public:
    * A void function.
    */
   OutputFunction getOutputFunction();
+  
+  PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction getIgmAbsorptionFunction();
   
 private:
   

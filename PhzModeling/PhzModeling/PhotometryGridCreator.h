@@ -12,7 +12,7 @@
 #include "XYDataset/XYDatasetProvider.h"
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/PhotometryGrid.h"
-
+#include "PhzModeling/ModelDatasetGrid.h"
 
 namespace Euclid {
 
@@ -28,6 +28,8 @@ namespace PhzModeling {
 class PhotometryGridCreator {
   
 public:
+  
+  typedef ModelDatasetGrid::IgmAbsorptionFunction IgmAbsorptionFunction;
   
   /**
    * Defines the signature of the functions which can be used as listeners for
@@ -50,12 +52,16 @@ public:
    *
    * @param filter_provider
    * A unique_ptr<XYDatasetProvider> allowing to access to the Filters
+   * 
+   * @param igm_absorption_function
+   * The function to use for applying the IGM absorption to the redshifted SED
    *
    */
   PhotometryGridCreator(
       std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
       std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
-      std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider);
+      std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+      IgmAbsorptionFunction igm_absorption_function);
   /**
    * @brief destructor.
    */
@@ -91,6 +97,7 @@ private:
   std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> m_sed_provider;
   std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
   std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
+  IgmAbsorptionFunction m_igm_absorption_function;
 
 };
 
