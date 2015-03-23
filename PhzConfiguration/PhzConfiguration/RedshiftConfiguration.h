@@ -70,8 +70,7 @@ public:
    * A map containing the options and their values.
    *
    */
-  RedshiftConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
-                     : m_options{options} {};
+  RedshiftConfiguration(const std::map<std::string, boost::program_options::variable_value>& options);
   
    /**
    * @brief destructor.

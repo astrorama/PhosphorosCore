@@ -15,10 +15,12 @@ namespace PhzLikelihood {
 
 SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                                    const PhzDataModel::PhotometryGrid& phot_grid,
+                                   std::vector<StaticPriorFunction> static_priors,
                                    MarginalizationFunction marginalization_func,
                                    LikelihoodFunction likelihood_func,
                                    BestFitSearchFunction best_fit_search_func)
         : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid(phot_grid),
+          m_static_priors{std::move(static_priors)},
           m_marginalization_func{std::move(marginalization_func)},
           m_likelihood_func{std::move(likelihood_func)},
           m_best_fit_search_func{std::move(best_fit_search_func)} {
@@ -43,12 +45,19 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
 auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) const -> result_type {
   // Apply the photometric correction to the given source photometry
   auto cor_source_phot = applyPhotCorr(m_phot_corr_map, source_phot);
+  
   // Create new likelihood and scale factor grids, with all cells set to 0
   PhzDataModel::LikelihoodGrid likelihood_grid {m_phot_grid.getAxesTuple()};
   PhzDataModel::ScaleFactordGrid scale_factor_grid {m_phot_grid.getAxesTuple()};
   // Calculate the likelihood over the grid
   m_likelihood_func(cor_source_phot, m_phot_grid.begin(), m_phot_grid.end(),
                     likelihood_grid.begin(), scale_factor_grid.begin());
+  
+  // Apply all the static priors to the likelihood
+  for (auto& prior : m_static_priors) {
+    prior(likelihood_grid);
+  }
+  
   // Select the best fitted model
   auto best_fit = m_best_fit_search_func(likelihood_grid.begin(), likelihood_grid.end());
   // Create an iterator of PhotometryGrid instead of the LikelihoodGrid that we have
@@ -60,6 +69,7 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
 
   // Calculate the 1D PDF
   auto pdf_1D = m_marginalization_func(likelihood_grid);
+  
   // Return the result
   return result_type{best_fit_result, std::move(pdf_1D), std::move(likelihood_grid), *scale_factor_result};
 }

@@ -56,7 +56,8 @@ class CreatePhzCatalog : public Elements::Program {
     auto marginalization_func = conf.getMarginalizationFunc();
     
     PhzLikelihood::ParallelCatalogHandler handler {conf.getPhotometricCorrectionMap(),
-                                                   model_phot_grid, marginalization_func};
+                                                   model_phot_grid, conf.getStaticPriors(),
+                                                   marginalization_func};
     
     auto catalog = conf.getCatalog();
     auto out_ptr = conf.getOutputHandler();

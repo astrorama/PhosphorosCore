@@ -15,6 +15,7 @@
 
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/PhotometryGrid.h"
+#include "PhzConfiguration/StaticPriorConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -32,7 +33,7 @@ namespace PhzConfiguration {
  * - Empty parameter option
  */
 
-class PhotometryGridConfiguration {
+class PhotometryGridConfiguration : virtual public StaticPriorConfiguration {
 
 public:
 
@@ -54,8 +55,7 @@ public:
    * A map containing the options and their values.
    *
    */
-   PhotometryGridConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
-                     : m_options{options} {};
+   PhotometryGridConfiguration(const std::map<std::string, boost::program_options::variable_value>& options);
   
    /**
    * @brief destructor.

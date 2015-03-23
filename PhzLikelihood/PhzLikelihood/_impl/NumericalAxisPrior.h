@@ -1,0 +1,43 @@
+/** 
+ * @file NumericalAxisPrior.h
+ * @date March 23, 2015
+ * @author Nikolaos Apostolakos
+ */
+
+#ifndef NUMERICALAXISPRIOR_H
+#define	NUMERICALAXISPRIOR_H
+
+namespace Euclid {
+namespace PhzLikelihood {
+
+template<int I>
+void NumericalAxisPrior<I>::operator()(PhzDataModel::LikelihoodGrid& likelihood_grid) {
+  auto axis = likelihood_grid.getAxis<I>();
+  if (axis.size() <= 1) {
+    return;
+  }
+
+  // Calculate the weights for each axis knot. The wider the area the knot
+  // covers, the bigger its weight. The first and last knot are treated like
+  // they have another knot in the other side at the same distance.
+  std::vector<double> weights {};
+  weights.push_back(axis[1]-axis[0]);
+  for (size_t i=1; i<axis.size()-1; ++i) {
+    weights.push_back((axis[i+1]-axis[i-1])/2.);
+  }
+  weights.push_back(axis[axis.size()-1]-axis[axis.size()-2]);
+
+  // Apply the weights in each slice of the likelihood grid
+  for (size_t i=0; i<axis.size(); ++i) {
+    double w = weights[i];
+    for (auto iter=likelihood_grid.begin().fixAxisByIndex<I>(i); iter!=likelihood_grid.end(); ++iter) {
+      *iter = *iter * w;
+    }
+  }
+}
+
+}
+}
+
+#endif	/* NUMERICALAXISPRIOR_H */
+

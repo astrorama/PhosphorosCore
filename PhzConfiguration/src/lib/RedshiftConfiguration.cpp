@@ -33,6 +33,9 @@ po::options_description RedshiftConfiguration::getProgramOptions() {
   return options;
 }
 
+RedshiftConfiguration::RedshiftConfiguration(const std::map<std::string, po::variable_value>& options)
+                  : m_options{options} {
+}
 
 std::vector<double> RedshiftConfiguration::getZList() {
 

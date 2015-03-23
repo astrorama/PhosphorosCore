@@ -107,7 +107,7 @@ BOOST_FIXTURE_TEST_CASE(SourcePhzFunctor_test, SourcePhzFunctor_Fixture) {
   best_fit_function.expectFunctorCall();
 
   // When
-  PhzLikelihood::SourcePhzFunctor functor(correctionMap, std::move(photo_grid),
+  PhzLikelihood::SourcePhzFunctor functor(correctionMap, std::move(photo_grid), {},
       PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{},
       std::bind(&LikelihoodFunctionMock::FunctorCall, &likelihood_function, _1,
           _2, _3, _4),

@@ -76,6 +76,13 @@ public:
    * axis the redshift.
    */
   typedef std::function<PhzDataModel::Pdf1D(const PhzDataModel::PdfGrid&)> MarginalizationFunction;
+  
+  /**
+   * Definition of the function signature for applying a static prior to a
+   * likelihood grid. It gets as a single parameter the likelihood grid, the
+   * values of which are adjusted accordingly.
+   */
+  typedef std::function<void(PhzDataModel::LikelihoodGrid&)> StaticPriorFunction;
 
   /**
    * Constructs a new SourcePhzFunctor instance. It gets as parameters a map
@@ -97,9 +104,12 @@ public:
    *    The STL-like algorithm for finding the best fitted model
    * @param marginalization_func
    *    The functor to use for performing the PDF marginalization
+   * @param static_priors
+   *    The static priors to apply to the likelihood
    */
   SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                    const PhzDataModel::PhotometryGrid& phot_grid,
+                   std::vector<StaticPriorFunction> static_priors = {},
                    MarginalizationFunction marginalization_func = SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{},
                    LikelihoodFunction likelihood_func = LikelihoodAlgorithm{ScaleFactorFunctor{}, ChiSquareFunctor{}},
                    BestFitSearchFunction best_fit_search_func = std::max_element<PhzDataModel::LikelihoodGrid::iterator>);
@@ -131,6 +141,7 @@ private:
 
   PhzDataModel::PhotometricCorrectionMap m_phot_corr_map;
   const PhzDataModel::PhotometryGrid& m_phot_grid;
+  std::vector<StaticPriorFunction> m_static_priors;
   MarginalizationFunction m_marginalization_func;
   LikelihoodFunction m_likelihood_func;
   BestFitSearchFunction m_best_fit_search_func;

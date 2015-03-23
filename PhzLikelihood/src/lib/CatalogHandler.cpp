@@ -10,12 +10,12 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
-static Elements::Logging logger = Elements::Logging::getLogger("CatalogHandler");
-
 CatalogHandler::CatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                                const PhzDataModel::PhotometryGrid& phot_grid,
+                               std::vector<StaticPriorFunction> static_priors,
                                MarginalizationFunction marginalization_func)
-            : m_source_phz_func{std::move(phot_corr_map), phot_grid, marginalization_func} {
+            : m_source_phz_func{std::move(phot_corr_map), phot_grid,
+                                std::move(static_priors), marginalization_func} {
 }
 
 } // end of namespace PhzLikelihood
