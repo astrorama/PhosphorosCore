@@ -12,8 +12,6 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
-int my_count = 0;
-
 template<int I>
 class NumericalAxisPrior {
   
