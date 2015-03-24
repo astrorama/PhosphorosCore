@@ -24,7 +24,7 @@ public:
   
   typedef CatalogHandler::MarginalizationFunction MarginalizationFunction;
   
-  typedef CatalogHandler::StaticPriorFunction StaticPriorFunction;
+  typedef CatalogHandler::PriorFunction StaticPriorFunction;
   
   /**
    * Defines the signature of the functions which can be used as listeners for

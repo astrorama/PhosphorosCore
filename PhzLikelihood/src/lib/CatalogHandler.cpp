@@ -12,10 +12,10 @@ namespace PhzLikelihood {
 
 CatalogHandler::CatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                                const PhzDataModel::PhotometryGrid& phot_grid,
-                               std::vector<StaticPriorFunction> static_priors,
+                               std::vector<PriorFunction> priors,
                                MarginalizationFunction marginalization_func)
             : m_source_phz_func{std::move(phot_corr_map), phot_grid,
-                                std::move(static_priors), marginalization_func} {
+                                std::move(priors), marginalization_func} {
 }
 
 } // end of namespace PhzLikelihood

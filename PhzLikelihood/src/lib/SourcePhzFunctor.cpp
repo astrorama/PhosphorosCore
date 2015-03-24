@@ -15,12 +15,12 @@ namespace PhzLikelihood {
 
 SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                                    const PhzDataModel::PhotometryGrid& phot_grid,
-                                   std::vector<StaticPriorFunction> static_priors,
+                                   std::vector<PriorFunction> priors,
                                    MarginalizationFunction marginalization_func,
                                    LikelihoodFunction likelihood_func,
                                    BestFitSearchFunction best_fit_search_func)
         : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid(phot_grid),
-          m_static_priors{std::move(static_priors)},
+          m_priors{std::move(priors)},
           m_marginalization_func{std::move(marginalization_func)},
           m_likelihood_func{std::move(likelihood_func)},
           m_best_fit_search_func{std::move(best_fit_search_func)} {
@@ -53,9 +53,9 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
   m_likelihood_func(cor_source_phot, m_phot_grid.begin(), m_phot_grid.end(),
                     likelihood_grid.begin(), scale_factor_grid.begin());
   
-  // Apply all the static priors to the likelihood
-  for (auto& prior : m_static_priors) {
-    prior(likelihood_grid);
+  // Apply all the priors to the likelihood
+  for (auto& prior : m_priors) {
+    prior(likelihood_grid, cor_source_phot, m_phot_grid, scale_factor_grid);
   }
   
   // Select the best fitted model

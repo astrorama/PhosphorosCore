@@ -12,7 +12,6 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 
-#include "PhzLikelihood/NumericalAxisPrior.h"
 #include "PhzConfiguration/PhotometryGridConfiguration.h"
 
 namespace po = boost::program_options;
@@ -32,8 +31,6 @@ po::options_description PhotometryGridConfiguration::getProgramOptions() {
 
 PhotometryGridConfiguration::PhotometryGridConfiguration(const std::map<std::string, po::variable_value>& options)
                   : m_options{options} {
-  addStaticPrior(PhzLikelihood::NumericalAxisPrior<PhzDataModel::ModelParameter::EBV>{});
-  addStaticPrior(PhzLikelihood::NumericalAxisPrior<PhzDataModel::ModelParameter::Z>{});
 }
 
 PhzDataModel::PhotometryGrid PhotometryGridConfiguration::getPhotometryGrid() {

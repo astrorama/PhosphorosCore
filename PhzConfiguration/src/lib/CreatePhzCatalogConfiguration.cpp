@@ -9,6 +9,7 @@
 #include "PhzOutput/PdfOutput.h"
 #include "PhzLikelihood/SumMarginalizationFunctor.h"
 #include "PhzLikelihood/MaxMarginalizationFunctor.h"
+#include "PhzLikelihood/BayesianMarginalizationFunctor.h"
 #include "PhzConfiguration/CreatePhzCatalogConfiguration.h"
 #include "PhzOutput/LikelihoodHandler.h"
 
@@ -26,7 +27,7 @@ po::options_description CreatePhzCatalogConfiguration::getProgramOptions() {
   ("output-pdf-file", po::value<std::string>(),
         "The filename of the PDF data")
   ("marginalization-type", po::value<std::string>(),
-        "The type of marginalization algorithm (one of SUM, MAX)")
+        "The type of marginalization algorithm (one of SUM, MAX, BAYESIAN)")
   ("output-likelihood-dir", po::value<std::string>(),
         "The directory where the likelihood grids are stored");
 
@@ -38,7 +39,7 @@ po::options_description CreatePhzCatalogConfiguration::getProgramOptions() {
 }
 
 CreatePhzCatalogConfiguration::CreatePhzCatalogConfiguration(const std::map<std::string, po::variable_value>& options)
-          : CatalogConfiguration(options), PhotometricCorrectionConfiguration(options),
+          : PriorConfiguration(), CatalogConfiguration(options), PhotometricCorrectionConfiguration(options),
             PhotometryCatalogConfiguration(options), PhotometryGridConfiguration(options) {
   m_options = options;
 }
@@ -85,6 +86,9 @@ PhzLikelihood::SourcePhzFunctor::MarginalizationFunction CreatePhzCatalogConfigu
   }
   if (m_options["marginalization-type"].as<std::string>() == "MAX") {
     return PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{};
+  }
+  if (m_options["marginalization-type"].as<std::string>() == "BAYESIAN") {
+    return PhzLikelihood::BayesianMarginalizationFunctor{};
   }
   throw Elements::Exception() << "Unknown marginalization type \"" 
                     << m_options["marginalization-type"].as<std::string>() << "\"";

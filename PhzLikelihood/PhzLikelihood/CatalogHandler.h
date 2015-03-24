@@ -32,7 +32,7 @@ public:
   
   typedef SourcePhzFunctor::MarginalizationFunction MarginalizationFunction;
   
-  typedef SourcePhzFunctor::StaticPriorFunction StaticPriorFunction;
+  typedef SourcePhzFunctor::PriorFunction PriorFunction;
   
   /**
    * Constructs a new CatalogHandler instance. If the given photometric
@@ -43,8 +43,8 @@ public:
    *    A map with the photometric corrections to be applied for each filter
    * @param phot_grid
    *    A grid with the photometries of the models to perform the fitting with
-   * @param static_priors
-   *    The static priors to apply on the likelihood grid
+   * @param priors
+   *    The priors to apply on the likelihood grid
    * @param marginalization_func
    *    The function to use for marginalizing the multi-dimensional likelihood
    *    grid to a 1D PDF
@@ -54,7 +54,7 @@ public:
    */
   CatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                  const PhzDataModel::PhotometryGrid& phot_grid,
-                 std::vector<StaticPriorFunction> static_priors,
+                 std::vector<PriorFunction> priors,
                  MarginalizationFunction marginalization_func);
   
   /**

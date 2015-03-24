@@ -15,6 +15,7 @@
 #include "PhzConfiguration/PhotometricCorrectionConfiguration.h"
 #include "PhzConfiguration/PhotometryCatalogConfiguration.h"
 #include "PhzConfiguration/PhotometryGridConfiguration.h"
+#include "PhzConfiguration/PriorConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -31,7 +32,8 @@ namespace PhzConfiguration {
  * - Model photometry grid
  * and it adds the required configuration for the output of the executable.
  */
-class CreatePhzCatalogConfiguration : public PhotometricCorrectionConfiguration,
+class CreatePhzCatalogConfiguration : virtual public PriorConfiguration,
+                                      public PhotometricCorrectionConfiguration,
                                       public PhotometryCatalogConfiguration,
                                       public PhotometryGridConfiguration {
 

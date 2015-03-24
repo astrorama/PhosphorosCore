@@ -1,17 +1,14 @@
 /** 
- * @file NumericalAxisPrior.h
+ * @file NumericalAxisCorrection.icpp
  * @date March 23, 2015
  * @author Nikolaos Apostolakos
  */
-
-#ifndef NUMERICALAXISPRIOR_H
-#define	NUMERICALAXISPRIOR_H
 
 namespace Euclid {
 namespace PhzLikelihood {
 
 template<int I>
-void NumericalAxisPrior<I>::operator()(PhzDataModel::LikelihoodGrid& likelihood_grid) {
+void NumericalAxisCorrection<I>::operator()(PhzDataModel::LikelihoodGrid& likelihood_grid) {
   auto axis = likelihood_grid.getAxis<I>();
   if (axis.size() <= 1) {
     return;
@@ -38,6 +35,4 @@ void NumericalAxisPrior<I>::operator()(PhzDataModel::LikelihoodGrid& likelihood_
 
 }
 }
-
-#endif	/* NUMERICALAXISPRIOR_H */
 

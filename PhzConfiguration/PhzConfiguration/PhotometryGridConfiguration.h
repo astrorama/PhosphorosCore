@@ -15,7 +15,6 @@
 
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzConfiguration/StaticPriorConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -33,7 +32,7 @@ namespace PhzConfiguration {
  * - Empty parameter option
  */
 
-class PhotometryGridConfiguration : virtual public StaticPriorConfiguration {
+class PhotometryGridConfiguration {
 
 public:
 
