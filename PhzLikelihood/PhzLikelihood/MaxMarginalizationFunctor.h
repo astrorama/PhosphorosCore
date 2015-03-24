@@ -8,7 +8,7 @@
 #define	PHZLIKELIHOOD_MAXMARGINALIZATIONFUNCTOR_H
 
 #include <numeric>
-#include "PhzDataModel/PdfGrid.h"
+#include "PhzDataModel/LikelihoodGrid.h"
 #include "PhzDataModel/PhzModel.h"
 
 namespace Euclid {
@@ -18,8 +18,8 @@ namespace PhzLikelihood {
  * @class MaxMarginalizationFunctor
  * 
  * @brief
- * Functor for marginalizing a PDF grid by simply selecting the maximum value of
- * each slice
+ * Functor for marginalizing a Likelihood grid by simply selecting the maximum
+ * value of each slice
  * 
  * @details
  * The likelihood of each node of the axis for which the marginalization is
@@ -35,26 +35,26 @@ template<int FinalAxis>
 class MaxMarginalizationFunctor {
   
   /// Alias to the type of the X axis of the final 1D PDF
-  typedef PhzDataModel::PdfGrid::axis_type<FinalAxis> axis_type;
+  typedef PhzDataModel::LikelihoodGrid::axis_type<FinalAxis> axis_type;
   // Check that the type of the final axis is arithmetic
   static_assert(std::is_arithmetic<axis_type>::value, "Final Axis of non-arithmetic type");
   
   /// Alias of the returned Grid type representing the 1D PDF
-  typedef GridContainer::GridContainer<PhzDataModel::PdfCellManager, axis_type> result_type;
+  typedef GridContainer::GridContainer<PhzDataModel::LikelihoodCellManager, axis_type> result_type;
   
 public:
   
   /**
-   * @brief Returns the marginalized 1D PDF of the given grid
+   * @brief Returns the marginalized 1D PDF of the given likelihood grid
    * @details
    * The axis of the result is the one defined by the FinalAxis template parameter
    * of the class. The value of each knot is calculated as the maximum of the
    * likelihoods in all other dimensions and the final result is normalized so
    * it has total integral equal to 1.
-   * @param pdf_grid The PDF grid to margnalize
+   * @param likelihood_grid The likelihood grid to margnalize
    * @return The 1D PDF
    */
-  result_type operator()(const PhzDataModel::PdfGrid& pdf_grid) const;
+  result_type operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const;
   
 };
 

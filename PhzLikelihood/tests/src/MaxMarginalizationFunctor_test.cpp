@@ -19,7 +19,7 @@ struct MaxMarginalizationFunctor_Fixture {
   std::vector<XYDataset::QualifiedName> reddening_curves {{"Curve1"}, {"Curve2"}};
   std::vector<XYDataset::QualifiedName> seds {{"Sed1"}, {"Sed2"}};
   
-  PhzDataModel::PdfGrid pdf_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
+  PhzDataModel::LikelihoodGrid likelihood_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
   
 };
 
@@ -33,17 +33,17 @@ BOOST_AUTO_TEST_SUITE (MaxMarginalizationFunctor_test)
 BOOST_FIXTURE_TEST_CASE(ZAxisMarginalization, MaxMarginalizationFunctor_Fixture) {
   
   // Given
-  pdf_grid(1,1,0,1) = .1;
-  pdf_grid(1,2,0,1) = .05;
-  pdf_grid(2,1,0,1) = .15;
-  pdf_grid(2,2,0,1) = .2;
-  pdf_grid(3,1,0,1) = .4;
-  pdf_grid(3,2,0,1) = .35;
-  pdf_grid(4,1,0,1) = .44;
-  pdf_grid(4,2,0,1) = .5;
+  likelihood_grid(1,1,0,1) = .1;
+  likelihood_grid(1,2,0,1) = .05;
+  likelihood_grid(2,1,0,1) = .15;
+  likelihood_grid(2,2,0,1) = .2;
+  likelihood_grid(3,1,0,1) = .4;
+  likelihood_grid(3,2,0,1) = .35;
+  likelihood_grid(4,1,0,1) = .44;
+  likelihood_grid(4,2,0,1) = .5;
   
   // When
-  auto pdf = PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::Z>()(pdf_grid);
+  auto pdf = PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::Z>()(likelihood_grid);
   auto& axis = pdf.getAxis<0>();
   
   // Then
@@ -66,17 +66,17 @@ BOOST_FIXTURE_TEST_CASE(ZAxisMarginalization, MaxMarginalizationFunctor_Fixture)
 BOOST_FIXTURE_TEST_CASE(EbvAxisMarginalization, MaxMarginalizationFunctor_Fixture) {
   
   // Given
-  pdf_grid(1,1,0,1) = .01;
-  pdf_grid(2,1,0,1) = .005;
-  pdf_grid(1,2,0,1) = .015;
-  pdf_grid(2,2,0,1) = .03;
-  pdf_grid(1,3,0,1) = .04;
-  pdf_grid(2,3,0,1) = .035;
-  pdf_grid(1,4,0,1) = .044;
-  pdf_grid(2,4,0,1) = .05;
+  likelihood_grid(1,1,0,1) = .01;
+  likelihood_grid(2,1,0,1) = .005;
+  likelihood_grid(1,2,0,1) = .015;
+  likelihood_grid(2,2,0,1) = .03;
+  likelihood_grid(1,3,0,1) = .04;
+  likelihood_grid(2,3,0,1) = .035;
+  likelihood_grid(1,4,0,1) = .044;
+  likelihood_grid(2,4,0,1) = .05;
   
   // When
-  auto pdf = PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::EBV>()(pdf_grid);
+  auto pdf = PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::EBV>()(likelihood_grid);
   auto& axis = pdf.getAxis<0>();
   
   

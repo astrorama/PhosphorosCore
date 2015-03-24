@@ -72,10 +72,10 @@ public:
 
   /**
    * Definition of the function signature for performing the marginalization. It
-   * gets as parameter a PdfGrid and it returns a one dimensional grid with only
+   * gets as parameter a LikelihoodGrid and it returns a one dimensional grid with only
    * axis the redshift.
    */
-  typedef std::function<PhzDataModel::Pdf1D(const PhzDataModel::PdfGrid&)> MarginalizationFunction;
+  typedef std::function<PhzDataModel::Pdf1D(const PhzDataModel::LikelihoodGrid&)> MarginalizationFunction;
   
   /**
    * Definition of the function signature for applying a static prior to a

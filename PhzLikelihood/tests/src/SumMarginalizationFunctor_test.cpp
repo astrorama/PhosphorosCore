@@ -19,7 +19,7 @@ struct SumMarginalizationFunctor_Fixture {
   std::vector<XYDataset::QualifiedName> reddening_curves {{"Curve1"}, {"Curve2"}};
   std::vector<XYDataset::QualifiedName> seds {{"Sed1"}, {"Sed2"}};
   
-  PhzDataModel::PdfGrid pdf_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
+  PhzDataModel::LikelihoodGrid likelihood_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
   
 };
 
@@ -34,13 +34,13 @@ BOOST_FIXTURE_TEST_CASE(ZAxisMarginalization, SumMarginalizationFunctor_Fixture)
   
   // Given
   for (double z : z_values) {
-    for (auto iter = pdf_grid.begin().fixAxisByValue<PhzDataModel::ModelParameter::Z>(z); iter != pdf_grid.end(); ++iter) {
+    for (auto iter = likelihood_grid.begin().fixAxisByValue<PhzDataModel::ModelParameter::Z>(z); iter != likelihood_grid.end(); ++iter) {
       (*iter) = z;
     }
   }
   
   // When
-  auto pdf = PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>()(pdf_grid);
+  auto pdf = PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>()(likelihood_grid);
   auto& axis = pdf.getAxis<0>();
   
   // Then
@@ -63,13 +63,13 @@ BOOST_FIXTURE_TEST_CASE(EbvAxisMarginalization, SumMarginalizationFunctor_Fixtur
   
   // Given
   for (double ebv : ebv_values) {
-    for (auto iter = pdf_grid.begin().fixAxisByValue<PhzDataModel::ModelParameter::EBV>(ebv); iter != pdf_grid.end(); ++iter) {
+    for (auto iter = likelihood_grid.begin().fixAxisByValue<PhzDataModel::ModelParameter::EBV>(ebv); iter != likelihood_grid.end(); ++iter) {
       (*iter) = ebv;
     }
   }
   
   // When
-  auto pdf = PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::EBV>()(pdf_grid);
+  auto pdf = PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::EBV>()(likelihood_grid);
   auto& axis = pdf.getAxis<0>();
   
   

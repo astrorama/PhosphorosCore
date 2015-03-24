@@ -11,13 +11,13 @@ namespace Euclid {
 namespace PhzLikelihood {
 
 template <int FinalAxis>
-auto SumMarginalizationFunctor<FinalAxis>::operator()(const PhzDataModel::PdfGrid& pdf_grid) const -> result_type {
+auto SumMarginalizationFunctor<FinalAxis>::operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const -> result_type {
   // First calculate the result as addition of the rest axes
-  result_type result {pdf_grid.getAxis<FinalAxis>()};
+  result_type result {likelihood_grid.getAxis<FinalAxis>()};
   for (auto iter = result.begin(); iter != result.end(); ++iter) {
     *iter = std::accumulate(
-          pdf_grid.begin().fixAxisByValue<FinalAxis>(iter.template axisValue<0>()),
-          pdf_grid.end(), 0.);
+          likelihood_grid.begin().fixAxisByValue<FinalAxis>(iter.template axisValue<0>()),
+          likelihood_grid.end(), 0.);
   }
 
   // Then normalize the result so it has total integral 1
