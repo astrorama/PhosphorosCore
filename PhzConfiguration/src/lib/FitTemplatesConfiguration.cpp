@@ -1,5 +1,5 @@
 /** 
- * @file CreatePhzCatalogConfiguration.cpp
+ * @file FitTemplatesConfiguration.cpp
  * @date December 3, 2014
  * @author Nikolaos Apostolakos
  */
@@ -10,7 +10,7 @@
 #include "PhzLikelihood/SumMarginalizationFunctor.h"
 #include "PhzLikelihood/MaxMarginalizationFunctor.h"
 #include "PhzLikelihood/BayesianMarginalizationFunctor.h"
-#include "PhzConfiguration/CreatePhzCatalogConfiguration.h"
+#include "PhzConfiguration/FitTemplatesConfiguration.h"
 #include "PhzOutput/LikelihoodHandler.h"
 
 namespace po = boost::program_options;
@@ -18,7 +18,7 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
-po::options_description CreatePhzCatalogConfiguration::getProgramOptions() {
+po::options_description FitTemplatesConfiguration::getProgramOptions() {
   po::options_description options {"Create PHZ Catalog options"};
 
   options.add_options()
@@ -38,7 +38,7 @@ po::options_description CreatePhzCatalogConfiguration::getProgramOptions() {
   return options;
 }
 
-CreatePhzCatalogConfiguration::CreatePhzCatalogConfiguration(const std::map<std::string, po::variable_value>& options)
+FitTemplatesConfiguration::FitTemplatesConfiguration(const std::map<std::string, po::variable_value>& options)
           : PriorConfiguration(), CatalogConfiguration(options), PhotometricCorrectionConfiguration(options),
             PhotometryCatalogConfiguration(options), PhotometryGridConfiguration(options) {
   m_options = options;
@@ -60,7 +60,7 @@ private:
 	std::vector<std::unique_ptr<PhzOutput::OutputHandler>> m_handlers;
 };
 
-std::unique_ptr<PhzOutput::OutputHandler> CreatePhzCatalogConfiguration::getOutputHandler() {
+std::unique_ptr<PhzOutput::OutputHandler> FitTemplatesConfiguration::getOutputHandler() {
   std::unique_ptr<MultiOutputHandler> result {new MultiOutputHandler{}};
   if (!m_options["output-catalog-file"].empty()) {
     std::string out_file = m_options["output-catalog-file"].as<std::string>();
@@ -77,7 +77,7 @@ std::unique_ptr<PhzOutput::OutputHandler> CreatePhzCatalogConfiguration::getOutp
   return std::unique_ptr<PhzOutput::OutputHandler>{result.release()};
 }
 
-PhzLikelihood::SourcePhzFunctor::MarginalizationFunction CreatePhzCatalogConfiguration::getMarginalizationFunc() {
+PhzLikelihood::SourcePhzFunctor::MarginalizationFunction FitTemplatesConfiguration::getMarginalizationFunc() {
   if (m_options["marginalization-type"].empty()) {
     throw Elements::Exception() << "Missing mandatory parameter marginalization-type";
   }

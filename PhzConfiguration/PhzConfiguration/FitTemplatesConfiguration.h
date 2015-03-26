@@ -1,11 +1,11 @@
 /**
- * @file CreatePhzCatalogConfiguration.h
+ * @file FitTemplatesConfiguration.h
  * @date December 3, 2014
  * @author Nikolaos Apostolakos
  */
 
-#ifndef PHZCONFIGURATION_CREATEPHZCATALOGCONFIGURATION_H
-#define	PHZCONFIGURATION_CREATEPHZCATALOGCONFIGURATION_H
+#ifndef PHZCONFIGURATION_FITTEMPLATESCONFIGURATION_H
+#define	PHZCONFIGURATION_FITTEMPLATESCONFIGURATION_H
 
 #include <map>
 #include <string>
@@ -21,9 +21,9 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 /**
- * @class CreatePhzCatalogConfiguration
+ * @class FitTemplatesConfiguration
  *
- * @brief Class defining the input configuration of the CreatePhzCatalog executable
+ * @brief Class defining the input configuration of the FitTemplates executable
  *
  * @details
  * It defines all the configuration required for the following inputs:
@@ -32,16 +32,16 @@ namespace PhzConfiguration {
  * - Model photometry grid
  * and it adds the required configuration for the output of the executable.
  */
-class CreatePhzCatalogConfiguration : virtual public PriorConfiguration,
-                                      public PhotometricCorrectionConfiguration,
-                                      public PhotometryCatalogConfiguration,
-                                      public PhotometryGridConfiguration {
+class FitTemplatesConfiguration : virtual public PriorConfiguration,
+                                  public PhotometricCorrectionConfiguration,
+                                  public PhotometryCatalogConfiguration,
+                                  public PhotometryGridConfiguration {
 
 public:
 
   /**
    * @brief
-   * Returns the program options for the CreatePhzCatalog executable
+   * Returns the program options for the FitTemplates executable
    *
    * @details
    * The returned options are the ones defined by the PhotometricCorrectionConfiguration,
@@ -60,23 +60,23 @@ public:
 
   /**
    * @brief
-   * Constructs a new CreatePhzCatalogConfiguration instance, for the given options
+   * Constructs a new FitTemplatesConfiguration instance, for the given options
    *
    * @param options
    *    A map with the options and their values
    */
-  CreatePhzCatalogConfiguration(const std::map<std::string,
+  FitTemplatesConfiguration(const std::map<std::string,
                               boost::program_options::variable_value>& options);
   
    /**
    * @brief destructor.
    */
-   virtual ~CreatePhzCatalogConfiguration()=default;
+   virtual ~FitTemplatesConfiguration()=default;
 
   /**
    * @brief
    * Returns the PhzOutput::OutputHandler to be used for producing the output of
-   * the CreatePhzCatalog executable
+   * the FitTemplates executable
    *
    * @dtails
    * The output handler currently returned is of the type PhzOutput::BestModelCatalog
@@ -98,5 +98,5 @@ private:
 } // end of namespace PhzConfiguration
 } // end of namespace Euclid
 
-#endif	/* PHZCONFIGURATION_CREATEPHZCATALOGCONFIGURATION_H */
+#endif	/* PHZCONFIGURATION_FITTEMPLATESCONFIGURATION_H */
 

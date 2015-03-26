@@ -1,5 +1,5 @@
 /** 
- * @file CreatePhzCatalog.cpp
+ * @file FitTemplates.cpp
  * @date December 3, 2014
  * @author Nikolaos Apostolakos
  */
@@ -9,7 +9,7 @@
 #include <chrono>
 #include "ElementsKernel/ProgramHeaders.h"
 #include "PhzLikelihood/ParallelCatalogHandler.h"
-#include "PhzConfiguration/CreatePhzCatalogConfiguration.h"
+#include "PhzConfiguration/FitTemplatesConfiguration.h"
 
 #include <fstream>
 #include "PhzDataModel/PhzModel.h"
@@ -19,7 +19,7 @@ using namespace std;
 using namespace Euclid;
 namespace po = boost::program_options;
 
-static Elements::Logging logger = Elements::Logging::getLogger("CreatePhzCatalog");
+static Elements::Logging logger = Elements::Logging::getLogger("PhosphorosFitTemplates");
 
 class ProgressReporter {
   
@@ -43,14 +43,14 @@ private:
   
 };
 
-class CreatePhzCatalog : public Elements::Program {
+class FitTemplates : public Elements::Program {
   
   po::options_description defineSpecificProgramOptions() override {
-    return PhzConfiguration::CreatePhzCatalogConfiguration::getProgramOptions();
+    return PhzConfiguration::FitTemplatesConfiguration::getProgramOptions();
   }
   
   Elements::ExitCode mainMethod(map<string, po::variable_value>& args) override {
-    PhzConfiguration::CreatePhzCatalogConfiguration conf {args};
+    PhzConfiguration::FitTemplatesConfiguration conf {args};
     
     auto model_phot_grid = conf.getPhotometryGrid();
     auto marginalization_func = conf.getMarginalizationFunc();
@@ -70,4 +70,4 @@ class CreatePhzCatalog : public Elements::Program {
   
 };
 
-MAIN_FOR(CreatePhzCatalog)
+MAIN_FOR(FitTemplates)
