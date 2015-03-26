@@ -1,11 +1,11 @@
 /**
- * @file CalculatePhotometricCorrectionConfiguration.h
+ * @file DeriveZeroPointsConfiguration.h
  * @date January 19, 2015
  * @author Nikolaos Apostolakos
  */
 
-#ifndef PHZCONFIGURATION_CALCULATEPHOTOMETRICCORRECTIONCONFIGURATION_H
-#define	PHZCONFIGURATION_CALCULATEPHOTOMETRICCORRECTIONCONFIGURATION_H
+#ifndef PHZCONFIGURATION_DERIVEZEROPOINTSCONFIGURATION_H
+#define	PHZCONFIGURATION_DERIVEZEROPOINTSCONFIGURATION_H
 
 #include <map>
 #include <string>
@@ -22,10 +22,10 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 /**
- * @class CalculatePhotometricCorrectionConfiguration
+ * @class DeriveZeroPointsConfiguration
  *
  * @brief
- * Configuration class to be used by the CalculatePhotometricCorrection executable
+ * Configuration class to be used by the DeriveZeroPoints executable
  *
  * @details
  * This class defines as input a catalog which contains photometric and
@@ -36,9 +36,9 @@ namespace PhzConfiguration {
  * \b output-phot-corr-file, which is the file where the photometric corrections
  * will be stored, and it provides a handler function for performing the output.
  */
-class CalculatePhotometricCorrectionConfiguration : virtual public PhotometryCatalogConfiguration,
-                                                    virtual public SpectroscopicRedshiftCatalogConfiguration,
-                                                    public PhotometryGridConfiguration {
+class DeriveZeroPointsConfiguration : virtual public PhotometryCatalogConfiguration,
+                                      virtual public SpectroscopicRedshiftCatalogConfiguration,
+                                      public PhotometryGridConfiguration {
 
 public:
 
@@ -48,7 +48,7 @@ public:
 
   /**
    * @brief
-   * Returns the program options required by the CalculatePhotometricCorrection
+   * Returns the program options required by the DeriveZeroPoints
    * executable
    *
    * @details
@@ -72,7 +72,7 @@ public:
 
   /**
    * @brief
-   * Constructs a new CalculatePhotometricCorrectionConfiguration instance
+   * Constructs a new DeriveZeroPointsConfiguration instance
    * @details
    * The option output-phot-corr-file is obligatory and it must be a path where
    * the executable can create the photometric correction file.
@@ -84,12 +84,12 @@ public:
    * @throws ElementsException
    *    if the output-phot-corr-file cannot be created
    */
-  CalculatePhotometricCorrectionConfiguration(const std::map<std::string, boost::program_options::variable_value>& options);
+  DeriveZeroPointsConfiguration(const std::map<std::string, boost::program_options::variable_value>& options);
 
    /**
    * @brief destructor.
    */
-  virtual ~CalculatePhotometricCorrectionConfiguration()=default;
+  virtual ~DeriveZeroPointsConfiguration()=default;
 
   /**
    * @brief
@@ -117,5 +117,5 @@ private:
 } // end of namespace PhzConfiguration
 } // end of namespace Euclid
 
-#endif	/* PHZCONFIGURATION_CALCULATEPHOTOMETRICCORRECTIONCONFIGURATION_H */
+#endif	/* PHZCONFIGURATION_DERIVEZEROPOINTSCONFIGURATION_H */
 

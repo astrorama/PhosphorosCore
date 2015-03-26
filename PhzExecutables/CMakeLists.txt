@@ -18,7 +18,7 @@ elements_add_executable(PhosphorosBuildTemplates src/program/BuildTemplates.cpp
 elements_add_executable(CreatePhzCatalog src/program/CreatePhzCatalog.cpp
                         LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling PhzLikelihood PhzOutput)
 
-elements_add_executable(CalculatePhotometricCorrection src/program/CalculatePhotometricCorrection.cpp
+elements_add_executable(PhosphorosDeriveZeroPoints src/program/DeriveZeroPoints.cpp
                         LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzPhotometricCorrection)
 
 elements_add_executable(LsPhotometryGrid src/program/LsPhotometryGrid.cpp

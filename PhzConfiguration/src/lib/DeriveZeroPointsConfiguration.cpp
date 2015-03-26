@@ -1,5 +1,5 @@
 /** 
- * @file CalculatePhotometricCorrectionConfiguration.cpp
+ * @file DeriveZeroPointsConfiguration.cpp
  * @date January 19, 2015
  * @author Nikolaos Apostolakos
  */
@@ -8,7 +8,7 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzPhotometricCorrection/DefaultStopCriteria.h"
-#include "PhzConfiguration/CalculatePhotometricCorrectionConfiguration.h"
+#include "PhzConfiguration/DeriveZeroPointsConfiguration.h"
 #include "PhzPhotometricCorrection/FindMeanPhotometricCorrectionsFunctor.h"
 #include "PhzPhotometricCorrection/FindMedianPhotometricCorrectionsFunctor.h"
 #include "PhzPhotometricCorrection/FindWeightedMeanPhotometricCorrectionsFunctor.h"
@@ -21,7 +21,7 @@ namespace PhzConfiguration {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
-po::options_description CalculatePhotometricCorrectionConfiguration::getProgramOptions() {
+po::options_description DeriveZeroPointsConfiguration::getProgramOptions() {
 
   po::options_description options {"Calculate Photometric Correction options"};
 
@@ -50,7 +50,7 @@ po::options_description CalculatePhotometricCorrectionConfiguration::getProgramO
   return options;
 }
 
-CalculatePhotometricCorrectionConfiguration::CalculatePhotometricCorrectionConfiguration(
+DeriveZeroPointsConfiguration::DeriveZeroPointsConfiguration(
             const std::map<std::string, boost::program_options::variable_value>& options)
       : CatalogConfiguration(options), PhotometryCatalogConfiguration(options),
         SpectroscopicRedshiftCatalogConfiguration(options), PhotometryGridConfiguration(options) {
@@ -79,7 +79,7 @@ CalculatePhotometricCorrectionConfiguration::CalculatePhotometricCorrectionConfi
   
 }
 
-auto CalculatePhotometricCorrectionConfiguration::getOutputFunction() -> OutputFunction {
+auto DeriveZeroPointsConfiguration::getOutputFunction() -> OutputFunction {
   return [this](const PhzDataModel::PhotometricCorrectionMap& pc_map) {
     std::ofstream out {m_options["output-phot-corr-file"].as<std::string>()};
     PhzDataModel::writePhotometricCorrectionMap(out, pc_map);
@@ -87,14 +87,14 @@ auto CalculatePhotometricCorrectionConfiguration::getOutputFunction() -> OutputF
 }
 
 PhzPhotometricCorrection::PhotometricCorrectionCalculator::StopCriteriaFunction
-                      CalculatePhotometricCorrectionConfiguration::getStopCriteria() {
+                      DeriveZeroPointsConfiguration::getStopCriteria() {
   int iter_no = m_options["phot-corr-iter-no"].as<int>();
   double tolerance = m_options["phot-corr-tolerance"].as<double>();
   return PhzPhotometricCorrection::DefaultStopCriteria(iter_no, tolerance);
 }
 
 PhzPhotometricCorrection::PhotometricCorrectionAlgorithm::PhotometricCorrectionSelector<SourceCatalog::Catalog::const_iterator> 
-    CalculatePhotometricCorrectionConfiguration::getPhotometricCorrectionSelector() {
+    DeriveZeroPointsConfiguration::getPhotometricCorrectionSelector() {
   if (!m_options["phot-corr-selection-method"].empty()) {
     std::string selection_method = m_options["phot-corr-selection-method"].as<std::string>();
     if (selection_method == "MEDIAN") {

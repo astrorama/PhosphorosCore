@@ -1,5 +1,5 @@
 /** 
- * @file CalculatePhotometricCorrectionConfiguration_test.cpp
+ * @file DeriveZeroPointsConfiguration_test.cpp
  * @date January 19, 2015
  * @author Nikolaos Apostolakos
  */
@@ -8,7 +8,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
 #include "ElementsKernel/Temporary.h"
-#include "PhzConfiguration/CalculatePhotometricCorrectionConfiguration.h"
+#include "PhzConfiguration/DeriveZeroPointsConfiguration.h"
 
 using namespace std;
 using namespace Euclid;
@@ -16,7 +16,7 @@ using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options; 
 namespace fs = boost::filesystem;
 
-struct CalculatePhotometricCorrectionConfiguration_Fixture {
+struct DeriveZeroPointsConfiguration_Fixture {
   
   Elements::TempDir temp_dir {};
   fs::path input_catalog = temp_dir.path()/"input_catalog.txt";
@@ -29,7 +29,7 @@ struct CalculatePhotometricCorrectionConfiguration_Fixture {
   
   map<string, po::variable_value> options_map {};
   
-  CalculatePhotometricCorrectionConfiguration_Fixture() {
+  DeriveZeroPointsConfiguration_Fixture() {
     ofstream cat_out {input_catalog.string()};
     cat_out << "# ID      Z        Z_ERR    F1      F1_ERR\n"
             << "# long    double   double   double  double\n"
@@ -50,7 +50,7 @@ struct CalculatePhotometricCorrectionConfiguration_Fixture {
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (CalculatePhotometricCorrectionConfiguration_test)
+BOOST_AUTO_TEST_SUITE (DeriveZeroPointsConfiguration_test)
 
 //-----------------------------------------------------------------------------
 // Test the getProgramOptions
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(getProgramOptions) {
   auto phot_grid_options = PhotometryGridConfiguration::getProgramOptions().options();
   
   // When
-  auto options = CalculatePhotometricCorrectionConfiguration::getProgramOptions();
+  auto options = DeriveZeroPointsConfiguration::getProgramOptions();
   
   // Then
   if (!options.find_nothrow("output-phot-corr-file", false)) {
@@ -98,13 +98,13 @@ BOOST_AUTO_TEST_CASE(getProgramOptions) {
 // Test the constructor throws exception if the output file parameter is not given
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(outFileNotGiven, CalculatePhotometricCorrectionConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(outFileNotGiven, DeriveZeroPointsConfiguration_Fixture) {
   
   // Given
   options_map.erase("output-phot-corr-file");
   
   // Then
-  BOOST_CHECK_THROW(CalculatePhotometricCorrectionConfiguration{options_map}, Elements::Exception);
+  BOOST_CHECK_THROW(DeriveZeroPointsConfiguration{options_map}, Elements::Exception);
   
 }
 
@@ -112,13 +112,13 @@ BOOST_FIXTURE_TEST_CASE(outFileNotGiven, CalculatePhotometricCorrectionConfigura
 // Test the constructor throws exception if the output file cannot be created
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, CalculatePhotometricCorrectionConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, DeriveZeroPointsConfiguration_Fixture) {
   
   // Given
   options_map["output-phot-corr-file"].value() = boost::any{temp_dir.path().string()};
   
   // Then
-  BOOST_CHECK_THROW(CalculatePhotometricCorrectionConfiguration{options_map}, Elements::Exception);
+  BOOST_CHECK_THROW(DeriveZeroPointsConfiguration{options_map}, Elements::Exception);
   
 }
 
@@ -126,13 +126,13 @@ BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, CalculatePhotometricCorrectionCo
 // Test the getOutputFunction
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(getOutputFunction, CalculatePhotometricCorrectionConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(getOutputFunction, DeriveZeroPointsConfiguration_Fixture) {
   
   // Given
   PhzDataModel::PhotometricCorrectionMap pc_map {};
   pc_map[XYDataset::QualifiedName{"Filter1"}] = 1.;
   pc_map[XYDataset::QualifiedName{"Filter2"}] = 1.;
-  CalculatePhotometricCorrectionConfiguration conf {options_map};
+  DeriveZeroPointsConfiguration conf {options_map};
   auto out_func = conf.getOutputFunction();
   
   // When
