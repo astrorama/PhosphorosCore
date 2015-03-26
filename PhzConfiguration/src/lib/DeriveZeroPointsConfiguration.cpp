@@ -23,7 +23,7 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration
 
 po::options_description DeriveZeroPointsConfiguration::getProgramOptions() {
 
-  po::options_description options {"Calculate Photometric Correction options"};
+  po::options_description options {"Derive Zero Points options"};
 
   options.add_options()
   ("output-phot-corr-file", boost::program_options::value<std::string>(),

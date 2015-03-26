@@ -48,7 +48,7 @@ BuildTemplatesConfiguration::BuildTemplatesConfiguration(const std::map<std::str
 
 po::options_description BuildTemplatesConfiguration::getProgramOptions() {
 
-  boost::program_options::options_description options {"Create Photometry Grid options"};
+  boost::program_options::options_description options {"Build Templates options"};
 
   options.add_options()
   ("output-photometry-grid", boost::program_options::value<std::string>(),

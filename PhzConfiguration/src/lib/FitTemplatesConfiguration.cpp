@@ -19,7 +19,7 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 po::options_description FitTemplatesConfiguration::getProgramOptions() {
-  po::options_description options {"Create PHZ Catalog options"};
+  po::options_description options {"Fit Templates options"};
 
   options.add_options()
   ("output-catalog-file", po::value<std::string>(),
