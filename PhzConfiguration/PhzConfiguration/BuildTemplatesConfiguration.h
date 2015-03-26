@@ -1,11 +1,11 @@
 /** 
- * @file CreatePhotometryGridConfiguration.h
+ * @file BuildTemplatesConfiguration.h
  * @date November 4, 2014
  * @author Nikolaos Apostolakos
  */
 
-#ifndef PHZCONFIGURATION_CREATEPHOTOMETRYGRIDCONFIGURATION_H
-#define	PHZCONFIGURATION_CREATEPHOTOMETRYGRIDCONFIGURATION_H
+#ifndef PHZCONFIGURATION_BUILDTEMPLATESCONFIGURATION_H
+#define	PHZCONFIGURATION_BUILDTEMPLATESCONFIGURATION_H
 
 #include <functional>
 #include <map>
@@ -22,9 +22,9 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 /**
- * @class CreatePhotometryGridConfiguration
+ * @class BuildTemplatesConfiguration
  * @brief
- * This class defines the photometry grid parameter option used by the CreatePhotometryGrid
+ * This class defines the photometry grid parameter option used by the BuildTemplates
  * executable
  * @details
  * This class defines the Photometry Grid parameter option, \b binary-photometry-grid
@@ -39,8 +39,8 @@ namespace PhzConfiguration {
  * - IO error, can not write any file there
  */
 
-class CreatePhotometryGridConfiguration : public ParameterSpaceConfiguration,
-                                          public FilterConfiguration {
+class BuildTemplatesConfiguration : public ParameterSpaceConfiguration,
+                                    public FilterConfiguration {
   
 public:
   
@@ -48,7 +48,7 @@ public:
   
   /**
    * @brief
-   * Get program options of the CreatePhotometryGridConfiguration class
+   * Get program options of the BuildTemplatesConfiguration class
    * @return
    * A boost boost::program_options::options_description type
    */
@@ -68,12 +68,12 @@ public:
    * - IO error, can not write any file there(to the location defined by \b binary-photometry-grid)
    *
    */
-  CreatePhotometryGridConfiguration(const std::map<std::string, boost::program_options::variable_value>& options);
+  BuildTemplatesConfiguration(const std::map<std::string, boost::program_options::variable_value>& options);
 
    /**
    * @brief destructor.
    */
-   virtual ~CreatePhotometryGridConfiguration()=default;
+   virtual ~BuildTemplatesConfiguration()=default;
   
   /**
    * @brief
@@ -102,5 +102,5 @@ private:
 } // end of namespace PhzConfiguration
 } // end of namespace Euclid
 
-#endif	/* PHZCONFIGURATION_CREATEPHOTOMETRYGRIDCONFIGURATION_H */
+#endif	/* PHZCONFIGURATION_BUILDTEMPLATESCONFIGURATION_H */
 

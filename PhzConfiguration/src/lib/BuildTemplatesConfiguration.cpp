@@ -1,5 +1,5 @@
 /*
- * CreatePhotometryGridConfiguration.cpp
+ * BuildTemplatesConfiguration.cpp
  *
  *  Created on: Nov 5, 2014
  *      Author: Nicolas Morisset
@@ -11,7 +11,7 @@
 
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzConfiguration/CreatePhotometryGridConfiguration.h"
+#include "PhzConfiguration/BuildTemplatesConfiguration.h"
 #include "PhzModeling/MadauIgmFunctor.h"
 #include "PhzModeling/NoIgmFunctor.h"
 
@@ -22,7 +22,7 @@ namespace PhzConfiguration {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
-CreatePhotometryGridConfiguration::CreatePhotometryGridConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
+BuildTemplatesConfiguration::BuildTemplatesConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
          : ParameterSpaceConfiguration(options), FilterConfiguration(options) {
 
   m_options = options;
@@ -46,7 +46,7 @@ CreatePhotometryGridConfiguration::CreatePhotometryGridConfiguration(const std::
 
 }
 
-po::options_description CreatePhotometryGridConfiguration::getProgramOptions() {
+po::options_description BuildTemplatesConfiguration::getProgramOptions() {
 
   boost::program_options::options_description options {"Create Photometry Grid options"};
 
@@ -63,14 +63,14 @@ po::options_description CreatePhotometryGridConfiguration::getProgramOptions() {
 }
 
 
- CreatePhotometryGridConfiguration::OutputFunction CreatePhotometryGridConfiguration::getOutputFunction() {
+ BuildTemplatesConfiguration::OutputFunction BuildTemplatesConfiguration::getOutputFunction() {
   return [this](const PhzDataModel::PhotometryGrid& grid) {
     std::ofstream out {m_options["output-photometry-grid"].as<std::string>()};
     GridContainer::gridBinaryExport(out, grid);
   };
 }
 
-PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction CreatePhotometryGridConfiguration::getIgmAbsorptionFunction() {
+PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction BuildTemplatesConfiguration::getIgmAbsorptionFunction() {
   if (m_options["igm-absorption-type"].empty()) { 
     throw Elements::Exception() << "Missing mandatory parameter igm-absorption-type";
   }

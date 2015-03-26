@@ -12,7 +12,7 @@ elements_depends_on_subdirs(MathUtils)
 
 find_package(Boost REQUIRED COMPONENTS program_options)
 
-elements_add_executable(CreatePhotometryGrid src/program/CreatePhotometryGrid.cpp
+elements_add_executable(PhosphorosBuildTemplates src/program/BuildTemplates.cpp
                         LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling)
 
 elements_add_executable(CreatePhzCatalog src/program/CreatePhzCatalog.cpp

@@ -1,5 +1,5 @@
 /*
- * CreatePhotometryGridConfiguration_test.cpp
+ * BuildTemplatesConfiguration_test.cpp
  *
  *  Created on: Nov 7, 2014
  *      Author: Nicolas Morisset
@@ -17,13 +17,13 @@
 #include "ElementsKernel/Real.h"
 #include "ElementsKernel/Exception.h"
 #include "PhzDataModel/serialization/PhotometryGrid.h"
-#include "PhzConfiguration/CreatePhotometryGridConfiguration.h"
+#include "PhzConfiguration/BuildTemplatesConfiguration.h"
 
 namespace po = boost::program_options;
 namespace cf = Euclid::PhzConfiguration;
 
 
-struct CreatePhotometryGridConfiguration_Fixture {
+struct BuildTemplatesConfiguration_Fixture {
 
   std::vector<double> zs{0.0,0.1};
   std::vector<double> ebvs{0.0,0.001};
@@ -46,29 +46,29 @@ struct CreatePhotometryGridConfiguration_Fixture {
   std::string path_filename = "/tmp/binary_file.dat";
   std::map<std::string, po::variable_value> options_map;
 
-  CreatePhotometryGridConfiguration_Fixture() {
+  BuildTemplatesConfiguration_Fixture() {
 
   }
-  ~CreatePhotometryGridConfiguration_Fixture() {
+  ~BuildTemplatesConfiguration_Fixture() {
   }
 
 };
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (CreatePhotometryGridConfiguration_test)
+BOOST_AUTO_TEST_SUITE (BuildTemplatesConfiguration_test)
 
 //-----------------------------------------------------------------------------
 // Test the getProgramOptions function for filter-root-path
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, CreatePhotometryGridConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, BuildTemplatesConfiguration_Fixture) {
 
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getProgramOptions function");
   BOOST_TEST_MESSAGE(" ");
 
-  auto option_desc = cf::CreatePhotometryGridConfiguration::getProgramOptions();
+  auto option_desc = cf::BuildTemplatesConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc{};
 
   desc = option_desc.find_nothrow("output-photometry-grid", false);
@@ -80,7 +80,7 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, CreatePhotometryGridCon
 // Test the contructor
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(constructor_test, CreatePhotometryGridConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(constructor_test, BuildTemplatesConfiguration_Fixture) {
 
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the constructor");
@@ -90,7 +90,7 @@ BOOST_FIXTURE_TEST_CASE(constructor_test, CreatePhotometryGridConfiguration_Fixt
   path_filename ="/etc/zzz_test_writing_binary_file.dat";
   options_map["output-photometry-grid"].value() = boost::any(path_filename);
 
-  BOOST_CHECK_THROW(cf::CreatePhotometryGridConfiguration cpgc(options_map), Elements::Exception);
+  BOOST_CHECK_THROW(cf::BuildTemplatesConfiguration cpgc(options_map), Elements::Exception);
 
 }
 
@@ -98,7 +98,7 @@ BOOST_FIXTURE_TEST_CASE(constructor_test, CreatePhotometryGridConfiguration_Fixt
 // Test the getOutputFunction
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, CreatePhotometryGridConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, BuildTemplatesConfiguration_Fixture) {
 
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getOutputFunction function");
@@ -108,7 +108,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, CreatePhotometryGridConfiguratio
   path_filename ="/tmp/test_writing_binary_file.dat";
   options_map["output-photometry-grid"].value() = boost::any(path_filename);
 
-  cf::CreatePhotometryGridConfiguration cpgc(options_map);
+  cf::BuildTemplatesConfiguration cpgc(options_map);
   auto output_func = cpgc.getOutputFunction();
 
   auto axes=Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);

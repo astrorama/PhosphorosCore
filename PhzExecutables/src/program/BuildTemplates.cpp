@@ -1,5 +1,5 @@
 /** 
- * @file CreatePhotometryGrid.cpp
+ * @file BuildTemplates.cpp
  * @date November 20, 2014
  * @author Nikolaos Apostolakos
  */
@@ -9,7 +9,7 @@
 #include <chrono>
 #include <boost/program_options.hpp>
 #include "ElementsKernel/ProgramHeaders.h"
-#include "PhzConfiguration/CreatePhotometryGridConfiguration.h"
+#include "PhzConfiguration/BuildTemplatesConfiguration.h"
 #include "PhzModeling/PhotometryGridCreator.h"
 #include "PhzModeling/MadauIgmFunctor.h"
 
@@ -17,7 +17,7 @@ using namespace std;
 using namespace Euclid;
 namespace po = boost::program_options;
 
-static Elements::Logging logger = Elements::Logging::getLogger("CreatePhotometryGrid");
+static Elements::Logging logger = Elements::Logging::getLogger("PhosphorosBuildTemplates");
 
 class ProgressReporter {
   
@@ -41,17 +41,17 @@ private:
   
 };
 
-class CreatePhotometryGrid : public Elements::Program {
+class BuildTemplates : public Elements::Program {
 
 public:
   
   po::options_description defineSpecificProgramOptions() override {
-    return PhzConfiguration::CreatePhotometryGridConfiguration::getProgramOptions();
+    return PhzConfiguration::BuildTemplatesConfiguration::getProgramOptions();
   }
   
   Elements::ExitCode mainMethod(map<string, po::variable_value>& args) override {
 
-    PhzConfiguration::CreatePhotometryGridConfiguration conf {args};
+    PhzConfiguration::BuildTemplatesConfiguration conf {args};
     
     PhzModeling::PhotometryGridCreator creator {conf.getSedDatasetProvider(),
                                                 conf.getReddeningDatasetProvider(),
@@ -74,4 +74,4 @@ public:
   
 };
 
-MAIN_FOR(CreatePhotometryGrid)
+MAIN_FOR(BuildTemplates)
