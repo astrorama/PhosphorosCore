@@ -64,7 +64,6 @@ class FitTemplates : public Elements::Program {
     
     handler.handleSources(catalog.begin(), catalog.end(), *out_ptr, ProgressReporter{});
     
-    logger.info("Done!");
     return Elements::ExitCode::OK;
   }
   

@@ -65,8 +65,11 @@ po::options_description BuildTemplatesConfiguration::getProgramOptions() {
 
  BuildTemplatesConfiguration::OutputFunction BuildTemplatesConfiguration::getOutputFunction() {
   return [this](const PhzDataModel::PhotometryGrid& grid) {
-    std::ofstream out {m_options["output-photometry-grid"].as<std::string>()};
+    auto logger = Elements::Logging::getLogger("PhzOutput");
+    auto filename = m_options["output-photometry-grid"].as<std::string>();
+    std::ofstream out {filename};
     GridContainer::gridBinaryExport(out, grid);
+    logger.info() << "Created template photometries in file " << filename;
   };
 }
 

@@ -68,7 +68,6 @@ public:
     auto output = conf.getOutputFunction();
     output(grid);
     
-    logger.info() << "Done!";
     return Elements::ExitCode::OK;
   }
   

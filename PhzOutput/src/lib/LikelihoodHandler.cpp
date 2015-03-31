@@ -17,7 +17,7 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzOutput {
 
-static Elements::Logging logger = Elements::Logging::getLogger("LikelihoodHandler");
+static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
 LikelihoodHandler::LikelihoodHandler(boost::filesystem::path out_dir)
           : m_out_dir{std::move(out_dir)} {
@@ -85,6 +85,7 @@ void LikelihoodHandler::handleSourceOutput(const SourceCatalog::Source& source,
       ++i;
     }
     fits.pHDU().write(1, likelihood_grid.size(), data);
+    logger.info() << "Created likelihood grid for source " << id << " in file " << filename;
   }
   
   // Now add a binary table for each axis with its values

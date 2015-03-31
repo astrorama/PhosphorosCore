@@ -81,8 +81,11 @@ DeriveZeroPointsConfiguration::DeriveZeroPointsConfiguration(
 
 auto DeriveZeroPointsConfiguration::getOutputFunction() -> OutputFunction {
   return [this](const PhzDataModel::PhotometricCorrectionMap& pc_map) {
-    std::ofstream out {m_options["output-phot-corr-file"].as<std::string>()};
+    auto logger = Elements::Logging::getLogger("PhzOutput");
+    auto filename = m_options["output-phot-corr-file"].as<std::string>();
+    std::ofstream out {filename};
     PhzDataModel::writePhotometricCorrectionMap(out, pc_map);
+    logger.info() << "Created zero point corrections in file " << filename;
   };
 }
 

@@ -5,6 +5,7 @@
  */
 
 #include <fstream>
+#include "ElementsKernel/Logging.h"
 #include "Table/Table.h"
 #include "Table/AsciiWriter.h"
 #include "PhzOutput/BestModelCatalog.h"
@@ -13,11 +14,14 @@
 namespace Euclid {
 namespace PhzOutput {
 
+static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
+
 BestModelCatalog::~BestModelCatalog() {
   Table::Table out_table {std::move(m_row_list)};
   {
     std::ofstream out {m_out_file.string()};
     Table::AsciiWriter().write(out, out_table);
+    logger.info() << "Created best fit model catalog in file " << m_out_file.string();
   }
 }
 

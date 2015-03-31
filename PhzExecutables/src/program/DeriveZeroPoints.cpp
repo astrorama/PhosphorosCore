@@ -56,7 +56,6 @@ public:
 
     output_func(phot_corr_map);
 
-    logger.info() << "Done!";
     return Elements::ExitCode::OK;
   }
 

@@ -47,7 +47,7 @@ public:
 	                              m_fits_file{new CCfits::FITS{"!"+out_file.string(), CCfits::RWmode::Write}},
 	                              m_counter(0) {}
 
-  virtual ~PdfOutput() = default;
+  virtual ~PdfOutput();
 
   /**
    * @brief

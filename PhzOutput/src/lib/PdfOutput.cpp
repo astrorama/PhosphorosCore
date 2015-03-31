@@ -8,6 +8,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include "ElementsKernel/Logging.h"
 #include "Table/Table.h"
 #include "Table/FitsWriter.h"
 #include "PhzOutput/PdfOutput.h"
@@ -16,6 +17,11 @@
 namespace Euclid {
 namespace PhzOutput {
 
+static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
+
+PdfOutput::~PdfOutput() {
+  logger.info() << "Created 1D PDFs in file " << m_out_file.string();
+}
 
 void PdfOutput::handleSourceOutput(const SourceCatalog::Source& source,
                                    const result_type& results) {
