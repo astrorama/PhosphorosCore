@@ -19,6 +19,7 @@ struct ResultType {
   ResultType(const SourceCatalog::Source& source,
              SourcePhzFunctor::result_type results)
         : source(source), results(std::move(results)) { }
+  ResultType(ResultType&&) = default;
   const SourceCatalog::Source& source;
   SourcePhzFunctor::result_type results;
 };
