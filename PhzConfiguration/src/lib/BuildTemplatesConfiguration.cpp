@@ -14,6 +14,7 @@
 #include "PhzConfiguration/BuildTemplatesConfiguration.h"
 #include "PhzModeling/MadauIgmFunctor.h"
 #include "PhzModeling/NoIgmFunctor.h"
+#include "PhzModeling/MadauNewIgmFunctor.h"
 
 namespace po = boost::program_options;
 
@@ -54,7 +55,7 @@ po::options_description BuildTemplatesConfiguration::getProgramOptions() {
   ("output-photometry-grid", boost::program_options::value<std::string>(),
       "The filename of the file to export in binary format the photometry grid")
   ("igm-absorption-type", po::value<std::string>(),
-        "The type of IGM absorption to apply (one of OFF, MADAU)");
+        "The type of IGM absorption to apply (one of OFF, MADAU, MADAU_NEW, MADAU_NEW_FAST)");
 
   options.add(ParameterSpaceConfiguration::getProgramOptions());
   options.add(FilterConfiguration::getProgramOptions());
@@ -82,6 +83,12 @@ PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction BuildTemplatesConfigur
   }
   if (m_options["igm-absorption-type"].as<std::string>() == "MADAU") {
     return PhzModeling::MadauIgmFunctor{};
+  }
+  if (m_options["igm-absorption-type"].as<std::string>() == "MADAU_NEW") {
+    return PhzModeling::MadauNewIgmFunctor{false};
+  }
+  if (m_options["igm-absorption-type"].as<std::string>() == "MADAU_NEW_FAST") {
+    return PhzModeling::MadauNewIgmFunctor{true};
   }
   throw Elements::Exception() << "Unknown IGM absorption type \"" 
                     << m_options["igm-absorption-type"].as<std::string>() << "\"";
