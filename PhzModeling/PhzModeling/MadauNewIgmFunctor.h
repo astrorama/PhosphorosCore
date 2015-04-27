@@ -17,7 +17,7 @@ class MadauNewIgmFunctor {
   
 public:
   
-  MadauNewIgmFunctor(bool fast);
+  MadauNewIgmFunctor(bool fast, bool metals);
   
   XYDataset::XYDataset operator()(const XYDataset::XYDataset& sed,
                                           double z) const;
@@ -25,6 +25,7 @@ public:
 private:
   
   bool m_fast;
+  bool m_metals;
   
 };
 

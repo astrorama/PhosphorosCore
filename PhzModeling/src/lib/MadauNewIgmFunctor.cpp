@@ -37,7 +37,7 @@ static const std::vector<std::pair<double, double>> lyman_emissions_fast {
   {1215.67, 0.0036}
 };
 
-MadauNewIgmFunctor::MadauNewIgmFunctor(bool fast) : m_fast{fast} {
+MadauNewIgmFunctor::MadauNewIgmFunctor(bool fast, bool metals) : m_fast{fast}, m_metals{metals} {
 }
 
 
@@ -65,6 +65,9 @@ XYDataset::XYDataset MadauNewIgmFunctor::operator()(const XYDataset::XYDataset& 
         new_value *= trans(z, sed_pair.first, lyman_emissions_fast);
       } else {
         new_value *= trans(z, sed_pair.first, lyman_emissions_full);
+      }
+      if (m_metals) {
+        new_value *= std::exp(-0.0017 * std::pow(sed_pair.first / lyman_emissions_full.back().first, 1.68));
       }
     }
     absorbed_values.emplace_back(sed_pair.first, new_value);
