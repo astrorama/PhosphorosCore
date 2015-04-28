@@ -51,7 +51,7 @@ double d_b(double z) {
   for (double x=low; x<=high; x+=step) {
     lambda.push_back(x);
     double tb = 0;
-    for (int i=3; i<=5; ++i) {
+    for (int i=2; i<=5; ++i) {
       tb += LymanA.at(i) * std::pow(x/LymanLambda.at(i), 3.46);
     }
     exp_tb.push_back(std::exp(-tb));
