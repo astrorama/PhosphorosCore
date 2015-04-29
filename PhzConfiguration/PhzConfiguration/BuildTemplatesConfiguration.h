@@ -17,6 +17,7 @@
 #include "PhzModeling/PhotometryGridCreator.h"
 #include "PhzConfiguration/ParameterSpaceConfiguration.h"
 #include "PhzConfiguration/FilterConfiguration.h"
+#include "PhzConfiguration/IgmConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -28,8 +29,8 @@ namespace PhzConfiguration {
  * executable
  * @details
  * This class defines the Photometry Grid parameter option, \b binary-photometry-grid
- * and inherits from the options of the ParameterSpaceConfiguration and FilterConfiguration
- * options. It also provides a function for writing a grid in a binary file.
+ * and inherits from the options of the ParameterSpaceConfiguration, FilterConfiguration
+ * and IgmConfiguration options. It also provides a function for writing a grid in a binary file.
  * The parameter available is :
  * - \b output-photometry-grid : string, output filename and path for storing the photometry grid data
  * Before writing data to the disk, the constructor checks that it is
@@ -40,7 +41,8 @@ namespace PhzConfiguration {
  */
 
 class BuildTemplatesConfiguration : public ParameterSpaceConfiguration,
-                                    public FilterConfiguration {
+                                    public FilterConfiguration,
+                                    public IgmConfiguration {
   
 public:
   
@@ -90,8 +92,6 @@ public:
    * A void function.
    */
   OutputFunction getOutputFunction();
-  
-  PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction getIgmAbsorptionFunction();
   
 private:
   
