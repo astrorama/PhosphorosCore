@@ -5,12 +5,13 @@
  */
 
 #include <cmath>
+#include <vector>
 #include "PhzModeling/MeiksinIgmFunctor.h"
 
 namespace Euclid {
 namespace PhzModeling {
 
-static const std::array<double,30> lyman_lambda {
+static const std::vector<double> lyman_lambda {
   1215.43603768, 
   1025.52415679, 
   972.348830143, 
@@ -43,15 +44,15 @@ static const std::array<double,30> lyman_lambda {
   912.526587663
 };
 
-static const std::array<double,3> lyman_coef_3_5 {
+static const std::vector<double> lyman_coef_3_5 {
   0.348, 0.179, 0.109
 };
 
-static const std::array<double,4> lyman_coef_6_9 {
+static const std::vector<double> lyman_coef_6_9 {
   0.0722, 0.0508, 0.0373, 0.0283
 };
 
-static const std::array<int,12> n_factorial {
+static const std::vector<int> n_factorial {
   1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800
 };
 
