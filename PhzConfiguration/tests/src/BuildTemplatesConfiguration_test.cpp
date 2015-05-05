@@ -13,6 +13,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/filesystem.hpp>
 
 #include "ElementsKernel/Real.h"
 #include "ElementsKernel/Exception.h"
@@ -91,6 +92,30 @@ BOOST_FIXTURE_TEST_CASE(constructor_test, BuildTemplatesConfiguration_Fixture) {
   options_map["output-photometry-grid"].value() = boost::any(path_filename);
 
   BOOST_CHECK_THROW(cf::BuildTemplatesConfiguration cpgc(options_map), Elements::Exception);
+
+}
+
+//-----------------------------------------------------------------------------
+// Test the directories creation
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(directory_test, BuildTemplatesConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the directory creation in the constructor");
+  BOOST_TEST_MESSAGE(" ");
+
+  // Location not allowed
+  path_filename ="/tmp/test/directory/creation/zzz_test_writing_binary_file.dat";
+  options_map["output-photometry-grid"].value() = boost::any(path_filename);
+
+  cf::BuildTemplatesConfiguration cpgc(options_map);
+  auto output_func = cpgc.getOutputFunction();
+
+  boost::filesystem::path fs_path(path_filename);
+  boost::filesystem::path dir = fs_path.parent_path();
+
+  BOOST_CHECK_EQUAL( boost::filesystem::exists(dir), true);
 
 }
 
