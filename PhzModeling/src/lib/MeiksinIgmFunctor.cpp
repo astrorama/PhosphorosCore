@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <vector>
+#include "MathUtils/interpolation/interpolation.h"
 #include "PhzModeling/MeiksinIgmFunctor.h"
 
 namespace Euclid {
@@ -56,7 +57,21 @@ static const std::vector<int> n_factorial {
   1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800
 };
 
-MeiksinIgmFunctor::MeiksinIgmFunctor(bool ots, bool lls) : m_ots{ots}, m_lls{lls} { }
+std::unique_ptr<MathUtils::Function> blue_values = MathUtils::interpolate(
+    {0.0, 0.315789473684, 0.631578947368, 0.947368421053, 1.26315789474, 1.57894736842,
+        1.89473684211, 2.21052631579, 2.52631578947, 2.84210526316, 3.15789473684,
+        3.47368421053, 3.78947368421, 4.10526315789, 4.42105263158, 4.73684210526,
+        5.05263157895, 5.36842105263, 5.68421052632, 6.0},
+    {0.843224330232, 0.734240597116, 0.610296789367, 0.482865694713, 0.362704079899,
+        0.258009634098, 0.173394571004, 0.109834986133, 0.0654280060046, 0.0365706756963,
+        0.0191376528015, 0.00935574769107, 0.00426338729084, 0.00180705684965,
+        0.000710859380918, 0.000258965877602, 8.71759912257e-05, 2.70576696332e-05,
+        7.72610476565e-06, 2.02621914478e-06},
+    MathUtils::InterpolationType::LINEAR
+);
+
+MeiksinIgmFunctor::MeiksinIgmFunctor(bool ots, bool lls, bool blue_fix)
+      : m_ots{ots}, m_lls{lls}, m_blue_fix{blue_fix} { }
 
 double ta(double zn) {
   return (zn <= 4) ? (0.00211 * pow(1.+zn, 3.7)) : (0.00058 * pow(1.+zn, 4.5));
@@ -123,11 +138,15 @@ double t_lls(double z, double l) {
 
 XYDataset::XYDataset MeiksinIgmFunctor::operator()(const XYDataset::XYDataset& sed,
                                                       double z) const {
+  double blue_fix_step = 567. * (1+z);
+  double blue_fix_value = (*blue_values)(z);
   double one_step = lyman_lambda[0] * (1+z);
   std::vector<std::pair<double, double>> absorbed_values {};
   for (auto& sed_pair : sed) {
     double new_value = sed_pair.second;
-    if (sed_pair.first <= one_step) {
+    if (m_blue_fix && sed_pair.first <= blue_fix_step) {
+      new_value *= blue_fix_value;
+    } else if (sed_pair.first <= one_step) {
       double t = t_lyman_series(z, sed_pair.first);
       if (m_ots) {
         t += t_ots(z, sed_pair.first);

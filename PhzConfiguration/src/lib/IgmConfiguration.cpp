@@ -20,7 +20,8 @@ po::options_description IgmConfiguration::getProgramOptions() {
   options.add_options()
   ("igm-absorption-type", po::value<std::string>(),
         "The type of IGM absorption to apply (one of OFF, MADAU, MADAU_NEW, "
-        "MADAU_NEW_FAST, MADAU_NEW+METALS, MEIKSIN, MEIKSIN+OTS, MEIKSIN+OTS+LLS)");
+        "MADAU_NEW_FAST, MADAU_NEW+METALS, MEIKSIN, MEIKSIN+OTS, "
+        "MEIKSIN+OTS+LLS, MEIKSIN+OTS+LLS+BLUE_FIX)");
   return options;
 }
 
@@ -44,13 +45,16 @@ PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction IgmConfiguration::getI
     return PhzModeling::MadauNewIgmFunctor{false, true};
   }
   if (m_options["igm-absorption-type"].as<std::string>() == "MEIKSIN") {
-    return PhzModeling::MeiksinIgmFunctor{false, false};
+    return PhzModeling::MeiksinIgmFunctor{false, false, false};
   }
   if (m_options["igm-absorption-type"].as<std::string>() == "MEIKSIN+OTS") {
-    return PhzModeling::MeiksinIgmFunctor{true, false};
+    return PhzModeling::MeiksinIgmFunctor{true, false, false};
   }
   if (m_options["igm-absorption-type"].as<std::string>() == "MEIKSIN+OTS+LLS") {
-    return PhzModeling::MeiksinIgmFunctor{true, true};
+    return PhzModeling::MeiksinIgmFunctor{true, true, false};
+  }
+  if (m_options["igm-absorption-type"].as<std::string>() == "MEIKSIN+OTS+LLS+BLUE_FIX") {
+    return PhzModeling::MeiksinIgmFunctor{true, true, true};
   }
   throw Elements::Exception() << "Unknown IGM absorption type \"" 
                     << m_options["igm-absorption-type"].as<std::string>() << "\"";
