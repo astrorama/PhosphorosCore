@@ -8,6 +8,7 @@
 #include "PhzModeling/NoIgmFunctor.h"
 #include "PhzModeling/MadauNewIgmFunctor.h"
 #include "PhzModeling/MeiksinIgmFunctor.h"
+#include "PhzModeling/InoueIgmFunctor.h"
 #include "PhzConfiguration/IgmConfiguration.h"
 
 namespace po = boost::program_options;
@@ -21,7 +22,7 @@ po::options_description IgmConfiguration::getProgramOptions() {
   ("igm-absorption-type", po::value<std::string>(),
         "The type of IGM absorption to apply (one of OFF, MADAU, MADAU_NEW, "
         "MADAU_NEW_FAST, MADAU_NEW+METALS, MEIKSIN, MEIKSIN+OTS, "
-        "MEIKSIN+OTS+LLS, MEIKSIN+OTS+LLS+BLUE_FIX)");
+        "MEIKSIN+OTS+LLS, MEIKSIN+OTS+LLS+BLUE_FIX, INOUE)");
   return options;
 }
 
@@ -55,6 +56,9 @@ PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction IgmConfiguration::getI
   }
   if (m_options["igm-absorption-type"].as<std::string>() == "MEIKSIN+OTS+LLS+BLUE_FIX") {
     return PhzModeling::MeiksinIgmFunctor{true, true, true};
+  }
+  if (m_options["igm-absorption-type"].as<std::string>() == "INOUE") {
+    return PhzModeling::InoueIgmFunctor{};
   }
   throw Elements::Exception() << "Unknown IGM absorption type \"" 
                     << m_options["igm-absorption-type"].as<std::string>() << "\"";
