@@ -15,6 +15,7 @@
 #include "PhzPhotometricCorrection/FindWeightedMedianPhotometricCorrectionsFunctor.h"
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -61,7 +62,15 @@ DeriveZeroPointsConfiguration::DeriveZeroPointsConfiguration(
   if (m_options["output-phot-corr-file"].empty()) {
     throw Elements::Exception() << "Missing parameter output-phot-corr-file";
   }
+
   std::string filename = m_options["output-phot-corr-file"].as<std::string>();
+
+  // Create directory if it does not exist
+  fs::path full_filename(filename);
+  fs::path dir = full_filename.parent_path();
+  if (!fs::exists(dir)) {
+    fs::create_directories(dir);
+  }
 
   // The purpose here is to make sure we are able to
   // write the binary file on the disk
@@ -71,7 +80,9 @@ DeriveZeroPointsConfiguration::DeriveZeroPointsConfiguration(
     throw Elements::Exception() <<" IO error, can not write any file there : %s "
                                 << filename << " (from option : output-phot-corr-file)";
   }
+
   test_fstream.close();
+
   // Remove file created
   if (std::remove(filename.c_str())) {
     logger.warn() << "Removing temporary file creation failed: \"" << filename << "\" !";

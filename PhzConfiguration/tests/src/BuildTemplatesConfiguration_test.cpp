@@ -15,6 +15,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/filesystem.hpp>
 
+#include "ElementsKernel/Temporary.h"
 #include "ElementsKernel/Real.h"
 #include "ElementsKernel/Exception.h"
 #include "PhzDataModel/serialization/PhotometryGrid.h"
@@ -22,7 +23,7 @@
 
 namespace po = boost::program_options;
 namespace cf = Euclid::PhzConfiguration;
-
+namespace fs = boost::filesystem;
 
 struct BuildTemplatesConfiguration_Fixture {
 
@@ -44,7 +45,9 @@ struct BuildTemplatesConfiguration_Fixture {
   Euclid::SourceCatalog::Photometry photometry_3{filter_1,values_3};
   Euclid::SourceCatalog::Photometry photometry_4{filter_1,values_4};
 
-  std::string path_filename = "/tmp/binary_file.dat";
+  Elements::TempDir temp_dir {};
+  fs::path path_filename = temp_dir.path()/"binary_file.dat";
+
   std::map<std::string, po::variable_value> options_map;
 
   BuildTemplatesConfiguration_Fixture() {
@@ -81,15 +84,19 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, BuildTemplatesConfigura
 // Test the contructor
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(constructor_test, BuildTemplatesConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(constructor_exception_test, BuildTemplatesConfiguration_Fixture) {
 
   BOOST_TEST_MESSAGE(" ");
-  BOOST_TEST_MESSAGE("--> Testing the constructor");
+  BOOST_TEST_MESSAGE("--> Testing the constructor exception");
   BOOST_TEST_MESSAGE(" ");
 
-  // Location not allowed
-  path_filename ="/etc/zzz_test_writing_binary_file.dat";
-  options_map["output-photometry-grid"].value() = boost::any(path_filename);
+  // Create and change directory permissions to read only for owner
+  fs::path test_file = temp_dir.path();
+  fs:permissions(test_file, fs::perms::remove_perms|fs::perms::owner_write|
+                            fs::perms::others_write|fs::perms::group_write);
+
+  fs::path  path_filename = test_file/"no_write_permission.dat";
+  options_map["output-photometry-grid"].value() = path_filename.string();
 
   BOOST_CHECK_THROW(cf::BuildTemplatesConfiguration cpgc(options_map), Elements::Exception);
 
@@ -105,9 +112,8 @@ BOOST_FIXTURE_TEST_CASE(directory_test, BuildTemplatesConfiguration_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing the directory creation in the constructor");
   BOOST_TEST_MESSAGE(" ");
 
-  // Location not allowed
-  path_filename ="/tmp/test/directory/creation/zzz_test_writing_binary_file.dat";
-  options_map["output-photometry-grid"].value() = boost::any(path_filename);
+  fs::path test_file = temp_dir.path()/"test/directory/creation/test_writing_binary_file.dat";
+  options_map["output-photometry-grid"].value() = test_file.string();
 
   cf::BuildTemplatesConfiguration cpgc(options_map);
   auto output_func = cpgc.getOutputFunction();
@@ -130,8 +136,8 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, BuildTemplatesConfiguration_Fixt
   BOOST_TEST_MESSAGE(" ");
 
   // Create a binary file
-  path_filename ="/tmp/test_writing_binary_file.dat";
-  options_map["output-photometry-grid"].value() = boost::any(path_filename);
+  fs::path test_file = temp_dir.path()/"test/directory/creation/test_writing_binary_file.dat";
+  options_map["output-photometry-grid"].value() = test_file.string();
 
   cf::BuildTemplatesConfiguration cpgc(options_map);
   auto output_func = cpgc.getOutputFunction();
@@ -147,7 +153,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, BuildTemplatesConfiguration_Fixt
 
   // Read the binary file created
   std::ifstream ifs;
-  ifs.open (path_filename, std::ios::binary);
+  ifs.open (test_file.string(), std::ios::binary);
   boost::archive::binary_iarchive ia(ifs);
   Euclid::PhzDataModel::PhotometryGrid *retrieved_grid_ptr;
   ia >> retrieved_grid_ptr;

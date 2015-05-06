@@ -32,8 +32,8 @@ BuildTemplatesConfiguration::BuildTemplatesConfiguration(const std::map<std::str
   std::string filename = m_options["output-photometry-grid"].as<std::string>();
 
   // Create directory if it does not exist
-  boost::filesystem::path full_filename(filename);
-  boost::filesystem::path dir = full_filename.parent_path();
+  fs::path full_filename(filename);
+  fs::path dir = full_filename.parent_path();
   if (!fs::exists(dir)) {
     fs::create_directories(dir);
   }

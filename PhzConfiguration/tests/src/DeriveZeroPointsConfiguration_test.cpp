@@ -112,15 +112,35 @@ BOOST_FIXTURE_TEST_CASE(outFileNotGiven, DeriveZeroPointsConfiguration_Fixture) 
 // Test the constructor throws exception if the output file cannot be created
 //-----------------------------------------------------------------------------
 
+//BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, DeriveZeroPointsConfiguration_Fixture) {
+//
+//  // Given
+//  options_map["output-phot-corr-file"].value() = boost::any{temp_dir.path().string()};
+//
+//  // Then
+//  BOOST_CHECK_THROW(DeriveZeroPointsConfiguration{options_map}, Elements::Exception);
+//
+//}
+
 BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, DeriveZeroPointsConfiguration_Fixture) {
-  
-  // Given
-  options_map["output-phot-corr-file"].value() = boost::any{temp_dir.path().string()};
-  
-  // Then
-  BOOST_CHECK_THROW(DeriveZeroPointsConfiguration{options_map}, Elements::Exception);
-  
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the constructor exception during file creation");
+  BOOST_TEST_MESSAGE(" ");
+
+  // Create and change directory permissions to read only for owner
+  Elements::TempDir temp2_dir {};
+  fs::path test_file = temp2_dir.path();
+  fs:permissions(test_file, fs::perms::remove_perms|fs::perms::owner_write|
+                 fs::perms::others_write|fs::perms::group_write);
+
+  fs::path  path_filename = test_file/"no_write_permission.dat";
+  options_map["output-phot-corr-file"].value() = path_filename.string();
+
+  BOOST_CHECK_THROW(DeriveZeroPointsConfiguration cpgc(options_map), Elements::Exception);
+
 }
+
 
 //-----------------------------------------------------------------------------
 // Test the getOutputFunction
