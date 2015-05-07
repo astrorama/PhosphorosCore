@@ -5,9 +5,11 @@
  */
 
 #include <fstream>
+#include <CCfits/CCfits>
 #include "ElementsKernel/Logging.h"
 #include "Table/Table.h"
 #include "Table/AsciiWriter.h"
+#include "Table/FitsWriter.h"
 #include "PhzOutput/BestModelCatalog.h"
 
 
@@ -18,11 +20,14 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
 BestModelCatalog::~BestModelCatalog() {
   Table::Table out_table {std::move(m_row_list)};
-  {
+  if (m_format == Format::ASCII) {
     std::ofstream out {m_out_file.string()};
     Table::AsciiWriter().write(out, out_table);
-    logger.info() << "Created best fit model catalog in file " << m_out_file.string();
+  } else {
+    CCfits::FITS fits {"!"+m_out_file.string(), CCfits::RWmode::Write};
+    Table::FitsWriter().write(fits, "Best Model Catalog", out_table);
   }
+  logger.info() << "Created best fit model catalog in file " << m_out_file.string();
 }
 
 void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,

@@ -24,6 +24,8 @@ po::options_description FitTemplatesConfiguration::getProgramOptions() {
   options.add_options()
   ("output-catalog-file", po::value<std::string>(),
       "The filename of the file to export the PHZ catalog file")
+  ("output-catalog-format", po::value<std::string>(),
+      "The format of the PHZ catalog file (one of ASCII (default), FITS)")
   ("output-pdf-file", po::value<std::string>(),
         "The filename of the PDF data")
   ("marginalization-type", po::value<std::string>(),
@@ -64,7 +66,18 @@ std::unique_ptr<PhzOutput::OutputHandler> FitTemplatesConfiguration::getOutputHa
   std::unique_ptr<MultiOutputHandler> result {new MultiOutputHandler{}};
   if (!m_options["output-catalog-file"].empty()) {
     std::string out_file = m_options["output-catalog-file"].as<std::string>();
-    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::BestModelCatalog{out_file}});
+    auto format = PhzOutput::BestModelCatalog::Format::ASCII;
+    if (!m_options["output-catalog-format"].empty()) {
+      auto format_str = m_options["output-catalog-format"].as<std::string>();
+      if (format_str == "ASCII") {
+        format = PhzOutput::BestModelCatalog::Format::ASCII;
+      } else if (format_str == "FITS") {
+        format = PhzOutput::BestModelCatalog::Format::FITS;
+      } else {
+        throw Elements::Exception() << "Unknown output catalog format " << format_str;
+      }
+    }
+    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::BestModelCatalog{out_file, format}});
   }
   if (!m_options["output-pdf-file"].empty()) {
     std::string out_file = m_options["output-pdf-file"].as<std::string>();

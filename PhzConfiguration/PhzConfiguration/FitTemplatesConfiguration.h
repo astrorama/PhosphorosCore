@@ -49,6 +49,7 @@ public:
    * plus the parameters:
    * 
    * - output-catalog-file   : the filename of the file to export the PHZ catalog
+   * - output-catalog-format : the format of the PHZ catalog (ASCII, FITS)
    * - output-pdf-file       : the filename of the FITS file for the PDFs storage
    * - marginalization-type  : the type of marginalization algorithm (SUM, MAX)
    * - output-likelihood-dir : the directory where the likelihood grids will be stored

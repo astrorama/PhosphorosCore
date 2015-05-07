@@ -19,7 +19,12 @@ class BestModelCatalog : public OutputHandler {
   
 public:
   
-  BestModelCatalog(fs::path out_file) : m_out_file{std::move(out_file)} {}
+  enum class Format {
+    ASCII, FITS
+  };
+  
+  BestModelCatalog(fs::path out_file, Format format) 
+        : m_out_file{std::move(out_file)}, m_format{format} {}
   
   virtual ~BestModelCatalog();
   
@@ -29,6 +34,7 @@ public:
 private:
   
   fs::path m_out_file;
+  Format m_format;
   std::shared_ptr<Table::ColumnInfo> m_column_info {new Table::ColumnInfo {{
       Table::ColumnInfo::info_type("ID", typeid(int64_t)),
       Table::ColumnInfo::info_type("SED", typeid(std::string)),
