@@ -22,7 +22,7 @@ BestModelCatalog::~BestModelCatalog() {
   Table::Table out_table {std::move(m_row_list)};
   if (m_format == Format::ASCII) {
     std::ofstream out {m_out_file.string()};
-    Table::AsciiWriter().write(out, out_table);
+    Table::AsciiWriter().write(out, out_table, false);
   } else {
     CCfits::FITS fits {"!"+m_out_file.string(), CCfits::RWmode::Write};
     Table::FitsWriter().write(fits, "Best Model Catalog", out_table);
