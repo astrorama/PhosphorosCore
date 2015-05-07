@@ -33,7 +33,8 @@ void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
   auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
   auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
   auto scale = std::get<3>(results);
-  m_row_list.push_back(Table::Row{{source.getId(), sed, reddening_curve, ebv, z, scale}, m_column_info});
+  auto likelihood = std::get<4>(results);
+  m_row_list.push_back(Table::Row{{source.getId(), sed, reddening_curve, ebv, z, scale, likelihood}, m_column_info});
 }
 
 } // end of namespace PhzOutput

@@ -66,7 +66,8 @@ private:
         std::get<0>(results),
         std::move(pdf_copy),
         std::move(likelihood_copy),
-        std::get<3>(results)
+        std::get<3>(results),
+        std::get<4>(results)
       };
       m_result_vector.push_back(ResultType{source, std::move(results_copy)});
       ++m_progress;

@@ -60,6 +60,7 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
   
   // Select the best fitted model
   auto best_fit = m_best_fit_search_func(likelihood_grid.begin(), likelihood_grid.end());
+  auto best_likelihood_value = *best_fit;
   // Create an iterator of PhotometryGrid instead of the LikelihoodGrid that we have
   auto best_fit_result = m_phot_grid.begin();
   best_fit_result.fixAllAxes(best_fit);
@@ -71,7 +72,7 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
   auto pdf_1D = m_marginalization_func(likelihood_grid);
   
   // Return the result
-  return result_type{best_fit_result, std::move(pdf_1D), std::move(likelihood_grid), *scale_factor_result};
+  return result_type{best_fit_result, std::move(pdf_1D), std::move(likelihood_grid), *scale_factor_result, best_likelihood_value};
 }
 
 } // end of namespace PhzLikelihood
