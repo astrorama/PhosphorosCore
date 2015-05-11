@@ -14,6 +14,7 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/BuildTemplatesConfiguration.h"
+#include "PhzUtils/FileUtils.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -31,28 +32,8 @@ BuildTemplatesConfiguration::BuildTemplatesConfiguration(const std::map<std::str
   // Extract file option
   std::string filename = m_options["output-photometry-grid"].as<std::string>();
 
-  // Create directory if it does not exist
-  fs::path full_filename(filename);
-  fs::path dir = full_filename.parent_path();
-  if (!fs::exists(dir)) {
-    fs::create_directories(dir);
-  }
-
-  // The purpose here is to make sure we are able to
-  // write the binary file on the disk
-  std::fstream test_fstream;
-  test_fstream.open(filename, std::fstream::out | std::fstream::binary);
-  if ((test_fstream.rdstate() & std::fstream::failbit) != 0) {
-    throw Elements::Exception() <<" IO error, can not write any file there : %s "
-                                << filename << "from option : binary-photometry-grid ";
-  }
-
-  test_fstream.close();
-
-  // Remove file created
-  if (std::remove(filename.c_str())) {
-    logger.warn() << "Removing temporary file creation failed: \"" << filename << "\" !";
-  }
+  // Check directory and write permissions
+  Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
 }
 

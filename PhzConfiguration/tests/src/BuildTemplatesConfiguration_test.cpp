@@ -92,7 +92,7 @@ BOOST_FIXTURE_TEST_CASE(constructor_exception_test, BuildTemplatesConfiguration_
 
   // Create and change directory permissions to read only for owner
   fs::path test_file = temp_dir.path();
-  fs:permissions(test_file, fs::perms::remove_perms|fs::perms::owner_write|
+  fs::permissions(test_file, fs::perms::remove_perms|fs::perms::owner_write|
                             fs::perms::others_write|fs::perms::group_write);
 
   fs::path  path_filename = test_file/"no_write_permission.dat";

@@ -44,7 +44,7 @@ PhzDataModel::PhotometricCorrectionMap PhotometricCorrectionConfiguration::getPh
 	 auto correction_file = m_options[file_option].as<std::string>();
 	 if (!fs::exists(correction_file)) {
 	   logger.error() << "File " << correction_file << " not found";
-	   throw Elements::Exception() << "Photometric Correction file " << correction_file << " does not exist";
+	   throw Elements::Exception() << "Photometric Correction file (photometric-correction-file option) does not exist : "<< correction_file;
 	 }
 	 // Read the correction file(ASCII type)
 	 std::ifstream in {correction_file};

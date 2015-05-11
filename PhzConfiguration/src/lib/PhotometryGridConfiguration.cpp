@@ -15,6 +15,7 @@
 #include "PhzConfiguration/PhotometryGridConfiguration.h"
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -38,6 +39,13 @@ PhzDataModel::PhotometryGrid PhotometryGridConfiguration::getPhotometryGrid() {
   if (m_options[option_name].empty()) {
     throw Elements::Exception() << "Empty parameter option : \"" << option_name << "\"";
   }
+
+  auto filename = m_options[option_name].as<std::string>();
+  if (!fs::exists(filename)) {
+    logger.error() << "File " << filename << " not found!";
+    throw Elements::Exception() << "Photometry grid file (photometry-grid-file option) does not exist: " << filename;
+  }
+
   std::ifstream in{m_options[option_name].as<std::string>()};
   // Read binary file
   return (PhzDataModel::phzGridBinaryImport<PhzDataModel::PhotometryCellManager>(in));

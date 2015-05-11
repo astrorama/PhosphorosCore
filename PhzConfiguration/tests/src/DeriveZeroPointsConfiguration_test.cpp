@@ -13,6 +13,7 @@
 using namespace std;
 using namespace Euclid;
 using namespace Euclid::PhzConfiguration;
+
 namespace po = boost::program_options; 
 namespace fs = boost::filesystem;
 
@@ -131,7 +132,7 @@ BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, DeriveZeroPointsConfiguration_Fi
   // Create and change directory permissions to read only for owner
   Elements::TempDir temp2_dir {};
   fs::path test_file = temp2_dir.path();
-  fs:permissions(test_file, fs::perms::remove_perms|fs::perms::owner_write|
+  fs::permissions(test_file, fs::perms::remove_perms|fs::perms::owner_write|
                  fs::perms::others_write|fs::perms::group_write);
 
   fs::path  path_filename = test_file/"no_write_permission.dat";
