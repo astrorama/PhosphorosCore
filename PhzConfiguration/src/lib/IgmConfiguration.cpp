@@ -22,17 +22,22 @@ po::options_description IgmConfiguration::getProgramOptions() {
 }
 
 PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction IgmConfiguration::getIgmAbsorptionFunction() {
-  if (m_options["igm-absorption-type"].empty()) { 
-    throw Elements::Exception() << "Missing mandatory parameter igm-absorption-type";
-  }
-  if (m_options["igm-absorption-type"].as<std::string>() == "OFF") {
+  auto type = getIgmAbsorptionType();
+  if (type == "OFF") {
     return PhzModeling::NoIgmFunctor{};
   }
-  if (m_options["igm-absorption-type"].as<std::string>() == "MADAU") {
+  if (type == "MADAU") {
     return PhzModeling::MadauIgmFunctor{};
   }
   throw Elements::Exception() << "Unknown IGM absorption type \"" 
                     << m_options["igm-absorption-type"].as<std::string>() << "\"";
+}
+
+std::string IgmConfiguration::getIgmAbsorptionType() {
+  if (!m_options["igm-absorption-type"].empty()) { 
+    return m_options["igm-absorption-type"].as<std::string>();
+  }
+  throw Elements::Exception() << "Missing mandatory parameter igm-absorption-type";
 }
 
 }

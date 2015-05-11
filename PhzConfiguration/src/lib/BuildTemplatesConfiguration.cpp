@@ -10,10 +10,13 @@
 #include <iostream>
 
 #include <boost/filesystem.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/BuildTemplatesConfiguration.h"
+#include "PhzDataModel/PhotometryGridInfo.h"
+#include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzUtils/FileUtils.h"
 
 namespace po = boost::program_options;
@@ -53,11 +56,17 @@ po::options_description BuildTemplatesConfiguration::getProgramOptions() {
 }
 
 
- BuildTemplatesConfiguration::OutputFunction BuildTemplatesConfiguration::getOutputFunction() {
+BuildTemplatesConfiguration::OutputFunction BuildTemplatesConfiguration::getOutputFunction() {
   return [this](const PhzDataModel::PhotometryGrid& grid) {
     auto logger = Elements::Logging::getLogger("PhzOutput");
     auto filename = m_options["output-photometry-grid"].as<std::string>();
     std::ofstream out {filename};
+    PhzDataModel::PhotometryGridInfo info{};
+    info.axes = grid.getAxesTuple();
+    info.igm_method = getIgmAbsorptionType();
+    info.filter_names = getFilterList();
+    boost::archive::binary_oarchive boa {out};
+    boa << info;
     GridContainer::gridBinaryExport(out, grid);
     logger.info() << "Created template photometries in file " << filename;
   };

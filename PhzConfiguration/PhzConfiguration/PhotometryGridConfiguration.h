@@ -15,6 +15,7 @@
 
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/PhotometryGrid.h"
+#include "PhzDataModel/PhotometryGridInfo.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -73,6 +74,18 @@ public:
    * A PhzDataModel::PhotometryGrid object (the photometry grid)
    */
    PhzDataModel::PhotometryGrid getPhotometryGrid();
+   
+  /**
+   * @brief
+   * This function loads in memory only the photometry grid information from the
+   * file given with the parameter photometry-grid-file, as a PhzDataModel::PhotometryGridInfo
+   * object.
+   * @throw ElementException
+   * Empty parameter option
+   * @return
+   * A PhzDataModel::PhotometryGridInfo object (the photometry grid information)
+   */
+   PhzDataModel::PhotometryGridInfo getPhotometryGridInfo();
 
 private:
   /// Map containing all the filter options and their values

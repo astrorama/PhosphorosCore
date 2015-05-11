@@ -20,6 +20,8 @@
 #include "ElementsKernel/Exception.h"
 #include "PhzDataModel/serialization/PhotometryGrid.h"
 #include "PhzConfiguration/BuildTemplatesConfiguration.h"
+#include "PhzDataModel/PhotometryGridInfo.h"
+#include "PhzDataModel/serialization/PhotometryGridInfo.h"
 
 namespace po = boost::program_options;
 namespace cf = Euclid::PhzConfiguration;
@@ -116,9 +118,8 @@ BOOST_FIXTURE_TEST_CASE(directory_test, BuildTemplatesConfiguration_Fixture) {
   options_map["output-photometry-grid"].value() = test_file.string();
 
   cf::BuildTemplatesConfiguration cpgc(options_map);
-  auto output_func = cpgc.getOutputFunction();
 
-  boost::filesystem::path fs_path(path_filename);
+  boost::filesystem::path fs_path(test_file);
   boost::filesystem::path dir = fs_path.parent_path();
 
   BOOST_CHECK_EQUAL( boost::filesystem::exists(dir), true);
@@ -138,6 +139,10 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, BuildTemplatesConfiguration_Fixt
   // Create a binary file
   fs::path test_file = temp_dir.path()/"test/directory/creation/test_writing_binary_file.dat";
   options_map["output-photometry-grid"].value() = test_file.string();
+  options_map["igm-absorption-type"].value() = std::string{"MADAU"};
+  options_map["filter-name"].value() = std::vector<std::string>{};
+  options_map["filter-name"].as<std::vector<std::string>>().push_back("filter1");
+  options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
 
   cf::BuildTemplatesConfiguration cpgc(options_map);
   auto output_func = cpgc.getOutputFunction();
@@ -152,13 +157,18 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, BuildTemplatesConfiguration_Fixt
   output_func(original_grid);
 
   // Read the binary file created
-  std::ifstream ifs;
+  std::ifstream ifs {};
   ifs.open (test_file.string(), std::ios::binary);
   boost::archive::binary_iarchive ia(ifs);
-  Euclid::PhzDataModel::PhotometryGrid *retrieved_grid_ptr;
-  ia >> retrieved_grid_ptr;
+  Euclid::PhzDataModel::PhotometryGridInfo info;
+  ia >> info;
+  auto retrieved_grid = Euclid::PhzDataModel::phzGridBinaryImport<Euclid::PhzDataModel::PhotometryCellManager>(ifs);
 
-  BOOST_CHECK_EQUAL(original_grid.size(),retrieved_grid_ptr->size());
+  BOOST_CHECK_EQUAL("MADAU", info.igm_method);
+  BOOST_CHECK_EQUAL(2, info.filter_names.size());
+  BOOST_CHECK_EQUAL("filter1", info.filter_names[0].qualifiedName());
+  BOOST_CHECK_EQUAL("filter2", info.filter_names[1].qualifiedName());
+  BOOST_CHECK_EQUAL(original_grid.size(),retrieved_grid.size());
 }
 
 //-----------------------------------------------------------------------------
