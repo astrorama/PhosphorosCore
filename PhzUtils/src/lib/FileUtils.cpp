@@ -29,23 +29,25 @@ void createDirectoryIfAny(const std::string& directory_name) {
   // Extract the directory name
   fs::path fs_dir(directory_name);
 
-  // Directory does not exist
-  if (!fs::exists(fs_dir)) {
-    try {
-       fs::create_directories(fs_dir);
+  if (!directory_name.empty()) {
+    // Directory does not exist
+    if (!fs::exists(fs_dir)) {
+      try {
+         fs::create_directories(fs_dir);
+      }
+      catch(std::exception const&  ex) {
+        throw Elements::Exception() << "Can not create the  " << directory_name
+                                    << " directory(from the createDirectoryIfAny function)!";
+      } //EndOfCatch
     }
-    catch(std::exception const&  ex) {
-      throw Elements::Exception() << "Can not create the  " << directory_name
-                                  << " directory(from the createDirectoryIfAny function)!";
-    } //EndOfCatch
-  }
-  else if (!fs::is_directory(fs_dir))
-  {
-    // The path is not a directory
-    throw Elements::Exception() << "The path :  " << directory_name
-                                << " is not a directory!"
-                                << " (from the createDirectoryIfAny function)!";
-  }
+    else if (!fs::is_directory(fs_dir))
+    {
+      // The path is not a directory
+      throw Elements::Exception() << "The path :  " << directory_name
+                                  << " is not a directory!"
+                                  << " (from the createDirectoryIfAny function)!";
+    }
+  }//Eof dir empty
 
 }
 
@@ -66,6 +68,9 @@ void checkWritePermission(const std::string& directory_name_and_or_filename,
   // The purpose here is to make sure we are able to
   // write a binary file at this location. We used for that a dummy file
   std::string filename{ dir.string() + "/zzz_phos_random_file_to_be_deleted_zzz.zzz" };
+  if (dir.string().empty()) {
+     filename = "zzz_phos_random_file_to_be_deleted_zzz.zzz";
+  }
   std::fstream test_fstream;
   test_fstream.open(filename, std::fstream::out | std::fstream::binary);
   if ((test_fstream.rdstate() & std::fstream::failbit) != 0) {

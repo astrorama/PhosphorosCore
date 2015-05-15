@@ -143,6 +143,22 @@ BOOST_FIXTURE_TEST_CASE(checkCreateDirectoryOnly_exception_notadirectory_test, F
 
 }
 
+//-----------------------------------------------------------------------------
+// Test the empty directory
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(empty_directory_test, FileUtils_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the empty directory from the checkDirectoryOnly function");
+  BOOST_TEST_MESSAGE(" ");
+
+  // Create a file at this location
+  std::string filename = "zzztestzzz.zzz";
+
+  BOOST_CHECK_NO_THROW(pu::checkCreateDirectoryWithFile(filename));
+
+}
 
 //-----------------------------------------------------------------------------
 
