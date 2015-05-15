@@ -6,7 +6,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzLikelihood/LikelihoodAlgorithm.h"
+#include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
 #include "ScaleFactorCalcMock.h"
 #include "LikelihoodCalcMock.h"
 
@@ -60,7 +60,7 @@ BOOST_FIXTURE_TEST_CASE(SameFilterOrder, LikelihoodAlgorithmFixture) {
   
   // Given
   ScaleFactorCalcMock scale_factor_calc_mock;
-  LikelihoodCalcMock likelihood_calc_mock;
+  LikelihoodLogarithmCalcMock likelihood_log_calc_mock;
   std::vector<double> likelihood_list (model_no);
   std::vector<double> scale_factor_list (model_no);
   
@@ -68,13 +68,13 @@ BOOST_FIXTURE_TEST_CASE(SameFilterOrder, LikelihoodAlgorithmFixture) {
   InSequence in_sequence;
   for (int i=0; i<model_no; ++i) {
     scale_factor_calc_mock.expectFunctorCall(source_phot, model_phot_list[i], i);
-    likelihood_calc_mock.expectFunctorCall(source_phot, model_phot_list[i], i, i);
+    likelihood_log_calc_mock.expectFunctorCall(source_phot, model_phot_list[i], i, i);
   }
   
   // When
-  PhzLikelihood::LikelihoodAlgorithm likelihood_algo {
+  PhzLikelihood::LikelihoodLogarithmAlgorithm likelihood_algo {
             std::bind(&ScaleFactorCalcMock::FunctorCall, &scale_factor_calc_mock, _1, _2, _3),
-            std::bind(&LikelihoodCalcMock::FunctorCall, &likelihood_calc_mock, _1, _2, _3, _4)};
+            std::bind(&LikelihoodLogarithmCalcMock::FunctorCall, &likelihood_log_calc_mock, _1, _2, _3, _4)};
   likelihood_algo(source_phot, model_phot_list.begin(), model_phot_list.end(),
                   likelihood_list.begin(), scale_factor_list.begin());
   
@@ -105,7 +105,7 @@ BOOST_FIXTURE_TEST_CASE(DifferentFilterOrder, LikelihoodAlgorithmFixture) {
   SourceCatalog::Photometry source_phot_unordered {source_filters_unordered, source_fluxes_unordered};
   
   ScaleFactorCalcMock scale_factor_calc_mock;
-  LikelihoodCalcMock likelihood_calc_mock;
+  LikelihoodLogarithmCalcMock likelihood_calc_mock;
   
   std::vector<double> likelihood_list (model_no);
   std::vector<double> scale_factor_list (model_no);
@@ -118,9 +118,9 @@ BOOST_FIXTURE_TEST_CASE(DifferentFilterOrder, LikelihoodAlgorithmFixture) {
   }
   
   // When
-  PhzLikelihood::LikelihoodAlgorithm likelihood_algo {
+  PhzLikelihood::LikelihoodLogarithmAlgorithm likelihood_algo {
             std::bind(&ScaleFactorCalcMock::FunctorCall, &scale_factor_calc_mock, _1, _2, _3),
-            std::bind(&LikelihoodCalcMock::FunctorCall, &likelihood_calc_mock, _1, _2, _3, _4)};
+            std::bind(&LikelihoodLogarithmCalcMock::FunctorCall, &likelihood_calc_mock, _1, _2, _3, _4)};
   likelihood_algo(source_phot_unordered, model_phot_list.begin(), model_phot_list.end(),
                   likelihood_list.begin(), scale_factor_list.begin());
   
@@ -146,15 +146,15 @@ BOOST_FIXTURE_TEST_CASE(MissingSourcePhotometry, LikelihoodAlgorithmFixture) {
   SourceCatalog::Photometry source_phot_missing {source_filtersmissing, source_fluxes};
   
   ScaleFactorCalcMock scale_factor_calc_mock;
-  LikelihoodCalcMock likelihood_calc_mock;
+  LikelihoodLogarithmCalcMock likelihood_calc_mock;
   
   std::vector<double> likelihood_list (model_no);
   std::vector<double> scale_factor_list (model_no);
   
   // When
-  PhzLikelihood::LikelihoodAlgorithm likelihood_algo {
+  PhzLikelihood::LikelihoodLogarithmAlgorithm likelihood_algo {
             std::bind(&ScaleFactorCalcMock::FunctorCall, &scale_factor_calc_mock, _1, _2, _3),
-            std::bind(&LikelihoodCalcMock::FunctorCall, &likelihood_calc_mock, _1, _2, _3, _4)};
+            std::bind(&LikelihoodLogarithmCalcMock::FunctorCall, &likelihood_calc_mock, _1, _2, _3, _4)};
   
   // Then
   BOOST_CHECK_THROW(likelihood_algo(source_phot_missing, model_phot_list.begin(),

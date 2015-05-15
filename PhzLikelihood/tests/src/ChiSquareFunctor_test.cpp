@@ -53,7 +53,7 @@ BOOST_FIXTURE_TEST_CASE(signlePoint_test, ChiSquareFunctor_Fixture) {
 
           double value = functor(source_List.begin(), source_List.end(),
               model_List.begin(), scale);
-          BOOST_CHECK(Elements::isEqual(value, exp(-expected_chi2 / 2.0)));
+          BOOST_CHECK(Elements::isEqual(value, -expected_chi2 / 2.0));
         }
       }
     }
@@ -81,7 +81,7 @@ BOOST_FIXTURE_TEST_CASE(multiplePoint_test, ChiSquareFunctor_Fixture) {
   double prev_Value=functor(source_List.begin(), source_List.end(),
       model_List.begin(), scale);
 
-  BOOST_CHECK(Elements::isEqual(prev_Value, exp(- 0.5)));
+  BOOST_CHECK(Elements::isEqual(prev_Value, - 0.5));
 
   source_List.push_back( { 7.0, 1.0 });
   model_List.push_back( { 3.0, 0.0 });
@@ -90,7 +90,7 @@ BOOST_FIXTURE_TEST_CASE(multiplePoint_test, ChiSquareFunctor_Fixture) {
   double value=functor(source_List.begin(), source_List.end(),
         model_List.begin(), scale);
 
-  BOOST_CHECK(Elements::isEqual(value, prev_Value*exp(- 0.5)));
+  BOOST_CHECK(Elements::isEqual(value, prev_Value - 0.5));
   prev_Value=value;
 
   source_List.push_back( { 1.0, 2.0 });
@@ -98,7 +98,7 @@ BOOST_FIXTURE_TEST_CASE(multiplePoint_test, ChiSquareFunctor_Fixture) {
   value=functor(source_List.begin(), source_List.end(),
          model_List.begin(), scale);
   // chi^2 for this item = (2*2-1)^2/2^2=9/4
-  BOOST_CHECK(Elements::isEqual(value, prev_Value*exp(- 9.0/8.0)));
+  BOOST_CHECK(Elements::isEqual(value, prev_Value- 9.0/8.0));
   prev_Value=value;
 
   source_List.push_back( { 5.0, 7.0 });
@@ -106,7 +106,7 @@ BOOST_FIXTURE_TEST_CASE(multiplePoint_test, ChiSquareFunctor_Fixture) {
   value=functor(source_List.begin(), source_List.end(),
          model_List.begin(), scale);
   // chi^2 for this item = (2*11-5)^2/7^2=289/49
-  BOOST_CHECK(Elements::isEqual(value, prev_Value*exp(- 289.0/98.0)));
+  BOOST_CHECK(Elements::isEqual(value, prev_Value - 289.0/98.0));
   prev_Value=value;
 
 }
