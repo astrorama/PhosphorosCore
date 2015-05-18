@@ -46,13 +46,8 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
   // Apply the photometric correction to the given source photometry
   auto cor_source_phot = applyPhotCorr(m_phot_corr_map, source_phot);
   
-  // Create new likelihood and scale factor grids, with all cells set to 0
-//  PhzDataModel::LikelihoodGrid likelihood_grid {m_phot_grid.getAxesTuple()};
-//  PhzDataModel::ScaleFactordGrid scale_factor_grid {m_phot_grid.getAxesTuple()};
-  // Calculate the likelihood over the grid
-//  m_likelihood_func(cor_source_phot, m_phot_grid.begin(), m_phot_grid.end(),
-//                    likelihood_grid.begin(), scale_factor_grid.begin());
-  auto likelihood_res = m_likelihood_func(source_phot, m_phot_grid);
+  // Calculate the likelihood over all the models
+  auto likelihood_res = m_likelihood_func(cor_source_phot, m_phot_grid);
   PhzDataModel::LikelihoodGrid likelihood_grid {std::move(std::get<0>(likelihood_res))};
   PhzDataModel::ScaleFactordGrid scale_factor_grid {std::move(std::get<1>(likelihood_res))};
   double best_chi_square = std::get<2>(likelihood_res);
