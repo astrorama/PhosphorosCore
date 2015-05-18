@@ -25,18 +25,19 @@ struct DeriveZeroPointsConfiguration_Fixture {
   fs::path output_file = temp_dir.path()/"phot_corr.txt";
   
   vector<string> filter_col_mapping {
-    "Filter1 F1 F1_ERR"
+    "Filter1 F1 F1_ERR",
+    "Filter2 F2 F2_ERR"
   };
   
   map<string, po::variable_value> options_map {};
   
   DeriveZeroPointsConfiguration_Fixture() {
     ofstream cat_out {input_catalog.string()};
-    cat_out << "# ID      Z        Z_ERR    F1      F1_ERR\n"
-            << "# long    double   double   double  double\n"
+    cat_out << "# ID      Z        Z_ERR    F1      F1_ERR  F2      F2_ERR\n"
+            << "# long    double   double   double  double  double  double\n"
             << "\n"
-            << "1         0.25     0.01     1.      0.1\n"
-            << "2         1.01     0.02     2.      0.2\n";
+            << "1         0.25     0.01     1.      0.1     3.      0.3\n"
+            << "2         1.01     0.02     2.      0.2     4.      0.4\n";
     cat_out.close();
     
     options_map["input-catalog-file"].value() = boost::any{input_catalog.string()};

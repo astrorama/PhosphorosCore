@@ -48,7 +48,7 @@ PhotometryCatalogConfiguration::PhotometryCatalogConfiguration(const std::map<st
       filter_name_mapping.emplace_back(match_res.str(1), std::make_pair(match_res.str(2), match_res.str(3)));
     }
   }
-  if (filter_name_mapping.size() < 1) {
+  if (filter_name_mapping.size() < 2) {
     logger.error() << "Found only " << filter_name_mapping.size() << " filter-name-mapping parameters";
     throw Elements::Exception() << "Need two or more source photometries to operate (check filter-name-mapping option)";
   }

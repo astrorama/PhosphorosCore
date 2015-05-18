@@ -14,6 +14,7 @@
 #include "PhzPhotometricCorrection/FindWeightedMeanPhotometricCorrectionsFunctor.h"
 #include "PhzPhotometricCorrection/FindWeightedMedianPhotometricCorrectionsFunctor.h"
 #include "PhzUtils/FileUtils.h"
+#include "CheckPhotometries.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -68,6 +69,13 @@ DeriveZeroPointsConfiguration::DeriveZeroPointsConfiguration(
 
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
+  
+  // Check that the given grid contains photometries for all the filters we
+  // have fluxes in the catalog
+  if (!m_options["filter-name-mapping"].empty()) {
+    checkGridPhotometriesMatch(getPhotometryGridInfo().filter_names,
+                               m_options["filter-name-mapping"].as<std::vector<std::string>>());
+  }
   
 }
 

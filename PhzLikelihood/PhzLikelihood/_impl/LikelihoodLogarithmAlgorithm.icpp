@@ -14,7 +14,8 @@ void LikelihoodLogarithmAlgorithm::operator()(const SourceCatalog::Photometry& s
                                               ModelIter model, ModelIter model_end,
                                               LikelihoodLogIter likelihood_log,
                                               ScaleFactorIter scale_factor) const {
-  // Create a new source photometry, with the correct filter order
+  // Create a new source photometry, with the correct filter order. If a filter
+  // is missing from the source photometry, set it to MISSING_DATA
   std::shared_ptr<std::vector<std::string>> ordered_filter_list_ptr {new std::vector<std::string>};
   for (auto model_iter=model->begin(); model_iter!=model->end(); ++model_iter) {
     ordered_filter_list_ptr->push_back(model_iter.filterName());
@@ -23,9 +24,10 @@ void LikelihoodLogarithmAlgorithm::operator()(const SourceCatalog::Photometry& s
   for (auto& filter : *ordered_filter_list_ptr) {
     auto flux_ptr = source_photometry.find(filter);
     if (flux_ptr == nullptr) {
-      throw Elements::Exception() << "Source does not contain photometry for " << filter;
+      ordered_flux_list.emplace_back(0., 0., true);
+    } else {
+      ordered_flux_list.emplace_back(*flux_ptr);
     }
-    ordered_flux_list.push_back(*flux_ptr);
   }
   SourceCatalog::Photometry ordered_source_phot {ordered_filter_list_ptr, std::move(ordered_flux_list)};
   

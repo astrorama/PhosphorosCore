@@ -12,6 +12,7 @@
 #include "PhzLikelihood/BayesianMarginalizationFunctor.h"
 #include "PhzConfiguration/FitTemplatesConfiguration.h"
 #include "PhzOutput/LikelihoodHandler.h"
+#include "CheckPhotometries.h"
 
 namespace po = boost::program_options;
 
@@ -44,6 +45,13 @@ FitTemplatesConfiguration::FitTemplatesConfiguration(const std::map<std::string,
           : PriorConfiguration(), CatalogConfiguration(options), PhotometricCorrectionConfiguration(options),
             PhotometryCatalogConfiguration(options), PhotometryGridConfiguration(options) {
   m_options = options;
+  
+  // Check that the given grid contains photometries for all the filters we
+  // have fluxes in the catalog
+  if (!m_options["filter-name-mapping"].empty()) {
+    checkGridPhotometriesMatch(getPhotometryGridInfo().filter_names,
+                               m_options["filter-name-mapping"].as<std::vector<std::string>>());
+  }
 }
 
 class MultiOutputHandler : public PhzOutput::OutputHandler {
