@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include "PhzModeling/MadauIgmFunctor.h"
+#include "PowerFunctions.h"
 
 namespace Euclid {
 namespace PhzModeling {
@@ -34,7 +35,7 @@ double trans(double z, double l, const std::vector<std::pair<double, double>>& l
   double t = 0.;
   for (auto& ly_pair : lyman) {
     if (l <= ly_pair.first * (1 + z)) {
-      t = t + ly_pair.second * std::pow(l / ly_pair.first, 3.46);
+      t = t + ly_pair.second * (*pow_3_46)(l / ly_pair.first);
     }
   }
   return std::exp(-t);
@@ -53,7 +54,7 @@ XYDataset::XYDataset MadauIgmFunctor::operator()(const XYDataset::XYDataset& sed
       // Lyman series line blanketing
       new_value *= trans(z, sed_pair.first, lyman_emissions_full);
       // Lyman metal line
-      new_value *= std::exp(-0.0017 * std::pow(sed_pair.first / lyman_emissions_full.back().first, 1.68));
+      new_value *= std::exp(-0.0017 * (*pow_1_68)(sed_pair.first / lyman_emissions_full.back().first));
     }
     absorbed_values.emplace_back(sed_pair.first, new_value);
   }

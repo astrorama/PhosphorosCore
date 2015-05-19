@@ -35,7 +35,7 @@ PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction IgmConfiguration::getI
     return PhzModeling::MadauIgmFunctor{};
   }
   if (type == "MEIKSIN") {
-    return PhzModeling::MeiksinIgmFunctor{true, true, true};
+    return PhzModeling::MeiksinIgmFunctor{};
   }
   if (type == "INOUE") {
     return PhzModeling::InoueIgmFunctor{};

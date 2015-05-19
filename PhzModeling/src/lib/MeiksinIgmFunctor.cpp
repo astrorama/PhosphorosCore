@@ -8,6 +8,7 @@
 #include <vector>
 #include "MathUtils/interpolation/interpolation.h"
 #include "PhzModeling/MeiksinIgmFunctor.h"
+#include "PowerFunctions.h"
 
 namespace Euclid {
 namespace PhzModeling {
@@ -70,11 +71,8 @@ std::unique_ptr<MathUtils::Function> blue_values = MathUtils::interpolate(
     MathUtils::InterpolationType::LINEAR
 );
 
-MeiksinIgmFunctor::MeiksinIgmFunctor(bool ots, bool lls, bool blue_fix)
-      : m_ots{ots}, m_lls{lls}, m_blue_fix{blue_fix} { }
-
 double ta(double zn) {
-  return (zn <= 4) ? (0.00211 * pow(1.+zn, 3.7)) : (0.00058 * pow(1.+zn, 4.5));
+  return (zn <= 4) ? (0.00211 * (*pow_3_7)(1.+zn)) : (0.00058 * (*pow_4_5)(1.+zn));
 }
 
 double t_lyman_series(double z, double l) {
@@ -92,7 +90,11 @@ double t_lyman_series(double z, double l) {
       return t;
     }
     zn = (l / *l_iter) - 1.;
-    t += ta(zn) * *c_iter * std::pow(0.25*(1+zn), (zn<=3 ? 1./3. : 1./6.));
+    if (zn <= 3.) {
+      t += ta(zn) * *c_iter * (*pow_1o3)(0.25*(1+zn));
+    } else {
+      t += ta(zn) * *c_iter * (*pow_1o6)(0.25*(1+zn));
+    }
   }
   // n=6-9
   for (auto l_iter=lyman_lambda.begin()+4, c_iter=lyman_coef_6_9.begin();
@@ -101,7 +103,7 @@ double t_lyman_series(double z, double l) {
       return t;
     }
     zn = (l / *l_iter) - 1.;
-    t += ta(zn) * *c_iter * std::pow(0.25*(1+zn), 1./3.);
+    t += ta(zn) * *c_iter * (*pow_1o3)(0.25*(1+zn));
   }
   // n=10-31
   int n = 10;
@@ -110,7 +112,7 @@ double t_lyman_series(double z, double l) {
       return t;
     }
     zn = (l / *l_iter) - 1.;
-    double ttheta = ta(zn) * lyman_coef_6_9.back() * std::pow(0.25*(1+zn), 1./3.);
+    double ttheta = ta(zn) * 0.0283 * (*pow_1o3)(0.25*(1+zn));
     t += ttheta * 720. / (n * (n*n - 1.));
   }
   return t;
@@ -121,19 +123,25 @@ double t_ots(double z, double l) {
       return 0.;
   }
   double zl = (l / 912.) - 1.;
-  return 0.805 * std::pow(1+zl, 3) * (1/(1+zl) - 1/(1+z));
+  return 0.805 * (1+zl)*(1+zl)*(1+zl) * (1/(1+zl) - 1/(1+z));
 }
 
 double t_lls(double z, double l) {
-  if (l > 912.*(1.+z)) {
+  double l_div = l / 912.;
+  if (l_div > (1.+z)) {
       return 0.;
   }
   double sum = 0.;
   for (int n=1; n<=11; ++n) {
-    sum += 0.5 * std::pow(-1, n) / (3*n-2.5) / (n-0.5) / n_factorial[n] *
-           (std::pow(1+z, 2.5-3*n) * std::pow(l/912., 3*n) - std::pow(l/912., 2.5));
+    double temp = 0.5 / (3*n-2.5) / (n-0.5) / n_factorial[n] *
+           (std::pow(1+z, 2.5-3*n) * std::pow(l_div, 3*n) - (*pow_2_5)(l_div));
+    if (n % 2) {
+      sum += temp;
+    } else {
+      sum -= temp;
+    }
   }
-  return 0.443113462449 * ((1+z) * std::pow(l/912., 1.5) - std::pow(l/912., 2.5)) - 0.25 * sum;
+  return 0.443113462449 * ((1+z) * std::pow(l_div, 1.5) - (*pow_2_5)(l_div)) - 0.25 * sum;
 }
 
 XYDataset::XYDataset MeiksinIgmFunctor::operator()(const XYDataset::XYDataset& sed,
@@ -144,16 +152,12 @@ XYDataset::XYDataset MeiksinIgmFunctor::operator()(const XYDataset::XYDataset& s
   std::vector<std::pair<double, double>> absorbed_values {};
   for (auto& sed_pair : sed) {
     double new_value = sed_pair.second;
-    if (m_blue_fix && sed_pair.first <= blue_fix_step) {
+    if (sed_pair.first <= blue_fix_step) {
       new_value *= blue_fix_value;
     } else if (sed_pair.first <= one_step) {
       double t = t_lyman_series(z, sed_pair.first);
-      if (m_ots) {
-        t += t_ots(z, sed_pair.first);
-      }
-      if (m_lls) {
-        t += t_lls(z, sed_pair.first);
-      }
+      t += t_ots(z, sed_pair.first);
+      t += t_lls(z, sed_pair.first);
       new_value *= std::exp(-t);
     }
     absorbed_values.emplace_back(sed_pair.first, new_value);

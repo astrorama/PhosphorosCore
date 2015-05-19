@@ -8,6 +8,7 @@
 #include <vector>
 #include "MathUtils/interpolation/interpolation.h"
 #include "PhzModeling/InoueIgmFunctor.h"
+#include "PowerFunctions.h"
 
 namespace Euclid {
 namespace PhzModeling {
@@ -65,6 +66,8 @@ static const std::vector<double> a_dla_2 {
   3.414e-05, 3.389e-05, 3.364e-05, 3.339e-05
 };
 
+// A function which returns the wavelengh for which the absorption has the
+// minimum value. These values are precomputed to avoid the costly computations.
 std::unique_ptr<MathUtils::Function> min_lambda = MathUtils::interpolate(
     {0.0, 0.10101010101, 0.20202020202, 0.30303030303, 0.40404040404, 0.505050505051, 0.606060606061,
         0.707070707071, 0.808080808081, 0.909090909091, 1.0101010101, 1.11111111111, 1.21212121212,
@@ -82,7 +85,7 @@ std::unique_ptr<MathUtils::Function> min_lambda = MathUtils::interpolate(
         7.9797979798, 8.08080808081, 8.18181818182, 8.28282828283, 8.38383838384, 8.48484848485,
         8.58585858586, 8.68686868687, 8.78787878788, 8.88888888889, 8.9898989899, 9.09090909091,
         9.19191919192, 9.29292929293, 9.39393939394, 9.49494949495, 9.59595959596, 9.69696969697,
-        9.79797979798, 9.89898989899, 10.0},
+        9.79797979798, 9.89898989899, 10.0, 100.0},
     {430.730730731, 466.166166166, 507.507507508, 542.942942943, 578.378378378, 619.71971972,
         655.155155155, 690.590590591, 726.026026026, 761.461461461, 796.896896897, 832.332332332,
         867.767767768, 909.109109109, 944.544544545, 985.885885886, 1027.22722723, 1074.47447447,
@@ -97,10 +100,13 @@ std::unique_ptr<MathUtils::Function> min_lambda = MathUtils::interpolate(
         4913.31331331, 5013.71371371, 5202.7027027, 5232.23223223, 5320.82082082, 5397.5975976,
         5480.28028028, 5568.86886887, 5645.64564565, 5722.42242242, 5799.1991992, 5893.69369369,
         5970.47047047, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0,
-        6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0},
+        6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0, 6000.0,
+        6000.0, 6000.0},
     MathUtils::InterpolationType::LINEAR
 );
 
+// A function which returns the minimum absorption value. These values are 
+// precomputed to avoid the costly computations.
 std::unique_ptr<MathUtils::Function> min_taueff = MathUtils::interpolate(
     {0.0, 0.10101010101, 0.20202020202, 0.30303030303, 0.40404040404, 0.505050505051, 0.606060606061,
         0.707070707071, 0.808080808081, 0.909090909091, 1.0101010101, 1.11111111111, 1.21212121212,
@@ -118,7 +124,7 @@ std::unique_ptr<MathUtils::Function> min_taueff = MathUtils::interpolate(
         7.9797979798, 8.08080808081, 8.18181818182, 8.28282828283, 8.38383838384, 8.48484848485,
         8.58585858586, 8.68686868687, 8.78787878788, 8.88888888889, 8.9898989899, 9.09090909091,
         9.19191919192, 9.29292929293, 9.39393939394, 9.49494949495, 9.59595959596, 9.69696969697,
-        9.79797979798, 9.89898989899, 10.0},
+        9.79797979798, 9.89898989899, 10.0, 100.0},
     {0.851734705391, 0.828727577467, 0.804764920101, 0.779975266333, 0.754486291129, 0.728414730783,
         0.701888396295, 0.675027269257, 0.647947463047, 0.620761476975, 0.59357748963, 0.566498735241,
         0.539676920502, 0.512864843326, 0.486063251291, 0.45936004987, 0.432835808516, 0.406570389385,
@@ -137,7 +143,7 @@ std::unique_ptr<MathUtils::Function> min_taueff = MathUtils::interpolate(
         1.25910093352e-21, 9.99251686582e-23, 7.44572135142e-24, 5.20448412711e-25, 3.40963504899e-26,
         2.0917823544e-27, 1.20066373589e-28, 6.44227602588e-30, 3.22838908101e-31, 1.50964706482e-32,
         6.58144501471e-34, 2.67260927839e-35, 1.01001783334e-36, 3.54904745384e-38, 1.15849049993e-39,
-        3.50976990021e-41, 9.85999714514e-43, 2.56621050713e-44, 6.18200542907e-46, 1.37718178935e-47},
+        3.50976990021e-41, 9.85999714514e-43, 2.56621050713e-44, 6.18200542907e-46, 1.37718178935e-47, 0.},
     MathUtils::InterpolationType::LINEAR
 );
 
@@ -150,11 +156,11 @@ double t_lyman_series_laf(double z, double l) {
     }
     double l_div = l / *l_iter;
     if (l < 2.2 * *l_iter) {
-      t += *a1_iter * std::pow(l_div, 1.2);
+      t += *a1_iter * (*pow_1_2)(l_div);
     } else if (l < 5.7 * *l_iter) {
-      t += *a2_iter * std::pow(l_div, 3.7);
+      t += *a2_iter * (*pow_3_7)(l_div);
     } else {
-      t += *a3_iter * std::pow(l_div, 5.5);
+      t += *a3_iter * (*pow_5_5)(l_div);
     }
   }
   return t;
@@ -181,20 +187,20 @@ double t_lyman_cont_laf(double z, double l) {
   if (l <= 912. * (1.+z)) {
     double l_div = l / 912.;
     if (z < 1.2) {
-      return 0.325 * (std::pow(l_div, 1.2) - std::pow(1+z, -0.9) * std::pow(l_div, 2.1));
+      return 0.325 * ((*pow_1_2)(l_div) - (*pow_m0_9)(1+z) * (*pow_2_1)(l_div));
     } else if (z < 4.7) {
       if (l < 2.2 * 912.) {
-        return 2.55E-2 * std::pow(1+z, 1.6) * std::pow(l_div, 2.1) + .325 * std::pow(l_div, 1.2) - .25 * std::pow(l_div, 2.1);
+        return (2.55E-2 * (*pow_1_6)(1+z) - .25) * (*pow_2_1)(l_div) + .325 * (*pow_1_2)(l_div);
       } else {
-        return 2.55E-2 * (std::pow(1+z, 1.6) * std::pow(l_div, 2.1) - std::pow(l_div, 3.7));
+        return 2.55E-2 * ((*pow_1_6)(1+z) * (*pow_2_1)(l_div) - (*pow_3_7)(l_div));
       }
     } else {
       if (l < 2.2 * 912.) {
-        return 5.22E-4 * std::pow(1+z, 3.4) * std::pow(l_div, 2.1) + .325 * std::pow(l_div, 1.2) - 3.14E-2 * std::pow(l_div, 2.1);
+        return (5.22E-4 * (*pow_3_4)(1+z) - 3.14E-2) * (*pow_2_1)(l_div) + .325 * (*pow_1_2)(l_div);
       } else if (l < 5.7 * 912.) {
-        return 5.22E-4 * std::pow(1+z, 3.4) * std::pow(l_div, 2.1) + .218 * std::pow(l_div, 2.1) - 2.55E-2 * std::pow(l_div, 3.7);
+        return (5.22E-4 * (*pow_3_4)(1+z) + .218) * (*pow_2_1)(l_div) - 2.55E-2 * (*pow_3_7)(l_div);
       } else {
-        return 5.22E-4 * (std::pow(1+z, 3.4) * std::pow(l_div, 2.1) - std::pow(l_div, 5.5));
+        return 5.22E-4 * ((*pow_3_4)(1+z) * (*pow_2_1)(l_div) - (*pow_5_5)(l_div));
       }
     }
   }
@@ -205,12 +211,12 @@ double t_lyman_cont_dla(double z, double l) {
   if (l <= 912. * (1.+z)) {
     double l_div = l / 912.;
     if (z < 2.) {
-      return .211 * std::pow(1+z, 2) - 7.66E-2 * std::pow(1+z, 2.3) * std::pow(l_div, -.3) - .135 * l_div * l_div;
+      return .211 * (1+z)*(1+z) - 7.66E-2 * (*pow_2_3)(1+z) * (*pow_m0_3)(l_div) - .135 * l_div * l_div;
     } else {
       if (l < 3. * 912.) {
-        return .634 + 4.7E-2 * std::pow(1+z, 3) - 1.78E-2 * std::pow(1+z, 3.3) * std::pow(l_div, -.3) - .135 * l_div * l_div - .291 * std::pow(l_div, -.3);
+        return .634 + 4.7E-2 * (1+z)*(1+z)*(1+z) - (1.78E-2 * (*pow_3_3)(1+z) + .291) * (*pow_m0_3)(l_div) - .135 * l_div * l_div;
       } else {
-        return 4.7E-2 * std::pow(1+z, 3) - 1.78E-2 * std::pow(1+z, 3.3) * std::pow(l_div, -.3) - 2.92E-2 * std::pow(l_div, 3);
+        return 4.7E-2 * (1+z)*(1+z)*(1+z) - 1.78E-2 * (*pow_3_3)(1+z) * (*pow_m0_3)(l_div) - 2.92E-2 * l_div*l_div*l_div;
       }
     }
   }

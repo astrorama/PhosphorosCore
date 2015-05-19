@@ -16,17 +16,9 @@ namespace PhzModeling {
 class MeiksinIgmFunctor {
   
 public:
-
-  MeiksinIgmFunctor(bool m_ots, bool m_lls, bool blue_fix);
   
   XYDataset::XYDataset operator()(const XYDataset::XYDataset& sed,
                                           double z) const;
-  
-private:
-  
-  bool m_ots;
-  bool m_lls;
-  bool m_blue_fix;
   
 };
 
