@@ -30,17 +30,6 @@ static const std::vector<std::pair<double, double>> lyman_emissions_full {
   {1215.67, 0.0036}
 };
 
-static const std::vector<std::pair<double, double>> lyman_emissions_fast {
-  {949.743, 0.000941},
-  {972.537, 0.0011846},
-  {1025.72, 0.0017},
-  {1215.67, 0.0036}
-};
-
-MadauIgmFunctor::MadauIgmFunctor(bool fast, bool metals) : m_fast{fast}, m_metals{metals} {
-}
-
-
 double trans(double z, double l, const std::vector<std::pair<double, double>>& lyman) {
   double t = 0.;
   for (auto& ly_pair : lyman) {
@@ -61,14 +50,10 @@ XYDataset::XYDataset MadauIgmFunctor::operator()(const XYDataset::XYDataset& sed
     if (sed_pair.first < zero_step) {
       new_value = 0;
     } else if (sed_pair.first < one_step) {
-      if (m_fast) {
-        new_value *= trans(z, sed_pair.first, lyman_emissions_fast);
-      } else {
-        new_value *= trans(z, sed_pair.first, lyman_emissions_full);
-      }
-      if (m_metals) {
-        new_value *= std::exp(-0.0017 * std::pow(sed_pair.first / lyman_emissions_full.back().first, 1.68));
-      }
+      // Lyman series line blanketing
+      new_value *= trans(z, sed_pair.first, lyman_emissions_full);
+      // Lyman metal line
+      new_value *= std::exp(-0.0017 * std::pow(sed_pair.first / lyman_emissions_full.back().first, 1.68));
     }
     absorbed_values.emplace_back(sed_pair.first, new_value);
   }

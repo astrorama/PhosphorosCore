@@ -17,15 +17,8 @@ class MadauIgmFunctor {
   
 public:
   
-  MadauIgmFunctor(bool fast, bool metals);
-  
   XYDataset::XYDataset operator()(const XYDataset::XYDataset& sed,
                                           double z) const;
-  
-private:
-  
-  bool m_fast;
-  bool m_metals;
   
 };
 
