@@ -95,12 +95,10 @@ BOOST_FIXTURE_TEST_CASE(DifferentFilterOrder, LikelihoodAlgorithmFixture) {
   std::shared_ptr<std::vector<std::string>> source_filters_unordered {new std::vector<std::string>};
   source_filters_unordered->push_back("Filter2");
   source_filters_unordered->push_back("Filter1");
-  source_filters_unordered->push_back("Filter4");
   source_filters_unordered->push_back("Filter3");
   std::vector<SourceCatalog::FluxErrorPair> source_fluxes_unordered;
   source_fluxes_unordered.push_back({2.,2.});
   source_fluxes_unordered.push_back({1.,1.});
-  source_fluxes_unordered.push_back({1.,4.});
   source_fluxes_unordered.push_back({3.,3.});
   SourceCatalog::Photometry source_phot_unordered {source_filters_unordered, source_fluxes_unordered};
   
@@ -132,7 +130,7 @@ BOOST_FIXTURE_TEST_CASE(DifferentFilterOrder, LikelihoodAlgorithmFixture) {
 }
 
 //-----------------------------------------------------------------------------
-// Check that we get an exception if we miss a photometry
+// Check that extra photometries in the grid are ignored
 //-----------------------------------------------------------------------------
 BOOST_FIXTURE_TEST_CASE(MissingSourcePhotometry, LikelihoodAlgorithmFixture) {
   
@@ -145,22 +143,40 @@ BOOST_FIXTURE_TEST_CASE(MissingSourcePhotometry, LikelihoodAlgorithmFixture) {
   source_fluxes.push_back({3.,3.});
   SourceCatalog::Photometry source_phot_missing {source_filtersmissing, source_fluxes};
   
+  std::shared_ptr<std::vector<std::string>> source_no_data_filled {new std::vector<std::string>};
+  source_no_data_filled->push_back("Filter1");
+  source_no_data_filled->push_back("Filter2");
+  source_no_data_filled->push_back("Filter3");
+  std::vector<SourceCatalog::FluxErrorPair> source_no_data_fluxes;
+  source_no_data_fluxes.push_back({1.,1.});
+  source_no_data_fluxes.push_back({0.,0.,true});
+  source_no_data_fluxes.push_back({3.,3.});
+  SourceCatalog::Photometry source_phot_no_data {source_no_data_filled, source_no_data_fluxes};
+  
   ScaleFactorCalcMock scale_factor_calc_mock;
   LikelihoodLogarithmCalcMock likelihood_calc_mock;
   
   std::vector<double> likelihood_list (model_no);
   std::vector<double> scale_factor_list (model_no);
   
+  // Expect
+  InSequence in_sequence;
+  for (int i=0; i<model_no; ++i) {
+    scale_factor_calc_mock.expectFunctorCall(source_phot_no_data, model_phot_list[i], i);
+    likelihood_calc_mock.expectFunctorCall(source_phot_no_data, model_phot_list[i], i, i);
+  }
+  
   // When
   PhzLikelihood::LikelihoodLogarithmAlgorithm likelihood_algo {
             std::bind(&ScaleFactorCalcMock::FunctorCall, &scale_factor_calc_mock, _1, _2, _3),
             std::bind(&LikelihoodLogarithmCalcMock::FunctorCall, &likelihood_calc_mock, _1, _2, _3, _4)};
+  likelihood_algo(source_phot_missing, model_phot_list.begin(), model_phot_list.end(),
+                  likelihood_list.begin(), scale_factor_list.begin());
   
   // Then
-  BOOST_CHECK_THROW(likelihood_algo(source_phot_missing, model_phot_list.begin(),
-                                    model_phot_list.end(), likelihood_list.begin(),
-                                    scale_factor_list.begin()),
-                    Elements::Exception);
+  for (int i=0; i<model_no; ++i) {
+    BOOST_CHECK(likelihood_list[i] == i);
+  }
   
 }
     
