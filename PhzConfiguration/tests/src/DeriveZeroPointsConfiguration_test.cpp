@@ -7,7 +7,10 @@
 #include <fstream>
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 #include "ElementsKernel/Temporary.h"
+#include "PhzDataModel/PhotometryGridInfo.h"
+#include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzConfiguration/DeriveZeroPointsConfiguration.h"
 
 using namespace std;
@@ -39,6 +42,13 @@ struct DeriveZeroPointsConfiguration_Fixture {
             << "1         0.25     0.01     1.      0.1     3.      0.3\n"
             << "2         1.01     0.02     2.      0.2     4.      0.4\n";
     cat_out.close();
+    
+    PhzDataModel::PhotometryGridInfo grid_info;
+    grid_info.filter_names = {{"Filter1"}, {"Filter2"}};
+    ofstream grid_out {phot_grid.string()};
+    boost::archive::binary_oarchive boa {grid_out};
+    boa << grid_info;
+    grid_out.close();
     
     options_map["input-catalog-file"].value() = boost::any{input_catalog.string()};
     options_map["source-id-column-index"].value() = boost::any{1};
