@@ -12,10 +12,10 @@ namespace PhzLikelihood {
 /**
  * @class Euclid::PhzLikelihood::ChiSquareFunctor
  * @brief
- * This functor is in charge of computing the Likelihood of a source with respect
- * to a given model. This implementation use the Chi^2 pathway.
+ * This functor is in charge of computing the natural logarithm of the Likelihood
+ * of a source with respect to a given model. This implementation use the Chi^2 pathway.
  * @details
- * The Likelihood is computed as the exp(-Chi^2/2). The the Chi^2 is computed as
+ * The Likelihood logarithm is computed as the -Chi^2/2. The the Chi^2 is computed as
  * the weighted sum over the filters of the square of the difference between the model and the source flux.
  * The weight being the inverse of the source flux error. The model normalization
  * is provided as the "Scale Factor" and this value is computed to minimize the Chi^2.
@@ -26,7 +26,8 @@ public:
   /**
    * @brief Function Call Operator
    * @details
-   * Compute the Likelihood for a source with respect to the model using the Chi^2 pathway.
+   * Compute the natural logarithm of the Likelihood for a source with respect
+   * to the model using the Chi^2 pathway.
    *
    * @param source_begin
    * An iterator over the Filters of the source exposing an object having "flux" and "error" fields.

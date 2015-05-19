@@ -9,12 +9,16 @@
 #include <fstream>
 #include <vector>
 
+#include <boost/archive/binary_iarchive.hpp>
+
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 
+#include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzConfiguration/PhotometryGridConfiguration.h"
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -38,9 +42,39 @@ PhzDataModel::PhotometryGrid PhotometryGridConfiguration::getPhotometryGrid() {
   if (m_options[option_name].empty()) {
     throw Elements::Exception() << "Empty parameter option : \"" << option_name << "\"";
   }
+
+  auto filename = m_options[option_name].as<std::string>();
+  if (!fs::exists(filename)) {
+    logger.error() << "File " << filename << " not found!";
+    throw Elements::Exception() << "Photometry grid file (photometry-grid-file option) does not exist: " << filename;
+  }
+
   std::ifstream in{m_options[option_name].as<std::string>()};
+  // Skip the PhotometryGridInfo object
+  PhzDataModel::PhotometryGridInfo info;
+  boost::archive::binary_iarchive bia {in};
+  bia >> info;
   // Read binary file
   return (PhzDataModel::phzGridBinaryImport<PhzDataModel::PhotometryCellManager>(in));
+}
+
+PhzDataModel::PhotometryGridInfo PhotometryGridConfiguration::getPhotometryGridInfo() {
+  std::string option_name{"photometry-grid-file"};
+  if (m_options[option_name].empty()) {
+    throw Elements::Exception() << "Empty parameter option : \"" << option_name << "\"";
+  }
+
+  auto filename = m_options[option_name].as<std::string>();
+  if (!fs::exists(filename)) {
+    logger.error() << "File " << filename << " not found!";
+    throw Elements::Exception() << "Photometry grid file (photometry-grid-file option) does not exist: " << filename;
+  }
+
+  std::ifstream in{m_options[option_name].as<std::string>()};
+  PhzDataModel::PhotometryGridInfo info;
+  boost::archive::binary_iarchive bia {in};
+  bia >> info;
+  return info;
 }
 
 }

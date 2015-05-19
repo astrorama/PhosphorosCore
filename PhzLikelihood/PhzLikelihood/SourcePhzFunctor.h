@@ -18,9 +18,7 @@
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzDataModel/Pdf1D.h"
 #include "PhzOutput/OutputHandler.h"
-#include "PhzLikelihood/LikelihoodAlgorithm.h"
-#include "PhzLikelihood/ScaleFactorFunctor.h"
-#include "PhzLikelihood/ChiSquareFunctor.h"
+#include "PhzLikelihood/LikelihoodGridFunctor.h"
 #include "PhzLikelihood/SumMarginalizationFunctor.h"
 
 namespace Euclid {
@@ -46,19 +44,17 @@ class SourcePhzFunctor {
 public:
 
   typedef PhzOutput::OutputHandler::result_type result_type;
-
+  
   /**
-   * Definition of the STL-like algorithm for calculating the likelihood grid.
-   * It is a function which gets a source photometry and an iterator over the
-   * model photometries and populates the likelihood and scale factor results,
-   * using a likelihood iterator and a scale factor iterator.
+   * Definition of the functor for calculating the likelihood grid. It is a
+   * function which gets a source photometry and a grid with model photometries,
+   * and returns the likelihood grid, the scale factor grid and the minimum
+   * chi square value.
    */
-  typedef std::function<void(const SourceCatalog::Photometry& source_photometry,
-                             PhzDataModel::PhotometryGrid::const_iterator model_begin,
-                             PhzDataModel::PhotometryGrid::const_iterator model_end,
-                             PhzDataModel::LikelihoodGrid::iterator likelihood_begin,
-                             PhzDataModel::ScaleFactordGrid::iterator scale_factor_begin)
-                       > LikelihoodFunction;
+  typedef std::function<LikelihoodGridFunctor::result_type(
+                                const SourceCatalog::Photometry& source_phot,      
+                                const PhzDataModel::PhotometryGrid& phot_grid)
+                       > LikelihoodGridFunction;
 
   /**
    * Definition of the STL-like algorithm for finding the best fitted model. It
@@ -87,13 +83,13 @@ public:
 
   /**
    * Constructs a new SourcePhzFunctor instance. It gets as parameters a map
-   * containing the photometric corrections, a const reference to the grid with the model photometries,
-   * the algorithm to use for calculating the likelihood grid, the algorithm
-   * for finding the best fitted model and the algorithm for performing the PDF
-   * marginalization. Note that the algorithms can be ommitted
-   * which will result to the default chi^2 for the likelihood calculation,
-   * the maximum likelihood value for the best fitted model and simple summing
-   * for the marginalization.
+   * containing the photometric corrections, a const reference to the grid with
+   * the model photometries, the algorithm to use for calculating the likelihood
+   * grid, the algorithm for finding the best fitted model and the algorithm for
+   * performing the PDF marginalization. Note that the algorithms can be
+   * ommitted which will result to the default chi^2 for the likelihood
+   * calculation, the maximum likelihood value for the best fitted model and
+   * simple summing for the marginalization.
    *
    * @param phot_corr_map
    *    The map with the photometric corrections
@@ -112,7 +108,7 @@ public:
                    const PhzDataModel::PhotometryGrid& phot_grid,
                    std::vector<PriorFunction> priors = {},
                    MarginalizationFunction marginalization_func = SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{},
-                   LikelihoodFunction likelihood_func = LikelihoodAlgorithm{ScaleFactorFunctor{}, ChiSquareFunctor{}},
+                   LikelihoodGridFunction likelihood_func = LikelihoodGridFunctor{},
                    BestFitSearchFunction best_fit_search_func = std::max_element<PhzDataModel::LikelihoodGrid::iterator>);
 
   /**
@@ -144,7 +140,7 @@ private:
   const PhzDataModel::PhotometryGrid& m_phot_grid;
   std::vector<PriorFunction> m_priors;
   MarginalizationFunction m_marginalization_func;
-  LikelihoodFunction m_likelihood_func;
+  LikelihoodGridFunction m_likelihood_func;
   BestFitSearchFunction m_best_fit_search_func;
 
 };

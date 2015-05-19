@@ -11,6 +11,7 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzOutput/LikelihoodHandler.h"
+#include "PhzUtils/FileUtils.h"
 
 namespace fs = boost::filesystem;
 
@@ -21,13 +22,10 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
 LikelihoodHandler::LikelihoodHandler(boost::filesystem::path out_dir)
           : m_out_dir{std::move(out_dir)} {
-  if (fs::exists(m_out_dir) && !fs::is_directory(m_out_dir)) {
-    throw Elements::Exception() << "Likelihood grid output " << m_out_dir
-                                << " is not a directory";
-  }
-  if (!fs::exists(m_out_dir)) {
-    fs::create_directories(m_out_dir);
-  }
+
+  // Check directory and write permissions
+  Euclid::PhzUtils::checkCreateDirectoryOnly(m_out_dir.string());
+
 }
           
 template <typename AxisType>

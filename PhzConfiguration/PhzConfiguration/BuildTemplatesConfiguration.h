@@ -88,8 +88,10 @@ public:
    * binary-photometry-grid option and throws an exception if any.
    * @throw Element::Exception
    * - IO error, can not write any file there
+   * - If the igm-absorption-type parameter is missing
+   * - If there are no filters set
    * @return
-   * A void function.
+   * A function to be used for outputing the PhotometryGrid
    */
   OutputFunction getOutputFunction();
   

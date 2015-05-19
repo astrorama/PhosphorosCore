@@ -12,12 +12,23 @@
 #include "Table/Table.h"
 #include "Table/FitsWriter.h"
 #include "PhzOutput/PdfOutput.h"
+#include "PhzUtils/FileUtils.h"
 
 
 namespace Euclid {
 namespace PhzOutput {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
+
+PdfOutput::PdfOutput(boost::filesystem::path out_file): m_out_file(out_file), m_counter (0) {
+
+  // Check directory and write permissions
+  Euclid::PhzUtils::checkCreateDirectoryWithFile(out_file.string());
+
+  m_fits_file.reset(new CCfits::FITS{"!"+out_file.string(), CCfits::RWmode::Write});
+
+}
+
 
 PdfOutput::~PdfOutput() {
   logger.info() << "Created 1D PDFs in file " << m_out_file.string();

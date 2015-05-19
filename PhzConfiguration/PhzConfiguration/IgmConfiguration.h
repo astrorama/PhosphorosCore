@@ -28,6 +28,8 @@ public:
    virtual ~IgmConfiguration()=default;
   
   PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction getIgmAbsorptionFunction();
+  
+  std::string getIgmAbsorptionType();
                      
 private:
   

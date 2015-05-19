@@ -17,13 +17,13 @@ using namespace testing;
 
 namespace Euclid {
 
-class LikelihoodCalcMock {
+class LikelihoodLogarithmCalcMock {
   
 private:
   
 public:
   
-  virtual ~LikelihoodCalcMock() = default;
+  virtual ~LikelihoodLogarithmCalcMock() = default;
   
   typedef SourceCatalog::Photometry::const_iterator phot_iter;
   

@@ -7,12 +7,16 @@
 #include <fstream>
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 #include "ElementsKernel/Temporary.h"
+#include "PhzDataModel/PhotometryGridInfo.h"
+#include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzConfiguration/DeriveZeroPointsConfiguration.h"
 
 using namespace std;
 using namespace Euclid;
 using namespace Euclid::PhzConfiguration;
+
 namespace po = boost::program_options; 
 namespace fs = boost::filesystem;
 
@@ -24,19 +28,27 @@ struct DeriveZeroPointsConfiguration_Fixture {
   fs::path output_file = temp_dir.path()/"phot_corr.txt";
   
   vector<string> filter_col_mapping {
-    "Filter1 F1 F1_ERR"
+    "Filter1 F1 F1_ERR",
+    "Filter2 F2 F2_ERR"
   };
   
   map<string, po::variable_value> options_map {};
   
   DeriveZeroPointsConfiguration_Fixture() {
     ofstream cat_out {input_catalog.string()};
-    cat_out << "# ID      Z        Z_ERR    F1      F1_ERR\n"
-            << "# long    double   double   double  double\n"
+    cat_out << "# ID      Z        Z_ERR    F1      F1_ERR  F2      F2_ERR\n"
+            << "# long    double   double   double  double  double  double\n"
             << "\n"
-            << "1         0.25     0.01     1.      0.1\n"
-            << "2         1.01     0.02     2.      0.2\n";
+            << "1         0.25     0.01     1.      0.1     3.      0.3\n"
+            << "2         1.01     0.02     2.      0.2     4.      0.4\n";
     cat_out.close();
+    
+    PhzDataModel::PhotometryGridInfo grid_info;
+    grid_info.filter_names = {{"Filter1"}, {"Filter2"}};
+    ofstream grid_out {phot_grid.string()};
+    boost::archive::binary_oarchive boa {grid_out};
+    boa << grid_info;
+    grid_out.close();
     
     options_map["input-catalog-file"].value() = boost::any{input_catalog.string()};
     options_map["source-id-column-index"].value() = boost::any{1};
@@ -112,15 +124,35 @@ BOOST_FIXTURE_TEST_CASE(outFileNotGiven, DeriveZeroPointsConfiguration_Fixture) 
 // Test the constructor throws exception if the output file cannot be created
 //-----------------------------------------------------------------------------
 
+//BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, DeriveZeroPointsConfiguration_Fixture) {
+//
+//  // Given
+//  options_map["output-phot-corr-file"].value() = boost::any{temp_dir.path().string()};
+//
+//  // Then
+//  BOOST_CHECK_THROW(DeriveZeroPointsConfiguration{options_map}, Elements::Exception);
+//
+//}
+
 BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, DeriveZeroPointsConfiguration_Fixture) {
-  
-  // Given
-  options_map["output-phot-corr-file"].value() = boost::any{temp_dir.path().string()};
-  
-  // Then
-  BOOST_CHECK_THROW(DeriveZeroPointsConfiguration{options_map}, Elements::Exception);
-  
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the constructor exception during file creation");
+  BOOST_TEST_MESSAGE(" ");
+
+  // Create and change directory permissions to read only for owner
+  Elements::TempDir temp2_dir {};
+  fs::path test_file = temp2_dir.path();
+  fs::permissions(test_file, fs::perms::remove_perms|fs::perms::owner_write|
+                 fs::perms::others_write|fs::perms::group_write);
+
+  fs::path  path_filename = test_file/"no_write_permission.dat";
+  options_map["output-phot-corr-file"].value() = path_filename.string();
+
+  BOOST_CHECK_THROW(DeriveZeroPointsConfiguration cpgc(options_map), Elements::Exception);
+
 }
+
 
 //-----------------------------------------------------------------------------
 // Test the getOutputFunction

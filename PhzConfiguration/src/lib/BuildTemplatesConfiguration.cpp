@@ -9,11 +9,18 @@
 #include <fstream>
 #include <iostream>
 
+#include <boost/filesystem.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/BuildTemplatesConfiguration.h"
+#include "PhzDataModel/PhotometryGridInfo.h"
+#include "PhzDataModel/serialization/PhotometryGridInfo.h"
+#include "PhzUtils/FileUtils.h"
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -28,19 +35,8 @@ BuildTemplatesConfiguration::BuildTemplatesConfiguration(const std::map<std::str
   // Extract file option
   std::string filename = m_options["output-photometry-grid"].as<std::string>();
 
-  // The purpose here is to make sure we are able to
-  // write the binary file on the disk
-  std::fstream test_fstream;
-  test_fstream.open(filename, std::fstream::out | std::fstream::binary);
-  if ((test_fstream.rdstate() & std::fstream::failbit) != 0) {
-    throw Elements::Exception() <<" IO error, can not write any file there : %s "
-                                << filename << "from option : binary-photometry-grid ";
-  }
-  test_fstream.close();
-  // Remove file created
-  if (std::remove(filename.c_str())) {
-    logger.warn() << "Removing temporary file creation failed: \"" << filename << "\" !";
-  }
+  // Check directory and write permissions
+  Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
 }
 
@@ -60,11 +56,17 @@ po::options_description BuildTemplatesConfiguration::getProgramOptions() {
 }
 
 
- BuildTemplatesConfiguration::OutputFunction BuildTemplatesConfiguration::getOutputFunction() {
+BuildTemplatesConfiguration::OutputFunction BuildTemplatesConfiguration::getOutputFunction() {
   return [this](const PhzDataModel::PhotometryGrid& grid) {
     auto logger = Elements::Logging::getLogger("PhzOutput");
     auto filename = m_options["output-photometry-grid"].as<std::string>();
     std::ofstream out {filename};
+    PhzDataModel::PhotometryGridInfo info{};
+    info.axes = grid.getAxesTuple();
+    info.igm_method = getIgmAbsorptionType();
+    info.filter_names = getFilterList();
+    boost::archive::binary_oarchive boa {out};
+    boa << info;
     GridContainer::gridBinaryExport(out, grid);
     logger.info() << "Created template photometries in file " << filename;
   };

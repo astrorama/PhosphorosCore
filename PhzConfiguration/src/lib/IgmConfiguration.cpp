@@ -27,41 +27,48 @@ po::options_description IgmConfiguration::getProgramOptions() {
 }
 
 PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction IgmConfiguration::getIgmAbsorptionFunction() {
+  auto type = getIgmAbsorptionType();
   if (m_options["igm-absorption-type"].empty()) { 
     throw Elements::Exception() << "Missing mandatory parameter igm-absorption-type";
   }
-  if (m_options["igm-absorption-type"].as<std::string>() == "OFF") {
+  if (type == "OFF") {
     return PhzModeling::NoIgmFunctor{};
   }
-  if (m_options["igm-absorption-type"].as<std::string>() == "MADAU") {
+  if (type == "MADAU") {
     return PhzModeling::MadauIgmFunctor{};
   }
-  if (m_options["igm-absorption-type"].as<std::string>() == "MADAU_NEW") {
+  if (type == "MADAU_NEW") {
     return PhzModeling::MadauNewIgmFunctor{false, false};
   }
-  if (m_options["igm-absorption-type"].as<std::string>() == "MADAU_NEW_FAST") {
+  if (type == "MADAU_NEW_FAST") {
     return PhzModeling::MadauNewIgmFunctor{true, false};
   }
-  if (m_options["igm-absorption-type"].as<std::string>() == "MADAU_NEW+METALS") {
+  if (type == "MADAU_NEW+METALS") {
     return PhzModeling::MadauNewIgmFunctor{false, true};
   }
-  if (m_options["igm-absorption-type"].as<std::string>() == "MEIKSIN") {
+  if (type == "MEIKSIN") {
     return PhzModeling::MeiksinIgmFunctor{false, false, false};
   }
-  if (m_options["igm-absorption-type"].as<std::string>() == "MEIKSIN+OTS") {
+  if (type == "MEIKSIN+OTS") {
     return PhzModeling::MeiksinIgmFunctor{true, false, false};
   }
-  if (m_options["igm-absorption-type"].as<std::string>() == "MEIKSIN+OTS+LLS") {
+  if (type == "MEIKSIN+OTS+LLS") {
     return PhzModeling::MeiksinIgmFunctor{true, true, false};
   }
-  if (m_options["igm-absorption-type"].as<std::string>() == "MEIKSIN+OTS+LLS+BLUE_FIX") {
+  if (type == "MEIKSIN+OTS+LLS+BLUE_FIX") {
     return PhzModeling::MeiksinIgmFunctor{true, true, true};
   }
-  if (m_options["igm-absorption-type"].as<std::string>() == "INOUE") {
+  if (type == "INOUE") {
     return PhzModeling::InoueIgmFunctor{};
   }
-  throw Elements::Exception() << "Unknown IGM absorption type \"" 
-                    << m_options["igm-absorption-type"].as<std::string>() << "\"";
+  throw Elements::Exception() << "Unknown IGM absorption type \"" << type << "\"";
+}
+
+std::string IgmConfiguration::getIgmAbsorptionType() {
+  if (!m_options["igm-absorption-type"].empty()) { 
+    return m_options["igm-absorption-type"].as<std::string>();
+  }
+  throw Elements::Exception() << "Missing mandatory parameter igm-absorption-type";
 }
 
 }

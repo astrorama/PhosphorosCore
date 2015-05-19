@@ -1,0 +1,43 @@
+/** 
+ * @file LikelihoodLogarithmAlgorithm.icpp
+ * @date December 1, 2014
+ * @author Nikolaos Apostolakos
+ */
+
+#include "ElementsKernel/Exception.h"
+
+namespace Euclid {
+namespace PhzLikelihood {
+
+template<typename ModelIter, typename LikelihoodLogIter, typename ScaleFactorIter>
+void LikelihoodLogarithmAlgorithm::operator()(const SourceCatalog::Photometry& source_photometry,
+                                              ModelIter model, ModelIter model_end,
+                                              LikelihoodLogIter likelihood_log,
+                                              ScaleFactorIter scale_factor) const {
+  // Create a new source photometry, with the correct filter order. If a filter
+  // is missing from the source photometry, set it to MISSING_DATA
+  std::shared_ptr<std::vector<std::string>> ordered_filter_list_ptr {new std::vector<std::string>};
+  for (auto model_iter=model->begin(); model_iter!=model->end(); ++model_iter) {
+    ordered_filter_list_ptr->push_back(model_iter.filterName());
+  }
+  std::vector<SourceCatalog::FluxErrorPair> ordered_flux_list;
+  for (auto& filter : *ordered_filter_list_ptr) {
+    auto flux_ptr = source_photometry.find(filter);
+    if (flux_ptr == nullptr) {
+      ordered_flux_list.emplace_back(0., 0., true);
+    } else {
+      ordered_flux_list.emplace_back(*flux_ptr);
+    }
+  }
+  SourceCatalog::Photometry ordered_source_phot {ordered_filter_list_ptr, std::move(ordered_flux_list)};
+  
+  // Calculate the natural logarithm of the likelihood for each model and populate the output
+  for (; model != model_end; ++model, ++likelihood_log, ++scale_factor) {
+    double scale = m_scale_factor_calc(ordered_source_phot.begin(), ordered_source_phot.end(), model->begin());
+    *likelihood_log = m_likelihood_log_calc(ordered_source_phot.begin(), ordered_source_phot.end(), model->begin(), scale);
+    *scale_factor = scale * 1E-17; // We convert erg/s/cm^2 to micro-Jansky
+  }
+}
+
+} // end of namespace PhzLikelihood
+} // end of namespace Euclid

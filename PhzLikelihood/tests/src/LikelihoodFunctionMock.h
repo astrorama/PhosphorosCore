@@ -15,6 +15,7 @@
 #include "PhzDataModel/LikelihoodGrid.h"
 #include "FluxErrorPair_boost.h"
 #include "PhzDataModel/PhotometryGrid.h"
+#include "PhzLikelihood/LikelihoodGridFunctor.h"
 
 using namespace testing;
 
@@ -28,14 +29,20 @@ public:
 
   typedef PhzDataModel::PhotometryGrid::const_iterator phot_iter;
 
-  MOCK_METHOD4(FunctorCall, void(const SourceCatalog::Photometry& source_photometry,
-          phot_iter model_begin,
-          phot_iter model_end,
-          PhzDataModel::LikelihoodGrid::iterator likelihood_begin)
+  MOCK_METHOD2(FunctorCall, PhzLikelihood::LikelihoodGridFunctor::result_type*(
+                          const SourceCatalog::Photometry& source_photometry,
+                          const PhzDataModel::PhotometryGrid& phot_grid)
   );
+  
+  PhzLikelihood::LikelihoodGridFunctor::result_type operator()(
+                          const SourceCatalog::Photometry& source_photometry,
+                          const PhzDataModel::PhotometryGrid& phot_grid) {
+    std::unique_ptr<PhzLikelihood::LikelihoodGridFunctor::result_type> ptr {FunctorCall(source_photometry, phot_grid)};
+    return PhzLikelihood::LikelihoodGridFunctor::result_type {std::move(*ptr)};
+  }
 
-  void expectFunctorCall(const SourceCatalog::Photometry& source_photometry, phot_iter model_begin, phot_iter model_end) {
-    EXPECT_CALL(*this, FunctorCall(_, _, _,_)).With(AllOf(
+  void expectFunctorCall(const SourceCatalog::Photometry& source_photometry, const PhzDataModel::PhotometryGrid& phot_grid) {
+    EXPECT_CALL(*this, FunctorCall(_, _)).With(AllOf(
             Args<0>(Truly([this, source_photometry](std::tuple<const SourceCatalog::Photometry&> args) {
 
                       auto& recieved_photometry = std::get<0>(args);
@@ -47,24 +54,23 @@ public:
                       }
                       return true;
                     })),
-            Args<1,2>(Truly([&model_begin,&model_end](std::tuple<phot_iter,phot_iter> args) {
-                      auto& provided_iter = std::get<0>(args);
-                      do
-                      {
-                        auto provided_photo_iter=(*provided_iter).begin();
-                        for(auto& ref_photo_iter :(*model_begin)){
-                          BOOST_CHECK(Elements::isEqual((*provided_photo_iter).flux,ref_photo_iter.flux));
-                          ++provided_photo_iter;
+            Args<1>(Truly([&phot_grid](std::tuple<const PhzDataModel::PhotometryGrid&> args) {
+                      auto& received_grid = std::get<0>(args);
+                      BOOST_CHECK_EQUAL(phot_grid.size(),received_grid.size());
+                      for (auto phot_iter=phot_grid.begin(), received_iter=received_grid.begin();
+                           phot_iter!=phot_grid.end(); ++phot_iter, ++received_iter) {
+                        for (auto flux_iter=(*phot_iter).begin(), rec_flux_iter=(*received_iter).begin();
+                                flux_iter!=(*phot_iter).end(); ++flux_iter, ++rec_flux_iter) {
+                          BOOST_CHECK(Elements::isEqual((*flux_iter).flux, (*rec_flux_iter).flux));
                         }
-
-                        ++model_begin;
-                        ++provided_iter;
                       }
-                      while (model_begin !=model_end);
                       return true;
                     } ))
-
-        )).WillOnce(Return());
+        )).WillOnce(Return(new PhzLikelihood::LikelihoodGridFunctor::result_type {
+                                        PhzDataModel::LikelihoodGrid{phot_grid.getAxesTuple()},
+                                        PhzDataModel::ScaleFactordGrid{phot_grid.getAxesTuple()},
+                                        0.
+                    }));
   }
 };
 

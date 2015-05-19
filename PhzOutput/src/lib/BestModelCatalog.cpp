@@ -5,11 +5,15 @@
  */
 
 #include <fstream>
+#include <CCfits/CCfits>
 #include "ElementsKernel/Logging.h"
 #include "Table/Table.h"
 #include "Table/AsciiWriter.h"
+#include "Table/FitsWriter.h"
 #include "PhzOutput/BestModelCatalog.h"
+#include "PhzUtils/FileUtils.h"
 
+namespace fs = boost::filesystem;
 
 namespace Euclid {
 namespace PhzOutput {
@@ -18,11 +22,16 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
 BestModelCatalog::~BestModelCatalog() {
   Table::Table out_table {std::move(m_row_list)};
-  {
+  // Check directory and write permissions
+  Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
+  if (m_format == Format::ASCII) {
     std::ofstream out {m_out_file.string()};
-    Table::AsciiWriter().write(out, out_table);
-    logger.info() << "Created best fit model catalog in file " << m_out_file.string();
+    Table::AsciiWriter().write(out, out_table, false);
+  } else {
+    CCfits::FITS fits {"!"+m_out_file.string(), CCfits::RWmode::Write};
+    Table::FitsWriter().write(fits, "Best Model Catalog", out_table);
   }
+  logger.info() << "Created best fit model catalog in file " << m_out_file.string();
 }
 
 void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
@@ -33,7 +42,8 @@ void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
   auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
   auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
   auto scale = std::get<3>(results);
-  m_row_list.push_back(Table::Row{{source.getId(), sed, reddening_curve, ebv, z, scale}, m_column_info});
+  auto likelihood = std::get<4>(results);
+  m_row_list.push_back(Table::Row{{source.getId(), sed, reddening_curve, ebv, z, scale, likelihood}, m_column_info});
 }
 
 } // end of namespace PhzOutput

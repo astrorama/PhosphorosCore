@@ -43,9 +43,11 @@ public:
    * The path and filename of the FITS file of type boost::filesystem::path
    *
    */
-	PdfOutput(boost::filesystem::path out_file) :m_out_file{out_file},
-	                              m_fits_file{new CCfits::FITS{"!"+out_file.string(), CCfits::RWmode::Write}},
-	                              m_counter(0) {}
+//	PdfOutput(boost::filesystem::path out_file) :m_out_file{out_file},
+//	                              m_fits_file{new CCfits::FITS{"!"+out_file.string(), CCfits::RWmode::Write}},
+//	                              m_counter(0) {}
+
+	PdfOutput(boost::filesystem::path out_file);
 
   virtual ~PdfOutput();
 
