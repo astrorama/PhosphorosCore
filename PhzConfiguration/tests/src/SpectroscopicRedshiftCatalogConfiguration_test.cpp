@@ -42,8 +42,7 @@ struct SpectroscopicRedshiftCatalogConfiguration_Fixture {
   std::map<std::string, po::variable_value> options_map_z_deltaZ_index_plus_name;
 
   Elements::TempDir temp_dir;
-  //zzz std::string base_directory { temp_dir.path().native() + "/euclid_test/" };
-  std::string base_directory { "/tmp/euclid_test/" };
+  std::string base_directory { temp_dir.path().native() + "/euclid_test/" };
   std::string ascii_file_name { base_directory + "test_SpecZ_Catalog.txt" };
   SpectroscopicRedshiftCatalogConfiguration_Fixture() {
     makeDirectory(base_directory);

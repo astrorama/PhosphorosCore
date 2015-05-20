@@ -36,7 +36,7 @@ double ChiSquareFunctor::operator ()(SourceIter source, SourceIter source_end,
                                      ModelIter model, double scale) const {
     double chi_square {0.0};
     for (; source!=source_end; ++source, ++model) {
-      if ((*source).no_data) {
+      if ((*source).missing_photometry_flag) {
         continue;
       }
       double difference = scale * (*model).flux - (*source).flux;

@@ -33,7 +33,7 @@ double ScaleFactorFunctor::operator ()(SourceIter source, SourceIter source_end,
     double numerator {0.0};
     double denominator {0.0};
     for (; source!=source_end; ++source, ++model) {
-      if ((*source).no_data) {
+      if ((*source).missing_photometry_flag) {
         continue;
       }
       double error_square = (*source).error * (*source).error;

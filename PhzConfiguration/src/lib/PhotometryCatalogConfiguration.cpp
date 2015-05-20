@@ -25,10 +25,10 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhotometryCatalo
 po::options_description PhotometryCatalogConfiguration::getProgramOptions() {
   po::options_description options = CatalogConfiguration::getProgramOptions();
   options.add_options()
-    ("filter-name-mapping", po::value<std::vector<std::string>>(),
-        "The mapping of the flux and error columns of a filter FORMAT=\"filter flux_name error_name\"");
-//    ("filter-name-index-mapping", po::value<std::vector<std::string>>(),
-//        "The mapping of the flux and error columns of a filter FORMAT=\"filter flux_index error_index\"");
+        ("filter-name-mapping", po::value<std::vector<std::string>>(),
+            "The mapping of the flux and error columns of a filter FORMAT=\"filter flux_name error_name\"")
+        ("missing-photometry-flag", po::value<double>(),
+            "It is a flag value for missing flux for a source, default value: -99.");
   return options;
 }
 
@@ -53,8 +53,15 @@ PhotometryCatalogConfiguration::PhotometryCatalogConfiguration(const std::map<st
     throw Elements::Exception() << "Need two or more source photometries to operate (check filter-name-mapping option)";
   }
   
+  // Get the flag
+  double missing_photo_flag {-99.};
+  auto flag_iter = options.find("missing-photometry-flag");
+  if (flag_iter != options.end()) {
+     missing_photo_flag = flag_iter->second.as<double>();
+  }
+
   // Add the row handler to parse the photometries
-  std::shared_ptr<SourceCatalog::AttributeFromRow> handler_ptr {new SourceCatalog::PhotometryAttributeFromRow{getAsTable().getColumnInfo(), std::move(filter_name_mapping)}};
+  std::shared_ptr<SourceCatalog::AttributeFromRow> handler_ptr {new SourceCatalog::PhotometryAttributeFromRow{getAsTable().getColumnInfo(), std::move(filter_name_mapping), missing_photo_flag}};
   addAttributeHandler(std::move(handler_ptr));
 }
 
