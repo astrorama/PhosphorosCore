@@ -32,9 +32,7 @@ po::options_description FitTemplatesConfiguration::getProgramOptions() {
   ("marginalization-type", po::value<std::string>(),
         "The type of marginalization algorithm (one of SUM, MAX, BAYESIAN)")
         ("output-likelihood-dir", po::value<std::string>(),
-              "The directory where the likelihood grids are stored")
-  ("missing-photometry-flag", po::value<double>(),
-        "Set the flag for the missing flux, default value: -99");
+              "The directory where the likelihood grids are stored");
 
   options.add(PhotometricCorrectionConfiguration::getProgramOptions());
   options.add(PhotometryCatalogConfiguration::getProgramOptions());
