@@ -6,6 +6,7 @@
 
 #include <tuple>
 #include "ElementsKernel/Exception.h"
+#include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/LikelihoodGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
@@ -27,17 +28,21 @@ SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_c
 }
 
 SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectionMap& pc_map,
-                                        const SourceCatalog::Photometry source_phot) {
+                                        const SourceCatalog::Photometry& source_phot) {
   std::shared_ptr<std::vector<std::string>> filter_names_ptr {new std::vector<std::string>{}};
   std::vector<SourceCatalog::FluxErrorPair> fluxes {};
   for (auto iter = source_phot.begin(); iter != source_phot.end(); ++iter) {
+    SourceCatalog::FluxErrorPair new_flux_error {*iter};
     auto filter_name = iter.filterName();
-    auto pc = pc_map.find(filter_name);
-    if (pc == pc_map.end()) {
-      throw Elements::Exception() << "Source does not contain photometry for " << filter_name;
+    if (!new_flux_error.missing_photometry_flag) {
+      auto pc = pc_map.find(filter_name);
+      if (pc == pc_map.end()) {
+        throw Elements::Exception() << "Source does not contain photometry for " << filter_name;
+      }
+      new_flux_error.flux *= (*pc).second;
     }
     filter_names_ptr->push_back(std::move(filter_name));
-    fluxes.emplace_back((*pc).second * (*iter).flux, (*iter).error);
+    fluxes.emplace_back(new_flux_error);
   }
   return SourceCatalog::Photometry{filter_names_ptr, std::move(fluxes)};
 }
