@@ -52,6 +52,12 @@ FitTemplatesConfiguration::FitTemplatesConfiguration(const std::map<std::string,
     checkGridPhotometriesMatch(getPhotometryGridInfo().filter_names,
                                m_options["filter-name-mapping"].as<std::vector<std::string>>());
   }
+  
+  // Check that we have photometric corrections for all the filters
+  if (!m_options["filter-name-mapping"].empty()) {
+    checkHaveAllCorrections(getPhotometricCorrectionMap(),
+                            m_options["filter-name-mapping"].as<std::vector<std::string>>());
+  }
 }
 
 class MultiOutputHandler : public PhzOutput::OutputHandler {

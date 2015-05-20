@@ -17,6 +17,9 @@ namespace PhzConfiguration {
 void checkGridPhotometriesMatch(const std::vector<XYDataset::QualifiedName>& grid_names,
                                 const std::vector<std::string>& mapping_list);
 
+void checkHaveAllCorrections(const PhzDataModel::PhotometricCorrectionMap& phot_corr_map,
+                             const std::vector<std::string>& mapping_list);
+
 }
 }
 

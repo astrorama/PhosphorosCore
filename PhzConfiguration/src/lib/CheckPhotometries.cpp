@@ -11,6 +11,7 @@ using boost::regex_match;
 using boost::smatch;
 #include "ElementsKernel/Logging.h"
 #include "ElementsKernel/Exception.h"
+#include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "CheckPhotometries.h"
 
 namespace Euclid {
@@ -36,6 +37,20 @@ void checkGridPhotometriesMatch(const std::vector<XYDataset::QualifiedName>& gri
   
   for (auto& filter_name : grid_filters) {
     logger.warn() << "Ignoring model photometry " << filter_name.qualifiedName() << " (not in catalog)";
+  }
+}
+
+void checkHaveAllCorrections(const PhzDataModel::PhotometricCorrectionMap& phot_corr_map,
+                             const std::vector<std::string>& mapping_list) {
+  for (auto& mapping : mapping_list) {
+    smatch match_res;
+    regex expr {"\\s*([^\\s]+).*"};
+    regex_match(mapping, match_res, expr);
+    auto filter_name = match_res.str(1);
+    if (phot_corr_map.find(filter_name) == phot_corr_map.end()) {
+      throw Elements::Exception() << "Missing photometric correction value for "
+                                  << filter_name << " filter";
+    }
   }
 }
 
