@@ -8,7 +8,6 @@
 #include <vector>
 #include "MathUtils/interpolation/interpolation.h"
 #include "PhzModeling/MeiksinIgmFunctor.h"
-#include "PowerFunctions.h"
 
 namespace Euclid {
 namespace PhzModeling {
@@ -72,7 +71,7 @@ std::unique_ptr<MathUtils::Function> blue_values = MathUtils::interpolate(
 );
 
 double ta(double zn) {
-  return (zn <= 4) ? (0.00211 * (*pow_3_7)(1.+zn)) : (0.00058 * (*pow_4_5)(1.+zn));
+  return (zn <= 4) ? (0.00211 * pow(1.+zn, 3.7)) : (0.00058 * pow(1.+zn, 4.5));
 }
 
 double t_lyman_series(double z, double l) {
@@ -90,11 +89,7 @@ double t_lyman_series(double z, double l) {
       return t;
     }
     zn = (l / *l_iter) - 1.;
-    if (zn <= 3.) {
-      t += ta(zn) * *c_iter * (*pow_1o3)(0.25*(1+zn));
-    } else {
-      t += ta(zn) * *c_iter * (*pow_1o6)(0.25*(1+zn));
-    }
+    t += ta(zn) * *c_iter * std::pow(0.25*(1+zn), (zn<=3 ? 1./3. : 1./6.));
   }
   // n=6-9
   for (auto l_iter=lyman_lambda.begin()+4, c_iter=lyman_coef_6_9.begin();
@@ -103,7 +98,7 @@ double t_lyman_series(double z, double l) {
       return t;
     }
     zn = (l / *l_iter) - 1.;
-    t += ta(zn) * *c_iter * (*pow_1o3)(0.25*(1+zn));
+    t += ta(zn) * *c_iter * std::pow(0.25*(1+zn), 1./3.);
   }
   // n=10-31
   int n = 10;
@@ -112,7 +107,7 @@ double t_lyman_series(double z, double l) {
       return t;
     }
     zn = (l / *l_iter) - 1.;
-    double ttheta = ta(zn) * 0.0283 * (*pow_1o3)(0.25*(1+zn));
+    double ttheta = ta(zn) * lyman_coef_6_9.back() * std::pow(0.25*(1+zn), 1./3.);
     t += ttheta * 720. / (n * (n*n - 1.));
   }
   return t;
@@ -133,15 +128,10 @@ double t_lls(double z, double l) {
   }
   double sum = 0.;
   for (int n=1; n<=11; ++n) {
-    double temp = 0.5 / (3*n-2.5) / (n-0.5) / n_factorial[n] *
-           (std::pow(1+z, 2.5-3*n) * std::pow(l_div, 3*n) - (*pow_2_5)(l_div));
-    if (n % 2) {
-      sum += temp;
-    } else {
-      sum -= temp;
-    }
+    sum += 0.5 * std::pow(-1, n) / (3*n-2.5) / (n-0.5) / n_factorial[n] *
+           (std::pow(1+z, 2.5-3*n) * std::pow(l_div, 3*n) - std::pow(l_div, 2.5));
   }
-  return 0.443113462449 * ((1+z) * std::pow(l_div, 1.5) - (*pow_2_5)(l_div)) - 0.25 * sum;
+  return 0.443113462449 * ((1+z) * std::pow(l_div, 1.5) - std::pow(l_div, 2.5)) - 0.25 * sum;
 }
 
 XYDataset::XYDataset MeiksinIgmFunctor::operator()(const XYDataset::XYDataset& sed,

@@ -8,7 +8,6 @@
 #include <vector>
 #include "MathUtils/interpolation/interpolation.h"
 #include "PhzModeling/InoueIgmFunctor.h"
-#include "PowerFunctions.h"
 
 namespace Euclid {
 namespace PhzModeling {
@@ -156,11 +155,11 @@ double t_lyman_series_laf(double z, double l) {
     }
     double l_div = l / *l_iter;
     if (l < 2.2 * *l_iter) {
-      t += *a1_iter * (*pow_1_2)(l_div);
+      t += *a1_iter * std::pow(l_div, 1.2);
     } else if (l < 5.7 * *l_iter) {
-      t += *a2_iter * (*pow_3_7)(l_div);
+      t += *a2_iter * std::pow(l_div, 3.7);
     } else {
-      t += *a3_iter * (*pow_5_5)(l_div);
+      t += *a3_iter * std::pow(l_div, 5.5);
     }
   }
   return t;
@@ -187,20 +186,20 @@ double t_lyman_cont_laf(double z, double l) {
   if (l <= 912. * (1.+z)) {
     double l_div = l / 912.;
     if (z < 1.2) {
-      return 0.325 * ((*pow_1_2)(l_div) - (*pow_m0_9)(1+z) * (*pow_2_1)(l_div));
+      return 0.325 * (std::pow(l_div, 1.2) - std::pow(1+z, -0.9) * std::pow(l_div, 2.1));
     } else if (z < 4.7) {
       if (l < 2.2 * 912.) {
-        return (2.55E-2 * (*pow_1_6)(1+z) - .25) * (*pow_2_1)(l_div) + .325 * (*pow_1_2)(l_div);
+        return 2.55E-2 * std::pow(1+z, 1.6) * std::pow(l_div, 2.1) + .325 * std::pow(l_div, 1.2) - .25 * std::pow(l_div, 2.1);
       } else {
-        return 2.55E-2 * ((*pow_1_6)(1+z) * (*pow_2_1)(l_div) - (*pow_3_7)(l_div));
+        return 2.55E-2 * (std::pow(1+z, 1.6) * std::pow(l_div, 2.1) - std::pow(l_div, 3.7));
       }
     } else {
       if (l < 2.2 * 912.) {
-        return (5.22E-4 * (*pow_3_4)(1+z) - 3.14E-2) * (*pow_2_1)(l_div) + .325 * (*pow_1_2)(l_div);
+        return 5.22E-4 * std::pow(1+z, 3.4) * std::pow(l_div, 2.1) + .325 * std::pow(l_div, 1.2) - 3.14E-2 * std::pow(l_div, 2.1);
       } else if (l < 5.7 * 912.) {
-        return (5.22E-4 * (*pow_3_4)(1+z) + .218) * (*pow_2_1)(l_div) - 2.55E-2 * (*pow_3_7)(l_div);
+        return 5.22E-4 * std::pow(1+z, 3.4) * std::pow(l_div, 2.1) + .218 * std::pow(l_div, 2.1) - 2.55E-2 * std::pow(l_div, 3.7);
       } else {
-        return 5.22E-4 * ((*pow_3_4)(1+z) * (*pow_2_1)(l_div) - (*pow_5_5)(l_div));
+        return 5.22E-4 * (std::pow(1+z, 3.4) * std::pow(l_div, 2.1) - std::pow(l_div, 5.5));
       }
     }
   }
@@ -211,12 +210,12 @@ double t_lyman_cont_dla(double z, double l) {
   if (l <= 912. * (1.+z)) {
     double l_div = l / 912.;
     if (z < 2.) {
-      return .211 * (1+z)*(1+z) - 7.66E-2 * (*pow_2_3)(1+z) * (*pow_m0_3)(l_div) - .135 * l_div * l_div;
+      return .211 * std::pow(1+z, 2) - 7.66E-2 * std::pow(1+z, 2.3) * std::pow(l_div, -.3) - .135 * l_div * l_div;
     } else {
       if (l < 3. * 912.) {
-        return .634 + 4.7E-2 * (1+z)*(1+z)*(1+z) - (1.78E-2 * (*pow_3_3)(1+z) + .291) * (*pow_m0_3)(l_div) - .135 * l_div * l_div;
+        return .634 + 4.7E-2 * std::pow(1+z, 3) - 1.78E-2 * std::pow(1+z, 3.3) * std::pow(l_div, -.3) - .135 * l_div * l_div - .291 * std::pow(l_div, -.3);
       } else {
-        return 4.7E-2 * (1+z)*(1+z)*(1+z) - 1.78E-2 * (*pow_3_3)(1+z) * (*pow_m0_3)(l_div) - 2.92E-2 * l_div*l_div*l_div;
+        return 4.7E-2 * std::pow(1+z, 3) - 1.78E-2 * std::pow(1+z, 3.3) * std::pow(l_div, -.3) - 2.92E-2 * std::pow(l_div, 3);
       }
     }
   }
