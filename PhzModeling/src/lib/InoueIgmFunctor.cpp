@@ -6,8 +6,13 @@
 
 #include <cmath>
 #include <vector>
+#include <map>
+#include <limits>
+#include <mutex>
 #include "MathUtils/interpolation/interpolation.h"
 #include "PhzModeling/InoueIgmFunctor.h"
+
+#include <iostream>
 
 namespace Euclid {
 namespace PhzModeling {
@@ -222,24 +227,62 @@ double t_lyman_cont_dla(double z, double l) {
   return 0.;
 }
 
-XYDataset::XYDataset InoueIgmFunctor::operator()(const XYDataset::XYDataset& sed,
-                                                      double z) const {
+static std::unique_ptr<MathUtils::Function> buildIgmTransmissionFunc(double z) {
+  std::vector<double> x_list {};
+  std::vector<double> y_list {};
+  
+  // We set all the values before the minimum to have the same value (blue fix)
   double min_step = (*min_lambda)(z);
   double min_t = (*min_taueff)(z);
-  double one_step = lyman_lambda[0] * (1+z);
-  std::vector<std::pair<double, double>> absorbed_values {};
-  for (auto& sed_pair : sed) {
-    double new_value = sed_pair.second;
-    if (sed_pair.first <= min_step) {
-      new_value *= min_t;
-    } else if (sed_pair.first <= one_step) {
-      double t = t_lyman_series_laf(z, sed_pair.first);
-      t += t_lyman_series_dla(z, sed_pair.first);
-      t += t_lyman_cont_laf(z, sed_pair.first);
-      t += t_lyman_cont_dla(z, sed_pair.first);
-      new_value *= std::exp(-t);
+  x_list.push_back(std::numeric_limits<double>::lowest());
+  y_list.push_back(min_t);
+  x_list.push_back(min_step);
+  y_list.push_back(min_t);
+  
+  double max_step = lyman_lambda[0]*(1+z);
+  double step = (max_step - min_step) / 1000.;
+  std::size_t next_line = lyman_lambda.size() - 1;
+  for (double x = min_step + step; x < max_step; x += step) {
+    if (x >= lyman_lambda[next_line]*(1+z)) {
+      x = lyman_lambda[next_line]*(1+z);
+      --next_line;
     }
-    absorbed_values.emplace_back(sed_pair.first, new_value);
+    x_list.push_back(x);
+    
+    double t = t_lyman_series_laf(z, x);
+    t += t_lyman_series_dla(z, x);
+    t += t_lyman_cont_laf(z, x);
+    t += t_lyman_cont_dla(z, x);
+    y_list.push_back(std::exp(-t));
+  }
+  
+  // We set all the values after the first Lyman emission to one
+  x_list.push_back(max_step);
+  y_list.push_back(1.);
+  x_list.push_back(std::numeric_limits<double>::max());
+  y_list.push_back(1.);
+  
+  return MathUtils::interpolate(x_list, y_list, MathUtils::InterpolationType::LINEAR);
+}
+
+static std::map<double, std::unique_ptr<MathUtils::Function>> igm_transmission_map {};
+static std::mutex igm_func_mutex {};
+
+static MathUtils::Function& getIgmTransmissionFunc(double z) {
+  std::lock_guard<std::mutex> guard {igm_func_mutex};
+  auto& func_ptr = igm_transmission_map[z];
+  if (func_ptr == nullptr) {
+    func_ptr = buildIgmTransmissionFunc(z);
+  }
+  return *func_ptr;
+}
+
+XYDataset::XYDataset InoueIgmFunctor::operator()(const XYDataset::XYDataset& sed,
+                                                      double z) const {
+  std::vector<std::pair<double, double>> absorbed_values {};
+  MathUtils::Function& igm_func = getIgmTransmissionFunc(z);
+  for (auto& sed_pair : sed) {
+    absorbed_values.emplace_back(sed_pair.first, sed_pair.second * igm_func(sed_pair.first));
   }
   return XYDataset::XYDataset {std::move(absorbed_values)};
 }
