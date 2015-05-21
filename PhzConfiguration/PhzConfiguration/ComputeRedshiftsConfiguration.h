@@ -1,11 +1,11 @@
 /**
- * @file FitTemplatesConfiguration.h
+ * @file ComputeRedshiftsConfiguration.h
  * @date December 3, 2014
  * @author Nikolaos Apostolakos
  */
 
-#ifndef PHZCONFIGURATION_FITTEMPLATESCONFIGURATION_H
-#define	PHZCONFIGURATION_FITTEMPLATESCONFIGURATION_H
+#ifndef PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIGURATION_H
+#define	PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIGURATION_H
 
 #include <map>
 #include <string>
@@ -21,9 +21,9 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 /**
- * @class FitTemplatesConfiguration
+ * @class ComputeRedshiftsConfiguration
  *
- * @brief Class defining the input configuration of the FitTemplates executable
+ * @brief Class defining the input configuration of the ComputeRedshifts executable
  *
  * @details
  * It defines all the configuration required for the following inputs:
@@ -32,7 +32,7 @@ namespace PhzConfiguration {
  * - Model photometry grid
  * and it adds the required configuration for the output of the executable.
  */
-class FitTemplatesConfiguration : virtual public PriorConfiguration,
+class ComputeRedshiftsConfiguration : virtual public PriorConfiguration,
                                   public PhotometricCorrectionConfiguration,
                                   public PhotometryCatalogConfiguration,
                                   public PhotometryGridConfiguration {
@@ -41,13 +41,13 @@ public:
 
   /**
    * @brief
-   * Returns the program options for the FitTemplates executable
+   * Returns the program options for the ComputeRedshifts executable
    *
    * @details
    * The returned options are the ones defined by the PhotometricCorrectionConfiguration,
    * the PhotometryCatalogConfiguration  and the PhotometryGridConfiguration,
    * plus the parameters:
-   * 
+   *
    * - output-catalog-file   : the filename of the file to export the PHZ catalog
    * - output-catalog-format : the format of the PHZ catalog (ASCII, FITS)
    * - output-pdf-file       : the filename of the FITS file for the PDFs storage
@@ -61,23 +61,23 @@ public:
 
   /**
    * @brief
-   * Constructs a new FitTemplatesConfiguration instance, for the given options
+   * Constructs a new ComputeRedshiftsConfiguration instance, for the given options
    *
    * @param options
    *    A map with the options and their values
    */
-  FitTemplatesConfiguration(const std::map<std::string,
+  ComputeRedshiftsConfiguration(const std::map<std::string,
                               boost::program_options::variable_value>& options);
-  
+
    /**
    * @brief destructor.
    */
-   virtual ~FitTemplatesConfiguration()=default;
+   virtual ~ComputeRedshiftsConfiguration()=default;
 
   /**
    * @brief
    * Returns the PhzOutput::OutputHandler to be used for producing the output of
-   * the FitTemplates executable
+   * the ComputeRedshifts executable
    *
    * @dtails
    * The output handler currently returned is of the type PhzOutput::BestModelCatalog
@@ -87,7 +87,7 @@ public:
    * The handler to use for storing the output
    */
   std::unique_ptr<PhzOutput::OutputHandler> getOutputHandler();
-  
+
   PhzLikelihood::CatalogHandler::MarginalizationFunction getMarginalizationFunc();
 
 private:
@@ -99,5 +99,5 @@ private:
 } // end of namespace PhzConfiguration
 } // end of namespace Euclid
 
-#endif	/* PHZCONFIGURATION_FITTEMPLATESCONFIGURATION_H */
+#endif	/* PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIGURATION_H */
 

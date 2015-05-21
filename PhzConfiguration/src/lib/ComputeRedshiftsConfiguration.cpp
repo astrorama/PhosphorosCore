@@ -1,5 +1,5 @@
-/** 
- * @file FitTemplatesConfiguration.cpp
+/**
+ * @file ComputeRedshiftsConfiguration.cpp
  * @date December 3, 2014
  * @author Nikolaos Apostolakos
  */
@@ -10,7 +10,7 @@
 #include "PhzLikelihood/SumMarginalizationFunctor.h"
 #include "PhzLikelihood/MaxMarginalizationFunctor.h"
 #include "PhzLikelihood/BayesianMarginalizationFunctor.h"
-#include "PhzConfiguration/FitTemplatesConfiguration.h"
+#include "PhzConfiguration/ComputeRedshiftsConfiguration.h"
 #include "PhzOutput/LikelihoodHandler.h"
 #include "CheckPhotometries.h"
 
@@ -19,7 +19,7 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
-po::options_description FitTemplatesConfiguration::getProgramOptions() {
+po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
   po::options_description options {"Fit Templates options"};
 
   options.add_options()
@@ -41,18 +41,18 @@ po::options_description FitTemplatesConfiguration::getProgramOptions() {
   return options;
 }
 
-FitTemplatesConfiguration::FitTemplatesConfiguration(const std::map<std::string, po::variable_value>& options)
+ComputeRedshiftsConfiguration::ComputeRedshiftsConfiguration(const std::map<std::string, po::variable_value>& options)
           : PriorConfiguration(), CatalogConfiguration(options), PhotometricCorrectionConfiguration(options),
             PhotometryCatalogConfiguration(options), PhotometryGridConfiguration(options) {
   m_options = options;
-  
+
   // Check that the given grid contains photometries for all the filters we
   // have fluxes in the catalog
   if (!m_options["filter-name-mapping"].empty()) {
     checkGridPhotometriesMatch(getPhotometryGridInfo().filter_names,
                                m_options["filter-name-mapping"].as<std::vector<std::string>>());
   }
-  
+
   // Check that we have photometric corrections for all the filters
   if (!m_options["filter-name-mapping"].empty()) {
     checkHaveAllCorrections(getPhotometricCorrectionMap(),
@@ -76,7 +76,7 @@ private:
 	std::vector<std::unique_ptr<PhzOutput::OutputHandler>> m_handlers;
 };
 
-std::unique_ptr<PhzOutput::OutputHandler> FitTemplatesConfiguration::getOutputHandler() {
+std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfiguration::getOutputHandler() {
   std::unique_ptr<MultiOutputHandler> result {new MultiOutputHandler{}};
   if (!m_options["output-catalog-file"].empty()) {
     std::string out_file = m_options["output-catalog-file"].as<std::string>();
@@ -104,7 +104,7 @@ std::unique_ptr<PhzOutput::OutputHandler> FitTemplatesConfiguration::getOutputHa
   return std::unique_ptr<PhzOutput::OutputHandler>{result.release()};
 }
 
-PhzLikelihood::SourcePhzFunctor::MarginalizationFunction FitTemplatesConfiguration::getMarginalizationFunc() {
+PhzLikelihood::SourcePhzFunctor::MarginalizationFunction ComputeRedshiftsConfiguration::getMarginalizationFunc() {
   if (m_options["marginalization-type"].empty()) {
     throw Elements::Exception() << "Missing mandatory parameter marginalization-type";
   }
@@ -117,7 +117,7 @@ PhzLikelihood::SourcePhzFunctor::MarginalizationFunction FitTemplatesConfigurati
   if (m_options["marginalization-type"].as<std::string>() == "BAYESIAN") {
     return PhzLikelihood::BayesianMarginalizationFunctor{};
   }
-  throw Elements::Exception() << "Unknown marginalization type \"" 
+  throw Elements::Exception() << "Unknown marginalization type \""
                     << m_options["marginalization-type"].as<std::string>() << "\"";
 }
 
