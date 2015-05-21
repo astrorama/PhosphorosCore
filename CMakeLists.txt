@@ -7,4 +7,4 @@ find_package(ElementsProject)
 #---------------------------------------------------------------
 
 # Declare project name and version
-elements_project(PhosphorosCore 0.3 USE Alexandria 2.3 Elements 3.6)
+elements_project(PhosphorosCore 0.3 USE Alexandria 2.3 Elements 3.5)
