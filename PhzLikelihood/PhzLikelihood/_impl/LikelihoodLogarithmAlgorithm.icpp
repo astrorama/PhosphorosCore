@@ -33,9 +33,9 @@ void LikelihoodLogarithmAlgorithm::operator()(const SourceCatalog::Photometry& s
   
   // Calculate the natural logarithm of the likelihood for each model and populate the output
   for (; model != model_end; ++model, ++likelihood_log, ++scale_factor) {
-    double scale = m_scale_factor_calc(ordered_source_phot.begin(), ordered_source_phot.end(), model->begin());
-    *likelihood_log = m_likelihood_log_calc(ordered_source_phot.begin(), ordered_source_phot.end(), model->begin(), scale);
-    *scale_factor = scale * 1E-17; // We convert erg/s/cm^2 to micro-Jansky
+    *scale_factor = m_scale_factor_calc(ordered_source_phot.begin(), ordered_source_phot.end(), model->begin());
+    *likelihood_log = m_likelihood_log_calc(ordered_source_phot.begin(), ordered_source_phot.end(), model->begin(), *scale_factor);
+//    *scale_factor *= 1E-17; // We convert erg/s/cm^2 to micro-Jansky
   }
 }
 
