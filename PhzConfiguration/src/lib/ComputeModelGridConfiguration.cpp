@@ -1,5 +1,5 @@
 /*
- * BuildTemplatesConfiguration.cpp
+ * ComputeModelGridConfiguration.cpp
  *
  *  Created on: Nov 5, 2014
  *      Author: Nicolas Morisset
@@ -12,9 +12,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
+#include "../../PhzConfiguration/ComputeModelGridConfiguration.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzConfiguration/BuildTemplatesConfiguration.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzUtils/FileUtils.h"
@@ -27,7 +27,7 @@ namespace PhzConfiguration {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
-BuildTemplatesConfiguration::BuildTemplatesConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
+ComputeModelGridConfiguration::ComputeModelGridConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
          : ParameterSpaceConfiguration(options), FilterConfiguration(options), IgmConfiguration(options) {
 
   m_options = options;
@@ -40,7 +40,7 @@ BuildTemplatesConfiguration::BuildTemplatesConfiguration(const std::map<std::str
 
 }
 
-po::options_description BuildTemplatesConfiguration::getProgramOptions() {
+po::options_description ComputeModelGridConfiguration::getProgramOptions() {
 
   boost::program_options::options_description options {"Build Templates options"};
 
@@ -56,7 +56,7 @@ po::options_description BuildTemplatesConfiguration::getProgramOptions() {
 }
 
 
-BuildTemplatesConfiguration::OutputFunction BuildTemplatesConfiguration::getOutputFunction() {
+ComputeModelGridConfiguration::OutputFunction ComputeModelGridConfiguration::getOutputFunction() {
   return [this](const PhzDataModel::PhotometryGrid& grid) {
     auto logger = Elements::Logging::getLogger("PhzOutput");
     auto filename = m_options["output-photometry-grid"].as<std::string>();

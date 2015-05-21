@@ -1,5 +1,5 @@
 /*
- * BuildTemplatesConfiguration_test.cpp
+ * ComputeModelGridConfiguration_test.cpp
  *
  *  Created on: Nov 7, 2014
  *      Author: Nicolas Morisset
@@ -15,11 +15,11 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/filesystem.hpp>
 
+#include "../../PhzConfiguration/ComputeModelGridConfiguration.h"
 #include "ElementsKernel/Temporary.h"
 #include "ElementsKernel/Real.h"
 #include "ElementsKernel/Exception.h"
 #include "PhzDataModel/serialization/PhotometryGrid.h"
-#include "PhzConfiguration/BuildTemplatesConfiguration.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 
@@ -27,7 +27,7 @@ namespace po = boost::program_options;
 namespace cf = Euclid::PhzConfiguration;
 namespace fs = boost::filesystem;
 
-struct BuildTemplatesConfiguration_Fixture {
+struct ComputeModelGridConfiguration_Fixture {
 
   std::vector<double> zs{0.0,0.1};
   std::vector<double> ebvs{0.0,0.001};
@@ -52,29 +52,29 @@ struct BuildTemplatesConfiguration_Fixture {
 
   std::map<std::string, po::variable_value> options_map;
 
-  BuildTemplatesConfiguration_Fixture() {
+  ComputeModelGridConfiguration_Fixture() {
 
   }
-  ~BuildTemplatesConfiguration_Fixture() {
+  ~ComputeModelGridConfiguration_Fixture() {
   }
 
 };
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (BuildTemplatesConfiguration_test)
+BOOST_AUTO_TEST_SUITE (ComputeModelGridConfiguration_test)
 
 //-----------------------------------------------------------------------------
 // Test the getProgramOptions function for filter-root-path
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, BuildTemplatesConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, ComputeModelGridConfiguration_Fixture) {
 
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getProgramOptions function");
   BOOST_TEST_MESSAGE(" ");
 
-  auto option_desc = cf::BuildTemplatesConfiguration::getProgramOptions();
+  auto option_desc = cf::ComputeModelGridConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc{};
 
   desc = option_desc.find_nothrow("output-photometry-grid", false);
@@ -86,7 +86,7 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, BuildTemplatesConfigura
 // Test the contructor
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(constructor_exception_test, BuildTemplatesConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(constructor_exception_test, ComputeModelGridConfiguration_Fixture) {
 
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the constructor exception");
@@ -100,7 +100,7 @@ BOOST_FIXTURE_TEST_CASE(constructor_exception_test, BuildTemplatesConfiguration_
   fs::path  path_filename = test_file/"no_write_permission.dat";
   options_map["output-photometry-grid"].value() = path_filename.string();
 
-  BOOST_CHECK_THROW(cf::BuildTemplatesConfiguration cpgc(options_map), Elements::Exception);
+  BOOST_CHECK_THROW(cf::ComputeModelGridConfiguration cpgc(options_map), Elements::Exception);
 
 }
 
@@ -108,7 +108,7 @@ BOOST_FIXTURE_TEST_CASE(constructor_exception_test, BuildTemplatesConfiguration_
 // Test the directories creation
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(directory_test, BuildTemplatesConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(directory_test, ComputeModelGridConfiguration_Fixture) {
 
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the directory creation in the constructor");
@@ -117,7 +117,7 @@ BOOST_FIXTURE_TEST_CASE(directory_test, BuildTemplatesConfiguration_Fixture) {
   fs::path test_file = temp_dir.path()/"test/directory/creation/test_writing_binary_file.dat";
   options_map["output-photometry-grid"].value() = test_file.string();
 
-  cf::BuildTemplatesConfiguration cpgc(options_map);
+  cf::ComputeModelGridConfiguration cpgc(options_map);
 
   boost::filesystem::path fs_path(test_file);
   boost::filesystem::path dir = fs_path.parent_path();
@@ -130,7 +130,7 @@ BOOST_FIXTURE_TEST_CASE(directory_test, BuildTemplatesConfiguration_Fixture) {
 // Test the getOutputFunction
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, BuildTemplatesConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, ComputeModelGridConfiguration_Fixture) {
 
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getOutputFunction function");
@@ -144,7 +144,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, BuildTemplatesConfiguration_Fixt
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter1");
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
 
-  cf::BuildTemplatesConfiguration cpgc(options_map);
+  cf::ComputeModelGridConfiguration cpgc(options_map);
   auto output_func = cpgc.getOutputFunction();
 
   auto axes=Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);

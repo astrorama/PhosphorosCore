@@ -29,7 +29,7 @@ elements_add_unit_test(ReddeningConfiguration_test tests/src/ReddeningConfigurat
 elements_add_unit_test(ParameterSpaceConfiguration_test tests/src/ParameterSpaceConfiguration_test.cpp
                        LINK_LIBRARIES XYDataset PhzConfiguration TYPE Boost)
 
-elements_add_unit_test(BuildTemplatesConfiguration_test tests/src/BuildTemplatesConfiguration_test.cpp
+elements_add_unit_test(ComputeModelGridConfiguration_test tests/src/ComputeModelGridConfiguration_test.cpp
                        LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration PhzUtils TYPE Boost)
 
 elements_add_unit_test(PhotometryGridConfiguration_test tests/src/PhotometryGridConfiguration_test.cpp
