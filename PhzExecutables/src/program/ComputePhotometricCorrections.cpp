@@ -1,5 +1,5 @@
 /**
- * @file DeriveZeroPoints.cpp
+ * @file ComputePhotometricCorrections.cpp
  * @date January 19, 2015
  * @author Nikolaos Apostolakos
  */
@@ -9,7 +9,7 @@
 #include <boost/program_options.hpp>
 #include "ElementsKernel/ProgramHeaders.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
-#include "PhzConfiguration/DeriveZeroPointsConfiguration.h"
+#include "PhzConfiguration/ComputePhotometricCorrectionsConfiguration.h"
 #include "PhzPhotometricCorrection/PhotometricCorrectionCalculator.h"
 #include "PhzPhotometricCorrection/FindBestFitModels.h"
 #include "PhzPhotometricCorrection/CalculateScaleFactorMap.h"
@@ -20,19 +20,19 @@ using namespace Euclid;
 using namespace Euclid::PhzPhotometricCorrection;
 namespace po = boost::program_options;
 
-static Elements::Logging logger = Elements::Logging::getLogger("PhosphorosDeriveZeroPoints");
+static Elements::Logging logger = Elements::Logging::getLogger("PhosphorosComputePhotometricCorrections");
 
-class DeriveZeroPoints : public Elements::Program {
+class ComputePhotometricCorrections : public Elements::Program {
 
 public:
 
   po::options_description defineSpecificProgramOptions() override {
-    return PhzConfiguration::DeriveZeroPointsConfiguration::getProgramOptions();
+    return PhzConfiguration::ComputePhotometricCorrectionsConfiguration::getProgramOptions();
   }
 
   Elements::ExitCode mainMethod(map<string, po::variable_value>& args) override {
 
-    PhzConfiguration::DeriveZeroPointsConfiguration conf {args};
+    PhzConfiguration::ComputePhotometricCorrectionsConfiguration conf {args};
     auto catalog = conf.getCatalog();
     auto model_phot_grid = conf.getPhotometryGrid();
     auto output_func = conf.getOutputFunction();
@@ -61,4 +61,4 @@ public:
 
 };
 
-MAIN_FOR(DeriveZeroPoints)
+MAIN_FOR(ComputePhotometricCorrections)

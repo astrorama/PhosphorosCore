@@ -1,5 +1,5 @@
 /** 
- * @file DeriveZeroPointsConfiguration_test.cpp
+ * @file ComputePhotometricCorrectionsConfiguration_test.cpp
  * @date January 19, 2015
  * @author Nikolaos Apostolakos
  */
@@ -11,7 +11,7 @@
 #include "ElementsKernel/Temporary.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
-#include "PhzConfiguration/DeriveZeroPointsConfiguration.h"
+#include "PhzConfiguration/ComputePhotometricCorrectionsConfiguration.h"
 
 using namespace std;
 using namespace Euclid;
@@ -20,7 +20,7 @@ using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options; 
 namespace fs = boost::filesystem;
 
-struct DeriveZeroPointsConfiguration_Fixture {
+struct ComputePhotometricCorrectionsConfiguration_Fixture {
   
   Elements::TempDir temp_dir {};
   fs::path input_catalog = temp_dir.path()/"input_catalog.txt";
@@ -34,7 +34,7 @@ struct DeriveZeroPointsConfiguration_Fixture {
   
   map<string, po::variable_value> options_map {};
   
-  DeriveZeroPointsConfiguration_Fixture() {
+  ComputePhotometricCorrectionsConfiguration_Fixture() {
     ofstream cat_out {input_catalog.string()};
     cat_out << "# ID      Z        Z_ERR    F1      F1_ERR  F2      F2_ERR\n"
             << "# long    double   double   double  double  double  double\n"
@@ -62,7 +62,7 @@ struct DeriveZeroPointsConfiguration_Fixture {
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (DeriveZeroPointsConfiguration_test)
+BOOST_AUTO_TEST_SUITE (ComputePhotometricCorrectionsConfiguration_test)
 
 //-----------------------------------------------------------------------------
 // Test the getProgramOptions
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(getProgramOptions) {
   auto phot_grid_options = PhotometryGridConfiguration::getProgramOptions().options();
   
   // When
-  auto options = DeriveZeroPointsConfiguration::getProgramOptions();
+  auto options = ComputePhotometricCorrectionsConfiguration::getProgramOptions();
   
   // Then
   if (!options.find_nothrow("output-phot-corr-file", false)) {
@@ -110,13 +110,13 @@ BOOST_AUTO_TEST_CASE(getProgramOptions) {
 // Test the constructor throws exception if the output file parameter is not given
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(outFileNotGiven, DeriveZeroPointsConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(outFileNotGiven, ComputePhotometricCorrectionsConfiguration_Fixture) {
   
   // Given
   options_map.erase("output-phot-corr-file");
   
   // Then
-  BOOST_CHECK_THROW(DeriveZeroPointsConfiguration{options_map}, Elements::Exception);
+  BOOST_CHECK_THROW(ComputePhotometricCorrectionsConfiguration{options_map}, Elements::Exception);
   
 }
 
@@ -124,17 +124,17 @@ BOOST_FIXTURE_TEST_CASE(outFileNotGiven, DeriveZeroPointsConfiguration_Fixture) 
 // Test the constructor throws exception if the output file cannot be created
 //-----------------------------------------------------------------------------
 
-//BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, DeriveZeroPointsConfiguration_Fixture) {
+//BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, ComputePhotometricCorrectionsConfiguration_Fixture) {
 //
 //  // Given
 //  options_map["output-phot-corr-file"].value() = boost::any{temp_dir.path().string()};
 //
 //  // Then
-//  BOOST_CHECK_THROW(DeriveZeroPointsConfiguration{options_map}, Elements::Exception);
+//  BOOST_CHECK_THROW(ComputePhotometricCorrectionsConfiguration{options_map}, Elements::Exception);
 //
 //}
 
-BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, DeriveZeroPointsConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, ComputePhotometricCorrectionsConfiguration_Fixture) {
 
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the constructor exception during file creation");
@@ -149,7 +149,7 @@ BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, DeriveZeroPointsConfiguration_Fi
   fs::path  path_filename = test_file/"no_write_permission.dat";
   options_map["output-phot-corr-file"].value() = path_filename.string();
 
-  BOOST_CHECK_THROW(DeriveZeroPointsConfiguration cpgc(options_map), Elements::Exception);
+  BOOST_CHECK_THROW(ComputePhotometricCorrectionsConfiguration cpgc(options_map), Elements::Exception);
 
 }
 
@@ -158,13 +158,13 @@ BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, DeriveZeroPointsConfiguration_Fi
 // Test the getOutputFunction
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(getOutputFunction, DeriveZeroPointsConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(getOutputFunction, ComputePhotometricCorrectionsConfiguration_Fixture) {
   
   // Given
   PhzDataModel::PhotometricCorrectionMap pc_map {};
   pc_map[XYDataset::QualifiedName{"Filter1"}] = 1.;
   pc_map[XYDataset::QualifiedName{"Filter2"}] = 1.;
-  DeriveZeroPointsConfiguration conf {options_map};
+  ComputePhotometricCorrectionsConfiguration conf {options_map};
   auto out_func = conf.getOutputFunction();
   
   // When

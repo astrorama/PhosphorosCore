@@ -41,7 +41,7 @@ elements_add_unit_test(CatalogConfiguration_test tests/src/CatalogConfiguration_
 elements_add_unit_test(SpectroscopicRedshiftCatalogConfiguration_test tests/src/SpectroscopicRedshiftCatalogConfiguration_test.cpp
                        LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration TYPE Boost)
 
-elements_add_unit_test(DeriveZeroPointsConfiguration_test tests/src/DeriveZeroPointsConfiguration_test.cpp
+elements_add_unit_test(ComputePhotometricCorrectionsConfiguration_test tests/src/ComputePhotometricCorrectionsConfiguration_test.cpp
                        LINK_LIBRARIES PhzDataModel PhzConfiguration TYPE Boost)
                        
 elements_add_unit_test(PhotometricCorrectionConfiguration_test tests/src/PhotometricCorrectionConfiguration_test.cpp
