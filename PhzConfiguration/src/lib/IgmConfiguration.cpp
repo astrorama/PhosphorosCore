@@ -15,18 +15,20 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
+static const std::string IGM_ABSORPTION_TYPE {"igm-absorption-type"};
+
 po::options_description IgmConfiguration::getProgramOptions() {
   po::options_description options {"IGM absorption options"};
   options.add_options()
-  ("igm-absorption-type", po::value<std::string>(),
+  (IGM_ABSORPTION_TYPE.c_str(), po::value<std::string>(),
         "The type of IGM absorption to apply (one of OFF, MADAU, MEIKSIN, INOUE)");
   return options;
 }
 
 PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction IgmConfiguration::getIgmAbsorptionFunction() {
   auto type = getIgmAbsorptionType();
-  if (m_options["igm-absorption-type"].empty()) { 
-    throw Elements::Exception() << "Missing mandatory parameter igm-absorption-type";
+  if (m_options[IGM_ABSORPTION_TYPE].empty()) { 
+    throw Elements::Exception() << "Missing mandatory parameter " << IGM_ABSORPTION_TYPE;
   }
   if (type == "OFF") {
     return PhzModeling::NoIgmFunctor{};
@@ -40,14 +42,14 @@ PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction IgmConfiguration::getI
   if (type == "INOUE") {
     return PhzModeling::InoueIgmFunctor{};
   }
-  throw Elements::Exception() << "Unknown IGM absorption type \"" << type << "\"";
+  throw Elements::Exception() << "Unknown " << IGM_ABSORPTION_TYPE << " option \"" << type << "\"";
 }
 
 std::string IgmConfiguration::getIgmAbsorptionType() {
-  if (!m_options["igm-absorption-type"].empty()) { 
-    return m_options["igm-absorption-type"].as<std::string>();
+  if (!m_options[IGM_ABSORPTION_TYPE].empty()) { 
+    return m_options[IGM_ABSORPTION_TYPE].as<std::string>();
   }
-  throw Elements::Exception() << "Missing mandatory parameter igm-absorption-type";
+  throw Elements::Exception() << "Missing mandatory parameter " << IGM_ABSORPTION_TYPE;
 }
 
 }
