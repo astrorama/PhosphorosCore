@@ -24,6 +24,13 @@ namespace cf = Euclid::PhzConfiguration;
 
 struct ReddeningConfiguration_Fixture {
 
+  const std::string REDDENING_CURVE_ROOT_PATH {"reddening-curve-root-path"};
+  const std::string REDDENING_CURVE_GROUP {"reddening-curve-group"};
+  const std::string REDDENING_CURVE_EXCLUDE {"reddening-curve-exclude"};
+  const std::string REDDENING_CURVE_NAME {"reddening-curve-name"};
+  const std::string EBV_RANGE {"ebv-range"};
+  const std::string EBV_VALUE {"ebv-value"};
+
   std::string group { "reddening/CAL" };
   // Do not forget the "/" at the end of the base directory
   Elements::TempDir temp_dir;
@@ -69,12 +76,12 @@ struct ReddeningConfiguration_Fixture {
     extlaw_file.close();
 
     // Fill up options
-    options_map["reddening-curve-root-path"].value() = boost::any(base_directory);
-    options_map["reddening-curve-group"].value() = boost::any(group_vector);
+    options_map[REDDENING_CURVE_ROOT_PATH].value() = boost::any(base_directory);
+    options_map[REDDENING_CURVE_GROUP].value() = boost::any(group_vector);
 
     // Ebv
     ebv_range_vector.push_back("0. 2. 0.5");
-    options_map["ebv-range"].value() = boost::any(ebv_range_vector);
+    options_map[EBV_RANGE].value() = boost::any(ebv_range_vector);
 
   }
   ~ReddeningConfiguration_Fixture() {
@@ -100,17 +107,17 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, ReddeningConfiguration_
   auto option_desc = Euclid::PhzConfiguration::ReddeningConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc{};
 
-  desc = option_desc.find_nothrow("reddening-curve-root-path", false);
+  desc = option_desc.find_nothrow(REDDENING_CURVE_ROOT_PATH, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("reddening-curve-group", false);
+  desc = option_desc.find_nothrow(REDDENING_CURVE_GROUP, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("reddening-curve-exclude", false);
+  desc = option_desc.find_nothrow(REDDENING_CURVE_EXCLUDE, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("reddening-curve-name", false);
+  desc = option_desc.find_nothrow(REDDENING_CURVE_NAME, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("ebv-range", false);
+  desc = option_desc.find_nothrow(EBV_RANGE, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("ebv-value", false);
+  desc = option_desc.find_nothrow(EBV_VALUE, false);
   BOOST_CHECK(desc != nullptr);
 
 }
@@ -181,7 +188,7 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_exclude_function_test, ReddeningConfigu
   // Reddening to be excluded and a non existant Reddening
   exclude_vector.push_back("reddening/CAL/calzetti_1");
   exclude_vector.push_back("reddening/CAL/FILE_DOES_NOT_EXIST");
-  options_map["reddening-curve-exclude"].value() = boost::any(exclude_vector);
+  options_map[REDDENING_CURVE_EXCLUDE].value() = boost::any(exclude_vector);
 
   cf::ReddeningConfiguration fconf(options_map);
   auto list = fconf.getReddeningCurveList();
@@ -203,7 +210,7 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_add_function_test, ReddeningConfigurati
 
   // Reddening to be added
   add_vector.push_back("reddening/OTHERS/ext_law");
-  options_map["reddening-curve-name"].value() = boost::any(add_vector);
+  options_map[REDDENING_CURVE_NAME].value() = boost::any(add_vector);
 
   cf::ReddeningConfiguration fconf(options_map);
   auto list = fconf.getReddeningCurveList();
@@ -228,7 +235,7 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_add_twice_function_test, ReddeningConfi
 
   // Add twice the same Reddening
   add_vector.push_back("reddening/CAL/calzetti_2");
-  options_map["reddening-curve-name"].value() = boost::any(add_vector);
+  options_map[REDDENING_CURVE_NAME].value() = boost::any(add_vector);
 
   cf::ReddeningConfiguration fconf2(options_map);
   auto list2 = fconf2.getReddeningCurveList();
@@ -270,7 +277,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_added_zvalue_function_test, ReddeningConfigur
 
   ebv_value_vector.push_back("1.8");
   ebv_value_vector.push_back("1.1");
-  options_map["ebv-value"].value() = boost::any(ebv_value_vector);
+  options_map[EBV_VALUE].value() = boost::any(ebv_value_vector);
 
   cf::ReddeningConfiguration rconf(options_map);
   auto ebv_list = rconf.getEbvList();
@@ -298,7 +305,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_more_ranges_function_test, ReddeningConfigura
   ebv_ranges_vector.push_back("3. 6. 1.");
 
 
-  options_map["ebv-range"].value() = boost::any(ebv_ranges_vector);
+  options_map[EBV_RANGE].value() = boost::any(ebv_ranges_vector);
 
   cf::ReddeningConfiguration rconf(options_map);
   auto ebv_list = rconf.getEbvList();
@@ -326,7 +333,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_forbidden_ranges_function_test, ReddeningConf
   ebv_ranges_vector.push_back("0. 2 0.5");
   ebv_ranges_vector.push_back("1.5 6. 1.");
 
-  options_map["ebv-range"].value() = boost::any(ebv_ranges_vector);
+  options_map[EBV_RANGE].value() = boost::any(ebv_ranges_vector);
 
   cf::ReddeningConfiguration rconf(options_map);
 
@@ -353,8 +360,8 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_boundaries_function_test, ReddeningConfigurat
   ebv_values_vector.push_back("3.");
   ebv_values_vector.push_back("5.5");
 
-  options_map["ebv-range"].value() = boost::any(ebv_ranges_vector);
-  options_map["ebv-value"].value() = boost::any(ebv_values_vector);
+  options_map[EBV_RANGE].value() = boost::any(ebv_ranges_vector);
+  options_map[EBV_VALUE].value() = boost::any(ebv_values_vector);
 
   cf::ReddeningConfiguration rconf(options_map);
   auto ebv_list = rconf.getEbvList();
@@ -382,7 +389,7 @@ BOOST_FIXTURE_TEST_CASE(wrong_ebv_range_function_test, ReddeningConfiguration_Fi
 
   ebv_ranges_vector.push_back("0. 2 0.5 1");
 
-  options_map["ebv-range"].value() = boost::any(ebv_ranges_vector);
+  options_map[EBV_RANGE].value() = boost::any(ebv_ranges_vector);
 
   cf::ReddeningConfiguration rconf(options_map);
 
@@ -404,7 +411,7 @@ BOOST_FIXTURE_TEST_CASE(wrong_ebv_value_function_test, ReddeningConfiguration_Fi
 
   ebv_values_vector.push_back("3. 4 6");
 
-  options_map["ebv-value"].value() = boost::any(ebv_values_vector);
+  options_map[EBV_VALUE].value() = boost::any(ebv_values_vector);
 
   cf::ReddeningConfiguration rconf(options_map);
 
@@ -427,7 +434,7 @@ BOOST_FIXTURE_TEST_CASE(wrong_characters_ebvrange_test, ReddeningConfiguration_F
 
   ebv_ranges_vector.push_back("ebv3. 4 6");
 
-  options_map["ebv-range"].value() = boost::any(ebv_ranges_vector);
+  options_map[EBV_RANGE].value() = boost::any(ebv_ranges_vector);
 
   cf::ReddeningConfiguration rconf(options_map);
 
@@ -449,7 +456,7 @@ BOOST_FIXTURE_TEST_CASE(min_max_ebvrange_test, ReddeningConfiguration_Fixture) {
 
   ebv_ranges_vector.push_back("4. 0. 0.1");
 
-  options_map["ebv-range"].value() = boost::any(ebv_ranges_vector);
+  options_map[EBV_RANGE].value() = boost::any(ebv_ranges_vector);
 
   cf::ReddeningConfiguration rconf(options_map);
 
@@ -471,7 +478,7 @@ BOOST_FIXTURE_TEST_CASE(wrong_characters_ebvvalue_test, ReddeningConfiguration_F
 
   ebv_values_vector.push_back("3.w");
 
-  options_map["ebv-value"].value() = boost::any(ebv_values_vector);
+  options_map[EBV_VALUE].value() = boost::any(ebv_values_vector);
 
   cf::ReddeningConfiguration rconf(options_map);
 
