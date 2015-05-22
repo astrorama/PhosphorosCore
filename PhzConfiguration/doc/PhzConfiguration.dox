@@ -193,7 +193,7 @@ In this case, the qualify name is the filename without extension.
 This class defines the sed parameter options as follows:
 
 \code{.cpp}
-Photometric sed options:
+SED templates options:
   --sed-root-path arg   The directory containing the sed datasets, organized in
                         folders
   --sed-group arg       Use all the seds in the given group and subgroups
@@ -209,7 +209,7 @@ So we do not describe here these functions, see the FilterConfiguration class.
 This class defines the redshift parameter options as follows:
 
 \code{.cpp}
-Photometric redshift option:
+Redshift options:
   --z-range arg         Redshift range: minimum maximum step
   --z-value arg         A single z value
 \endcode
@@ -247,7 +247,7 @@ The ouput is :
 This class defines the Reddening parameter options as follows:
 
 \code{.cpp}
-Photometric reddening options:
+Extinction options:
   --reddening-curve-root-path arg The directory containing the reddening curves
   --reddening-curve-group arg     Use all the reddening curves in the given 
                                   group and subgroups
@@ -339,7 +339,7 @@ options available are the following:
 \code{.cpp}
 Photometric combined options:
 
-Photometric sed options:
+SED templates options:
   --sed-root-path arg              The directory containing the sed datasets, 
                                    organized in folders
   --sed-group arg                  Use all the seds in the given group and 
@@ -347,11 +347,11 @@ Photometric sed options:
   --sed-exclude arg                Exclude a sed name
   --sed-name arg                   A single sed name
 
-Photometric redshift option:
+Redshift options:
   --z-range arg                    Redshift range: minimum maximum step
   --z-value arg                    A single z value
 
-Photometric reddening options:
+Extinction options:
   --reddening-curve-root-path arg  The directory containing the reddening 
                                    curves
   --reddening-curve-group arg      Use all the reddening curves in the given 
@@ -393,91 +393,93 @@ ParameterSpaceConfiguration option name : ebv-range
 ParameterSpaceConfiguration option name : ebv-value
 \endcode
 
-\section CreatePhotometryGridConfiguration_CreatePhotometryGridConfiguration The CreatePhotometryGridConfiguration Class
+\section ComputeModelGridConfiguration_ComputeModelGridConfiguration The ComputeModelGridConfiguration Class
 
-This class defines the Photometry Grid parameter option, \b binary-photometry-grid
+This class defines the output Model Grid parameter option, \b output-model-grid
 and inherits from the one of ParameterSpaceConfiguration and FilterConfiguration
-options. It also provides a function for writing a grid in a binary file.
+options. It also provides a function for writing the grid in a binary file.
 The options available for this class are:
 
 \code{.cpp}
-Create Photometry Grid options:
-  --binary-photometry-grid arg      The filename of the file to export in 
-                                    binary format the photometry grid
+Compute Model Grid options:
+  --output-model-grid arg         The filename of the file to export in binary 
+                                  format the model grid
 
-Photometric combined options:
+Parameter space options:
 
-Photometric sed options:
-  --sed-root-path arg               The directory containing the sed datasets, 
-                                    organized in folders
-  --sed-group arg                   Use all the seds in the given group and 
-                                    subgroups
-  --sed-exclude arg                 Exclude a sed name
-  --sed-name arg                    A single sed name
+SED templates options:
+  --sed-root-path arg   The directory containing the sed datasets, organized in
+                        folders
+  --sed-group arg       Use all the seds in the given group and subgroups
+  --sed-exclude arg     Exclude a sed name
+  --sed-name arg        A single sed name
 
-Photometric redshift option:
-  --z-range arg                     Redshift range: minimum maximum step
-  --z-value arg                     A single z value
+Redshift options:
+  --z-range arg         Redshift range: minimum maximum step
+  --z-value arg         A single z value
 
-Photometric reddening options:
-  --reddening-curve-root-path arg   The directory containing the reddening 
-                                    curves
-  --reddening-curve-group arg       Use all the reddening curves in the given 
-                                    group and subgroups
-  --reddening-curve-exclude arg     a single name of the reddening curve to be 
-                                    excluded
-  --reddening-curve-name arg        A single reddening curve name
-  --ebv-range arg                   E(B-V) range: minimum maximum step
-  --ebv-value arg                   A single E(B-V) value
+Extinction options:
+  --reddening-curve-root-path arg The directory containing the reddening curves
+  --reddening-curve-group arg     Use all the reddening curves in the given 
+                                  group and subgroups
+  --reddening-curve-exclude arg   a single name of the reddening curve to be 
+                                  excluded
+  --reddening-curve-name arg      A single reddening curve name
+  --ebv-range arg                 E(B-V) range: minimum maximum step
+  --ebv-value arg                 A single E(B-V) value
 
 Photometric filter options:
-  --filter-root-path arg            The directory containing the Filter 
-                                    datasets, organized in folders
-  --filter-group arg                Use all the Filters in the given group and 
-                                    subgroups
-  --filter-exclude arg              Exclude a single filter name
-  --filter-name arg                 Add a single filter name
+  --filter-root-path arg The directory containing the Filter datasets, 
+                         organized in folders
+  --filter-group arg     Use all the Filters in the given group and subgroups
+  --filter-exclude arg   Exclude a single filter name
+  --filter-name arg      Add a single filter name
+
+IGM absorption options:
+  --igm-absorption-type arg The type of IGM absorption to apply (one of OFF, 
+                            MADAU, MEIKSIN, INOUE)
+
 
 \endcode
 
 Of course, most of these options comes from the inheritance. Note the new option: 
-\b binary-photometry-grid.
+\b output-model-grid.
 
-\subsection CreatePhotometryGridConfiguration_getProgramOptions The getProgramOptions Function
+\subsection ComputeModelGridConfiguration_getProgramOptions The getProgramOptions Function
 
 This function is similar to the getProgramOptions functions already shown. 
 To use it proceed as follows:
 
 \code{.cpp}
-  auto cpgc_option_desc = Euclid::PhzConfiguration::CreatePhotometryGridConfiguration::getProgramOptions();
+  auto cpgc_option_desc = Euclid::PhzConfiguration::ComputeModelGridConfiguration::getProgramOptions();
   for(auto option : cpgc_option_desc.options()) {
-    std::cout<<"CreatePhotometryGridConfiguration option name : " << option->long_name() <<std::endl;
+    std::cout<<"ComputeModelGridConfiguration option name : " << option->long_name() <<std::endl;
   }
 \endcode
 
 This code displays all available options for this class:
 
 \code{.cpp}
-CreatePhotometryGridConfiguration option name : binary-photometry-grid
-CreatePhotometryGridConfiguration option name : sed-root-path
-CreatePhotometryGridConfiguration option name : sed-group
-CreatePhotometryGridConfiguration option name : sed-exclude
-CreatePhotometryGridConfiguration option name : sed-name
-CreatePhotometryGridConfiguration option name : z-range
-CreatePhotometryGridConfiguration option name : z-value
-CreatePhotometryGridConfiguration option name : reddening-curve-root-path
-CreatePhotometryGridConfiguration option name : reddening-curve-group
-CreatePhotometryGridConfiguration option name : reddening-curve-exclude
-CreatePhotometryGridConfiguration option name : reddening-curve-name
-CreatePhotometryGridConfiguration option name : ebv-range
-CreatePhotometryGridConfiguration option name : ebv-value
-CreatePhotometryGridConfiguration option name : filter-root-path
-CreatePhotometryGridConfiguration option name : filter-group
-CreatePhotometryGridConfiguration option name : filter-exclude
-CreatePhotometryGridConfiguration option name : filter-name
+ComputeModelGridConfiguration option name : output-model-grid
+ComputeModelGridConfiguration option name : sed-root-path
+ComputeModelGridConfiguration option name : sed-group
+ComputeModelGridConfiguration option name : sed-exclude
+ComputeModelGridConfiguration option name : sed-name
+ComputeModelGridConfiguration option name : z-range
+ComputeModelGridConfiguration option name : z-value
+ComputeModelGridConfiguration option name : reddening-curve-root-path
+ComputeModelGridConfiguration option name : reddening-curve-group
+ComputeModelGridConfiguration option name : reddening-curve-exclude
+ComputeModelGridConfiguration option name : reddening-curve-name
+ComputeModelGridConfiguration option name : ebv-range
+ComputeModelGridConfiguration option name : ebv-value
+ComputeModelGridConfiguration option name : filter-root-path
+ComputeModelGridConfiguration option name : filter-group
+ComputeModelGridConfiguration option name : filter-exclude
+ComputeModelGridConfiguration option name : filter-name
 \endcode
 
-\subsection CreatePhotometryGridConfiguration_getOutputFunction The getOutputFunction Function
+\subsection ComputeModelGridConfiguration_getOutputFunction The getOutputFunction Function
 
 This function provides a function of PhzDataModel::PhotometryGrid object and 
 stores this object in a binary file with the filename and path provided by the
@@ -512,8 +514,8 @@ In the example below we create a photometry object and we store it using the
   std::map<std::string, po::variable_value> options_map;
   options_map["binary-photometry-grid"].value() = boost::any(path_filename);
 
-  // Create the CreatePhotometryGridConfiguration object
-  Euclid::PhzConfiguration::CreatePhotometryGridConfiguration cpgc(options_map);
+  // Create the ComputeModelGridConfiguration object
+  Euclid::PhzConfiguration::ComputeModelGridConfiguration cpgc(options_map);
 
   // Get the output function
   auto output_func = cpgc.getOutputFunction();
@@ -791,13 +793,13 @@ Photometric reddening options:
  
 \endcode
 
-\subsection fullcode_CreatePhotometryGridConfiguration Code for the CreatePhotometryGridConfiguration Class
+\subsection fullcode_ComputeModelGridConfiguration Code for the ComputeModelGridConfiguration Class
 
-The \b Test_photometrygrid_class program just describes the CreatePhotometryGridConfiguration class. 
+The \b Test_photometrygrid_class program just describes the ComputeModelGridConfiguration class. 
 it supposed that you call it as follows:
 
 \code{.cpp}
-Test_photometrygrid_class --binary-photometry-grid="/tmp/test_writing_binary_file.dat"
+Test_photometrygrid_class --output-model-grid="/tmp/test_writing_binary_file.dat"
 \endcode
 
 The example code:
@@ -810,7 +812,7 @@ The example code:
 
 #include <iostream>
 #include <boost/program_options.hpp>
-#include "PhzConfiguration/CreatePhotometryGridConfiguration.h"
+#include "PhzConfiguration/ComputeModelGridConfiguration.h"
 
 namespace po = boost::program_options;
 using namespace Euclid::PhzConfiguration;
@@ -818,7 +820,7 @@ using namespace Euclid::PhzConfiguration;
 int main(int argc, char* argv[]) {
 
   // Get the options
-  auto options = CreatePhotometryGridConfiguration::getProgramOptions();
+  auto options = ComputeModelGridConfiguration::getProgramOptions();
 
   // Print the options
   std::cout << " " << std::endl;
@@ -856,8 +858,8 @@ int main(int argc, char* argv[]) {
   original_grid(0,1,0,0)=photometry_3;
   original_grid(1,1,0,0)=photometry_4;
 
-  // Create the CreatePhotometryGridConfiguration object
-  CreatePhotometryGridConfiguration cpgc(variable_map);
+  // Create the ComputeModelGridConfiguration object
+  ComputeModelGridConfiguration cpgc(variable_map);
 
   // Get the output function
   auto output_func = cpgc.getOutputFunction();
@@ -873,42 +875,44 @@ The outputs of this code shows only the options but you should have a binary
 file created under : /tmp/test_writing_binary_file.dat 
 
 \code{.cpp}
-Create Photometry Grid options:
-  --binary-photometry-grid arg      The filename of the file to export in 
-                                    binary format the photometry grid
+Compute Model Grid options:
+  --output-model-grid arg         The filename of the file to export in binary 
+                                  format the model grid
 
-Photometric combined options:
+Parameter space options:
 
-Photometric sed options:
-  --sed-root-path arg               The directory containing the sed datasets, 
-                                    organized in folders
-  --sed-group arg                   Use all the seds in the given group and 
-                                    subgroups
-  --sed-exclude arg                 Exclude a sed name
-  --sed-name arg                    A single sed name
+SED templates options:
+  --sed-root-path arg   The directory containing the sed datasets, organized in
+                        folders
+  --sed-group arg       Use all the seds in the given group and subgroups
+  --sed-exclude arg     Exclude a sed name
+  --sed-name arg        A single sed name
 
-Photometric redshift option:
-  --z-range arg                     Redshift range: minimum maximum step
-  --z-value arg                     A single z value
+Redshift options:
+  --z-range arg         Redshift range: minimum maximum step
+  --z-value arg         A single z value
 
-Photometric reddening options:
-  --reddening-curve-root-path arg   The directory containing the reddening 
-                                    curves
-  --reddening-curve-group arg       Use all the reddening curves in the given 
-                                    group and subgroups
-  --reddening-curve-exclude arg     a single name of the reddening curve to be 
-                                    excluded
-  --reddening-curve-name arg        A single reddening curve name
-  --ebv-range arg                   E(B-V) range: minimum maximum step
-  --ebv-value arg                   A single E(B-V) value
+Extinction options:
+  --reddening-curve-root-path arg The directory containing the reddening curves
+  --reddening-curve-group arg     Use all the reddening curves in the given 
+                                  group and subgroups
+  --reddening-curve-exclude arg   a single name of the reddening curve to be 
+                                  excluded
+  --reddening-curve-name arg      A single reddening curve name
+  --ebv-range arg                 E(B-V) range: minimum maximum step
+  --ebv-value arg                 A single E(B-V) value
 
 Photometric filter options:
-  --filter-root-path arg            The directory containing the Filter 
-                                    datasets, organized in folders
-  --filter-group arg                Use all the Filters in the given group and 
-                                    subgroups
-  --filter-exclude arg              Exclude a single filter name
-  --filter-name arg                 Add a single filter name
+  --filter-root-path arg The directory containing the Filter datasets, 
+                         organized in folders
+  --filter-group arg     Use all the Filters in the given group and subgroups
+  --filter-exclude arg   Exclude a single filter name
+  --filter-name arg      Add a single filter name
+
+IGM absorption options:
+  --igm-absorption-type arg The type of IGM absorption to apply (one of OFF, 
+                            MADAU, MEIKSIN, INOUE)
+
   
 \endcode
 
