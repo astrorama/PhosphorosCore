@@ -26,6 +26,12 @@ namespace cf = Euclid::PhzConfiguration;
 
 struct FilterConfiguration_Fixture {
 
+  const std::string FILTER_ROOT_PATH {"filter-root-path"};
+  const std::string FILTER_GROUP {"filter-group"};
+  const std::string FILTER_EXCLUDE {"filter-exclude"};
+  const std::string FILTER_NAME {"filter-name"};
+
+
   std::string group { "filter/MER" };
   // Do not forget the "/" at the end of the base directory
   Elements::TempDir temp_dir;
@@ -67,8 +73,8 @@ struct FilterConfiguration_Fixture {
     file3_cos.close();
 
     // Fill up options
-    options_map["filter-root-path"].value() = boost::any(base_directory);
-    options_map["filter-group"].value() = boost::any(group_vector);
+    options_map[FILTER_ROOT_PATH].value() = boost::any(base_directory);
+    options_map[FILTER_GROUP].value() = boost::any(group_vector);
 
   }
   ~FilterConfiguration_Fixture() {
@@ -94,13 +100,13 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, FilterConfiguration_Fix
   auto option_desc = Euclid::PhzConfiguration::FilterConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc{};
 
-  desc = option_desc.find_nothrow("filter-root-path", false);
+  desc = option_desc.find_nothrow(FILTER_ROOT_PATH, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("filter-group", false);
+  desc = option_desc.find_nothrow(FILTER_GROUP, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("filter-name", false);
+  desc = option_desc.find_nothrow(FILTER_NAME, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("filter-exclude", false);
+  desc = option_desc.find_nothrow(FILTER_EXCLUDE, false);
   BOOST_CHECK(desc != nullptr);
 
 }
@@ -176,7 +182,7 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_exclude_function_test, FilterConfiguration
   // Filter to be excluded and a non existant filter
   exclude_vector.push_back("filter/MER/file2");
   exclude_vector.push_back("filter/MER/FILE_DOES_NOT_EXIST");
-  options_map["filter-exclude"].value() = boost::any(exclude_vector);
+  options_map[FILTER_EXCLUDE].value() = boost::any(exclude_vector);
 
   cf::FilterConfiguration fconf(options_map);
   auto list = fconf.getFilterList();
@@ -198,7 +204,7 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_add_function_test, FilterConfiguration_Fix
 
   // Filter to be added
   add_vector.push_back("filter/COSMOS/Dataset_name_for_file3");
-  options_map["filter-name"].value() = boost::any(add_vector);
+  options_map[FILTER_NAME].value() = boost::any(add_vector);
 
   cf::FilterConfiguration fconf(options_map);
   auto list = fconf.getFilterList();
@@ -223,7 +229,7 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_add_twice_function_test, FilterConfigurati
 
   // Add twice the same filter
   add_vector.push_back("filter/MER/Dataset_name_for_file1");
-  options_map["filter-name"].value() = boost::any(add_vector);
+  options_map[FILTER_NAME].value() = boost::any(add_vector);
 
   cf::FilterConfiguration fconf2(options_map);
   auto list2 = fconf2.getFilterList();

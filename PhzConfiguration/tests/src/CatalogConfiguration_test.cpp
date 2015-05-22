@@ -24,6 +24,11 @@ namespace cf = Euclid::PhzConfiguration;
 
 struct CatalogConfiguration_fixture {
 
+  const std::string INPUT_CATALOG_FILE {"input-catalog-file"};
+  const std::string INPUT_CATALOG_FORMAT {"input-catalog-format"};
+  const std::string SOURCE_ID_COLUMN_NAME {"source-id-column-name"};
+  const std::string SOURCE_ID_COLUMN_INDEX {"source-id-column-index"};
+
   void makeFile(const std::string& file_name, const std::string& content) {
     std::ofstream test_file;
     test_file.open(file_name, std::fstream::out);
@@ -65,41 +70,41 @@ struct CatalogConfiguration_fixture {
 
     makeFile(fits_file_name, "SIMPLE  =");
 
-    options_map_name["input-catalog-file"].value() = ascii_file_name;
-    options_map_name["input-catalog-format"].value() = std::string("ASCII");
-    options_map_name["source-id-column-name"].value() = std::string("ID");
+    options_map_name[INPUT_CATALOG_FILE].value() = ascii_file_name;
+    options_map_name[INPUT_CATALOG_FORMAT].value() = std::string("ASCII");
+    options_map_name[SOURCE_ID_COLUMN_NAME].value() = std::string("ID");
 
-    options_map_id["input-catalog-file"].value() = ascii_file_name;
-    options_map_id["input-catalog-format"].value() = std::string("ASCII");
-    options_map_id["source-id-column-index"].value() = 1;
+    options_map_id[INPUT_CATALOG_FILE].value() = ascii_file_name;
+    options_map_id[INPUT_CATALOG_FORMAT].value() = std::string("ASCII");
+    options_map_id[SOURCE_ID_COLUMN_INDEX].value() = 1;
 
-    options_map_fits["input-catalog-file"].value() = ascii_file_name;
-    options_map_fits["input-catalog-format"].value() = std::string("FITS");
-    options_map_fits["source-id-column-name"].value() = std::string("ID");
+    options_map_fits[INPUT_CATALOG_FILE].value() = ascii_file_name;
+    options_map_fits[INPUT_CATALOG_FORMAT].value() = std::string("FITS");
+    options_map_fits[SOURCE_ID_COLUMN_NAME].value() = std::string("ID");
 
-    options_map_missing_file["input-catalog-format"].value() = std::string(
+    options_map_missing_file[INPUT_CATALOG_FORMAT].value() = std::string(
         "ASCII");
-    options_map_missing_file["source-id-column-name"].value() = std::string(
+    options_map_missing_file[SOURCE_ID_COLUMN_NAME].value() = std::string(
         "ID");
 
-    options_map_wrong_file["input-catalog-file"].value() = base_directory;
-    options_map_wrong_file["input-catalog-format"].value() = std::string(
+    options_map_wrong_file[INPUT_CATALOG_FILE].value() = base_directory;
+    options_map_wrong_file[INPUT_CATALOG_FORMAT].value() = std::string(
         "ASCII");
-    options_map_wrong_file["source-id-column-name"].value() = std::string("ID");
+    options_map_wrong_file[SOURCE_ID_COLUMN_NAME].value() = std::string("ID");
 
-    options_map_missing_type["input-catalog-file"].value() = ascii_file_name;
-    options_map_missing_type["source-id-column-name"].value() = std::string(
+    options_map_missing_type[INPUT_CATALOG_FILE].value() = ascii_file_name;
+    options_map_missing_type[SOURCE_ID_COLUMN_NAME].value() = std::string(
         "ID");
 
-    options_map_missing_column["input-catalog-file"].value() = ascii_file_name;
-    options_map_missing_column["input-catalog-format"].value() = std::string(
+    options_map_missing_column[INPUT_CATALOG_FILE].value() = ascii_file_name;
+    options_map_missing_column[INPUT_CATALOG_FORMAT].value() = std::string(
         "ASCII");
 
-    options_map_2_columns["input-catalog-file"].value() = ascii_file_name;
-    options_map_2_columns["input-catalog-format"].value() = std::string(
+    options_map_2_columns[INPUT_CATALOG_FILE].value() = ascii_file_name;
+    options_map_2_columns[INPUT_CATALOG_FORMAT].value() = std::string(
         "ASCII");
-    options_map_2_columns["source-id-column-name"].value() = std::string("ID");
-    options_map_2_columns["source-id-column-index"].value() = 1;
+    options_map_2_columns[SOURCE_ID_COLUMN_NAME].value() = std::string("ID");
+    options_map_2_columns[SOURCE_ID_COLUMN_INDEX].value() = 1;
   }
 
   ~CatalogConfiguration_fixture() {
@@ -124,13 +129,13 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, CatalogConfiguration_fi
   auto option_desc = cf::CatalogConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc { };
 
-  desc = option_desc.find_nothrow("input-catalog-file", false);
+  desc = option_desc.find_nothrow(INPUT_CATALOG_FILE, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("input-catalog-format", false);
+  desc = option_desc.find_nothrow(INPUT_CATALOG_FORMAT, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("source-id-column-name", false);
+  desc = option_desc.find_nothrow(SOURCE_ID_COLUMN_NAME, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("source-id-column-index", false);
+  desc = option_desc.find_nothrow(SOURCE_ID_COLUMN_INDEX, false);
   BOOST_CHECK(desc != nullptr);
 }
 
@@ -155,7 +160,7 @@ BOOST_FIXTURE_TEST_CASE(CatalogConfiguration_ctr_test, CatalogConfiguration_fixt
   fconf = cf::CatalogConfiguration(options_map_missing_column);
   auto catalog = fconf.getCatalog();
   BOOST_CHECK(catalog.find(1) != nullptr);
-  options_map_missing_column["input-catalog-file"].value() =
+  options_map_missing_column[INPUT_CATALOG_FILE].value() =
       ascii_strange_file_name;
   fconf = cf::CatalogConfiguration(options_map_missing_column);
   BOOST_CHECK_THROW(fconf.getCatalog(), std::exception);
@@ -166,11 +171,11 @@ BOOST_FIXTURE_TEST_CASE(CatalogConfiguration_ctr_test, CatalogConfiguration_fixt
   // Auto-detect type
   fconf = cf::CatalogConfiguration(options_map_missing_type);
   //   ASCII
-  options_map_missing_type["input-catalog-file"].value() =
+  options_map_missing_type[INPUT_CATALOG_FILE].value() =
       ascii_strange_file_name;
   fconf = cf::CatalogConfiguration(options_map_missing_type);
   //   FITS
-  options_map_missing_type["input-catalog-file"].value() = fits_file_name;
+  options_map_missing_type[INPUT_CATALOG_FILE].value() = fits_file_name;
   fconf = cf::CatalogConfiguration(options_map_missing_type);
   // Incomplete ?
 

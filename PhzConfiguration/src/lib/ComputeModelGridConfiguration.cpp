@@ -26,6 +26,7 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 static const std::string OUTPUT_MODEL_GRID {"output-model-grid"};
+
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
 ComputeModelGridConfiguration::ComputeModelGridConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)

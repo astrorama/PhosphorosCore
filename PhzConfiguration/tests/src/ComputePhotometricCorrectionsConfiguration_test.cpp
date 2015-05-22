@@ -4,6 +4,7 @@
  * @author Nikolaos Apostolakos
  */
 
+#include <string>
 #include <fstream>
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
@@ -20,8 +21,19 @@ using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options; 
 namespace fs = boost::filesystem;
 
+
 struct ComputePhotometricCorrectionsConfiguration_Fixture {
   
+  const std::string OUTPUT_PHOT_CORR_FILE {"output-phot-corr-file"};
+  const std::string PHOT_CORR_ITER_NO {"phot-corr-iter-no"};
+  const std::string PHOT_CORR_TOLERANCE {"phot-corr-tolerance"};
+  const std::string INPUT_CATALOG_FILE {"input-catalog-file"};
+  const std::string SOURCE_ID_COLUMN_INDEX {"source-id-column-index"};
+
+  const std::string FILTER_NAME_MAPPING {"filter-name-mapping"};
+  const std::string SPEC_Z_COLUMN_NAME {"spec-z-column-name"};
+  const std::string MODEL_GRID_FILE {"model-grid-file"};
+
   Elements::TempDir temp_dir {};
   fs::path input_catalog = temp_dir.path()/"input_catalog.txt";
   fs::path phot_grid = temp_dir.path()/"phot_grid.txt";
@@ -50,12 +62,12 @@ struct ComputePhotometricCorrectionsConfiguration_Fixture {
     boa << grid_info;
     grid_out.close();
     
-    options_map["input-catalog-file"].value() = boost::any{input_catalog.string()};
-    options_map["source-id-column-index"].value() = boost::any{1};
-    options_map["filter-name-mapping"].value() = boost::any{filter_col_mapping};
-    options_map["spec-z-column-name"].value() = string{"Z"};
-    options_map["model-grid-file"].value() = string{phot_grid.string()};
-    options_map["output-phot-corr-file"].value() = string{output_file.string()};
+    options_map[INPUT_CATALOG_FILE].value() = boost::any{input_catalog.string()};
+    options_map[SOURCE_ID_COLUMN_INDEX].value() = boost::any{1};
+    options_map[FILTER_NAME_MAPPING].value() = boost::any{filter_col_mapping};
+    options_map[SPEC_Z_COLUMN_NAME].value() = string{"Z"};
+    options_map[MODEL_GRID_FILE].value() = string{phot_grid.string()};
+    options_map[OUTPUT_PHOT_CORR_FILE].value() = string{output_file.string()};
   }
   
 };
@@ -68,7 +80,7 @@ BOOST_AUTO_TEST_SUITE (ComputePhotometricCorrectionsConfiguration_test)
 // Test the getProgramOptions
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(getProgramOptions) {
+BOOST_FIXTURE_TEST_CASE(getProgramOptions, ComputePhotometricCorrectionsConfiguration_Fixture) {
   
   // Given
   auto phot_cat_options = PhotometryCatalogConfiguration::getProgramOptions().options();
@@ -79,13 +91,13 @@ BOOST_AUTO_TEST_CASE(getProgramOptions) {
   auto options = ComputePhotometricCorrectionsConfiguration::getProgramOptions();
   
   // Then
-  if (!options.find_nothrow("output-phot-corr-file", false)) {
+  if (!options.find_nothrow(OUTPUT_PHOT_CORR_FILE, false)) {
     BOOST_ERROR("Missing option output-phot-corr-file");
   }
-  if (!options.find_nothrow("phot-corr-iter-no", false)) {
+  if (!options.find_nothrow(PHOT_CORR_ITER_NO, false)) {
     BOOST_ERROR("Missing option phot-corr-iter-no");
   }
-  if (!options.find_nothrow("phot-corr-tolerance", false)) {
+  if (!options.find_nothrow(PHOT_CORR_TOLERANCE, false)) {
     BOOST_ERROR("Missing option phot-corr-tolerance");
   }
   for (auto option : phot_cat_options) {
@@ -113,7 +125,7 @@ BOOST_AUTO_TEST_CASE(getProgramOptions) {
 BOOST_FIXTURE_TEST_CASE(outFileNotGiven, ComputePhotometricCorrectionsConfiguration_Fixture) {
   
   // Given
-  options_map.erase("output-phot-corr-file");
+  options_map.erase(OUTPUT_PHOT_CORR_FILE);
   
   // Then
   BOOST_CHECK_THROW(ComputePhotometricCorrectionsConfiguration{options_map}, Elements::Exception);
@@ -127,7 +139,7 @@ BOOST_FIXTURE_TEST_CASE(outFileNotGiven, ComputePhotometricCorrectionsConfigurat
 //BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, ComputePhotometricCorrectionsConfiguration_Fixture) {
 //
 //  // Given
-//  options_map["output-phot-corr-file"].value() = boost::any{temp_dir.path().string()};
+//  options_map[OUTPUT_PHOT_CORR_FILE].value() = boost::any{temp_dir.path().string()};
 //
 //  // Then
 //  BOOST_CHECK_THROW(ComputePhotometricCorrectionsConfiguration{options_map}, Elements::Exception);
@@ -147,7 +159,7 @@ BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, ComputePhotometricCorrectionsCon
                  fs::perms::others_write|fs::perms::group_write);
 
   fs::path  path_filename = test_file/"no_write_permission.dat";
-  options_map["output-phot-corr-file"].value() = path_filename.string();
+  options_map[OUTPUT_PHOT_CORR_FILE].value() = path_filename.string();
 
   BOOST_CHECK_THROW(ComputePhotometricCorrectionsConfiguration cpgc(options_map), Elements::Exception);
 

@@ -21,28 +21,33 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
+static const std::string INPUT_CATALOG_FILE {"input-catalog-file"};
+static const std::string INPUT_CATALOG_FORMAT {"input-catalog-format"};
+static const std::string SOURCE_ID_COLUMN_NAME {"source-id-column-name"};
+static const std::string SOURCE_ID_COLUMN_INDEX {"source-id-column-index"};
+
 static Elements::Logging logger = Elements::Logging::getLogger("CatalogConfiguration");
 
 po::options_description CatalogConfiguration::getProgramOptions() {
   po::options_description options {"Catalog options"};
   options.add_options()
-    ("input-catalog-file", po::value<std::string>(),
+    (INPUT_CATALOG_FILE.c_str(), po::value<std::string>(),
         "The file containing the input catalog")
-    ("input-catalog-format", po::value<std::string>(),
+    (INPUT_CATALOG_FORMAT.c_str(), po::value<std::string>(),
         "The format of the input catalog (FITS or ASCII)")
-    ("source-id-column-name", po::value<std::string>(),
+    (SOURCE_ID_COLUMN_NAME.c_str(), po::value<std::string>(),
         "The name of the column representing the source ID")
-    ("source-id-column-index", po::value<int>(),
+    (SOURCE_ID_COLUMN_INDEX.c_str(), po::value<int>(),
         "The index of the column representing the source ID");
   return options;
 }
 
 CatalogConfiguration::CatalogConfiguration(const std::map<std::string, po::variable_value>& options) : m_options{options} {
-  if (m_options["input-catalog-file"].empty()) {
+  if (m_options[INPUT_CATALOG_FILE].empty()) {
     logger.error("Missing option input-catalog-file");
-    throw Elements::Exception("Missing mandatory option input-catalog-file");
+    throw Elements::Exception() << "Missing mandatory option :" << INPUT_CATALOG_FILE;
   }
-  auto catalog_file = m_options["input-catalog-file"].as<std::string>();
+  auto catalog_file = m_options[INPUT_CATALOG_FILE].as<std::string>();
   if (!fs::exists(catalog_file)) {
     logger.error() << "File " << catalog_file << " not found";
     throw Elements::Exception() << "Input catalog file " << catalog_file << " does not exist";
@@ -51,7 +56,7 @@ CatalogConfiguration::CatalogConfiguration(const std::map<std::string, po::varia
     logger.error() <<  catalog_file << " is a directory";
     throw Elements::Exception() << "Input catalog file " << catalog_file << " is not a file";
   }
-  if (!m_options["source-id-column-name"].empty() && !m_options["source-id-column-index"].empty()) {
+  if (!m_options[SOURCE_ID_COLUMN_NAME].empty() && !m_options[SOURCE_ID_COLUMN_INDEX].empty()) {
     logger.error("Found both source-id-column-name and source-id-column-index options");
     throw Elements::Exception("Options source-id-column-name and source-id-column-index are mutually exclusive");
   }
@@ -94,13 +99,13 @@ Table::Table readAsciiTable(std::string file) {
 
 const Table::Table& CatalogConfiguration::getAsTable() {
   if (m_table_ptr == nullptr) {
-    std::string catalog_file = m_options["input-catalog-file"].as<std::string>();
+    std::string catalog_file = m_options[INPUT_CATALOG_FILE].as<std::string>();
 
     // Get the format of the file
     FormatType format;
-    if (m_options["input-catalog-format"].empty()) {
+    if (m_options[INPUT_CATALOG_FORMAT].empty()) {
       format = autoDetectFormatType(catalog_file);
-    } else if (m_options["input-catalog-format"].as<std::string>().compare("FITS") == 0) {
+    } else if (m_options[INPUT_CATALOG_FORMAT].as<std::string>().compare("FITS") == 0) {
       format = FormatType::FITS;
     } else {
       format = FormatType::ASCII;
@@ -121,11 +126,11 @@ SourceCatalog::Catalog CatalogConfiguration::getCatalog() {
   
   // Get the name of the ID column
   std::string id_column_name = "ID";
-  if (!m_options["source-id-column-name"].empty()) {
-    id_column_name = m_options["source-id-column-name"].as<std::string>();
+  if (!m_options[SOURCE_ID_COLUMN_NAME].empty()) {
+    id_column_name = m_options[SOURCE_ID_COLUMN_NAME].as<std::string>();
   }
-  if (!m_options["source-id-column-index"].empty()) {
-    int index = m_options["source-id-column-index"].as<int>();
+  if (!m_options[SOURCE_ID_COLUMN_INDEX].empty()) {
+    int index = m_options[SOURCE_ID_COLUMN_INDEX].as<int>();
     id_column_name = table.getColumnInfo()->getName(index-1);
   }
   logger.info() << "Using ID column \"" << id_column_name << '"';

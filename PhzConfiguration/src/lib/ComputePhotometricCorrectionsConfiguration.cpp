@@ -22,6 +22,11 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
+static const std::string OUTPUT_PHOT_CORR_FILE {"output-phot-corr-file"};
+static const std::string PHOT_CORR_ITER_NO {"phot-corr-iter-no"};
+static const std::string PHOT_CORR_TOLERANCE {"phot-corr-tolerance"};
+static const std::string PHOT_CORR_SELECTION_METHOD {"phot-corr-selection-method"};
+
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
 po::options_description ComputePhotometricCorrectionsConfiguration::getProgramOptions() {
@@ -29,13 +34,13 @@ po::options_description ComputePhotometricCorrectionsConfiguration::getProgramOp
   po::options_description options {"Compute Photometric Corrections options"};
 
   options.add_options()
-  ("output-phot-corr-file", boost::program_options::value<std::string>(),
+  (OUTPUT_PHOT_CORR_FILE.c_str(), boost::program_options::value<std::string>(),
       "The filename of the file to export the calculated photometric correction")
-  ("phot-corr-iter-no", boost::program_options::value<int>()->default_value(5),
+  (PHOT_CORR_ITER_NO.c_str(), boost::program_options::value<int>()->default_value(5),
       "The maximum number of iterations to perform (negative=unlimited)")
-  ("phot-corr-tolerance", boost::program_options::value<double>()->default_value(1E-3),
+  (PHOT_CORR_TOLERANCE.c_str(), boost::program_options::value<double>()->default_value(1E-3),
       "The tolerance which if achieved between two iteration steps the iteration stops")
-  ("phot-corr-selection-method", boost::program_options::value<std::string>(),
+  (PHOT_CORR_SELECTION_METHOD.c_str(), boost::program_options::value<std::string>(),
       "The method used for selecting the photometric correction (MEDIAN, WEIGHTED_MEDIAN, MEAN, WEIGHTED_MEAN)");
 
   // We get all the catalog options. We are careful not to add an option twice.
@@ -61,11 +66,11 @@ ComputePhotometricCorrectionsConfiguration::ComputePhotometricCorrectionsConfigu
   m_options = options;
 
   // Extract file option
-  if (m_options["output-phot-corr-file"].empty()) {
+  if (m_options[OUTPUT_PHOT_CORR_FILE].empty()) {
     throw Elements::Exception() << "Missing parameter output-phot-corr-file";
   }
 
-  auto filename = m_options["output-phot-corr-file"].as<std::string>();
+  auto filename = m_options[OUTPUT_PHOT_CORR_FILE].as<std::string>();
 
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
@@ -82,7 +87,7 @@ ComputePhotometricCorrectionsConfiguration::ComputePhotometricCorrectionsConfigu
 auto ComputePhotometricCorrectionsConfiguration::getOutputFunction() -> OutputFunction {
   return [this](const PhzDataModel::PhotometricCorrectionMap& pc_map) {
     auto logger = Elements::Logging::getLogger("PhzOutput");
-    auto filename = m_options["output-phot-corr-file"].as<std::string>();
+    auto filename = m_options[OUTPUT_PHOT_CORR_FILE].as<std::string>();
     std::ofstream out {filename};
     PhzDataModel::writePhotometricCorrectionMap(out, pc_map);
     logger.info() << "Created zero point corrections in file " << filename;
@@ -91,15 +96,15 @@ auto ComputePhotometricCorrectionsConfiguration::getOutputFunction() -> OutputFu
 
 PhzPhotometricCorrection::PhotometricCorrectionCalculator::StopCriteriaFunction
                       ComputePhotometricCorrectionsConfiguration::getStopCriteria() {
-  int iter_no = m_options["phot-corr-iter-no"].as<int>();
-  double tolerance = m_options["phot-corr-tolerance"].as<double>();
+  int iter_no = m_options[PHOT_CORR_ITER_NO].as<int>();
+  double tolerance = m_options[PHOT_CORR_TOLERANCE].as<double>();
   return PhzPhotometricCorrection::DefaultStopCriteria(iter_no, tolerance);
 }
 
 PhzPhotometricCorrection::PhotometricCorrectionAlgorithm::PhotometricCorrectionSelector<SourceCatalog::Catalog::const_iterator> 
     ComputePhotometricCorrectionsConfiguration::getPhotometricCorrectionSelector() {
-  if (!m_options["phot-corr-selection-method"].empty()) {
-    std::string selection_method = m_options["phot-corr-selection-method"].as<std::string>();
+  if (!m_options[PHOT_CORR_SELECTION_METHOD].empty()) {
+    std::string selection_method = m_options[PHOT_CORR_SELECTION_METHOD].as<std::string>();
     if (selection_method == "MEDIAN") {
       return PhzPhotometricCorrection::FindMedianPhotometricCorrectionsFunctor {};
     } else if (selection_method == "WEIGHTED_MEDIAN") {

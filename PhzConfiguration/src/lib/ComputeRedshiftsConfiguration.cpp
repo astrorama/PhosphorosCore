@@ -21,16 +21,19 @@ namespace PhzConfiguration {
 
 static const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
 static const std::string OUTPUT_POSTERIOR_DIR {"output-posterior-dir"};
+static const std::string OUTPUT_CATALOG_FILE {"output-catalog-file"};
+static const std::string OUTPUT_CATALOG_FORMAT {"output-catalog-format"};
+static const std::string OUTPUT_PDF_FILE {"output-pdf-file"};
 
 po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
   po::options_description options {"Compute Redshifts options"};
 
   options.add_options()
-  ("output-catalog-file", po::value<std::string>(),
+  (OUTPUT_CATALOG_FILE.c_str(), po::value<std::string>(),
       "The filename of the file to export the PHZ catalog file")
-  ("output-catalog-format", po::value<std::string>(),
+  (OUTPUT_CATALOG_FORMAT.c_str(), po::value<std::string>(),
       "The format of the PHZ catalog file (one of ASCII (default), FITS)")
-  ("output-pdf-file", po::value<std::string>(),
+  (OUTPUT_PDF_FILE.c_str(), po::value<std::string>(),
         "The filename of the PDF data")
   (AXES_COLLAPSE_TYPE.c_str(), po::value<std::string>(),
         "The method used for collapsing the axes when producing the 1D PDF (one of SUM, MAX, BAYESIAN)")
@@ -81,11 +84,11 @@ private:
 
 std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfiguration::getOutputHandler() {
   std::unique_ptr<MultiOutputHandler> result {new MultiOutputHandler{}};
-  if (!m_options["output-catalog-file"].empty()) {
-    std::string out_file = m_options["output-catalog-file"].as<std::string>();
+  if (!m_options[OUTPUT_CATALOG_FILE].empty()) {
+    std::string out_file = m_options[OUTPUT_CATALOG_FILE].as<std::string>();
     auto format = PhzOutput::BestModelCatalog::Format::ASCII;
-    if (!m_options["output-catalog-format"].empty()) {
-      auto format_str = m_options["output-catalog-format"].as<std::string>();
+    if (!m_options[OUTPUT_CATALOG_FORMAT].empty()) {
+      auto format_str = m_options[OUTPUT_CATALOG_FORMAT].as<std::string>();
       if (format_str == "ASCII") {
         format = PhzOutput::BestModelCatalog::Format::ASCII;
       } else if (format_str == "FITS") {
@@ -96,8 +99,8 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfiguration::getOutp
     }
     result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::BestModelCatalog{out_file, format}});
   }
-  if (!m_options["output-pdf-file"].empty()) {
-    std::string out_file = m_options["output-pdf-file"].as<std::string>();
+  if (!m_options[OUTPUT_PDF_FILE].empty()) {
+    std::string out_file = m_options[OUTPUT_PDF_FILE].as<std::string>();
     result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::PdfOutput{out_file}});
   }
   if (!m_options[OUTPUT_POSTERIOR_DIR].empty()) {
