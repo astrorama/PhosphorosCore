@@ -26,22 +26,23 @@ namespace PhzConfiguration {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
+static const std::string PHOTOMETRIC_CORRECTION_FILE {"photometric-correction-file"};
+
 po::options_description PhotometricCorrectionConfiguration::getProgramOptions() {
   po::options_description options {"Photometric Correction options"};
   options.add_options()
-    ("photometric-correction-file", po::value<std::string>(), "The full path of the photometric correction file");
+    (PHOTOMETRIC_CORRECTION_FILE.c_str(), po::value<std::string>(), "The full path of the photometric correction file");
   return options;
 }
 
 PhzDataModel::PhotometricCorrectionMap PhotometricCorrectionConfiguration::getPhotometricCorrectionMap() {
 
  PhzDataModel::PhotometricCorrectionMap result {};
- std::string file_option{"photometric-correction-file"};
 
  // Read correction map from an ASCII file otherwise set default values
- if (!m_options[file_option].empty()) {
+ if (!m_options[PHOTOMETRIC_CORRECTION_FILE].empty()) {
 	 // Check the file exist
-	 auto correction_file = m_options[file_option].as<std::string>();
+	 auto correction_file = m_options[PHOTOMETRIC_CORRECTION_FILE].as<std::string>();
 	 if (!fs::exists(correction_file)) {
 	   logger.error() << "File " << correction_file << " not found";
 	   throw Elements::Exception() << "Photometric Correction file (photometric-correction-file option) does not exist : "<< correction_file;

@@ -23,6 +23,9 @@ namespace cf = Euclid::PhzConfiguration;
 
 struct PhotometricCorrectionConfiguration_Fixture {
 
+  const std::string PHOTOMETRIC_CORRECTION_FILE {"photometric-correction-file"};
+  const std::string FILTER_NAME_MAPPING {"filter-name-mapping"};
+
   Elements::TempDir temp_dir;
   std::string base_directory { temp_dir.path().native()+"/base_dir/" };
   std::string cor_filename { base_directory + "/file_correction.txt" };
@@ -48,9 +51,9 @@ struct PhotometricCorrectionConfiguration_Fixture {
     correction_file.close();
 
     // Fill up options
-    options_map_nofile["photometric-correction-file"].value() = boost::any(cor_nofile);
-    options_map_data["photometric-correction-file"].value()   = boost::any(cor_filename);
-    options_map3["filter-name-mapping"].value() = boost::any(filter_qualified_name);
+    options_map_nofile[PHOTOMETRIC_CORRECTION_FILE].value() = boost::any(cor_nofile);
+    options_map_data[PHOTOMETRIC_CORRECTION_FILE].value()   = boost::any(cor_filename);
+    options_map3[FILTER_NAME_MAPPING].value() = boost::any(filter_qualified_name);
 
   }
   ~PhotometricCorrectionConfiguration_Fixture() {
@@ -76,7 +79,7 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, PhotometricCorrectionCo
   auto option_desc = Euclid::PhzConfiguration::PhotometricCorrectionConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc{};
 
-  desc = option_desc.find_nothrow("photometric-correction-file", false);
+  desc = option_desc.find_nothrow(PHOTOMETRIC_CORRECTION_FILE, false);
   BOOST_CHECK(desc != nullptr);
 
 }
