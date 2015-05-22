@@ -24,6 +24,11 @@ namespace cf = Euclid::PhzConfiguration;
 
 struct SedConfiguration_Fixture {
 
+  const std::string SED_ROOT_PATH {"sed-root-path"};
+  const std::string SED_GROUP {"sed-group"};
+  const std::string SED_EXCLUDE {"sed-exclude"};
+  const std::string SED_NAME {"sed-name"};
+
   std::string group { "sed/MER" };
   // Do not forget the "/" at the end of the base directory
   Elements::TempDir temp_dir;
@@ -65,8 +70,8 @@ struct SedConfiguration_Fixture {
     file3_cos.close();
 
     // Fill up options
-    options_map["sed-root-path"].value() = boost::any(base_directory);
-    options_map["sed-group"].value() = boost::any(group_vector);
+    options_map[SED_ROOT_PATH].value() = boost::any(base_directory);
+    options_map[SED_GROUP].value() = boost::any(group_vector);
 
   }
   ~SedConfiguration_Fixture() {
@@ -92,13 +97,13 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, SedConfiguration_Fixtur
   auto option_desc = Euclid::PhzConfiguration::SedConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc{};
 
-  desc = option_desc.find_nothrow("sed-root-path", false);
+  desc = option_desc.find_nothrow(SED_ROOT_PATH, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("sed-group", false);
+  desc = option_desc.find_nothrow(SED_GROUP, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("sed-name", false);
+  desc = option_desc.find_nothrow(SED_NAME, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("sed-exclude", false);
+  desc = option_desc.find_nothrow(SED_EXCLUDE, false);
   BOOST_CHECK(desc != nullptr);
 
 }
@@ -174,7 +179,7 @@ BOOST_FIXTURE_TEST_CASE(getSedList_exclude_function_test, SedConfiguration_Fixtu
   // Sed to be excluded and a non existant sed
   exclude_vector.push_back("sed/MER/file2");
   exclude_vector.push_back("sed/MER/FILE_DOES_NOT_EXIST");
-  options_map["sed-exclude"].value() = boost::any(exclude_vector);
+  options_map[SED_EXCLUDE].value() = boost::any(exclude_vector);
 
   cf::SedConfiguration sconf(options_map);
   auto list = sconf.getSedList();
@@ -196,7 +201,7 @@ BOOST_FIXTURE_TEST_CASE(getSedList_add_function_test, SedConfiguration_Fixture) 
 
   // Sed to be added
   add_vector.push_back("sed/COSMOS/Dataset_name_for_file3");
-  options_map["sed-name"].value() = boost::any(add_vector);
+  options_map[SED_NAME].value() = boost::any(add_vector);
 
   cf::SedConfiguration sconf(options_map);
   auto list = sconf.getSedList();
@@ -221,7 +226,7 @@ BOOST_FIXTURE_TEST_CASE(getSedList_add_twice_function_test, SedConfiguration_Fix
 
   // Add twice the same sed
   add_vector.push_back("sed/MER/Dataset_name_for_file1");
-  options_map["sed-name"].value() = boost::any(add_vector);
+  options_map[SED_NAME].value() = boost::any(add_vector);
 
   cf::SedConfiguration sconf2(options_map);
   auto list2 = sconf2.getSedList();
