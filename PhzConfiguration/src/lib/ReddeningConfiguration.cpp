@@ -27,7 +27,7 @@ namespace PhzConfiguration {
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
 po::options_description ReddeningConfiguration::getProgramOptions() {
-  po::options_description options {"Photometric reddening options"};
+  po::options_description options {"Extinction options"};
   options.add_options()
     ("reddening-curve-root-path", po::value<std::string>(),
         "The directory containing the reddening curves")

@@ -18,7 +18,7 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 po::options_description SedConfiguration::getProgramOptions() {
-  po::options_description options {"Photometric sed options"};
+  po::options_description options {"SED templates options"};
   options.add_options()
     ("sed-root-path", po::value<std::string>(),
         "The directory containing the sed datasets, organized in folders")

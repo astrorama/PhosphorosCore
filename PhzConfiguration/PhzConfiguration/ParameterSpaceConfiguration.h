@@ -57,7 +57,7 @@ public:
    */
   static boost::program_options::options_description getProgramOptions()
   {
-    boost::program_options::options_description options {"Photometric combined options"};
+    boost::program_options::options_description options {"Parameter space options"};
 
     options.add(SedConfiguration::getProgramOptions());
     options.add(RedshiftConfiguration::getProgramOptions());

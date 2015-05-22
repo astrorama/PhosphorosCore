@@ -24,7 +24,7 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 po::options_description RedshiftConfiguration::getProgramOptions() {
-  po::options_description options {"Photometric redshift option"};
+  po::options_description options {"Redshift option"};
   options.add_options()
    ("z-range", po::value<std::vector<std::string>>(),
         "Redshift range: minimum maximum step")

@@ -25,6 +25,7 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
+static const std::string OUTPUT_MODEL_GRID {"output-model-grid"};
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
 ComputeModelGridConfiguration::ComputeModelGridConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
@@ -33,7 +34,7 @@ ComputeModelGridConfiguration::ComputeModelGridConfiguration(const std::map<std:
   m_options = options;
 
   // Extract file option
-  std::string filename = m_options["output-photometry-grid"].as<std::string>();
+  std::string filename = m_options[OUTPUT_MODEL_GRID].as<std::string>();
 
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
@@ -42,11 +43,11 @@ ComputeModelGridConfiguration::ComputeModelGridConfiguration(const std::map<std:
 
 po::options_description ComputeModelGridConfiguration::getProgramOptions() {
 
-  boost::program_options::options_description options {"Build Templates options"};
+  boost::program_options::options_description options {OUTPUT_MODEL_GRID};
 
   options.add_options()
-  ("output-photometry-grid", boost::program_options::value<std::string>(),
-      "The filename of the file to export in binary format the photometry grid");
+  (OUTPUT_MODEL_GRID.c_str(), boost::program_options::value<std::string>(),
+      "The filename of the file to export in binary format the model grid");
 
   options.add(ParameterSpaceConfiguration::getProgramOptions());
   options.add(FilterConfiguration::getProgramOptions());
@@ -59,7 +60,7 @@ po::options_description ComputeModelGridConfiguration::getProgramOptions() {
 ComputeModelGridConfiguration::OutputFunction ComputeModelGridConfiguration::getOutputFunction() {
   return [this](const PhzDataModel::PhotometryGrid& grid) {
     auto logger = Elements::Logging::getLogger("PhzOutput");
-    auto filename = m_options["output-photometry-grid"].as<std::string>();
+    auto filename = m_options[OUTPUT_MODEL_GRID].as<std::string>();
     std::ofstream out {filename};
     PhzDataModel::PhotometryGridInfo info{};
     info.axes = grid.getAxesTuple();
@@ -68,7 +69,7 @@ ComputeModelGridConfiguration::OutputFunction ComputeModelGridConfiguration::get
     boost::archive::binary_oarchive boa {out};
     boa << info;
     GridContainer::gridBinaryExport(out, grid);
-    logger.info() << "Created template photometries in file " << filename;
+    logger.info() << "Created the model grid in file " << filename;
   };
 }
 

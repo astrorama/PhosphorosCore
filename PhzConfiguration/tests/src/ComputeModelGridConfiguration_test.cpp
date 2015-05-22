@@ -29,6 +29,8 @@ namespace fs = boost::filesystem;
 
 struct ComputeModelGridConfiguration_Fixture {
 
+  const std::string OUTPUT_MODEL_GRID_TEST {"output-model-grid"};
+
   std::vector<double> zs{0.0,0.1};
   std::vector<double> ebvs{0.0,0.001};
   std::vector<Euclid::XYDataset::QualifiedName> reddeing_curves{{"reddeningCurves/Curve1"}};
@@ -77,7 +79,7 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, ComputeModelGridConfigu
   auto option_desc = cf::ComputeModelGridConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc{};
 
-  desc = option_desc.find_nothrow("output-photometry-grid", false);
+  desc = option_desc.find_nothrow(OUTPUT_MODEL_GRID_TEST, false);
   BOOST_CHECK(desc != nullptr);
 
 }
@@ -98,7 +100,7 @@ BOOST_FIXTURE_TEST_CASE(constructor_exception_test, ComputeModelGridConfiguratio
                             fs::perms::others_write|fs::perms::group_write);
 
   fs::path  path_filename = test_file/"no_write_permission.dat";
-  options_map["output-photometry-grid"].value() = path_filename.string();
+  options_map[OUTPUT_MODEL_GRID_TEST].value() = path_filename.string();
 
   BOOST_CHECK_THROW(cf::ComputeModelGridConfiguration cpgc(options_map), Elements::Exception);
 
@@ -115,7 +117,7 @@ BOOST_FIXTURE_TEST_CASE(directory_test, ComputeModelGridConfiguration_Fixture) {
   BOOST_TEST_MESSAGE(" ");
 
   fs::path test_file = temp_dir.path()/"test/directory/creation/test_writing_binary_file.dat";
-  options_map["output-photometry-grid"].value() = test_file.string();
+  options_map[OUTPUT_MODEL_GRID_TEST].value() = test_file.string();
 
   cf::ComputeModelGridConfiguration cpgc(options_map);
 
@@ -138,7 +140,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, ComputeModelGridConfiguration_Fi
 
   // Create a binary file
   fs::path test_file = temp_dir.path()/"test/directory/creation/test_writing_binary_file.dat";
-  options_map["output-photometry-grid"].value() = test_file.string();
+  options_map[OUTPUT_MODEL_GRID_TEST].value() = test_file.string();
   options_map["igm-absorption-type"].value() = std::string{"MADAU"};
   options_map["filter-name"].value() = std::vector<std::string>{};
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter1");
