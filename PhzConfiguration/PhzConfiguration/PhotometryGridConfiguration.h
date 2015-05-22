@@ -26,9 +26,9 @@ namespace PhzConfiguration {
  * This class defines the Photometry Grid parameter option
  * @details
  * The parameter available is :
- * - \b photometry-grid-file, string, The path and filename of the grid file"
+ * - \b model-grid-file, string, The path and filename of the grid file"
  * The getPhotometryGrid function loads a photometry grid in memory referred by the
- * photometry-grid-file parameter.
+ * model-grid-file parameter.
  * @throw Element::Exception
  * - Empty parameter option
  */
@@ -50,7 +50,7 @@ public:
    * This class defines the photometry grid parameter options
    * @details
    * The options are:
-   * photometry-grid-file : string, filename and path of the photometry grid file
+   * model-grid-file : string, filename and path of the photometry grid file
    * @param options
    * A map containing the options and their values.
    *
@@ -65,7 +65,7 @@ public:
 
   /**
    * @brief getPhotometryGrid
-   * This function loads in memory a photometry grid referred by \b photometry-grid-file
+   * This function loads in memory a photometry grid referred by \b model-grid-file
    * options as a PhzDataModel::PhotometryGrid object.
    * @details
    * @throw ElementException
@@ -78,7 +78,7 @@ public:
   /**
    * @brief
    * This function loads in memory only the photometry grid information from the
-   * file given with the parameter photometry-grid-file, as a PhzDataModel::PhotometryGridInfo
+   * file given with the parameter model-grid-file, as a PhzDataModel::PhotometryGridInfo
    * object.
    * @throw ElementException
    * Empty parameter option

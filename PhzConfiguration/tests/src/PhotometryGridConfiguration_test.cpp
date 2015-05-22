@@ -48,7 +48,7 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, PhotometryGridConfigura
   auto option_desc = Euclid::PhzConfiguration::PhotometryGridConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc{};
 
-  desc = option_desc.find_nothrow("photometry-grid-file", false);
+  desc = option_desc.find_nothrow("model-grid-file", false);
   BOOST_CHECK(desc != nullptr);
 
 }

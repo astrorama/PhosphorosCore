@@ -54,7 +54,7 @@ struct ComputePhotometricCorrectionsConfiguration_Fixture {
     options_map["source-id-column-index"].value() = boost::any{1};
     options_map["filter-name-mapping"].value() = boost::any{filter_col_mapping};
     options_map["spec-z-column-name"].value() = string{"Z"};
-    options_map["photometry-grid-file"].value() = string{phot_grid.string()};
+    options_map["model-grid-file"].value() = string{phot_grid.string()};
     options_map["output-phot-corr-file"].value() = string{output_file.string()};
   }
   
