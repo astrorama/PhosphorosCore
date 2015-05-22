@@ -31,6 +31,7 @@ struct SpectroscopicRedshiftCatalogConfiguration_Fixture {
   const std::string SPECZ_COLUMN_INDEX {"spec-z-column-index"};
   const std::string SPECZ_ERR_COLUMN_NAME {"spec-z-err-column-name"};
   const std::string SPECZ_ERR_COLUMN_INDEX {"spec-z-err-column-index"};
+  const std::string INPUT_CATALOG_FILE {"input-catalog-file"};
 
   void makeFile(const std::string& file_name, const std::string& content) {
     std::ofstream test_file;
@@ -57,26 +58,26 @@ struct SpectroscopicRedshiftCatalogConfiguration_Fixture {
         "1         0.25     0.01\n"
         "2         1.01     0.02\n");
 
-    options_map_min_working["input-catalog-file"].value() = ascii_file_name;
+    options_map_min_working[INPUT_CATALOG_FILE].value() = ascii_file_name;
     options_map_min_working[SPECZ_COLUMN_NAME].value() = std::string("Z");
 
-    options_map_min_working_2["input-catalog-file"].value() = ascii_file_name;
+    options_map_min_working_2[INPUT_CATALOG_FILE].value() = ascii_file_name;
     options_map_min_working_2[SPECZ_COLUMN_INDEX].value() = 2;
 
-    options_map_z_index["input-catalog-file"].value() = ascii_file_name;
+    options_map_z_index[INPUT_CATALOG_FILE].value() = ascii_file_name;
     options_map_z_index[SPECZ_COLUMN_NAME].value() = std::string("Z");
     options_map_z_index[SPECZ_COLUMN_INDEX].value() = 2;
 
-    options_map_z_deltaZ["input-catalog-file"].value() = ascii_file_name;
+    options_map_z_deltaZ[INPUT_CATALOG_FILE].value() = ascii_file_name;
     options_map_z_deltaZ[SPECZ_COLUMN_NAME].value() = std::string("Z");
     options_map_z_deltaZ[SPECZ_ERR_COLUMN_NAME].value() = std::string(
         "DeltaZ");
 
-    options_map_z_deltaZ_index["input-catalog-file"].value() = ascii_file_name;
+    options_map_z_deltaZ_index[INPUT_CATALOG_FILE].value() = ascii_file_name;
     options_map_z_deltaZ_index[SPECZ_COLUMN_NAME].value() = std::string("Z");
     options_map_z_deltaZ_index[SPECZ_ERR_COLUMN_INDEX].value() = 3;
 
-    options_map_z_deltaZ_index_plus_name["input-catalog-file"].value() = ascii_file_name;
+    options_map_z_deltaZ_index_plus_name[INPUT_CATALOG_FILE].value() = ascii_file_name;
     options_map_z_deltaZ_index_plus_name[SPECZ_COLUMN_NAME].value() = std::string("Z");
     options_map_z_deltaZ_index_plus_name[SPECZ_ERR_COLUMN_NAME].value() = std::string("DeltaZ");
     options_map_z_deltaZ_index_plus_name[SPECZ_ERR_COLUMN_INDEX].value() = 3;

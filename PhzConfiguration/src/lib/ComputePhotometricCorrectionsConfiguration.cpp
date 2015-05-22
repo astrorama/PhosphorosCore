@@ -26,6 +26,7 @@ static const std::string OUTPUT_PHOT_CORR_FILE {"output-phot-corr-file"};
 static const std::string PHOT_CORR_ITER_NO {"phot-corr-iter-no"};
 static const std::string PHOT_CORR_TOLERANCE {"phot-corr-tolerance"};
 static const std::string PHOT_CORR_SELECTION_METHOD {"phot-corr-selection-method"};
+static const std::string FILTER_NAME_MAPPING {"filter-name-mapping"};
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
@@ -77,9 +78,9 @@ ComputePhotometricCorrectionsConfiguration::ComputePhotometricCorrectionsConfigu
   
   // Check that the given grid contains photometries for all the filters we
   // have fluxes in the catalog
-  if (!m_options["filter-name-mapping"].empty()) {
+  if (!m_options[FILTER_NAME_MAPPING].empty()) {
     checkGridPhotometriesMatch(getPhotometryGridInfo().filter_names,
-                               m_options["filter-name-mapping"].as<std::vector<std::string>>());
+                               m_options[FILTER_NAME_MAPPING].as<std::vector<std::string>>());
   }
   
 }

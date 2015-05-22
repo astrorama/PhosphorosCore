@@ -24,6 +24,7 @@ static const std::string OUTPUT_POSTERIOR_DIR {"output-posterior-dir"};
 static const std::string OUTPUT_CATALOG_FILE {"output-catalog-file"};
 static const std::string OUTPUT_CATALOG_FORMAT {"output-catalog-format"};
 static const std::string OUTPUT_PDF_FILE {"output-pdf-file"};
+static const std::string FILTER_NAME_MAPPING {"filter-name-mapping"};
 
 po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
   po::options_description options {"Compute Redshifts options"};
@@ -54,15 +55,15 @@ ComputeRedshiftsConfiguration::ComputeRedshiftsConfiguration(const std::map<std:
 
   // Check that the given grid contains photometries for all the filters we
   // have fluxes in the catalog
-  if (!m_options["filter-name-mapping"].empty()) {
+  if (!m_options[FILTER_NAME_MAPPING].empty()) {
     checkGridPhotometriesMatch(getPhotometryGridInfo().filter_names,
-                               m_options["filter-name-mapping"].as<std::vector<std::string>>());
+                               m_options[FILTER_NAME_MAPPING].as<std::vector<std::string>>());
   }
 
   // Check that we have photometric corrections for all the filters
-  if (!m_options["filter-name-mapping"].empty()) {
+  if (!m_options[FILTER_NAME_MAPPING].empty()) {
     checkHaveAllCorrections(getPhotometricCorrectionMap(),
-                            m_options["filter-name-mapping"].as<std::vector<std::string>>());
+                            m_options[FILTER_NAME_MAPPING].as<std::vector<std::string>>());
   }
 }
 

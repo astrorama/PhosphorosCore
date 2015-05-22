@@ -44,7 +44,7 @@ ComputeModelGridConfiguration::ComputeModelGridConfiguration(const std::map<std:
 
 po::options_description ComputeModelGridConfiguration::getProgramOptions() {
 
-  boost::program_options::options_description options {OUTPUT_MODEL_GRID};
+  boost::program_options::options_description options {"Compute Model Grid options"};
 
   options.add_options()
   (OUTPUT_MODEL_GRID.c_str(), boost::program_options::value<std::string>(),
