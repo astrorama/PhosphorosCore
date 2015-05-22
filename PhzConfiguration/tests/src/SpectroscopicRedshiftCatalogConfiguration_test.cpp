@@ -26,6 +26,11 @@ namespace po = boost::program_options;
 namespace cf = Euclid::PhzConfiguration;
 
 struct SpectroscopicRedshiftCatalogConfiguration_Fixture {
+  
+  const std::string SPECZ_COLUMN_NAME {"spec-z-column-name"};
+  const std::string SPECZ_COLUMN_INDEX {"spec-z-column-index"};
+  const std::string SPECZ_ERR_COLUMN_NAME {"spec-z-err-column-name"};
+  const std::string SPECZ_ERR_COLUMN_INDEX {"spec-z-err-column-index"};
 
   void makeFile(const std::string& file_name, const std::string& content) {
     std::ofstream test_file;
@@ -53,28 +58,28 @@ struct SpectroscopicRedshiftCatalogConfiguration_Fixture {
         "2         1.01     0.02\n");
 
     options_map_min_working["input-catalog-file"].value() = ascii_file_name;
-    options_map_min_working["spec-z-column-name"].value() = std::string("Z");
+    options_map_min_working[SPECZ_COLUMN_NAME].value() = std::string("Z");
 
     options_map_min_working_2["input-catalog-file"].value() = ascii_file_name;
-    options_map_min_working_2["spec-z-column-index"].value() = 2;
+    options_map_min_working_2[SPECZ_COLUMN_INDEX].value() = 2;
 
     options_map_z_index["input-catalog-file"].value() = ascii_file_name;
-    options_map_z_index["spec-z-column-name"].value() = std::string("Z");
-    options_map_z_index["spec-z-column-index"].value() = 2;
+    options_map_z_index[SPECZ_COLUMN_NAME].value() = std::string("Z");
+    options_map_z_index[SPECZ_COLUMN_INDEX].value() = 2;
 
     options_map_z_deltaZ["input-catalog-file"].value() = ascii_file_name;
-    options_map_z_deltaZ["spec-z-column-name"].value() = std::string("Z");
-    options_map_z_deltaZ["spec-z-err-column-name"].value() = std::string(
+    options_map_z_deltaZ[SPECZ_COLUMN_NAME].value() = std::string("Z");
+    options_map_z_deltaZ[SPECZ_ERR_COLUMN_NAME].value() = std::string(
         "DeltaZ");
 
     options_map_z_deltaZ_index["input-catalog-file"].value() = ascii_file_name;
-    options_map_z_deltaZ_index["spec-z-column-name"].value() = std::string("Z");
-    options_map_z_deltaZ_index["spec-z-err-column-index"].value() = 3;
+    options_map_z_deltaZ_index[SPECZ_COLUMN_NAME].value() = std::string("Z");
+    options_map_z_deltaZ_index[SPECZ_ERR_COLUMN_INDEX].value() = 3;
 
     options_map_z_deltaZ_index_plus_name["input-catalog-file"].value() = ascii_file_name;
-    options_map_z_deltaZ_index_plus_name["spec-z-column-name"].value() = std::string("Z");
-    options_map_z_deltaZ_index_plus_name["spec-z-err-column-name"].value() = std::string("DeltaZ");
-    options_map_z_deltaZ_index_plus_name["spec-z-err-column-index"].value() = 3;
+    options_map_z_deltaZ_index_plus_name[SPECZ_COLUMN_NAME].value() = std::string("Z");
+    options_map_z_deltaZ_index_plus_name[SPECZ_ERR_COLUMN_NAME].value() = std::string("DeltaZ");
+    options_map_z_deltaZ_index_plus_name[SPECZ_ERR_COLUMN_INDEX].value() = 3;
   }
 
   ~SpectroscopicRedshiftCatalogConfiguration_Fixture() {
@@ -99,13 +104,13 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, SpectroscopicRedshiftCa
   auto option_desc = Euclid::PhzConfiguration::SpectroscopicRedshiftCatalogConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc { };
 
-  desc = option_desc.find_nothrow("spec-z-column-name", false);
+  desc = option_desc.find_nothrow(SPECZ_COLUMN_NAME, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("spec-z-column-index", false);
+  desc = option_desc.find_nothrow(SPECZ_COLUMN_INDEX, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("spec-z-err-column-name", false);
+  desc = option_desc.find_nothrow(SPECZ_ERR_COLUMN_NAME, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("spec-z-err-column-index", false);
+  desc = option_desc.find_nothrow(SPECZ_ERR_COLUMN_INDEX, false);
   BOOST_CHECK(desc != nullptr);
 
 }
