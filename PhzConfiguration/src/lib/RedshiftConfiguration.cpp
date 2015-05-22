@@ -23,12 +23,15 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
+static const std::string Z_RANGE {"z-range"};
+static const std::string Z_VALUE {"z-value"};
+
 po::options_description RedshiftConfiguration::getProgramOptions() {
   po::options_description options {"Redshift option"};
   options.add_options()
-   ("z-range", po::value<std::vector<std::string>>(),
+   (Z_RANGE.c_str(), po::value<std::vector<std::string>>(),
         "Redshift range: minimum maximum step")
-    ("z-value", po::value<std::vector<std::string>>(),
+    (Z_VALUE.c_str(), po::value<std::vector<std::string>>(),
         "A single z value");
   return options;
 }
@@ -41,10 +44,10 @@ std::vector<double> RedshiftConfiguration::getZList() {
 
   // A set is used to avoid duplicates and to order the different entries
   std::set<double> selected {};
-  if (!m_options["z-range"].empty()) {
-    auto ranges_list = m_options["z-range"].as<std::vector<std::string>>();
+  if (!m_options[Z_RANGE].empty()) {
+    auto ranges_list = m_options[Z_RANGE].as<std::vector<std::string>>();
     for (auto& range_string : ranges_list) {
-      checkRangeString({"z-range"}, range_string);
+      checkRangeString({Z_RANGE}, range_string);
       std::stringstream range_stream {range_string};
       double min {};
       double max {};
@@ -52,12 +55,12 @@ std::vector<double> RedshiftConfiguration::getZList() {
       std::string dummy{};
       range_stream >> min >> max >> step >> dummy;
       if (!dummy.empty()) {
-        throw Elements::Exception() <<"Invalid character(s) for the z-range "
+        throw Elements::Exception() <<"Invalid character(s) for the " << Z_RANGE << " "
                                     << "option from here : " << dummy;
       }
       // Check the range is allowed before inserting
       if ( (max < min) || (!selected.empty() && (*--selected.end() > min))) {
-        throw Elements::Exception()<< "Invalid range(s) for z-range option : \""
+        throw Elements::Exception()<< "Invalid range(s) for " << Z_RANGE << " option : \""
                                   <<range_stream.str()<<"\"";
       }
       // Insert value in the set
@@ -67,17 +70,17 @@ std::vector<double> RedshiftConfiguration::getZList() {
     }
   }
   // Add the z-value option
-  if (!m_options["z-value"].empty()) {
-    auto values_list = m_options["z-value"].as<std::vector<std::string>>();
+  if (!m_options[Z_VALUE].empty()) {
+    auto values_list = m_options[Z_VALUE].as<std::vector<std::string>>();
     for (auto& values_string : values_list) {
-      checkValueString({"z-value"}, values_string);
+      checkValueString({Z_VALUE}, values_string);
       std::stringstream values_stream {values_string};
       while (values_stream.good()) {
         double value {};
         std::string dummy{};
         values_stream >> value >> dummy;
         if (!dummy.empty()) {
-          throw Elements::Exception() <<"Invalid character(s) for the z-value "
+          throw Elements::Exception() <<"Invalid character(s) for the " << Z_VALUE << " "
                                       << "option from here : " << dummy;
         }
         selected.insert(value);
@@ -85,7 +88,7 @@ std::vector<double> RedshiftConfiguration::getZList() {
     }
   }
   if (selected.empty()) {
-    throw Elements::Exception() << "Empty Z list (check the options z-range and z-value)";
+    throw Elements::Exception() << "Empty Z list (check the options " << Z_RANGE << " and " << Z_VALUE << ")";
   }
   return std::vector<double> {selected.begin(), selected.end()};
 }
