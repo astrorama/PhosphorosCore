@@ -19,8 +19,11 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
+static const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
+static const std::string OUTPUT_POSTERIOR_DIR {"output-posterior-dir"};
+
 po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
-  po::options_description options {"Fit Templates options"};
+  po::options_description options {"Compute Redshifts options"};
 
   options.add_options()
   ("output-catalog-file", po::value<std::string>(),
@@ -29,10 +32,10 @@ po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
       "The format of the PHZ catalog file (one of ASCII (default), FITS)")
   ("output-pdf-file", po::value<std::string>(),
         "The filename of the PDF data")
-  ("marginalization-type", po::value<std::string>(),
-        "The type of marginalization algorithm (one of SUM, MAX, BAYESIAN)")
-        ("output-likelihood-dir", po::value<std::string>(),
-              "The directory where the likelihood grids are stored");
+  (AXES_COLLAPSE_TYPE.c_str(), po::value<std::string>(),
+        "The method used for collapsing the axes when producing the 1D PDF (one of SUM, MAX, BAYESIAN)")
+  (OUTPUT_POSTERIOR_DIR.c_str(), po::value<std::string>(),
+        "The directory where the posterior grids are stored");
 
   options.add(PhotometricCorrectionConfiguration::getProgramOptions());
   options.add(PhotometryCatalogConfiguration::getProgramOptions());
@@ -97,28 +100,28 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfiguration::getOutp
     std::string out_file = m_options["output-pdf-file"].as<std::string>();
     result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::PdfOutput{out_file}});
   }
-  if (!m_options["output-likelihood-dir"].empty()) {
-    std::string out_dir = m_options["output-likelihood-dir"].as<std::string>();
+  if (!m_options[OUTPUT_POSTERIOR_DIR].empty()) {
+    std::string out_dir = m_options[OUTPUT_POSTERIOR_DIR].as<std::string>();
     result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::LikelihoodHandler{out_dir}});
   }
   return std::unique_ptr<PhzOutput::OutputHandler>{result.release()};
 }
 
 PhzLikelihood::SourcePhzFunctor::MarginalizationFunction ComputeRedshiftsConfiguration::getMarginalizationFunc() {
-  if (m_options["marginalization-type"].empty()) {
-    throw Elements::Exception() << "Missing mandatory parameter marginalization-type";
+  if (m_options[AXES_COLLAPSE_TYPE].empty()) {
+    throw Elements::Exception() << "Missing mandatory parameter " << AXES_COLLAPSE_TYPE;
   }
-  if (m_options["marginalization-type"].as<std::string>() == "SUM") {
+  if (m_options[AXES_COLLAPSE_TYPE].as<std::string>() == "SUM") {
     return PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{};
   }
-  if (m_options["marginalization-type"].as<std::string>() == "MAX") {
+  if (m_options[AXES_COLLAPSE_TYPE].as<std::string>() == "MAX") {
     return PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{};
   }
-  if (m_options["marginalization-type"].as<std::string>() == "BAYESIAN") {
+  if (m_options[AXES_COLLAPSE_TYPE].as<std::string>() == "BAYESIAN") {
     return PhzLikelihood::BayesianMarginalizationFunctor{};
   }
-  throw Elements::Exception() << "Unknown marginalization type \""
-                    << m_options["marginalization-type"].as<std::string>() << "\"";
+  throw Elements::Exception() << "Unknown " << AXES_COLLAPSE_TYPE << " \""
+                    << m_options[AXES_COLLAPSE_TYPE].as<std::string>() << "\"";
 }
 
 } // end of namespace PhzConfiguration
