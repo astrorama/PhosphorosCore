@@ -27,7 +27,7 @@ static const std::string Z_RANGE {"z-range"};
 static const std::string Z_VALUE {"z-value"};
 
 po::options_description RedshiftConfiguration::getProgramOptions() {
-  po::options_description options {"Redshift option"};
+  po::options_description options {"Redshift options"};
   options.add_options()
    (Z_RANGE.c_str(), po::value<std::vector<std::string>>(),
         "Redshift range: minimum maximum step")
