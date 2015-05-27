@@ -75,6 +75,7 @@ public:
    * Constructs a new CatalogConfiguration instance, for the given options
    * @details
    * The option input-catalog-file is obligatory and it must be an existing file.
+   * If it is a relative path, it is relative to the CATALOGS_DIR/CATALOG_NAME dir.
    * The option input-catalog-format is optional and defaults to automatically
    * detect the format of the file. The parameters source-id-column-name and
    * source-id-column-index are mutually exclusive and if are both missing they
