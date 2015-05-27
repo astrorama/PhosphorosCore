@@ -12,6 +12,7 @@
 
 #include <boost/program_options.hpp>
 #include "XYDataset/XYDatasetProvider.h"
+#include "PhzConfiguration/PhosphorosPathConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -22,8 +23,6 @@ namespace PhzConfiguration {
  * This class defines the Filter parameter options
  * @details
  * The parameters available are:
- * filter-root-path : string root path to the filters
- * The three following parameters can be used multiple times
  * filter-group     : string a filter group(only one) e.g. filter/MER
  * filter-name      : string a filter name (only one) e.g. MER/vis
  * filter-exclude   : string a filter name to be excluded (only one)
@@ -31,7 +30,7 @@ namespace PhzConfiguration {
  * ElementException: Missing or unknown filter dataset provider options
  * ElementException: Empty filter list
  */
-class FilterConfiguration {
+class FilterConfiguration : PhosphorosPathConfiguration {
   
 public:
   
@@ -50,7 +49,6 @@ public:
    *
    * @details
    * The filter options are:
-   * filter-root-path : string, the root path of the filters
    * filter-group     : vector of strings, goup name   e.g. filter/MER
    * filter-name      : vector of strings, filter name e.g. filter/MER/vis
    * filter-exclude   : vector of strings, filter name to be excluded
@@ -58,8 +56,7 @@ public:
    * A map containing the options and their values.
    *
    */
-  FilterConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
-                     : m_options{options} {};
+  FilterConfiguration(const std::map<std::string, boost::program_options::variable_value>& options);
   
    /**
    * @brief destructor.
@@ -70,8 +67,6 @@ public:
    * @brief
    * This function provides a XYdatasetProvider object
    * @details
-   * @throw ElementException
-   * Missing  <filter-root-path> or unknown filter dataset provider options
    * @return
    * A unique pointer of XYDatasetProvider type
    */
@@ -81,8 +76,6 @@ public:
    * @brief
    * This function provides a filter list
    * @details
-   * @throw ElementException
-   * Missing  <filter-root-path> or unknown filter dataset provider options
    * @throw ElementException
    *  Empty filter list
    * @return

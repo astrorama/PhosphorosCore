@@ -20,7 +20,6 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string FILTER_ROOT_PATH {"filter-root-path"};
 static const std::string FILTER_GROUP {"filter-group"};
 static const std::string FILTER_EXCLUDE {"filter-exclude"};
 static const std::string FILTER_NAME {"filter-name"};
@@ -30,8 +29,6 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration
 po::options_description FilterConfiguration::getProgramOptions() {
   po::options_description options {"Photometric filter options"};
   options.add_options()
-    (FILTER_ROOT_PATH.c_str(), po::value<std::string>(),
-        "The directory containing the Filter datasets, organized in folders")
     (FILTER_GROUP.c_str(), po::value<std::vector<std::string>>(),
         "Use all the Filters in the given group and subgroups")
     (FILTER_EXCLUDE.c_str(), po::value<std::vector<std::string>>(),
@@ -41,15 +38,18 @@ po::options_description FilterConfiguration::getProgramOptions() {
   return options;
 }
 
+FilterConfiguration::FilterConfiguration(const std::map<std::string, po::variable_value>& options)
+        : PhosphorosPathConfiguration(options) {
+  m_options = options;
+}
+
+
 std::unique_ptr<XYDataset::XYDatasetProvider> FilterConfiguration::getFilterDatasetProvider() {
-  if (!m_options[FILTER_ROOT_PATH].empty()) {
-    std::string path = m_options[FILTER_ROOT_PATH].as<std::string>();
-    std::unique_ptr<XYDataset::FileParser> file_parser {new XYDataset::AsciiParser{}};
-    return std::unique_ptr<XYDataset::XYDatasetProvider> {
-      new XYDataset::FileSystemProvider{path, std::move(file_parser)}
-    };
-  }
-  throw Elements::Exception {"Missing or unknown filter dataset provider options : <filter-root-path>"};
+  auto path = getAuxDataDir() / "Filters";
+  std::unique_ptr<XYDataset::FileParser> file_parser {new XYDataset::AsciiParser{}};
+  return std::unique_ptr<XYDataset::XYDatasetProvider> {
+    new XYDataset::FileSystemProvider{path.string(), std::move(file_parser)}
+  };
 }
 
 std::vector<XYDataset::QualifiedName> FilterConfiguration::getFilterList() {
