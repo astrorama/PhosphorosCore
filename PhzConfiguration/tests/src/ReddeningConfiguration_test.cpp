@@ -9,11 +9,13 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <set>
 
 #include <boost/test/unit_test.hpp>
 
 #include "ElementsKernel/Temporary.h"
 #include "ElementsKernel/Exception.h"
+#include "XYDataset/QualifiedName.h"
 #include "XYDataset/AsciiParser.h"
 #include "XYDataset/FileSystemProvider.h"
 #include "PhzConfiguration/ReddeningConfiguration.h"
@@ -24,19 +26,19 @@ namespace cf = Euclid::PhzConfiguration;
 
 struct ReddeningConfiguration_Fixture {
 
-  const std::string REDDENING_CURVE_ROOT_PATH {"reddening-curve-root-path"};
+  const std::string AUX_DATA_DIR {"aux-data-dir"};
   const std::string REDDENING_CURVE_GROUP {"reddening-curve-group"};
   const std::string REDDENING_CURVE_EXCLUDE {"reddening-curve-exclude"};
   const std::string REDDENING_CURVE_NAME {"reddening-curve-name"};
   const std::string EBV_RANGE {"ebv-range"};
   const std::string EBV_VALUE {"ebv-value"};
 
-  std::string group { "reddening/CAL" };
+  std::string group { "CAL" };
   // Do not forget the "/" at the end of the base directory
   Elements::TempDir temp_dir;
   std::string base_directory { temp_dir.path().native()+"/extinction_laws/" };
-  std::string cal_directory    = base_directory + "reddening/CAL";
-  std::string others_directory = base_directory + "reddening/OTHERS";
+  std::string cal_directory    = base_directory + "ReddeningCurves/CAL";
+  std::string others_directory = base_directory + "ReddeningCurves/OTHERS";
 
   std::map<std::string, po::variable_value> options_map;
   std::map<std::string, po::variable_value> empty_map;
@@ -76,7 +78,7 @@ struct ReddeningConfiguration_Fixture {
     extlaw_file.close();
 
     // Fill up options
-    options_map[REDDENING_CURVE_ROOT_PATH].value() = boost::any(base_directory);
+    options_map[AUX_DATA_DIR].value() = boost::any(base_directory);
     options_map[REDDENING_CURVE_GROUP].value() = boost::any(group_vector);
 
     // Ebv
@@ -95,7 +97,7 @@ struct ReddeningConfiguration_Fixture {
 BOOST_AUTO_TEST_SUITE (ReddeningConfiguration_test)
 
 //-----------------------------------------------------------------------------
-// Test the getProgramOptions function for Reddening-root-path
+// Test the getProgramOptions function
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, ReddeningConfiguration_Fixture) {
@@ -107,8 +109,6 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, ReddeningConfiguration_
   auto option_desc = Euclid::PhzConfiguration::ReddeningConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc{};
 
-  desc = option_desc.find_nothrow(REDDENING_CURVE_ROOT_PATH, false);
-  BOOST_CHECK(desc != nullptr);
   desc = option_desc.find_nothrow(REDDENING_CURVE_GROUP, false);
   BOOST_CHECK(desc != nullptr);
   desc = option_desc.find_nothrow(REDDENING_CURVE_EXCLUDE, false);
@@ -136,24 +136,10 @@ BOOST_FIXTURE_TEST_CASE(getReddeningDatasetProvider_function_test, ReddeningConf
   auto fdp     = fconf.getReddeningDatasetProvider();
   auto vec_fdp = fdp->listContents(group);
 
-  BOOST_CHECK_EQUAL(vec_fdp[0].datasetName(), "calzetti_1");
-  BOOST_CHECK_EQUAL(vec_fdp[1].datasetName(), "calzetti_2");
-
-}
-
-//-----------------------------------------------------------------------------
-// Test the getReddeningDatasetProvider function
-//-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE(getReddeningDatasetProvider_exception_function_test, ReddeningConfiguration_Fixture) {
-
-  BOOST_TEST_MESSAGE(" ");
-  BOOST_TEST_MESSAGE("--> Testing the exception of getReddeningDatasetProvider function");
-  BOOST_TEST_MESSAGE(" ");
-
-  cf::ReddeningConfiguration fconf(empty_map);
-
-  BOOST_CHECK_THROW(fconf.getReddeningDatasetProvider(), Elements::Exception);
+  BOOST_CHECK_EQUAL(vec_fdp.size(), 2);
+  std::set<Euclid::XYDataset::QualifiedName> set_fdp {vec_fdp.begin(), vec_fdp.end()};
+  BOOST_CHECK_EQUAL(set_fdp.count({"CAL/calzetti_1"}), 1);
+  BOOST_CHECK_EQUAL(set_fdp.count({"CAL/calzetti_2"}), 1);
 
 }
 
@@ -170,8 +156,10 @@ BOOST_FIXTURE_TEST_CASE(getReddeningCurveList_function_test, ReddeningConfigurat
   cf::ReddeningConfiguration fconf(options_map);
   auto list = fconf.getReddeningCurveList();
 
-  BOOST_CHECK_EQUAL(list[0].datasetName(), "calzetti_1");
-  BOOST_CHECK_EQUAL(list[1].datasetName(), "calzetti_2");
+  BOOST_CHECK_EQUAL(list.size(), 2);
+  std::set<Euclid::XYDataset::QualifiedName> set {list.begin(), list.end()};
+  BOOST_CHECK_EQUAL(set.count({"CAL/calzetti_1"}), 1);
+  BOOST_CHECK_EQUAL(set.count({"CAL/calzetti_2"}), 1);
 
 }
 
@@ -186,15 +174,15 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_exclude_function_test, ReddeningConfigu
   BOOST_TEST_MESSAGE(" ");
 
   // Reddening to be excluded and a non existant Reddening
-  exclude_vector.push_back("reddening/CAL/calzetti_1");
-  exclude_vector.push_back("reddening/CAL/FILE_DOES_NOT_EXIST");
+  exclude_vector.push_back("CAL/calzetti_1");
+  exclude_vector.push_back("CAL/FILE_DOES_NOT_EXIST");
   options_map[REDDENING_CURVE_EXCLUDE].value() = boost::any(exclude_vector);
 
   cf::ReddeningConfiguration fconf(options_map);
   auto list = fconf.getReddeningCurveList();
 
   BOOST_CHECK_EQUAL(list.size(), 1);
-  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "reddening/CAL/calzetti_2");
+  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "CAL/calzetti_2");
 
 }
 
@@ -209,14 +197,15 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_add_function_test, ReddeningConfigurati
   BOOST_TEST_MESSAGE(" ");
 
   // Reddening to be added
-  add_vector.push_back("reddening/OTHERS/ext_law");
+  add_vector.push_back("OTHERS/ext_law");
   options_map[REDDENING_CURVE_NAME].value() = boost::any(add_vector);
 
   cf::ReddeningConfiguration fconf(options_map);
   auto list = fconf.getReddeningCurveList();
 
   BOOST_CHECK_EQUAL(list.size(), 3);
-  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "reddening/OTHERS/ext_law");
+  std::set<Euclid::XYDataset::QualifiedName> set {list.begin(), list.end()};
+  BOOST_CHECK_EQUAL(set.count({"OTHERS/ext_law"}), 1);
 
 }
 
@@ -234,14 +223,15 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_add_twice_function_test, ReddeningConfi
   auto list = fconf.getReddeningCurveList();
 
   // Add twice the same Reddening
-  add_vector.push_back("reddening/CAL/calzetti_2");
+  add_vector.push_back("CAL/calzetti_2");
   options_map[REDDENING_CURVE_NAME].value() = boost::any(add_vector);
 
   cf::ReddeningConfiguration fconf2(options_map);
   auto list2 = fconf2.getReddeningCurveList();
 
   BOOST_CHECK_EQUAL(list.size(), list2.size());
-  BOOST_CHECK_EQUAL(list[1].qualifiedName(), "reddening/CAL/calzetti_2");
+  std::set<Euclid::XYDataset::QualifiedName> set {list.begin(), list.end()};
+  BOOST_CHECK_EQUAL(set.count({"CAL/calzetti_2"}), 1);
 
 }
 

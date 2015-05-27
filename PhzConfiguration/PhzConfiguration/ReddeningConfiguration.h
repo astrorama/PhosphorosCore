@@ -11,6 +11,7 @@
 #include <string>
 #include <boost/program_options.hpp>
 #include "XYDataset/XYDatasetProvider.h"
+#include "PhzConfiguration/PhosphorosPathConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -21,8 +22,6 @@ namespace PhzConfiguration {
  * This class defines the Reddening parameter options
  * @details
  * The parameters available are: \n
- * - \b reddening-root-path : string, a root path to the reddening curves\n
- * The following parameters can be used multiple times\n
  * - \b reddening-group   : string, a reddening group(only one) e.g. reddening/CAL \n
  * - \b reddening-name    : string, a reddening name (only one) e.g. CAL/calzetti \n
  * - \b reddening-exclude : string, a reddening name to be excluded (only one) \n
@@ -43,13 +42,12 @@ namespace PhzConfiguration {
  * parameter must contain only one value. \n
  * A regex is applied for ebv-value : `((\\d+(\\.\\d*)?)|(\\.\\d+))($|\\s+)`
  * @throw Elements::Exception
- * - Missing or unknown reddening dataset provider options: <reddening-curve-root-path>
  * - Invalid character(s) for the ebv-value option
  * - Invalid range(s) for ebv-range option
  * - Empty ebv list (check the options ebv-range and ebv-value)
  */
 
-class ReddeningConfiguration {
+class ReddeningConfiguration : PhosphorosPathConfiguration {
   
 public:
   
@@ -69,7 +67,6 @@ public:
    * @details
    * The reddening options are provided through a STL map which contains the
    * following informations:
-   * - \b reddening-root-path : string, the root path of the reddening
    * - \b reddening-group     : vector of strings, goup name
    * - \b reddening-name      : vector of strings, reddening name
    * - \b reddening-exclude   : vector of strings, reddening name to be excluded
@@ -79,8 +76,7 @@ public:
    * A map containing the options and their values.
    *
    */
-  ReddeningConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
-                     : m_options{options} {};
+  ReddeningConfiguration(const std::map<std::string, boost::program_options::variable_value>& options);
   
    /**
    * @brief destructor.
@@ -90,9 +86,6 @@ public:
   /**
    * @brief
    * This function provides a XYdatasetProvider object
-   * @details
-   * @throw Elements::Exception
-   * - Missing  <reddening-root-path> or unknown reddening dataset provider options
    * @return
    * A unique pointer of XYDatasetProvider type
    */
@@ -103,7 +96,6 @@ public:
    * This function provides a reddening curve list
    * @details
    * @throw Elements::Exception
-   * - Missing  <reddening-root-path> or unknown reddening dataset provider options
    * - Empty reddening list
    * @return
    * A vector of QualifiedName types
@@ -120,7 +112,6 @@ public:
    * - regex for the ebv-value : `((\\d+(\\.\\d*)?)|(\\.\\d+))($|\\s+)`
    *
    * @throw Elements::Exception
-   * - Missing  <filter-root-path> or unknown filter dataset provider options
    * - Invalid range(s) for the ebv-range option!
    * - Invalid character(s) for the ebv-range option!
    * - Invalid character(s) for the ebv-value option!

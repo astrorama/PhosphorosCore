@@ -24,7 +24,6 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string REDDENING_CURVE_ROOT_PATH {"reddening-curve-root-path"};
 static const std::string REDDENING_CURVE_GROUP {"reddening-curve-group"};
 static const std::string REDDENING_CURVE_EXCLUDE {"reddening-curve-exclude"};
 static const std::string REDDENING_CURVE_NAME {"reddening-curve-name"};
@@ -36,8 +35,6 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration
 po::options_description ReddeningConfiguration::getProgramOptions() {
   po::options_description options {"Extinction options"};
   options.add_options()
-    (REDDENING_CURVE_ROOT_PATH.c_str(), po::value<std::string>(),
-        "The directory containing the reddening curves")
     (REDDENING_CURVE_GROUP.c_str(), po::value<std::vector<std::string>>(),
         "Use all the reddening curves in the given group and subgroups")
     (REDDENING_CURVE_EXCLUDE.c_str(), po::value<std::vector<std::string>>(),
@@ -51,15 +48,17 @@ po::options_description ReddeningConfiguration::getProgramOptions() {
   return options;
 }
 
+ReddeningConfiguration::ReddeningConfiguration(const std::map<std::string, po::variable_value>& options)
+        : PhosphorosPathConfiguration(options) {
+  m_options = options;
+}
+
 std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> ReddeningConfiguration::getReddeningDatasetProvider() {
-  if (!m_options[REDDENING_CURVE_ROOT_PATH].empty()) {
-    std::string path = m_options[REDDENING_CURVE_ROOT_PATH].as<std::string>();
-    std::unique_ptr<Euclid::XYDataset::FileParser> file_parser {new Euclid::XYDataset::AsciiParser{}};
-    return std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> {
-      new Euclid::XYDataset::FileSystemProvider{path, std::move(file_parser)}
-    };
-  }
-  throw Elements::Exception() << "Missing or unknown reddening dataset provider options : <" << REDDENING_CURVE_ROOT_PATH << ">";
+  auto path = getAuxDataDir() / "ReddeningCurves";
+  std::unique_ptr<Euclid::XYDataset::FileParser> file_parser {new Euclid::XYDataset::AsciiParser{}};
+  return std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> {
+    new Euclid::XYDataset::FileSystemProvider{path.string(), std::move(file_parser)}
+  };
 }
 
 std::vector<Euclid::XYDataset::QualifiedName> ReddeningConfiguration::getReddeningCurveList() {
