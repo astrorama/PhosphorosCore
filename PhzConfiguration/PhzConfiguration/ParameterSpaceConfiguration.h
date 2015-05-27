@@ -62,8 +62,7 @@ public:
    * A map containing the options and their values.
    *
    */
-  ParameterSpaceConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
-            : SedConfiguration(options), RedshiftConfiguration(options), ReddeningConfiguration(options) {};
+  ParameterSpaceConfiguration(const std::map<std::string, boost::program_options::variable_value>& options);
   
    /**
    * @brief destructor.

@@ -29,6 +29,8 @@ namespace fs = boost::filesystem;
 
 struct ComputeModelGridConfiguration_Fixture {
 
+  const std::string CATALOG_NAME {"catalog-name"};
+  const std::string INTERMEDIATE_PRODUCTS_DIR {"intermediate-products-dir"};
   const std::string OUTPUT_MODEL_GRID {"output-model-grid"};
   const std::string IAM_ABSORPTION_TYPE {"igm-absorption-type"};
   const std::string FILTER_NAME {"filter-name"};
@@ -57,7 +59,8 @@ struct ComputeModelGridConfiguration_Fixture {
   std::map<std::string, po::variable_value> options_map;
 
   ComputeModelGridConfiguration_Fixture() {
-
+    options_map[CATALOG_NAME].value() = boost::any(std::string{"CatalogName"});
+    options_map[INTERMEDIATE_PRODUCTS_DIR].value() = boost::any(temp_dir.path().string());
   }
   ~ComputeModelGridConfiguration_Fixture() {
   }
@@ -143,6 +146,95 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, ComputeModelGridConfiguration_Fi
   // Create a binary file
   fs::path test_file = temp_dir.path()/"test/directory/creation/test_writing_binary_file.dat";
   options_map[OUTPUT_MODEL_GRID].value() = test_file.string();
+  options_map[IAM_ABSORPTION_TYPE].value() = std::string{"MADAU"};
+  options_map[FILTER_NAME].value() = std::vector<std::string>{};
+  options_map[FILTER_NAME].as<std::vector<std::string>>().push_back("filter1");
+  options_map[FILTER_NAME].as<std::vector<std::string>>().push_back("filter2");
+
+  cf::ComputeModelGridConfiguration cpgc(options_map);
+  auto output_func = cpgc.getOutputFunction();
+
+  auto axes=Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes};
+  original_grid(0,0,0,0)=photometry_1;
+  original_grid(1,0,0,0)=photometry_2;
+  original_grid(0,1,0,0)=photometry_3;
+  original_grid(1,1,0,0)=photometry_4;
+
+  output_func(original_grid);
+
+  // Read the binary file created
+  std::ifstream ifs {};
+  ifs.open (test_file.string(), std::ios::binary);
+  boost::archive::binary_iarchive ia(ifs);
+  Euclid::PhzDataModel::PhotometryGridInfo info;
+  ia >> info;
+  auto retrieved_grid = Euclid::PhzDataModel::phzGridBinaryImport<Euclid::PhzDataModel::PhotometryCellManager>(ifs);
+
+  BOOST_CHECK_EQUAL("MADAU", info.igm_method);
+  BOOST_CHECK_EQUAL(2, info.filter_names.size());
+  BOOST_CHECK_EQUAL("filter1", info.filter_names[0].qualifiedName());
+  BOOST_CHECK_EQUAL("filter2", info.filter_names[1].qualifiedName());
+  BOOST_CHECK_EQUAL(original_grid.size(),retrieved_grid.size());
+}
+
+//-----------------------------------------------------------------------------
+// Test the getOutputFunction with relative path
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(getOutputFunctionRelative_test, ComputeModelGridConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the getOutputFunction function with relative path");
+  BOOST_TEST_MESSAGE(" ");
+
+  // Create a binary file
+  fs::path test_file = temp_dir.path()/"CatalogName/ModelGrids/my/path/test_writing_binary_file.dat";
+  options_map[OUTPUT_MODEL_GRID].value() = std::string{"my/path/test_writing_binary_file.dat"};
+  options_map[IAM_ABSORPTION_TYPE].value() = std::string{"MADAU"};
+  options_map[FILTER_NAME].value() = std::vector<std::string>{};
+  options_map[FILTER_NAME].as<std::vector<std::string>>().push_back("filter1");
+  options_map[FILTER_NAME].as<std::vector<std::string>>().push_back("filter2");
+
+  cf::ComputeModelGridConfiguration cpgc(options_map);
+  auto output_func = cpgc.getOutputFunction();
+
+  auto axes=Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes};
+  original_grid(0,0,0,0)=photometry_1;
+  original_grid(1,0,0,0)=photometry_2;
+  original_grid(0,1,0,0)=photometry_3;
+  original_grid(1,1,0,0)=photometry_4;
+
+  output_func(original_grid);
+
+  // Read the binary file created
+  std::ifstream ifs {};
+  ifs.open (test_file.string(), std::ios::binary);
+  boost::archive::binary_iarchive ia(ifs);
+  Euclid::PhzDataModel::PhotometryGridInfo info;
+  ia >> info;
+  auto retrieved_grid = Euclid::PhzDataModel::phzGridBinaryImport<Euclid::PhzDataModel::PhotometryCellManager>(ifs);
+
+  BOOST_CHECK_EQUAL("MADAU", info.igm_method);
+  BOOST_CHECK_EQUAL(2, info.filter_names.size());
+  BOOST_CHECK_EQUAL("filter1", info.filter_names[0].qualifiedName());
+  BOOST_CHECK_EQUAL("filter2", info.filter_names[1].qualifiedName());
+  BOOST_CHECK_EQUAL(original_grid.size(),retrieved_grid.size());
+}
+
+//-----------------------------------------------------------------------------
+// Test the getOutputFunction with default path
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(getOutputFunctionDefault_test, ComputeModelGridConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the getOutputFunction function with default path");
+  BOOST_TEST_MESSAGE(" ");
+
+  // Create a binary file
+  fs::path test_file = temp_dir.path()/"CatalogName/ModelGrids/model_grid.dat";
   options_map[IAM_ABSORPTION_TYPE].value() = std::string{"MADAU"};
   options_map[FILTER_NAME].value() = std::vector<std::string>{};
   options_map[FILTER_NAME].as<std::vector<std::string>>().push_back("filter1");

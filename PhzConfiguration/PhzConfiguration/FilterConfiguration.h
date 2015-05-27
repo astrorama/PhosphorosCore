@@ -31,8 +31,8 @@ namespace PhzConfiguration {
  * ElementException: Missing or unknown filter dataset provider options
  * ElementException: Empty filter list
  */
-class FilterConfiguration : PhosphorosPathConfiguration,
-                            CatalogNameConfiguration {
+class FilterConfiguration : public virtual PhosphorosPathConfiguration,
+                            public virtual CatalogNameConfiguration {
   
 public:
   

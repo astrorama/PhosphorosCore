@@ -47,7 +47,7 @@ namespace PhzConfiguration {
  * - Empty ebv list (check the options ebv-range and ebv-value)
  */
 
-class ReddeningConfiguration :  PhosphorosPathConfiguration {
+class ReddeningConfiguration : public virtual PhosphorosPathConfiguration {
   
 public:
   

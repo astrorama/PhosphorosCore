@@ -33,7 +33,7 @@ namespace PhzConfiguration {
  * - Empty sed list
  */
 
-class SedConfiguration : public PhosphorosPathConfiguration {
+class SedConfiguration : public virtual PhosphorosPathConfiguration {
 
 public:
 

@@ -30,13 +30,30 @@ static const std::string OUTPUT_MODEL_GRID {"output-model-grid"};
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
-ComputeModelGridConfiguration::ComputeModelGridConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
-         : ParameterSpaceConfiguration(options), FilterConfiguration(options), IgmConfiguration(options) {
+static std::string getFilenameFromOptions(const std::map<std::string, po::variable_value>& options,
+                                          const fs::path& intermediate_dir,
+                                          const std::string& catalog_name) {
+  fs::path result = intermediate_dir / catalog_name / "ModelGrids" / "model_grid.dat";
+  if (options.count(OUTPUT_MODEL_GRID) > 0) {
+    fs::path path = options.at(OUTPUT_MODEL_GRID).as<std::string>();
+    if (path.is_absolute()) {
+      result = path;
+    } else {
+      result = intermediate_dir / catalog_name / "ModelGrids" / path;
+    }
+  }
+  return result.string();
+}
+
+ComputeModelGridConfiguration::ComputeModelGridConfiguration(const std::map<std::string, po::variable_value>& options)
+         : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options),
+           ParameterSpaceConfiguration(options), FilterConfiguration(options),
+           IgmConfiguration(options) {
 
   m_options = options;
 
   // Extract file option
-  std::string filename = m_options[OUTPUT_MODEL_GRID].as<std::string>();
+  std::string filename = getFilenameFromOptions(options, getIntermediateDir(), getCatalogName());
 
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
@@ -61,7 +78,7 @@ po::options_description ComputeModelGridConfiguration::getProgramOptions() {
 ComputeModelGridConfiguration::OutputFunction ComputeModelGridConfiguration::getOutputFunction() {
   return [this](const PhzDataModel::PhotometryGrid& grid) {
     auto logger = Elements::Logging::getLogger("PhzOutput");
-    auto filename = m_options[OUTPUT_MODEL_GRID].as<std::string>();
+    auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogName());
     std::ofstream out {filename};
     PhzDataModel::PhotometryGridInfo info{};
     info.axes = grid.getAxesTuple();

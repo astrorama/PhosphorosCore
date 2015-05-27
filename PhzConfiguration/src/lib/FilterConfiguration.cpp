@@ -38,7 +38,8 @@ po::options_description FilterConfiguration::getProgramOptions() {
         "Add a single filter name");
   
   return merge(options)
-              (PhosphorosPathConfiguration::getProgramOptions());
+              (PhosphorosPathConfiguration::getProgramOptions())
+              (CatalogNameConfiguration::getProgramOptions());
 }
 
 FilterConfiguration::FilterConfiguration(const std::map<std::string, po::variable_value>& options)
