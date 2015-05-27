@@ -14,6 +14,7 @@
 #include "Table/FitsReader.h"
 #include "SourceCatalog/CatalogFromTable.h"
 #include "PhzConfiguration/CatalogConfiguration.h"
+#include "ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -39,10 +40,16 @@ po::options_description CatalogConfiguration::getProgramOptions() {
         "The name of the column representing the source ID")
     (SOURCE_ID_COLUMN_INDEX.c_str(), po::value<int>(),
         "The index of the column representing the source ID");
-  return options;
+  return merge(options)
+              (PhosphorosPathConfiguration::getProgramOptions())
+              (CatalogNameConfiguration::getProgramOptions());
 }
 
-CatalogConfiguration::CatalogConfiguration(const std::map<std::string, po::variable_value>& options) : m_options{options} {
+CatalogConfiguration::CatalogConfiguration(const std::map<std::string, po::variable_value>& options)
+            : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options) {
+  
+  m_options = options;
+  
   if (m_options[INPUT_CATALOG_FILE].empty()) {
     logger.error("Missing option input-catalog-file");
     throw Elements::Exception() << "Missing mandatory option :" << INPUT_CATALOG_FILE;

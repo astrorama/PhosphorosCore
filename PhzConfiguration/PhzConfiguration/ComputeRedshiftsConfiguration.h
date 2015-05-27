@@ -32,10 +32,10 @@ namespace PhzConfiguration {
  * - Model photometry grid
  * and it adds the required configuration for the output of the executable.
  */
-class ComputeRedshiftsConfiguration : virtual public PriorConfiguration,
-                                  public PhotometricCorrectionConfiguration,
-                                  public PhotometryCatalogConfiguration,
-                                  public PhotometryGridConfiguration {
+class ComputeRedshiftsConfiguration : public PhotometryCatalogConfiguration,
+                                      public PhotometricCorrectionConfiguration,
+                                      public PhotometryGridConfiguration,
+                                      public PriorConfiguration {
 
 public:
 

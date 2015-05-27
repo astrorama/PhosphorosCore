@@ -49,8 +49,10 @@ po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
 }
 
 ComputeRedshiftsConfiguration::ComputeRedshiftsConfiguration(const std::map<std::string, po::variable_value>& options)
-          : PriorConfiguration(), CatalogConfiguration(options), PhotometricCorrectionConfiguration(options),
-            PhotometryCatalogConfiguration(options), PhotometryGridConfiguration(options) {
+          : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options),
+            CatalogConfiguration(options), PhotometryCatalogConfiguration(options),
+            PhotometricCorrectionConfiguration(options), PhotometryGridConfiguration(options),
+            PriorConfiguration() {
   m_options = options;
 
   // Check that the given grid contains photometries for all the filters we

@@ -53,7 +53,8 @@ po::options_description ComputePhotometricCorrectionsConfiguration::getProgramOp
 
 ComputePhotometricCorrectionsConfiguration::ComputePhotometricCorrectionsConfiguration(
             const std::map<std::string, boost::program_options::variable_value>& options)
-      : CatalogConfiguration(options), PhotometryCatalogConfiguration(options),
+      : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options),
+        CatalogConfiguration(options), PhotometryCatalogConfiguration(options),
         SpectroscopicRedshiftCatalogConfiguration(options), PhotometryGridConfiguration(options) {
   
   m_options = options;

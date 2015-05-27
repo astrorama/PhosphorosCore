@@ -14,6 +14,8 @@
 #include "SourceCatalog/AttributeFromRow.h"
 #include "SourceCatalog/Catalog.h"
 #include "Table/Table.h"
+#include "PhzConfiguration/CatalogNameConfiguration.h"
+#include "PhzConfiguration/PhosphorosPathConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -47,7 +49,8 @@ namespace PhzConfiguration {
  * Note that the subclasses are aware only of the Table::Table object and that
  * the actual format the catalog is stored is abstracted by the CatalogConfiguration.
  */
-class CatalogConfiguration {
+class CatalogConfiguration : public virtual PhosphorosPathConfiguration,
+                             public virtual CatalogNameConfiguration {
 
 public:
 
