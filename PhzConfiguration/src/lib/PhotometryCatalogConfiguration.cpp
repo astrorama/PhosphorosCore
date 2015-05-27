@@ -101,6 +101,14 @@ PhotometryCatalogConfiguration::PhotometryCatalogConfiguration(const std::map<st
     }
   }
   
+  if (!exclude_filters.empty()) {
+    std::stringstream wrong_filters {};
+    for (auto& f : exclude_filters) {
+      wrong_filters << f << " ";
+    }
+    throw Elements::Exception() << "Wrong " << EXCLUDE_FILTER << " option value(s) : " << wrong_filters.str();
+  }
+  
   if (filter_name_mapping.size() < 2) {
     logger.error() << "Found only " << filter_name_mapping.size() << " mappings in " << filename;
     throw Elements::Exception() << "Need two or more source photometries to operate (check " << filename << " file)";
