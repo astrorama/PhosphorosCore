@@ -13,6 +13,7 @@
 #include "PhzConfiguration/ComputeRedshiftsConfiguration.h"
 #include "PhzOutput/LikelihoodHandler.h"
 #include "CheckPhotometries.h"
+#include "ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 
@@ -41,11 +42,10 @@ po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
   (OUTPUT_POSTERIOR_DIR.c_str(), po::value<std::string>(),
         "The directory where the posterior grids are stored");
 
-  options.add(PhotometricCorrectionConfiguration::getProgramOptions());
-  options.add(PhotometryCatalogConfiguration::getProgramOptions());
-  options.add(PhotometryGridConfiguration::getProgramOptions());
-
-  return options;
+  return merge(options)
+              (PhotometricCorrectionConfiguration::getProgramOptions())
+              (PhotometryCatalogConfiguration::getProgramOptions())
+              (PhotometryGridConfiguration::getProgramOptions());
 }
 
 ComputeRedshiftsConfiguration::ComputeRedshiftsConfiguration(const std::map<std::string, po::variable_value>& options)

@@ -15,6 +15,7 @@
 #include "XYDataset/FileSystemProvider.h"
 #include "PhzConfiguration/ReddeningConfiguration.h"
 #include "CheckString.h"
+#include "ProgramOptionsHelper.h"
 
 using boost::regex;
 using boost::regex_match;
@@ -45,7 +46,9 @@ po::options_description ReddeningConfiguration::getProgramOptions() {
         "E(B-V) range: minimum maximum step")
     (EBV_VALUE.c_str(), po::value<std::vector<std::string>>(),
         "A single E(B-V) value");
-  return options;
+
+  return merge(options)
+              (PhosphorosPathConfiguration::getProgramOptions());
 }
 
 ReddeningConfiguration::ReddeningConfiguration(const std::map<std::string, po::variable_value>& options)

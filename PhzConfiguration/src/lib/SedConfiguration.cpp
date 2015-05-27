@@ -11,6 +11,7 @@
 #include "XYDataset/AsciiParser.h"
 #include "XYDataset/FileSystemProvider.h"
 #include "PhzConfiguration/SedConfiguration.h"
+#include "ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 
@@ -30,7 +31,9 @@ po::options_description SedConfiguration::getProgramOptions() {
         "Exclude a sed name")
     (SED_NAME.c_str(), po::value<std::vector<std::string>>(),
         "A single sed name");
-  return options;
+  
+  return merge(options)
+              (PhosphorosPathConfiguration::getProgramOptions());
 }
 
 SedConfiguration::SedConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)

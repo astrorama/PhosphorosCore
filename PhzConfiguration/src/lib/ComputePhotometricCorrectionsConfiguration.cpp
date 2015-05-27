@@ -15,6 +15,7 @@
 #include "PhzPhotometricCorrection/FindWeightedMedianPhotometricCorrectionsFunctor.h"
 #include "PhzUtils/FileUtils.h"
 #include "CheckPhotometries.h"
+#include "ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -44,19 +45,10 @@ po::options_description ComputePhotometricCorrectionsConfiguration::getProgramOp
   (PHOT_CORR_SELECTION_METHOD.c_str(), boost::program_options::value<std::string>(),
       "The method used for selecting the photometric correction (MEDIAN, WEIGHTED_MEDIAN, MEAN, WEIGHTED_MEAN)");
 
-  // We get all the catalog options. We are careful not to add an option twice.
-  po::options_description catalog_options = PhotometryCatalogConfiguration::getProgramOptions();
-  auto specz_options = SpectroscopicRedshiftCatalogConfiguration::getProgramOptions();
-  for (auto specz_option : specz_options.options()) {
-    if (catalog_options.find_nothrow(specz_option->long_name(), false) == nullptr) {
-      catalog_options.add(specz_option);
-    }
-  }
-  options.add(catalog_options);
-  
-  options.add(PhotometryGridConfiguration::getProgramOptions());
-
-  return options;
+  return merge(options)
+              (PhotometryCatalogConfiguration::getProgramOptions())
+              (SpectroscopicRedshiftCatalogConfiguration::getProgramOptions())
+              (PhotometryGridConfiguration::getProgramOptions());
 }
 
 ComputePhotometricCorrectionsConfiguration::ComputePhotometricCorrectionsConfiguration(

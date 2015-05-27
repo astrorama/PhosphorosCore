@@ -18,6 +18,7 @@
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzUtils/FileUtils.h"
+#include "ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -50,11 +51,10 @@ po::options_description ComputeModelGridConfiguration::getProgramOptions() {
   (OUTPUT_MODEL_GRID.c_str(), boost::program_options::value<std::string>(),
       "The filename of the file to export in binary format the model grid");
 
-  options.add(ParameterSpaceConfiguration::getProgramOptions());
-  options.add(FilterConfiguration::getProgramOptions());
-  options.add(IgmConfiguration::getProgramOptions());
-
-  return options;
+  return merge(options)
+              (ParameterSpaceConfiguration::getProgramOptions())
+              (FilterConfiguration::getProgramOptions())
+              (IgmConfiguration::getProgramOptions());
 }
 
 

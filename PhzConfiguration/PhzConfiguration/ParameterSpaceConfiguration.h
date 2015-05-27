@@ -13,7 +13,6 @@
 
 #include <boost/program_options.hpp>
 
-#include "XYDataset/XYDatasetProvider.h"
 #include "PhzConfiguration/SedConfiguration.h"
 #include "PhzConfiguration/RedshiftConfiguration.h"
 #include "PhzConfiguration/ReddeningConfiguration.h"
@@ -55,16 +54,7 @@ public:
    * @return
    * A boost::program_options::options_description boost type
    */
-  static boost::program_options::options_description getProgramOptions()
-  {
-    boost::program_options::options_description options {"Parameter space options"};
-
-    options.add(SedConfiguration::getProgramOptions());
-    options.add(RedshiftConfiguration::getProgramOptions());
-    options.add(ReddeningConfiguration::getProgramOptions());
-
-    return options;
-  }
+  static boost::program_options::options_description getProgramOptions();
 
   /**
    * @brief Constructor

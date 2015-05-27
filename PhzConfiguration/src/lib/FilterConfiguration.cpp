@@ -14,6 +14,7 @@
 #include "XYDataset/FileSystemProvider.h"
 #include "PhzConfiguration/FilterConfiguration.h"
 #include "CheckString.h"
+#include "ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 
@@ -35,7 +36,9 @@ po::options_description FilterConfiguration::getProgramOptions() {
         "Exclude a single filter name")
     (FILTER_NAME.c_str(), po::value<std::vector<std::string>>(),
         "Add a single filter name");
-  return options;
+  
+  return merge(options)
+              (PhosphorosPathConfiguration::getProgramOptions());
 }
 
 FilterConfiguration::FilterConfiguration(const std::map<std::string, po::variable_value>& options)
