@@ -39,7 +39,7 @@ po::options_description FilterConfiguration::getProgramOptions() {
 }
 
 FilterConfiguration::FilterConfiguration(const std::map<std::string, po::variable_value>& options)
-        : PhosphorosPathConfiguration(options) {
+        : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options) {
   m_options = options;
 }
 
@@ -90,8 +90,22 @@ std::vector<XYDataset::QualifiedName> FilterConfiguration::getFilterList() {
     }
   }
   if (selected.empty()) {
+    // In case the user did not provide any group-name
+    // we check the default group name which is the catalog_name
+    std::string catalog_name = getCatalogName();
+    // Look for a group with this name
+    logger.warn() << "No filters set by the user, trying to use the default group : \"" << catalog_name << "\" ";
+    auto provider = getFilterDatasetProvider();
+    auto names_in_group = provider->listContents(catalog_name);
+    for (auto& name : names_in_group) {
+      selected.insert(name);
+    }
+  }//Eof first empty
+
+  if (selected.empty()) {
     throw Elements::Exception() << "Empty filter list";
-  }
+  } // Eof empty
+
   return std::vector<XYDataset::QualifiedName> {selected.begin(), selected.end()};
 }
 

@@ -13,6 +13,7 @@
 #include <boost/program_options.hpp>
 #include "XYDataset/XYDatasetProvider.h"
 #include "PhzConfiguration/PhosphorosPathConfiguration.h"
+#include "PhzConfiguration/CatalogNameConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -30,7 +31,8 @@ namespace PhzConfiguration {
  * ElementException: Missing or unknown filter dataset provider options
  * ElementException: Empty filter list
  */
-class FilterConfiguration : PhosphorosPathConfiguration {
+class FilterConfiguration : PhosphorosPathConfiguration,
+                            CatalogNameConfiguration {
   
 public:
   
