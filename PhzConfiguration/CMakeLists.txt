@@ -47,3 +47,6 @@ elements_add_unit_test(ComputePhotometricCorrectionsConfiguration_test tests/src
 elements_add_unit_test(PhotometricCorrectionConfiguration_test tests/src/PhotometricCorrectionConfiguration_test.cpp
                        LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration TYPE Boost)
                        
+elements_add_unit_test(PhosphorosPathConfiguration_test tests/src/PhosphorosPathConfiguration_test.cpp
+                       LINK_LIBRARIES PhzConfiguration TYPE Boost)
+                       
