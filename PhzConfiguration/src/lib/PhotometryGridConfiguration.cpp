@@ -35,23 +35,35 @@ po::options_description PhotometryGridConfiguration::getProgramOptions() {
   return options;
 }
 
+static fs::path getFilenameFromOptions(const std::map<std::string, po::variable_value>& options,
+                                       const fs::path& intermediate_dir, const std::string& catalog_name) {
+  fs::path result = intermediate_dir / catalog_name / "ModelGrids" / "model_grid.dat";
+  if (options.count(MODEL_GRID_FILE) > 0) {
+    fs::path path = options.at(MODEL_GRID_FILE).as<std::string>();
+    if (path.is_absolute()) {
+      result = path;
+    } else {
+      result = intermediate_dir / catalog_name / "ModelGrids" / path;
+    }
+  }
+  return result;
+}
+
 PhotometryGridConfiguration::PhotometryGridConfiguration(const std::map<std::string, po::variable_value>& options)
-                  : m_options{options} {
+                  : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options) {
+  m_options = options;
 }
 
 PhzDataModel::PhotometryGrid PhotometryGridConfiguration::getPhotometryGrid() {
-  if (m_options[MODEL_GRID_FILE].empty()) {
-    throw Elements::Exception() << "Empty parameter option : \"" << MODEL_GRID_FILE << "\"";
-  }
-
-  auto filename = m_options[MODEL_GRID_FILE].as<std::string>();
+  
+  auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogName());
   if (!fs::exists(filename)) {
     logger.error() << "File " << filename << " not found!";
     throw Elements::Exception() << "Model grid file (" << MODEL_GRID_FILE
                                 << " option) does not exist: " << filename;
   }
 
-  std::ifstream in{m_options[MODEL_GRID_FILE].as<std::string>()};
+  std::ifstream in{filename.string()};
   // Skip the PhotometryGridInfo object
   PhzDataModel::PhotometryGridInfo info;
   boost::archive::binary_iarchive bia {in};
@@ -61,18 +73,15 @@ PhzDataModel::PhotometryGrid PhotometryGridConfiguration::getPhotometryGrid() {
 }
 
 PhzDataModel::PhotometryGridInfo PhotometryGridConfiguration::getPhotometryGridInfo() {
-  if (m_options[MODEL_GRID_FILE].empty()) {
-    throw Elements::Exception() << "Empty parameter option : \"" << MODEL_GRID_FILE << "\"";
-  }
 
-  auto filename = m_options[MODEL_GRID_FILE].as<std::string>();
+  auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogName());
   if (!fs::exists(filename)) {
     logger.error() << "File " << filename << " not found!";
     throw Elements::Exception() << "Model grid file (" << MODEL_GRID_FILE
                                 << " option) does not exist: " << filename;
   }
 
-  std::ifstream in{m_options[MODEL_GRID_FILE].as<std::string>()};
+  std::ifstream in{filename.string()};
   PhzDataModel::PhotometryGridInfo info;
   boost::archive::binary_iarchive bia {in};
   bia >> info;

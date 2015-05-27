@@ -16,6 +16,8 @@
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
+#include "PhzConfiguration/PhosphorosPathConfiguration.h"
+#include "PhzConfiguration/CatalogNameConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -33,7 +35,8 @@ namespace PhzConfiguration {
  * - Empty parameter option
  */
 
-class PhotometryGridConfiguration {
+class PhotometryGridConfiguration : public virtual PhosphorosPathConfiguration,
+                                    public virtual CatalogNameConfiguration {
 
 public:
 
@@ -68,10 +71,14 @@ public:
    * This function loads in memory a photometry grid referred by \b model-grid-file
    * options as a PhzDataModel::PhotometryGrid object.
    * @details
-   * @throw ElementException
-   * Empty parameter option
-   * @return
+   * If the given path is relative, it is relative to the directory
+   * INTERMEDIATE_DIR/CATALOG_NAME/ModelGrids. It it is missing completely the
+   * default is INTERMEDIATE_DIR/CATALOG_NAME/ModelGrids/model_grid.dat
+   * 
+   * @returns
    * A PhzDataModel::PhotometryGrid object (the photometry grid)
+   * @throws Elements::Exception
+   *    If the file does not exist
    */
    PhzDataModel::PhotometryGrid getPhotometryGrid();
    
@@ -80,10 +87,10 @@ public:
    * This function loads in memory only the photometry grid information from the
    * file given with the parameter model-grid-file, as a PhzDataModel::PhotometryGridInfo
    * object.
-   * @throw ElementException
-   * Empty parameter option
-   * @return
+   * @returns
    * A PhzDataModel::PhotometryGridInfo object (the photometry grid information)
+   * @throws Elements::Exception
+   *    If the file does not exist
    */
    PhzDataModel::PhotometryGridInfo getPhotometryGridInfo();
 

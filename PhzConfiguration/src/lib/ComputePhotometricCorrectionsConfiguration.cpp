@@ -56,7 +56,7 @@ ComputePhotometricCorrectionsConfiguration::ComputePhotometricCorrectionsConfigu
       : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options),
         CatalogConfiguration(options), PhotometryCatalogConfiguration(options),
         SpectroscopicRedshiftCatalogConfiguration(options), PhotometryGridConfiguration(options) {
-  
+
   m_options = options;
 
   // Extract file option

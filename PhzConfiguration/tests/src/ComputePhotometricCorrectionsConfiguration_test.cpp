@@ -24,25 +24,23 @@ namespace fs = boost::filesystem;
 
 struct ComputePhotometricCorrectionsConfiguration_Fixture {
   
+  const std::string CATALOG_NAME {"catalog-name"};
+  const std::string INTERMEDIATE_PRODUCTS_DIR {"intermediate-products-dir"};
   const std::string OUTPUT_PHOT_CORR_FILE {"output-phot-corr-file"};
   const std::string PHOT_CORR_ITER_NO {"phot-corr-iter-no"};
   const std::string PHOT_CORR_TOLERANCE {"phot-corr-tolerance"};
   const std::string INPUT_CATALOG_FILE {"input-catalog-file"};
   const std::string SOURCE_ID_COLUMN_INDEX {"source-id-column-index"};
 
-  const std::string FILTER_NAME_MAPPING {"filter-name-mapping"};
+  const std::string FILTER_MAPPING_FILE {"filter-mapping-file"};
   const std::string SPEC_Z_COLUMN_NAME {"spec-z-column-name"};
   const std::string MODEL_GRID_FILE {"model-grid-file"};
 
   Elements::TempDir temp_dir {};
   fs::path input_catalog = temp_dir.path()/"input_catalog.txt";
   fs::path phot_grid = temp_dir.path()/"phot_grid.txt";
+  fs::path filter_mapping = temp_dir.path()/"filter_mapping.txt";
   fs::path output_file = temp_dir.path()/"phot_corr.txt";
-  
-  vector<string> filter_col_mapping {
-    "Filter1 F1 F1_ERR",
-    "Filter2 F2 F2_ERR"
-  };
   
   map<string, po::variable_value> options_map {};
   
@@ -55,6 +53,11 @@ struct ComputePhotometricCorrectionsConfiguration_Fixture {
             << "2         1.01     0.02     2.      0.2     4.      0.4\n";
     cat_out.close();
     
+    ofstream map_out {filter_mapping.string()};
+    map_out << "Filter1 F1 F1_ERR\n"
+            << "Filter2 F2 F2_ERR\n";
+    map_out.close();
+    
     PhzDataModel::PhotometryGridInfo grid_info;
     grid_info.filter_names = {{"Filter1"}, {"Filter2"}};
     ofstream grid_out {phot_grid.string()};
@@ -62,9 +65,11 @@ struct ComputePhotometricCorrectionsConfiguration_Fixture {
     boa << grid_info;
     grid_out.close();
     
+    options_map[CATALOG_NAME].value() = boost::any{std::string{"CatalogName"}};
+    options_map[INTERMEDIATE_PRODUCTS_DIR].value() = boost::any{temp_dir.path().string()};
     options_map[INPUT_CATALOG_FILE].value() = boost::any{input_catalog.string()};
     options_map[SOURCE_ID_COLUMN_INDEX].value() = boost::any{1};
-    options_map[FILTER_NAME_MAPPING].value() = boost::any{filter_col_mapping};
+    options_map[FILTER_MAPPING_FILE].value() = boost::any{filter_mapping.string()};
     options_map[SPEC_Z_COLUMN_NAME].value() = string{"Z"};
     options_map[MODEL_GRID_FILE].value() = string{phot_grid.string()};
     options_map[OUTPUT_PHOT_CORR_FILE].value() = string{output_file.string()};
@@ -115,20 +120,6 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions, ComputePhotometricCorrectionsConfigur
       BOOST_ERROR("Missing option " + option->long_name());
     }
   }
-  
-}
-
-//-----------------------------------------------------------------------------
-// Test the constructor throws exception if the output file parameter is not given
-//-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE(outFileNotGiven, ComputePhotometricCorrectionsConfiguration_Fixture) {
-  
-  // Given
-  options_map.erase(OUTPUT_PHOT_CORR_FILE);
-  
-  // Then
-  BOOST_CHECK_THROW(ComputePhotometricCorrectionsConfiguration{options_map}, Elements::Exception);
   
 }
 

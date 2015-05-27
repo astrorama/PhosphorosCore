@@ -91,22 +91,26 @@ PhotometryCatalogConfiguration::PhotometryCatalogConfiguration(const std::map<st
   
   // Remove the filters which are marked to exclude
   std::vector<std::pair<std::string, std::pair<std::string, std::string>>> filter_name_mapping {};
-  auto exclude_vector = options.at(EXCLUDE_FILTER).as<std::vector<std::string>>();
-  std::set<std::string> exclude_filters {exclude_vector.begin(), exclude_vector.end()};
-  for (auto& pair : all_filter_name_mapping) {
-    if (exclude_filters.count(pair.first) > 0) {
-      exclude_filters.erase(pair.first);
-    } else {
-      filter_name_mapping.push_back(pair);
+  if (options.count(EXCLUDE_FILTER) > 0) {
+    auto exclude_vector = options.at(EXCLUDE_FILTER).as<std::vector<std::string>>();
+    std::set<std::string> exclude_filters {exclude_vector.begin(), exclude_vector.end()};
+    for (auto& pair : all_filter_name_mapping) {
+      if (exclude_filters.count(pair.first) > 0) {
+        exclude_filters.erase(pair.first);
+      } else {
+        filter_name_mapping.push_back(pair);
+      }
     }
-  }
   
-  if (!exclude_filters.empty()) {
-    std::stringstream wrong_filters {};
-    for (auto& f : exclude_filters) {
-      wrong_filters << f << " ";
+    if (!exclude_filters.empty()) {
+      std::stringstream wrong_filters {};
+      for (auto& f : exclude_filters) {
+        wrong_filters << f << " ";
+      }
+      throw Elements::Exception() << "Wrong " << EXCLUDE_FILTER << " option value(s) : " << wrong_filters.str();
     }
-    throw Elements::Exception() << "Wrong " << EXCLUDE_FILTER << " option value(s) : " << wrong_filters.str();
+  } else {
+    filter_name_mapping = all_filter_name_mapping;
   }
   
   if (filter_name_mapping.size() < 2) {
