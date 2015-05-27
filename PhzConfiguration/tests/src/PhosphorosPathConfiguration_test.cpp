@@ -10,9 +10,6 @@
 #include "ElementsKernel/Exception.h"
 #include "PhzConfiguration/PhosphorosPathConfiguration.h"
 
-#include <iostream>
-#include <bits/stl_vector.h>
-
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
