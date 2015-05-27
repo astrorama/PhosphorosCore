@@ -24,17 +24,17 @@ namespace cf = Euclid::PhzConfiguration;
 
 struct SedConfiguration_Fixture {
 
-  const std::string SED_ROOT_PATH {"sed-root-path"};
+  const std::string AUX_DATA_DIR {"aux-data-dir"};
   const std::string SED_GROUP {"sed-group"};
   const std::string SED_EXCLUDE {"sed-exclude"};
   const std::string SED_NAME {"sed-name"};
 
-  std::string group { "sed/MER" };
+  std::string group { "MER" };
   // Do not forget the "/" at the end of the base directory
   Elements::TempDir temp_dir;
   std::string base_directory { temp_dir.path().native()+"/euclid/" };
-  std::string mer_directory    = base_directory + "sed/MER";
-  std::string cosmos_directory = base_directory + "sed/COSMOS";
+  std::string mer_directory    = base_directory + "SEDs/MER";
+  std::string cosmos_directory = base_directory + "SEDs/COSMOS";
 
   std::map<std::string, po::variable_value> options_map;
   std::map<std::string, po::variable_value> empty_map;
@@ -70,7 +70,7 @@ struct SedConfiguration_Fixture {
     file3_cos.close();
 
     // Fill up options
-    options_map[SED_ROOT_PATH].value() = boost::any(base_directory);
+    options_map[AUX_DATA_DIR].value() = boost::any(base_directory);
     options_map[SED_GROUP].value() = boost::any(group_vector);
 
   }
@@ -97,8 +97,6 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, SedConfiguration_Fixtur
   auto option_desc = Euclid::PhzConfiguration::SedConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc{};
 
-  desc = option_desc.find_nothrow(SED_ROOT_PATH, false);
-  BOOST_CHECK(desc != nullptr);
   desc = option_desc.find_nothrow(SED_GROUP, false);
   BOOST_CHECK(desc != nullptr);
   desc = option_desc.find_nothrow(SED_NAME, false);
@@ -121,7 +119,7 @@ BOOST_FIXTURE_TEST_CASE(getSedDatasetProvider_function_test, SedConfiguration_Fi
   cf::SedConfiguration sconf(options_map);
   auto fdp     = sconf.getSedDatasetProvider();
   BOOST_CHECK(fdp != nullptr);
-  auto dataset = fdp->getDataset({"sed/MER/file2"});
+  auto dataset = fdp->getDataset({"MER/file2"});
   BOOST_CHECK_EQUAL(2, dataset->size());
   auto iter = dataset->begin();
   BOOST_CHECK_EQUAL(111.1, iter->first);
@@ -129,22 +127,6 @@ BOOST_FIXTURE_TEST_CASE(getSedDatasetProvider_function_test, SedConfiguration_Fi
   ++iter;
   BOOST_CHECK_EQUAL(222.2, iter->first);
   BOOST_CHECK_EQUAL(222.2, iter->second);
-
-}
-
-//-----------------------------------------------------------------------------
-// Test the getSedDatasetProvider function
-//-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE(getSedDatasetProvider_exception_function_test, SedConfiguration_Fixture) {
-
-  BOOST_TEST_MESSAGE(" ");
-  BOOST_TEST_MESSAGE("--> Testing the exception of getSedDatasetProvider function");
-  BOOST_TEST_MESSAGE(" ");
-
-  cf::SedConfiguration sconf(empty_map);
-
-  BOOST_CHECK_THROW(sconf.getSedDatasetProvider(), Elements::Exception);
 
 }
 
@@ -177,15 +159,15 @@ BOOST_FIXTURE_TEST_CASE(getSedList_exclude_function_test, SedConfiguration_Fixtu
   BOOST_TEST_MESSAGE(" ");
 
   // Sed to be excluded and a non existant sed
-  exclude_vector.push_back("sed/MER/file2");
-  exclude_vector.push_back("sed/MER/FILE_DOES_NOT_EXIST");
+  exclude_vector.push_back("MER/file2");
+  exclude_vector.push_back("MER/FILE_DOES_NOT_EXIST");
   options_map[SED_EXCLUDE].value() = boost::any(exclude_vector);
 
   cf::SedConfiguration sconf(options_map);
   auto list = sconf.getSedList();
 
   BOOST_CHECK_EQUAL(list.size(), 1);
-  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "sed/MER/Dataset_name_for_file1");
+  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "MER/Dataset_name_for_file1");
 
 }
 
@@ -200,14 +182,14 @@ BOOST_FIXTURE_TEST_CASE(getSedList_add_function_test, SedConfiguration_Fixture) 
   BOOST_TEST_MESSAGE(" ");
 
   // Sed to be added
-  add_vector.push_back("sed/COSMOS/Dataset_name_for_file3");
+  add_vector.push_back("COSMOS/Dataset_name_for_file3");
   options_map[SED_NAME].value() = boost::any(add_vector);
 
   cf::SedConfiguration sconf(options_map);
   auto list = sconf.getSedList();
 
   BOOST_CHECK_EQUAL(list.size(), 3);
-  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "sed/COSMOS/Dataset_name_for_file3");
+  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "COSMOS/Dataset_name_for_file3");
 
 }
 
@@ -225,14 +207,14 @@ BOOST_FIXTURE_TEST_CASE(getSedList_add_twice_function_test, SedConfiguration_Fix
   auto list = sconf.getSedList();
 
   // Add twice the same sed
-  add_vector.push_back("sed/MER/Dataset_name_for_file1");
+  add_vector.push_back("MER/Dataset_name_for_file1");
   options_map[SED_NAME].value() = boost::any(add_vector);
 
   cf::SedConfiguration sconf2(options_map);
   auto list2 = sconf2.getSedList();
 
   BOOST_CHECK_EQUAL(list.size(), list2.size());
-  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "sed/MER/Dataset_name_for_file1");
+  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "MER/Dataset_name_for_file1");
 
 }
 

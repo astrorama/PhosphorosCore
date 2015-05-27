@@ -17,7 +17,6 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string SED_ROOT_PATH {"sed-root-path"};
 static const std::string SED_GROUP {"sed-group"};
 static const std::string SED_EXCLUDE {"sed-exclude"};
 static const std::string SED_NAME {"sed-name"};
@@ -25,8 +24,6 @@ static const std::string SED_NAME {"sed-name"};
 po::options_description SedConfiguration::getProgramOptions() {
   po::options_description options {"SED templates options"};
   options.add_options()
-    (SED_ROOT_PATH.c_str(), po::value<std::string>(),
-        "The directory containing the sed datasets, organized in folders")
     (SED_GROUP.c_str(), po::value<std::vector<std::string>>(),
         "Use all the seds in the given group and subgroups")
     (SED_EXCLUDE.c_str(), po::value<std::vector<std::string>>(),
@@ -36,15 +33,17 @@ po::options_description SedConfiguration::getProgramOptions() {
   return options;
 }
 
+SedConfiguration::SedConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
+          : PhosphorosPathConfiguration(options) {
+  m_options = options;
+}
+
 std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> SedConfiguration::getSedDatasetProvider() {
-  if (!m_options[SED_ROOT_PATH].empty()) {
-    std::string path = m_options[SED_ROOT_PATH].as<std::string>();
-    std::unique_ptr<Euclid::XYDataset::FileParser> file_parser {new Euclid::XYDataset::AsciiParser{}};
-    return std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> {
-      new Euclid::XYDataset::FileSystemProvider{path, std::move(file_parser)}
-    };
-  }
-  throw Elements::Exception() << "Missing or unknown sed dataset provider options : <" << SED_ROOT_PATH << ">";
+  auto path = getAuxDataDir() / "SEDs";
+  std::unique_ptr<Euclid::XYDataset::FileParser> file_parser {new Euclid::XYDataset::AsciiParser{}};
+  return std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> {
+    new Euclid::XYDataset::FileSystemProvider{path.string(), std::move(file_parser)}
+  };
 }
 
 std::vector<Euclid::XYDataset::QualifiedName> SedConfiguration::getSedList() {

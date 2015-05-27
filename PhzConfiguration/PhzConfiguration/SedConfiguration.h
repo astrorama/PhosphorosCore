@@ -13,6 +13,7 @@
 #include <string>
 #include <boost/program_options.hpp>
 #include "XYDataset/XYDatasetProvider.h"
+#include "PhzConfiguration/PhosphorosPathConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -23,17 +24,16 @@ namespace PhzConfiguration {
  * This class defines the Sed parameter options
  * @details
  * The parameters available are:
- * - \b sed-root-path : string root path to the seds
- * The three following parameters can be used multiple times
  * - \b sed-group     : string a sed group(only one) e.g. sed/MER
  * - \b sed-name      : string a sed name (only one) e.g. MER/vis
  * - \b sed-exclude   : string a sed name to be excluded (only one)
+ * They all can be used multiple times
  * @throw Element::Exception
  * - Missing or unknown sed dataset provider options
  * - Empty sed list
  */
 
-class SedConfiguration {
+class SedConfiguration : public PhosphorosPathConfiguration {
 
 public:
 
@@ -52,7 +52,6 @@ public:
    *
    * @details
    * The sed options are:
-   * - sed-root-path : string, the root path of the seds
    * - sed-group     : vector of strings, goup name   e.g. sed/MER
    * - sed-name      : vector of strings, sed name e.g. sed/MER/vis
    * - sed-exclude   : vector of strings, sed name to be excluded
@@ -60,8 +59,7 @@ public:
    * A map containing the options and their values
    *
    */
-  SedConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
-                     : m_options{options} {};
+  SedConfiguration(const std::map<std::string, boost::program_options::variable_value>& options);
   
    /**
    * @brief destructor.
@@ -71,9 +69,6 @@ public:
   /**
    * @brief
    * This function provides a XYdatasetProvider object
-   * @details
-   * @throw Element::Exception
-   * - Missing  <sed-root-path> or unknown sed dataset provider options
    * @return
    * A unique boost::program_optionsinter of XYDatasetProvider type
    */
