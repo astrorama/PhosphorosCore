@@ -18,7 +18,7 @@
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzUtils/FileUtils.h"
-#include "ProgramOptionsHelper.h"
+#include "PhzConfiguration/ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;

@@ -11,7 +11,7 @@
 #include "XYDataset/AsciiParser.h"
 #include "XYDataset/FileSystemProvider.h"
 #include "PhzConfiguration/SedConfiguration.h"
-#include "ProgramOptionsHelper.h"
+#include "PhzConfiguration/ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 

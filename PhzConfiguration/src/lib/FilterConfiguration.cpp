@@ -14,7 +14,7 @@
 #include "XYDataset/FileSystemProvider.h"
 #include "PhzConfiguration/FilterConfiguration.h"
 #include "CheckString.h"
-#include "ProgramOptionsHelper.h"
+#include "PhzConfiguration/ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 

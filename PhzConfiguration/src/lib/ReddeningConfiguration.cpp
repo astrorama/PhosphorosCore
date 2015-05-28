@@ -15,7 +15,7 @@
 #include "XYDataset/FileSystemProvider.h"
 #include "PhzConfiguration/ReddeningConfiguration.h"
 #include "CheckString.h"
-#include "ProgramOptionsHelper.h"
+#include "PhzConfiguration/ProgramOptionsHelper.h"
 
 using boost::regex;
 using boost::regex_match;

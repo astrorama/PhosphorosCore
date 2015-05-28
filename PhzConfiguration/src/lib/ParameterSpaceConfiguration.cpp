@@ -5,7 +5,7 @@
  */
 
 #include "PhzConfiguration/ParameterSpaceConfiguration.h"
-#include "ProgramOptionsHelper.h"
+#include "PhzConfiguration/ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 

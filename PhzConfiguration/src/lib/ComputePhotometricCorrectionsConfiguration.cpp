@@ -15,7 +15,7 @@
 #include "PhzPhotometricCorrection/FindWeightedMedianPhotometricCorrectionsFunctor.h"
 #include "PhzUtils/FileUtils.h"
 #include "CheckPhotometries.h"
-#include "ProgramOptionsHelper.h"
+#include "PhzConfiguration/ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;

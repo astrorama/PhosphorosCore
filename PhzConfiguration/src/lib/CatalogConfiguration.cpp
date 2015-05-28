@@ -14,7 +14,7 @@
 #include "Table/FitsReader.h"
 #include "SourceCatalog/CatalogFromTable.h"
 #include "PhzConfiguration/CatalogConfiguration.h"
-#include "ProgramOptionsHelper.h"
+#include "PhzConfiguration/ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;

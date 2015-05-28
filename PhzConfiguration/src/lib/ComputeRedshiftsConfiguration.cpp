@@ -14,7 +14,7 @@
 #include "PhzOutput/LikelihoodHandler.h"
 #include "PhzUtils/FileUtils.h"
 #include "CheckPhotometries.h"
-#include "ProgramOptionsHelper.h"
+#include "PhzConfiguration/ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 

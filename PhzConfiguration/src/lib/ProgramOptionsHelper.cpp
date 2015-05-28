@@ -14,7 +14,7 @@
 using boost::regex;
 using boost::regex_match;
 using boost::smatch;
-#include "ProgramOptionsHelper.h"
+#include "PhzConfiguration/ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
 

@@ -14,7 +14,7 @@
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzConfiguration/PhotometryCatalogConfiguration.h"
 #include "PhzConfiguration/PhotometricCorrectionConfiguration.h"
-#include "ProgramOptionsHelper.h"
+#include "PhzConfiguration/ProgramOptionsHelper.h"
 
 using boost::regex;
 using boost::regex_match;
