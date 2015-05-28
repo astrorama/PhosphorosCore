@@ -48,12 +48,12 @@ public:
    * the PhotometryCatalogConfiguration  and the PhotometryGridConfiguration,
    * plus the parameters:
    *
-   * - output-catalog-file   : the filename of the file to export the PHZ catalog
+   * - phz-output-dir        : the phz output directory where to store output files
    * - output-catalog-format : the format of the PHZ catalog (ASCII, FITS)
-   * - output-pdf-file       : the filename of the FITS file for the PDFs storage
+   * - create-output-catalog : flag for storing the output catalog file(YES/NO, default: NO)
+   * - create-output-pdf     : flag for storing the PDF file(YES/NO, default: NO)
+   * - create-output-posteriors : flag for storing the posterior file(s)(YES/NO, default: NO)
    * - axes-collapse-type    : the method used for collapsing the axes
-   * - output-posterior-dir  : the directory where the posterior grids will be stored
-   *
    * @return A boost::program_options::options_description object describing
    * the program options
    */

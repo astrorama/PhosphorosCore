@@ -12,6 +12,7 @@
 #include "PhzLikelihood/BayesianMarginalizationFunctor.h"
 #include "PhzConfiguration/ComputeRedshiftsConfiguration.h"
 #include "PhzOutput/LikelihoodHandler.h"
+#include "PhzUtils/FileUtils.h"
 #include "CheckPhotometries.h"
 #include "ProgramOptionsHelper.h"
 
@@ -21,30 +22,50 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 static const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
-static const std::string OUTPUT_POSTERIOR_DIR {"output-posterior-dir"};
-static const std::string OUTPUT_CATALOG_FILE {"output-catalog-file"};
 static const std::string OUTPUT_CATALOG_FORMAT {"output-catalog-format"};
-static const std::string OUTPUT_PDF_FILE {"output-pdf-file"};
+static const std::string PHZ_OUTPUT_DIR {"phz-output-dir"};
+static const std::string INPUT_CATALOG_FILE_NAME {"input-catalog-file-name"};
+static const std::string CREATE_OUTPUT_CATALOG_FLAG {"create-output-catalog"};
+static const std::string CREATE_OUTPUT_PDF_FLAG {"create-output-pdf"};
+static const std::string CREATE_OUTPUT_POSTERIORS_FLAG {"create-output-posteriors"};
 
 po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
   po::options_description options {"Compute Redshifts options"};
 
   options.add_options()
-  (OUTPUT_CATALOG_FILE.c_str(), po::value<std::string>(),
-      "The filename of the file to export the PHZ catalog file")
-  (OUTPUT_CATALOG_FORMAT.c_str(), po::value<std::string>(),
-      "The format of the PHZ catalog file (one of ASCII (default), FITS)")
-  (OUTPUT_PDF_FILE.c_str(), po::value<std::string>(),
-        "The filename of the PDF data")
-  (AXES_COLLAPSE_TYPE.c_str(), po::value<std::string>(),
-        "The method used for collapsing the axes when producing the 1D PDF (one of SUM, MAX, BAYESIAN)")
-  (OUTPUT_POSTERIOR_DIR.c_str(), po::value<std::string>(),
-        "The directory where the posterior grids are stored");
+      (OUTPUT_CATALOG_FORMAT.c_str(), po::value<std::string>(),
+          "The format of the PHZ catalog file (one of ASCII (default), FITS)")
+      (PHZ_OUTPUT_DIR.c_str(), po::value<std::string>(),
+          "The output directory of the PHZ results")
+      (CREATE_OUTPUT_CATALOG_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
+          "The output catalog flag for creating the file (YES/NO, default: NO)")
+      (CREATE_OUTPUT_PDF_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
+          "The output pdf flag for creating the file (YES/NO, default: NO)")
+      (CREATE_OUTPUT_POSTERIORS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
+           "The output posteriors flag for creating the file (YES/NO, default: NO)")
+      (AXES_COLLAPSE_TYPE.c_str(), po::value<std::string>(),
+        "The method used for collapsing the axes when producing the 1D PDF (one of SUM, MAX, BAYESIAN)");
 
   return merge(options)
               (PhotometricCorrectionConfiguration::getProgramOptions())
               (PhotometryCatalogConfiguration::getProgramOptions())
               (PhotometryGridConfiguration::getProgramOptions());
+}
+
+static fs::path getOutputPathFromOptions(const std::map<std::string, po::variable_value>& options,
+                                         const fs::path& result_dir, const std::string& catalog_name) {
+  fs::path input_catalog_name{options.at(INPUT_CATALOG_FILE_NAME).as<std::string>()};
+  auto input_filename = input_catalog_name.filename();
+  fs::path result = result_dir / catalog_name / input_filename;
+  if (options.count(PHZ_OUTPUT_DIR) > 0) {
+    fs::path path = options.at(PHZ_OUTPUT_DIR).as<std::string>();
+    if (path.is_absolute()) {
+      result = path;
+    } else {
+      result = result_dir / catalog_name / input_filename / path;
+    }
+  }
+  return result;
 }
 
 ComputeRedshiftsConfiguration::ComputeRedshiftsConfiguration(const std::map<std::string, po::variable_value>& options)
@@ -53,6 +74,11 @@ ComputeRedshiftsConfiguration::ComputeRedshiftsConfiguration(const std::map<std:
             PhotometricCorrectionConfiguration(options), PhotometryGridConfiguration(options),
             PriorConfiguration() {
   m_options = options;
+
+  auto output_dir = getOutputPathFromOptions(options, getResultsDir(), getCatalogName());
+
+  // Check directory and write permissions
+  Euclid::PhzUtils::checkCreateDirectoryOnly(output_dir.string());
 
   // Check that the given grid contains photometries for all the filters we
   // have fluxes in the catalog
@@ -82,29 +108,45 @@ private:
 
 std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfiguration::getOutputHandler() {
   std::unique_ptr<MultiOutputHandler> result {new MultiOutputHandler{}};
-  if (!m_options[OUTPUT_CATALOG_FILE].empty()) {
-    std::string out_file = m_options[OUTPUT_CATALOG_FILE].as<std::string>();
+  auto output_dir = getOutputPathFromOptions(m_options, getResultsDir(), getCatalogName());
+
+  std::string cat_flag = m_options.count(CREATE_OUTPUT_CATALOG_FLAG) > 0
+                     ? m_options.at(CREATE_OUTPUT_CATALOG_FLAG).as<std::string>()
+                     : "NO";
+  if (cat_flag == "YES") {
     auto format = PhzOutput::BestModelCatalog::Format::ASCII;
+    auto out_catalog_file = output_dir / "phz_cat.txt";
     if (!m_options[OUTPUT_CATALOG_FORMAT].empty()) {
       auto format_str = m_options[OUTPUT_CATALOG_FORMAT].as<std::string>();
       if (format_str == "ASCII") {
         format = PhzOutput::BestModelCatalog::Format::ASCII;
       } else if (format_str == "FITS") {
         format = PhzOutput::BestModelCatalog::Format::FITS;
+        out_catalog_file = output_dir / "phz_cat.fits";
       } else {
         throw Elements::Exception() << "Unknown output catalog format " << format_str;
       }
     }
-    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::BestModelCatalog{out_file, format}});
+    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::BestModelCatalog{out_catalog_file.string(), format}});
   }
-  if (!m_options[OUTPUT_PDF_FILE].empty()) {
-    std::string out_file = m_options[OUTPUT_PDF_FILE].as<std::string>();
-    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::PdfOutput{out_file}});
+
+
+  std::string pdf_flag = m_options.count(CREATE_OUTPUT_PDF_FLAG) > 0
+                     ? m_options.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>()
+                     : "NO";
+  if (pdf_flag == "YES") {
+    auto out_pdf_file = output_dir / "pdf.fits";
+    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::PdfOutput{out_pdf_file.string()}});
   }
-  if (!m_options[OUTPUT_POSTERIOR_DIR].empty()) {
-    std::string out_dir = m_options[OUTPUT_POSTERIOR_DIR].as<std::string>();
-    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::LikelihoodHandler{out_dir}});
+
+  std::string post_flag = m_options.count(CREATE_OUTPUT_POSTERIORS_FLAG) > 0
+                     ? m_options.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>()
+                     : "NO";
+  if (post_flag == "YES") {
+    auto out_post_file = output_dir / "posteriors";
+    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::LikelihoodHandler{out_post_file.string()}});
   }
+
   return std::unique_ptr<PhzOutput::OutputHandler>{result.release()};
 }
 
