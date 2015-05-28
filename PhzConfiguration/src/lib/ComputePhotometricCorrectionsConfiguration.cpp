@@ -51,20 +51,29 @@ po::options_description ComputePhotometricCorrectionsConfiguration::getProgramOp
               (PhotometryGridConfiguration::getProgramOptions());
 }
 
+static fs::path getOutputPathFromOptions(const std::map<std::string, po::variable_value>& options,
+                                         const fs::path& intermediate_dir, const std::string& catalog_name) {
+  fs::path result = intermediate_dir / catalog_name / "photometric_corrections.txt";
+  if (options.count(OUTPUT_PHOT_CORR_FILE) > 0) {
+    fs::path path = options.at(OUTPUT_PHOT_CORR_FILE).as<std::string>();
+    if (path.is_absolute()) {
+      result = path;
+    } else {
+      result = intermediate_dir / catalog_name / path;
+    }
+  }
+  return result;
+}
+
 ComputePhotometricCorrectionsConfiguration::ComputePhotometricCorrectionsConfiguration(
-            const std::map<std::string, boost::program_options::variable_value>& options)
+                                  const std::map<std::string, po::variable_value>& options)
       : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options),
         CatalogConfiguration(options), PhotometryCatalogConfiguration(options),
         SpectroscopicRedshiftCatalogConfiguration(options), PhotometryGridConfiguration(options) {
 
   m_options = options;
 
-  // Extract file option
-  if (m_options[OUTPUT_PHOT_CORR_FILE].empty()) {
-    throw Elements::Exception() << "Missing parameter output-phot-corr-file";
-  }
-
-  auto filename = m_options[OUTPUT_PHOT_CORR_FILE].as<std::string>();
+  auto filename = getOutputPathFromOptions(options, getIntermediateDir(), getCatalogName()).string();
 
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
@@ -81,7 +90,7 @@ ComputePhotometricCorrectionsConfiguration::ComputePhotometricCorrectionsConfigu
 auto ComputePhotometricCorrectionsConfiguration::getOutputFunction() -> OutputFunction {
   return [this](const PhzDataModel::PhotometricCorrectionMap& pc_map) {
     auto logger = Elements::Logging::getLogger("PhzOutput");
-    auto filename = m_options[OUTPUT_PHOT_CORR_FILE].as<std::string>();
+    auto filename = getOutputPathFromOptions(m_options, getIntermediateDir(), getCatalogName()).string();
     std::ofstream out {filename};
     PhzDataModel::writePhotometricCorrectionMap(out, pc_map);
     logger.info() << "Created zero point corrections in file " << filename;

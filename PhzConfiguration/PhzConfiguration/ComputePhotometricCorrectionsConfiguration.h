@@ -74,13 +74,13 @@ public:
    * @brief
    * Constructs a new ComputePhotometricCorrectionsConfiguration instance
    * @details
-   * The option output-phot-corr-file is obligatory and it must be a path where
-   * the executable can create the photometric correction file.
+   * If the option output-phot-corr-file is a relative path, it is relative to
+   * the INTERMEDIATE_DIR/CATALOG_NAME directory. If it is missing completely,
+   * the default INTERMEDIATE_DIR/CATALOG_NAME/photometric_corrections.txt is
+   * used.
    *
    * @param options
    *    A map with the options and their values
-   * @throws ElementsException
-   *    of the output-phot-corr-file is missing
    * @throws ElementsException
    *    if the output-phot-corr-file cannot be created
    */
