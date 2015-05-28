@@ -26,6 +26,7 @@ struct PhotometricCorrectionConfiguration_Fixture {
   const std::string CATALOG_NAME {"catalog-name"};
   const std::string INPUT_CATALOG_FILE {"input-catalog-file"};
   const std::string PHOTOMETRIC_CORRECTION_FILE {"photometric-correction-file"};
+  const std::string ENABLE_PHOTOMETRIC_CORRECTION {"enable-photometric-correction"};
   const std::string FILTER_MAPPING_FILE {"filter-mapping-file"};
 
   Elements::TempDir temp_dir;
@@ -67,11 +68,17 @@ struct PhotometricCorrectionConfiguration_Fixture {
     options_map_nofile[CATALOG_NAME].value() = boost::any(std::string{"CatalogName"});
     options_map_nofile[INPUT_CATALOG_FILE].value() = boost::any(input_cat_file);
     options_map_nofile[PHOTOMETRIC_CORRECTION_FILE].value() = boost::any(cor_nofile);
+    options_map_nofile[ENABLE_PHOTOMETRIC_CORRECTION].value() = boost::any(std::string{"YES"});
+    options_map_nofile[FILTER_MAPPING_FILE].value() = boost::any(mapping_file);
     options_map_data[CATALOG_NAME].value() = boost::any(std::string{"CatalogName"});
     options_map_data[INPUT_CATALOG_FILE].value() = boost::any(input_cat_file);
-    options_map_data[PHOTOMETRIC_CORRECTION_FILE].value()   = boost::any(cor_filename);
+    options_map_data[PHOTOMETRIC_CORRECTION_FILE].value() = boost::any(cor_filename);
+    options_map_data[ENABLE_PHOTOMETRIC_CORRECTION].value() = boost::any(std::string{"YES"});
+    options_map_data[FILTER_MAPPING_FILE].value() = boost::any(mapping_file);
     options_map3[CATALOG_NAME].value() = boost::any(std::string{"CatalogName"});
     options_map3[INPUT_CATALOG_FILE].value() = boost::any(input_cat_file);
+    options_map3[PHOTOMETRIC_CORRECTION_FILE].value() = boost::any(cor_filename);
+    options_map3[ENABLE_PHOTOMETRIC_CORRECTION].value() = boost::any(std::string{"NO"});
     options_map3[FILTER_MAPPING_FILE].value() = boost::any(mapping_file);
 
   }
