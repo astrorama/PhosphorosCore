@@ -12,6 +12,7 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
+#include "PhzConfiguration/PhotometryCatalogConfiguration.h"
 #include "PhzConfiguration/PhotometricCorrectionConfiguration.h"
 
 using boost::regex;
@@ -37,37 +38,27 @@ po::options_description PhotometricCorrectionConfiguration::getProgramOptions() 
 
 PhzDataModel::PhotometricCorrectionMap PhotometricCorrectionConfiguration::getPhotometricCorrectionMap() {
 
- PhzDataModel::PhotometricCorrectionMap result {};
+  PhzDataModel::PhotometricCorrectionMap result{};
 
- // Read correction map from an ASCII file otherwise set default values
- if (!m_options[PHOTOMETRIC_CORRECTION_FILE].empty()) {
-	 // Check the file exist
-	 auto correction_file = m_options[PHOTOMETRIC_CORRECTION_FILE].as<std::string>();
-	 if (!fs::exists(correction_file)) {
-	   logger.error() << "File " << correction_file << " not found";
-	   throw Elements::Exception() << "Photometric Correction file (photometric-correction-file option) does not exist : "<< correction_file;
-	 }
-	 // Read the correction file(ASCII type)
-	 std::ifstream in {correction_file};
-	 result = PhzDataModel::readPhotometricCorrectionMap(in);
- }
- else {
-  std::vector<std::string> filter_names {};
-  auto mapping_iter = m_options.find("filter-name-mapping");
-  if (mapping_iter != m_options.end()) {
-    for (auto& filter_mapping_option : mapping_iter->second.as<std::vector<std::string>>()) {
-      smatch match_res;
-      regex expr {"\\s*([^\\s]+)\\s+[^\\s]+\\s+[^\\s]+\\s*"};
-      if (regex_match(filter_mapping_option, match_res, expr)) {
-        filter_names.emplace_back(match_res.str(1));
-      }
+  // Read correction map from an ASCII file otherwise set default values
+  if (!m_options[PHOTOMETRIC_CORRECTION_FILE].empty()) {
+    // Check the file exist
+    auto correction_file = m_options[PHOTOMETRIC_CORRECTION_FILE].as<std::string>();
+    if (!fs::exists(correction_file)) {
+      logger.error() << "File " << correction_file << " not found";
+      throw Elements::Exception() << "Photometric Correction file (photometric-correction-file option) does not exist : " << correction_file;
     }
-  }
-  for (auto& filter : filter_names) {
-    result[filter] = 1.;
-  }
+    // Read the correction file(ASCII type)
+    std::ifstream in{correction_file};
+    result = PhzDataModel::readPhotometricCorrectionMap(in);
+  } else {
+    PhotometryCatalogConfiguration phot_cat_conf{m_options};
+    auto filter_names = phot_cat_conf.getPhotometryFiltersToProcess();
+    for (auto& filter : filter_names) {
+      result[filter] = 1.;
+    }
 
- } //EndOfoption
+  } //EndOfoption
   return result;
 }
 

@@ -124,11 +124,22 @@ PhotometryCatalogConfiguration::PhotometryCatalogConfiguration(const std::map<st
   if (flag_iter != options.end()) {
      missing_photo_flag = flag_iter->second.as<double>();
   }
+  
+  // Keep a list of the filters to process
+  m_filters.clear();
+  for (auto& pair : filter_name_mapping) {
+    m_filters.push_back(pair.first);
+  }
 
   // Add the row handler to parse the photometries
   std::shared_ptr<SourceCatalog::AttributeFromRow> handler_ptr {new SourceCatalog::PhotometryAttributeFromRow{getAsTable().getColumnInfo(), std::move(filter_name_mapping), missing_photo_flag}};
   addAttributeHandler(std::move(handler_ptr));
 }
+
+const std::vector<std::string>& PhotometryCatalogConfiguration::getPhotometryFiltersToProcess() {
+  return m_filters;
+}
+
 
 } // end of namespace PhzConfiguration
 } // end of namespace Euclid

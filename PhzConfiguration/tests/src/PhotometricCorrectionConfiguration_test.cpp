@@ -23,15 +23,17 @@ namespace cf = Euclid::PhzConfiguration;
 
 struct PhotometricCorrectionConfiguration_Fixture {
 
+  const std::string CATALOG_NAME {"catalog-name"};
+  const std::string INPUT_CATALOG_FILE {"input-catalog-file"};
   const std::string PHOTOMETRIC_CORRECTION_FILE {"photometric-correction-file"};
-  const std::string FILTER_NAME_MAPPING {"filter-name-mapping"};
+  const std::string FILTER_MAPPING_FILE {"filter-mapping-file"};
 
   Elements::TempDir temp_dir;
   std::string base_directory { temp_dir.path().native()+"/base_dir/" };
   std::string cor_filename { base_directory + "/file_correction.txt" };
   std::string cor_nofile { base_directory + "/NOFILE.txt" };
-
-  std::vector<std::string> filter_qualified_name {"mer/filter1 1. 0.1", "mer/filter2 2. 0.2"};
+  std::string mapping_file { base_directory + "/filter_malling.txt" };
+  std::string input_cat_file { base_directory + "/input_cat.txt" };
 
   std::map<std::string, po::variable_value> options_map_nofile;
   std::map<std::string, po::variable_value> options_map_data;
@@ -49,11 +51,28 @@ struct PhotometricCorrectionConfiguration_Fixture {
     correction_file << "mer/filter_name2 2.2 \n";
     correction_file << "mer/filter_name3 3.3 \n";
     correction_file.close();
+    
+    std::ofstream mapping_out {mapping_file};
+    mapping_out << "mer/filter1 F1 E1\n"
+                << "mer/filter2 F2 E2\n";
+    mapping_out.close();
+    
+    std::ofstream cat_out {input_cat_file};
+    cat_out << "#F1     E1     F2     E2\n"
+            << "#double double double double\n"
+            << " 1.     1.     1.     1.\n";
+    cat_out.close();
 
     // Fill up options
+    options_map_nofile[CATALOG_NAME].value() = boost::any(std::string{"CatalogName"});
+    options_map_nofile[INPUT_CATALOG_FILE].value() = boost::any(input_cat_file);
     options_map_nofile[PHOTOMETRIC_CORRECTION_FILE].value() = boost::any(cor_nofile);
+    options_map_data[CATALOG_NAME].value() = boost::any(std::string{"CatalogName"});
+    options_map_data[INPUT_CATALOG_FILE].value() = boost::any(input_cat_file);
     options_map_data[PHOTOMETRIC_CORRECTION_FILE].value()   = boost::any(cor_filename);
-    options_map3[FILTER_NAME_MAPPING].value() = boost::any(filter_qualified_name);
+    options_map3[CATALOG_NAME].value() = boost::any(std::string{"CatalogName"});
+    options_map3[INPUT_CATALOG_FILE].value() = boost::any(input_cat_file);
+    options_map3[FILTER_MAPPING_FILE].value() = boost::any(mapping_file);
 
   }
   ~PhotometricCorrectionConfiguration_Fixture() {

@@ -74,6 +74,20 @@ public:
   * @brief destructor.
   */
   virtual ~PhotometryCatalogConfiguration()=default;
+  
+  /**
+   * @brief
+   * Returns a list of the filter names for which the photometries will be processed
+   * @details
+   * This list depends on the mapping of the filters in the filter-mapping-file
+   * and the exclude-filter parameter.
+   * @return The list of the photometry filters in the catalog
+   */
+  const std::vector<std::string>& getPhotometryFiltersToProcess();
+  
+private:
+  
+  std::vector<std::string> m_filters;
 
 };
 
