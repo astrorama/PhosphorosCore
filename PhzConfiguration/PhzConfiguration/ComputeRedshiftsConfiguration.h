@@ -65,6 +65,14 @@ public:
    *
    * @param options
    *    A map with the options and their values
+   * @throws Elements::Exception
+   *    If we do not have write access to the phz-output-dir
+   * @throws Elements::Exception
+   *    If the input catalog contains photometries for filters that do not exist
+   *    in the model grid
+   * @throws Elements::Exception
+   *    If the photometric correction is enabled and the catalog contains
+   *    photometries for filters that the correction does not exist
    */
   ComputeRedshiftsConfiguration(const std::map<std::string,
                               boost::program_options::variable_value>& options);
@@ -85,6 +93,14 @@ public:
    *
    * @return
    * The handler to use for storing the output
+   * @throws Elements::Exception
+   *    If the output-catalog-format is not one of FITS or ASCII
+   * @throws Elements::Exception
+   *    If none of the three outputs (create-output-catalog, create-output-pdf,
+   *    create-output-posteriors) is enabled
+   * @throws Elements::Exception
+   *    If any of the three outputs (create-output-catalog, create-output-pdf,
+   *    create-output-posteriors) is set to something different than NO or YES
    */
   std::unique_ptr<PhzOutput::OutputHandler> getOutputHandler();
 

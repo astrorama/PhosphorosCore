@@ -146,6 +146,12 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfiguration::getOutp
     auto out_post_file = output_dir / "posteriors";
     result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::LikelihoodHandler{out_post_file.string()}});
   }
+  
+  if (cat_flag == "NO" && pdf_flag == "NO" && post_flag == "NO") {
+    throw Elements::Exception() << "At least one of the options " << CREATE_OUTPUT_CATALOG_FLAG
+                                << ", " << CREATE_OUTPUT_PDF_FLAG << ", " << CREATE_OUTPUT_POSTERIORS_FLAG
+                                << " must be set to YES";
+  }
 
   return std::unique_ptr<PhzOutput::OutputHandler>{result.release()};
 }

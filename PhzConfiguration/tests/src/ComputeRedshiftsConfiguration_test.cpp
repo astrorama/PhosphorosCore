@@ -23,46 +23,80 @@
 #include "PhzDataModel/serialization/PhotometryGrid.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
+#include "PhzUtils/FileUtils.h"
 
+using namespace Euclid;
 namespace po = boost::program_options;
 namespace cf = Euclid::PhzConfiguration;
 namespace fs = boost::filesystem;
 
 struct ComputeRedshiftsConfiguration_Fixture {
 
+  const std::string CATALOG_NAME {"catalog-name"};
   const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
   const std::string OUTPUT_CATALOG_FORMAT {"output-catalog-format"};
   const std::string PHZ_OUTPUT_DIR {"phz-output-dir"};
   const std::string INPUT_CATALOG_FILE {"input-catalog-file"};
+  const std::string INPUT_CATALOG_FORMAT {"input-catalog-format"};
   const std::string CREATE_OUTPUT_CATALOG_FLAG {"create-output-catalog"};
   const std::string CREATE_OUTPUT_PDF_FLAG {"create-output-pdf"};
   const std::string CREATE_OUTPUT_POSTERIORS_FLAG {"create-output-posteriors"};
-
-//  std::vector<double> zs{0.0,0.1};
-//  std::vector<double> ebvs{0.0,0.001};
-//  std::vector<Euclid::XYDataset::QualifiedName> reddeing_curves{{"reddeningCurves/Curve1"}};
-//  std::vector<Euclid::XYDataset::QualifiedName> seds{{"sed/Curve1"}};
-//
-//  std::shared_ptr<std::vector<std::string>> filter_1 = std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filtre1","filter2"});
-//  std::shared_ptr<std::vector<std::string>> filter_2 = std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filtre1","filter2","filter3"});
-//  std::shared_ptr<std::vector<std::string>> filter_3 = std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filtre1","filter3"});
-//  std::vector<Euclid::SourceCatalog::FluxErrorPair> values_1{{1.1,2.1},{3.1,4.1}};
-//  std::vector<Euclid::SourceCatalog::FluxErrorPair> values_2{{1.2,2.2},{3.2,4.2}};
-//  std::vector<Euclid::SourceCatalog::FluxErrorPair> values_3{{1.3,2.3},{3.3,4.3}};
-//  std::vector<Euclid::SourceCatalog::FluxErrorPair> values_4{{1.4,2.4},{3.4,4.4}};
-//
-//  Euclid::SourceCatalog::Photometry photometry_1{filter_1,values_1};
-//  Euclid::SourceCatalog::Photometry photometry_2{filter_1,values_2};
-//  Euclid::SourceCatalog::Photometry photometry_3{filter_1,values_3};
-//  Euclid::SourceCatalog::Photometry photometry_4{filter_1,values_4};
-
+  const std::string MODEL_GRID_FILE {"model-grid-file"};
+  const std::string PHOTOMETRIC_CORRECTION_FILE {"photometric-correction-file"};
+  const std::string ENABLE_PHOTOMETRIC_CORRECTION {"enable-photometric-correction"};
+  const std::string FILTER_MAPPING_FILE {"filter-mapping-file"};
+  
   Elements::TempDir temp_dir {};
-  fs::path path_filename = temp_dir.path()/"binary_file.dat";
+  fs::path input_catalog = temp_dir.path()/"input_catalog.txt";
+  fs::path model_grid = temp_dir.path()/"model_grid.txt";
+  fs::path filter_mapping = temp_dir.path()/"filter_mapping.txt";
+  fs::path phz_out_dir = temp_dir.path()/"out_dir";
+  fs::path phot_corr = temp_dir.path()/"phot_corr.txt";
 
+  std::vector<double> zs{0.0,0.1};
+  std::vector<double> ebvs{0.0,0.001};
+  std::vector<Euclid::XYDataset::QualifiedName> reddeing_curves{{"reddeningCurves/Curve1"}};
+  std::vector<Euclid::XYDataset::QualifiedName> seds{{"sed/Curve1"}};
+  
   std::map<std::string, po::variable_value> options_map;
 
   ComputeRedshiftsConfiguration_Fixture() {
-    options_map[AXES_COLLAPSE_TYPE].value() = boost::any(std::string{"axis-type"});
+    std::ofstream cat_out {input_catalog.string()};
+    cat_out << "# ID      Z        Z_ERR    F1      F1_ERR  F2      F2_ERR\n"
+            << "# long    double   double   double  double  double  double\n"
+            << "\n"
+            << "1         0.25     0.01     1.      0.1     3.      0.3\n"
+            << "2         1.01     0.02     2.      0.2     4.      0.4\n";
+    cat_out.close();
+    options_map[INPUT_CATALOG_FILE].value() = boost::any(input_catalog.string());
+    
+    std::ofstream map_out {filter_mapping.string()};
+    map_out << "Filter1 F1 F1_ERR\n"
+            << "Filter2 F2 F2_ERR\n";
+    map_out.close();
+    options_map[FILTER_MAPPING_FILE].value() = boost::any(filter_mapping.string());
+    
+    // Create files
+    std::ofstream correction_file(phot_corr.string());
+    // Fill up file
+    correction_file << "#Filter Correction\n";
+    correction_file << "#string     double\n";
+    correction_file << "Filter1     1.1 \n";
+    correction_file << "Filter2     2.2 \n";
+    correction_file.close();
+    options_map[PHOTOMETRIC_CORRECTION_FILE].value() = boost::any(phot_corr.string());
+    options_map[ENABLE_PHOTOMETRIC_CORRECTION].value() = boost::any(std::string{"YES"});
+    
+    PhzDataModel::PhotometryGridInfo grid_info;
+    grid_info.filter_names = {{"Filter1"}, {"Filter2"}};
+    std::ofstream grid_out {model_grid.string()};
+    boost::archive::binary_oarchive boa {grid_out};
+    boa << grid_info;
+    grid_out.close();
+    options_map[MODEL_GRID_FILE].value() = boost::any(model_grid.string());
+    
+    options_map[PHZ_OUTPUT_DIR].value() = boost::any(phz_out_dir.string());
+    options_map[CATALOG_NAME].value() = boost::any(std::string{"CatalogName"});
   }
   ~ComputeRedshiftsConfiguration_Fixture() {
   }
@@ -103,6 +137,132 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, ComputeRedshiftsConfigu
 
 }
 
+//-----------------------------------------------------------------------------
+// Check that the constructor works fine if everything is OK
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(checkConstructorOK_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the constructor with normal inputs");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // check
+  BOOST_CHECK_NO_THROW(cf::ComputeRedshiftsConfiguration{options_map});
+
+}
+
+//-----------------------------------------------------------------------------
+// Check that the constructor throws exception if we do not have write access to
+// the phz-output-dir
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(constructorNoPhzOutputWriteAccess_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the constructor with phz-output-dir without write access");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+  fs::path no_write_dir = temp_dir.path() / "no_write";
+  PhzUtils::createDirectoryIfAny(no_write_dir.string());
+  options_map[PHZ_OUTPUT_DIR].value() = boost::any(no_write_dir.string());
+  
+  // When
+  fs::permissions(no_write_dir, fs::perms::remove_perms|fs::perms::owner_write|fs::perms::others_write|fs::perms::group_write);
+  
+  // Then
+  BOOST_CHECK_THROW(cf::ComputeRedshiftsConfiguration{options_map}, Elements::Exception);
+
+}
+
+//-----------------------------------------------------------------------------
+// Check that the constructor throws exception if the catalog contains filters
+// that do not exist in the model grid
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(constructorMissingFilterInModelGrid_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the constructor with model grid with missing filter");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+  PhzDataModel::PhotometryGridInfo grid_info;
+  grid_info.filter_names = {{"Filter1"}, {"Filter3"}};
+  std::ofstream grid_out {model_grid.string()};
+  boost::archive::binary_oarchive boa {grid_out};
+  boa << grid_info;
+  grid_out.close();
+  
+  // Then
+  BOOST_CHECK_THROW(cf::ComputeRedshiftsConfiguration{options_map}, Elements::Exception);
+
+}
+
+//-----------------------------------------------------------------------------
+// Check that the constructor throws exception if the catalog contains filters
+// that do not exist in the photometric correction file
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(constructorMissingFilterInPhotCorr_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the constructor with photometric correction with missing filter");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+    std::ofstream correction_file(phot_corr.string());
+    // Fill up file
+    correction_file << "#Filter Correction\n";
+    correction_file << "#string     double\n";
+    correction_file << "Filter1     1.1 \n";
+    correction_file << "Filter3     2.2 \n";
+    correction_file.close();
+  
+  // Then
+  BOOST_CHECK_THROW(cf::ComputeRedshiftsConfiguration{options_map}, Elements::Exception);
+
+}
+
+//-----------------------------------------------------------------------------
+// Check that the getOutputHandler throws exception if no output is enabled
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(getOutputHandlerNoOutput_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the getOutputHandler with no output enabled");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // When
+  cf::ComputeRedshiftsConfiguration conf {options_map};
+  
+  // Then
+  BOOST_CHECK_THROW(conf.getOutputHandler(), Elements::Exception);
+
+}
+
+//-----------------------------------------------------------------------------
+// Check that the getOutputHandler throws exception for wrong output-catalog-format
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(getOutputHandlerWrongFormat_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the getOutputHandler with wrong output-catalog-format");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+  options_map[INPUT_CATALOG_FORMAT].value() = boost::any(std::string{"wrong"});
+  
+  // When
+  cf::ComputeRedshiftsConfiguration conf {options_map};
+  
+  // Then
+  BOOST_CHECK_THROW(conf.getOutputHandler(), Elements::Exception);
+
+}
 
 //-----------------------------------------------------------------------------
 
