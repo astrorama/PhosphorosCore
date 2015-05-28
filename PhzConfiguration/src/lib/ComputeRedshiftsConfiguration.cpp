@@ -128,6 +128,9 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfiguration::getOutp
       }
     }
     result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::BestModelCatalog{out_catalog_file.string(), format}});
+  } else if (cat_flag != "NO") {
+    throw Elements::Exception() << "Invalid value for option "
+                                << CREATE_OUTPUT_CATALOG_FLAG << " : " << cat_flag;
   }
 
 
@@ -137,6 +140,9 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfiguration::getOutp
   if (pdf_flag == "YES") {
     auto out_pdf_file = output_dir / "pdf.fits";
     result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::PdfOutput{out_pdf_file.string()}});
+  } else if (pdf_flag != "NO") {
+    throw Elements::Exception() << "Invalid value for option "
+                                << CREATE_OUTPUT_PDF_FLAG << " : " << pdf_flag;
   }
 
   std::string post_flag = m_options.count(CREATE_OUTPUT_POSTERIORS_FLAG) > 0
@@ -145,6 +151,9 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfiguration::getOutp
   if (post_flag == "YES") {
     auto out_post_file = output_dir / "posteriors";
     result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::LikelihoodHandler{out_post_file.string()}});
+  } else if (post_flag != "NO") {
+    throw Elements::Exception() << "Invalid value for option "
+                                << CREATE_OUTPUT_POSTERIORS_FLAG << " : " << post_flag;
   }
   
   if (cat_flag == "NO" && pdf_flag == "NO" && post_flag == "NO") {

@@ -33,6 +33,7 @@ namespace fs = boost::filesystem;
 struct ComputeRedshiftsConfiguration_Fixture {
 
   const std::string CATALOG_NAME {"catalog-name"};
+  const std::string RESULTS_DIR {"results-dir"};
   const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
   const std::string OUTPUT_CATALOG_FORMAT {"output-catalog-format"};
   const std::string PHZ_OUTPUT_DIR {"phz-output-dir"};
@@ -47,6 +48,7 @@ struct ComputeRedshiftsConfiguration_Fixture {
   const std::string FILTER_MAPPING_FILE {"filter-mapping-file"};
   
   Elements::TempDir temp_dir {};
+  fs::path results_dir = temp_dir.path();
   fs::path input_catalog = temp_dir.path()/"input_catalog.txt";
   fs::path model_grid = temp_dir.path()/"model_grid.txt";
   fs::path filter_mapping = temp_dir.path()/"filter_mapping.txt";
@@ -59,6 +61,16 @@ struct ComputeRedshiftsConfiguration_Fixture {
   std::vector<Euclid::XYDataset::QualifiedName> seds{{"sed/Curve1"}};
   
   std::map<std::string, po::variable_value> options_map;
+  
+  SourceCatalog::Source source {123, {}};
+  PhzDataModel::PhotometryGrid res_phot_grid {PhzDataModel::createAxesTuple(
+          {0.}, {0.}, {{"Name"}}, {{"Name"}}
+  )};
+  PhzDataModel::Pdf1D res_pdf {{"Z", {0.}}};
+  PhzDataModel::LikelihoodGrid res_likelihood {res_phot_grid.getAxesTuple()};
+  PhzOutput::OutputHandler::result_type res {
+    res_phot_grid.cbegin(), std::move(res_pdf), std::move(res_likelihood), 0., 0.
+  };
 
   ComputeRedshiftsConfiguration_Fixture() {
     std::ofstream cat_out {input_catalog.string()};
@@ -97,6 +109,7 @@ struct ComputeRedshiftsConfiguration_Fixture {
     
     options_map[PHZ_OUTPUT_DIR].value() = boost::any(phz_out_dir.string());
     options_map[CATALOG_NAME].value() = boost::any(std::string{"CatalogName"});
+    options_map[RESULTS_DIR].value() = boost::any(results_dir.string());
   }
   ~ComputeRedshiftsConfiguration_Fixture() {
   }
@@ -254,13 +267,241 @@ BOOST_FIXTURE_TEST_CASE(getOutputHandlerWrongFormat_test, ComputeRedshiftsConfig
   BOOST_TEST_MESSAGE(" ");
   
   // Given
-  options_map[INPUT_CATALOG_FORMAT].value() = boost::any(std::string{"wrong"});
+  options_map[OUTPUT_CATALOG_FORMAT].value() = boost::any(std::string{"wrong"});
   
   // When
   cf::ComputeRedshiftsConfiguration conf {options_map};
   
   // Then
   BOOST_CHECK_THROW(conf.getOutputHandler(), Elements::Exception);
+
+}
+
+//-----------------------------------------------------------------------------
+// Check that the getOutputHandler throws exception for wrong create-output-catalog
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(getOutputHandlerWronCatalogFlag_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the getOutputHandler with wrong create-output-catalog");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+  options_map[CREATE_OUTPUT_CATALOG_FLAG].value() = boost::any(std::string{"wrong"});
+  
+  // When
+  cf::ComputeRedshiftsConfiguration conf {options_map};
+  
+  // Then
+  BOOST_CHECK_THROW(conf.getOutputHandler(), Elements::Exception);
+
+}
+
+//-----------------------------------------------------------------------------
+// Check that the getOutputHandler throws exception for wrong create-output-pdf
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(getOutputHandlerWrongPdfFlag_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the getOutputHandler with wrong create-output-pdf");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+  options_map[CREATE_OUTPUT_PDF_FLAG].value() = boost::any(std::string{"wrong"});
+  
+  // When
+  cf::ComputeRedshiftsConfiguration conf {options_map};
+  
+  // Then
+  BOOST_CHECK_THROW(conf.getOutputHandler(), Elements::Exception);
+
+}
+
+//-----------------------------------------------------------------------------
+// Check that the getOutputHandler throws exception for wrong create-output-posteriors
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(getOutputHandlerWrongPosteriorsFlag_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the getOutputHandler with wrong create-output-posteriors");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+  options_map[CREATE_OUTPUT_POSTERIORS_FLAG].value() = boost::any(std::string{"wrong"});
+  
+  // When
+  cf::ComputeRedshiftsConfiguration conf {options_map};
+  
+  // Then
+  BOOST_CHECK_THROW(conf.getOutputHandler(), Elements::Exception);
+
+}
+
+//-----------------------------------------------------------------------------
+// Check that the catalog output is created when the create-output-catalog is YES
+// for ascii catalog
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(getOutputHandlerCreateCatalogAscii_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the getOutputHandler for catalog output");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+  options_map[CREATE_OUTPUT_CATALOG_FLAG].value() = boost::any(std::string{"YES"});
+  cf::ComputeRedshiftsConfiguration conf {options_map};
+  
+  // When
+  {
+    auto out_handler = conf.getOutputHandler();
+    out_handler->handleSourceOutput(source, res);
+  }
+  
+  // Then
+  BOOST_CHECK(fs::exists(phz_out_dir / "phz_cat.txt"));
+  BOOST_CHECK(!fs::exists(phz_out_dir / "pdf.fits"));
+  BOOST_CHECK(!fs::exists(phz_out_dir / "posteriors"));
+
+}
+
+//-----------------------------------------------------------------------------
+// Check that the catalog output is created when the create-output-catalog is YES
+// for fits catalog
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(getOutputHandlerCreateCatalogFits_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the getOutputHandler for catalog output");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+  options_map[CREATE_OUTPUT_CATALOG_FLAG].value() = boost::any(std::string{"YES"});
+  options_map[OUTPUT_CATALOG_FORMAT].value() = boost::any(std::string{"FITS"});
+  cf::ComputeRedshiftsConfiguration conf {options_map};
+  
+  // When
+  {
+    auto out_handler = conf.getOutputHandler();
+    out_handler->handleSourceOutput(source, res);
+  }
+  
+  // Then
+  BOOST_CHECK(fs::exists(phz_out_dir / "phz_cat.fits"));
+  BOOST_CHECK(!fs::exists(phz_out_dir / "pdf.fits"));
+  BOOST_CHECK(!fs::exists(phz_out_dir / "posteriors"));
+
+}
+
+//-----------------------------------------------------------------------------
+// Check that the pdf output is created when the create-output-pdf is YES
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(getOutputHandlerCreatePdf_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the getOutputHandler for pdf output");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+  options_map[CREATE_OUTPUT_PDF_FLAG].value() = boost::any(std::string{"YES"});
+  cf::ComputeRedshiftsConfiguration conf {options_map};
+  
+  // When
+  {
+    auto out_handler = conf.getOutputHandler();
+    out_handler->handleSourceOutput(source, res);
+  }
+  
+  // Then
+  BOOST_CHECK(!fs::exists(phz_out_dir / "phz_cat.txt"));
+  BOOST_CHECK(fs::exists(phz_out_dir / "pdf.fits"));
+  BOOST_CHECK(!fs::exists(phz_out_dir / "posteriors"));
+
+}
+
+//-----------------------------------------------------------------------------
+// Check that the posteriors output is created when the create-output-posteriors is YES
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(getOutputHandlerCreatePosteriors_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the getOutputHandler for posteriors output");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+  options_map[CREATE_OUTPUT_POSTERIORS_FLAG].value() = boost::any(std::string{"YES"});
+  cf::ComputeRedshiftsConfiguration conf {options_map};
+  
+  // When
+  {
+    auto out_handler = conf.getOutputHandler();
+    out_handler->handleSourceOutput(source, res);
+  }
+  
+  // Then
+  BOOST_CHECK(!fs::exists(phz_out_dir / "phz_cat.txt"));
+  BOOST_CHECK(!fs::exists(phz_out_dir / "pdf.fits"));
+  BOOST_CHECK(fs::exists(phz_out_dir / "posteriors"));
+  BOOST_CHECK(fs::exists(phz_out_dir / "posteriors" / "123.fits"));
+
+}
+
+//-----------------------------------------------------------------------------
+// Check relative phz-output-dir
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(relativePhzOutputDir_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing for relative phz-output-dir");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+  std::string relative_path {"relative/path"};
+  options_map[PHZ_OUTPUT_DIR].value() = boost::any(std::string{"relative/path"});
+  options_map[CREATE_OUTPUT_CATALOG_FLAG].value() = boost::any(std::string{"YES"});
+  cf::ComputeRedshiftsConfiguration conf {options_map};
+  
+  // When
+  {
+    auto out_handler = conf.getOutputHandler();
+    out_handler->handleSourceOutput(source, res);
+  }
+  
+  // Then
+  BOOST_CHECK(fs::exists(results_dir / "CatalogName" / "input_catalog.txt" / relative_path / "phz_cat.txt"));
+
+}
+
+//-----------------------------------------------------------------------------
+// Check default phz-output-dir
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(defaultPhzOutputDir_test, ComputeRedshiftsConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing for relative phz-output-dir");
+  BOOST_TEST_MESSAGE(" ");
+  
+  // Given
+  options_map.erase(PHZ_OUTPUT_DIR);
+  options_map[CREATE_OUTPUT_CATALOG_FLAG].value() = boost::any(std::string{"YES"});
+  cf::ComputeRedshiftsConfiguration conf {options_map};
+  
+  // When
+  {
+    auto out_handler = conf.getOutputHandler();
+    out_handler->handleSourceOutput(source, res);
+  }
+  
+  // Then
+  BOOST_CHECK(fs::exists(results_dir / "CatalogName" / "input_catalog.txt" / "phz_cat.txt"));
 
 }
 
