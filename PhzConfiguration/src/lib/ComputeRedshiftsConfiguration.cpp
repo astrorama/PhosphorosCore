@@ -24,7 +24,7 @@ namespace PhzConfiguration {
 static const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
 static const std::string OUTPUT_CATALOG_FORMAT {"output-catalog-format"};
 static const std::string PHZ_OUTPUT_DIR {"phz-output-dir"};
-static const std::string INPUT_CATALOG_FILE_NAME {"input-catalog-file-name"};
+static const std::string INPUT_CATALOG_FILE {"input-catalog-file"};
 static const std::string CREATE_OUTPUT_CATALOG_FLAG {"create-output-catalog"};
 static const std::string CREATE_OUTPUT_PDF_FLAG {"create-output-pdf"};
 static const std::string CREATE_OUTPUT_POSTERIORS_FLAG {"create-output-posteriors"};
@@ -54,7 +54,7 @@ po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
 
 static fs::path getOutputPathFromOptions(const std::map<std::string, po::variable_value>& options,
                                          const fs::path& result_dir, const std::string& catalog_name) {
-  fs::path input_catalog_name{options.at(INPUT_CATALOG_FILE_NAME).as<std::string>()};
+  fs::path input_catalog_name{options.at(INPUT_CATALOG_FILE).as<std::string>()};
   auto input_filename = input_catalog_name.filename();
   fs::path result = result_dir / catalog_name / input_filename;
   if (options.count(PHZ_OUTPUT_DIR) > 0) {
