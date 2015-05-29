@@ -65,7 +65,7 @@ fs::path getRootDirFromOptions(const std::map<std::string, po::variable_value>& 
     logger.debug() << "No " << PHOSPHOROS_ROOT << " program option or " << PHOSPHOROS_ROOT_ENV
                   << " environment variable found. Setting Phosphoros Root directory to default";
   }
-  logger.info() << "Using Phosphoros Root directory " << result;
+  logger.debug() << "Using Phosphoros Root directory " << result;
   return result;
 }
 
@@ -84,7 +84,7 @@ fs::path getCatalogsDirFromOptions(const std::map<std::string, po::variable_valu
     logger.debug() << "No " << CATALOGS_DIR << " program option found. Setting "
                   << "catalogs directory to default";
   }
-  logger.info() << "Using catalogs directory " << result;
+  logger.debug() << "Using catalogs directory " << result;
   return result;
 }
 
@@ -103,7 +103,7 @@ fs::path getAuxDataDirFromOptions(const std::map<std::string, po::variable_value
     logger.debug() << "No " << AUX_DATA_DIR << " program option found. Setting "
                   << "auxiliary data directory to default";
   }
-  logger.info() << "Using auxiliary data directory " << result;
+  logger.debug() << "Using auxiliary data directory " << result;
   return result;
 }
 
@@ -123,7 +123,7 @@ fs::path getIntermediateDirFromOptions(const std::map<std::string, po::variable_
     logger.debug() << "No " << INTERMEDIATE_PRODUCTS_DIR << " program option found. Setting "
                   << "intermediate products directory to default";
   }
-  logger.info() << "Using intermediate products directory " << result;
+  logger.debug() << "Using intermediate products directory " << result;
   return result;
 }
 
@@ -142,7 +142,7 @@ fs::path getResultsDirFromOptions(const std::map<std::string, po::variable_value
     logger.debug() << "No " << RESULTS_DIR << " program option found. Setting "
                   << "results directory to default";
   }
-  logger.info() << "Using results directory " << result;
+  logger.debug() << "Using results directory " << result;
   return result;
 }
 
