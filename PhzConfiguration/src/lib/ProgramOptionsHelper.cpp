@@ -14,6 +14,8 @@
 using boost::regex;
 using boost::regex_match;
 using boost::smatch;
+#include <boost/algorithm/string/predicate.hpp>
+#include "ElementsKernel/Exception.h"
 #include "PhzConfiguration/ProgramOptionsHelper.h"
 
 namespace po = boost::program_options;
@@ -101,6 +103,23 @@ UniqueOptionsMerger UniqueOptionsMerger::operator()(const boost::program_options
   return mergeUniqueOptions(m_options, options);
 }
 
+
+std::set<std::string> findWildcardOptions(const std::vector<std::string>& option_name_list,
+                                const std::map<std::string, po::variable_value>& options) {
+  std::set<std::string> result;
+  for (auto& option_name : option_name_list) {
+    for (auto& pair : options) {
+      if (boost::starts_with(pair.first, option_name)) {
+        auto name = pair.first.substr(option_name.size());
+        if (!name.empty()) {
+          name = name.substr(1);
+        }
+        result.insert(name);
+      }
+    }
+  }
+  return result;
+}
 
 }
 }

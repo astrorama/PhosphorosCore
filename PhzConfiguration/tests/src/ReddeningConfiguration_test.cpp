@@ -154,7 +154,7 @@ BOOST_FIXTURE_TEST_CASE(getReddeningCurveList_function_test, ReddeningConfigurat
   BOOST_TEST_MESSAGE(" ");
 
   cf::ReddeningConfiguration fconf(options_map);
-  auto list = fconf.getReddeningCurveList();
+  auto list = fconf.getReddeningCurveList().at("");
 
   BOOST_CHECK_EQUAL(list.size(), 2);
   std::set<Euclid::XYDataset::QualifiedName> set {list.begin(), list.end()};
@@ -179,7 +179,7 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_exclude_function_test, ReddeningConfigu
   options_map[REDDENING_CURVE_EXCLUDE].value() = boost::any(exclude_vector);
 
   cf::ReddeningConfiguration fconf(options_map);
-  auto list = fconf.getReddeningCurveList();
+  auto list = fconf.getReddeningCurveList().at("");
 
   BOOST_CHECK_EQUAL(list.size(), 1);
   BOOST_CHECK_EQUAL(list[0].qualifiedName(), "CAL/calzetti_2");
@@ -201,7 +201,7 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_add_function_test, ReddeningConfigurati
   options_map[REDDENING_CURVE_NAME].value() = boost::any(add_vector);
 
   cf::ReddeningConfiguration fconf(options_map);
-  auto list = fconf.getReddeningCurveList();
+  auto list = fconf.getReddeningCurveList().at("");
 
   BOOST_CHECK_EQUAL(list.size(), 3);
   std::set<Euclid::XYDataset::QualifiedName> set {list.begin(), list.end()};
@@ -220,14 +220,14 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_add_twice_function_test, ReddeningConfi
   BOOST_TEST_MESSAGE(" ");
 
   cf::ReddeningConfiguration fconf(options_map);
-  auto list = fconf.getReddeningCurveList();
+  auto list = fconf.getReddeningCurveList().at("");
 
   // Add twice the same Reddening
   add_vector.push_back("CAL/calzetti_2");
   options_map[REDDENING_CURVE_NAME].value() = boost::any(add_vector);
 
   cf::ReddeningConfiguration fconf2(options_map);
-  auto list2 = fconf2.getReddeningCurveList();
+  auto list2 = fconf2.getReddeningCurveList().at("");
 
   BOOST_CHECK_EQUAL(list.size(), list2.size());
   std::set<Euclid::XYDataset::QualifiedName> set {list.begin(), list.end()};
@@ -247,7 +247,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_function_test, ReddeningConfiguration_Fixture
   BOOST_TEST_MESSAGE(" ");
 
   cf::ReddeningConfiguration rconf(options_map);
-  auto ebv_list = rconf.getEbvList();
+  auto ebv_list = rconf.getEbvList().at("");
 
   BOOST_CHECK_EQUAL(ebv_list[1], 0.5);
   BOOST_CHECK_EQUAL(ebv_list[3], 1.5);
@@ -270,7 +270,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_added_zvalue_function_test, ReddeningConfigur
   options_map[EBV_VALUE].value() = boost::any(ebv_value_vector);
 
   cf::ReddeningConfiguration rconf(options_map);
-  auto ebv_list = rconf.getEbvList();
+  auto ebv_list = rconf.getEbvList().at("");
 
   BOOST_CHECK_EQUAL(ebv_list[1], 0.5);
   BOOST_CHECK_EQUAL(ebv_list[3], 1.1);
@@ -298,7 +298,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_more_ranges_function_test, ReddeningConfigura
   options_map[EBV_RANGE].value() = boost::any(ebv_ranges_vector);
 
   cf::ReddeningConfiguration rconf(options_map);
-  auto ebv_list = rconf.getEbvList();
+  auto ebv_list = rconf.getEbvList().at("");
 
   BOOST_CHECK_EQUAL(ebv_list[1], 0.5);
   BOOST_CHECK_EQUAL(ebv_list[3], 1.5);
@@ -327,7 +327,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_forbidden_ranges_function_test, ReddeningConf
 
   cf::ReddeningConfiguration rconf(options_map);
 
-  BOOST_CHECK_THROW(rconf.getEbvList(), Elements::Exception);
+  BOOST_CHECK_THROW(rconf.getEbvList().at(""), Elements::Exception);
 
 }
 
@@ -354,7 +354,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_boundaries_function_test, ReddeningConfigurat
   options_map[EBV_VALUE].value() = boost::any(ebv_values_vector);
 
   cf::ReddeningConfiguration rconf(options_map);
-  auto ebv_list = rconf.getEbvList();
+  auto ebv_list = rconf.getEbvList().at("");
 
   BOOST_CHECK_EQUAL(ebv_list[1], 0.5);
   BOOST_CHECK_EQUAL(ebv_list[3], 1.5);
@@ -383,7 +383,7 @@ BOOST_FIXTURE_TEST_CASE(wrong_ebv_range_function_test, ReddeningConfiguration_Fi
 
   cf::ReddeningConfiguration rconf(options_map);
 
- BOOST_CHECK_THROW(rconf.getEbvList(), Elements::Exception);
+ BOOST_CHECK_THROW(rconf.getEbvList().at(""), Elements::Exception);
 
 }
 
@@ -405,7 +405,7 @@ BOOST_FIXTURE_TEST_CASE(wrong_ebv_value_function_test, ReddeningConfiguration_Fi
 
   cf::ReddeningConfiguration rconf(options_map);
 
-  BOOST_CHECK_THROW(rconf.getEbvList(), Elements::Exception);
+  BOOST_CHECK_THROW(rconf.getEbvList().at(""), Elements::Exception);
 
 }
 
@@ -428,7 +428,7 @@ BOOST_FIXTURE_TEST_CASE(wrong_characters_ebvrange_test, ReddeningConfiguration_F
 
   cf::ReddeningConfiguration rconf(options_map);
 
-  BOOST_CHECK_THROW(rconf.getEbvList(), Elements::Exception);
+  BOOST_CHECK_THROW(rconf.getEbvList().at(""), Elements::Exception);
 
 }
 
@@ -450,7 +450,7 @@ BOOST_FIXTURE_TEST_CASE(min_max_ebvrange_test, ReddeningConfiguration_Fixture) {
 
   cf::ReddeningConfiguration rconf(options_map);
 
-  BOOST_CHECK_THROW(rconf.getEbvList(), Elements::Exception);
+  BOOST_CHECK_THROW(rconf.getEbvList().at(""), Elements::Exception);
 
 }
 
@@ -472,7 +472,7 @@ BOOST_FIXTURE_TEST_CASE(wrong_characters_ebvvalue_test, ReddeningConfiguration_F
 
   cf::ReddeningConfiguration rconf(options_map);
 
-  BOOST_CHECK_THROW(rconf.getEbvList(), Elements::Exception);
+  BOOST_CHECK_THROW(rconf.getEbvList().at(""), Elements::Exception);
 
 }
 

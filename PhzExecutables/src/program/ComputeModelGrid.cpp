@@ -58,9 +58,9 @@ public:
                                                 conf.getFilterDatasetProvider(),
                                                 conf.getIgmAbsorptionFunction()};
     
-    auto param_space = PhzDataModel::createAxesTuple(conf.getZList(), conf.getEbvList(),
-                                                     conf.getReddeningCurveList(),
-                                                     conf.getSedList());
+    auto param_space = PhzDataModel::createAxesTuple(conf.getZList().at(""), conf.getEbvList().at(""),
+                                                     conf.getReddeningCurveList().at(""),
+                                                     conf.getSedList().at(""));
     
     auto grid = creator.createGrid(param_space, conf.getFilterList(), ProgressReporter{});
     

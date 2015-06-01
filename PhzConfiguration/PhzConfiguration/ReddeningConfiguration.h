@@ -100,7 +100,7 @@ public:
    * @return
    * A vector of QualifiedName types
    */
-  std::vector<XYDataset::QualifiedName> getReddeningCurveList();
+  std::map<std::string, std::vector<XYDataset::QualifiedName>> getReddeningCurveList();
 
   /**
    * @brief
@@ -119,7 +119,7 @@ public:
    * @return
    * A vector of doubles
    */
-   std::vector<double> getEbvList();
+   std::map<std::string, std::vector<double>> getEbvList();
 
 private:
   /// Map containing all the reddening options and their values
