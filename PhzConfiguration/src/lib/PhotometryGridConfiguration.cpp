@@ -54,7 +54,7 @@ PhotometryGridConfiguration::PhotometryGridConfiguration(const std::map<std::str
   m_options = options;
 }
 
-PhzDataModel::PhotometryGrid PhotometryGridConfiguration::getPhotometryGrid() {
+std::map<std::string, PhzDataModel::PhotometryGrid> PhotometryGridConfiguration::getPhotometryGrid() {
   
   auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogName());
   if (!fs::exists(filename)) {
@@ -68,8 +68,12 @@ PhzDataModel::PhotometryGrid PhotometryGridConfiguration::getPhotometryGrid() {
   PhzDataModel::PhotometryGridInfo info;
   boost::archive::binary_iarchive bia {in};
   bia >> info;
-  // Read binary file
-  return (PhzDataModel::phzGridBinaryImport<PhzDataModel::PhotometryCellManager>(in));
+  // Read grids from the file
+  std::map<std::string, PhzDataModel::PhotometryGrid> grid_map;
+  for (auto& pair : info.region_axes_map) {
+    grid_map.emplace(std::make_pair(pair.first, PhzDataModel::phzGridBinaryImport<PhzDataModel::PhotometryCellManager>(in)));
+  }
+  return grid_map;
 }
 
 PhzDataModel::PhotometryGridInfo PhotometryGridConfiguration::getPhotometryGridInfo() {

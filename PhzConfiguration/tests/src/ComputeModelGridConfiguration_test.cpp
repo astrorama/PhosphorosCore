@@ -169,8 +169,6 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, ComputeModelGridConfiguration_Fi
   std::ifstream ifs {};
   ifs.open (test_file.string(), std::ios::binary);
   boost::archive::binary_iarchive ia(ifs);
-  std::vector<std::string> region_names;
-  ia >> region_names;
   Euclid::PhzDataModel::PhotometryGridInfo info;
   ia >> info;
   auto retrieved_grid = Euclid::PhzDataModel::phzGridBinaryImport<Euclid::PhzDataModel::PhotometryCellManager>(ifs);
@@ -218,8 +216,6 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionRelative_test, ComputeModelGridConfigur
   std::ifstream ifs {};
   ifs.open (test_file.string(), std::ios::binary);
   boost::archive::binary_iarchive ia(ifs);
-  std::vector<std::string> region_names;
-  ia >> region_names;
   Euclid::PhzDataModel::PhotometryGridInfo info;
   ia >> info;
   auto retrieved_grid = Euclid::PhzDataModel::phzGridBinaryImport<Euclid::PhzDataModel::PhotometryCellManager>(ifs);
@@ -266,8 +262,6 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionDefault_test, ComputeModelGridConfigura
   std::ifstream ifs {};
   ifs.open (test_file.string(), std::ios::binary);
   boost::archive::binary_iarchive ia(ifs);
-  std::vector<std::string> region_names;
-  ia >> region_names;
   Euclid::PhzDataModel::PhotometryGridInfo info;
   ia >> info;
   auto retrieved_grid = Euclid::PhzDataModel::phzGridBinaryImport<Euclid::PhzDataModel::PhotometryCellManager>(ifs);

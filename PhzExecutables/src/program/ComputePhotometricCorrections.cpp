@@ -52,7 +52,7 @@ public:
         logger.info() << pair.first.qualifiedName() << " : " << pair.second;
       }
     };
-    auto phot_corr_map = calculator(catalog, model_phot_grid, stop_criteria, selector, progress_logger);
+    auto phot_corr_map = calculator(catalog, model_phot_grid.at(""), stop_criteria, selector, progress_logger);
 
     output_func(phot_corr_map);
 
