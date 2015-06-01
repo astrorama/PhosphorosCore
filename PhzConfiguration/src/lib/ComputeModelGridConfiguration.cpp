@@ -81,23 +81,12 @@ ComputeModelGridConfiguration::OutputFunction ComputeModelGridConfiguration::get
     auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogName());
     std::ofstream out {filename};
     boost::archive::binary_oarchive boa {out};
-    // First store a vector with all the region names
-    std::vector<std::string> region_names {};
-    for (auto& pair : grid_map) {
-      region_names.push_back(pair.first);
-    }
-    boa << region_names;
-    // Store the info objects of all the grids
-    for (auto& name : region_names) {
-      PhzDataModel::PhotometryGridInfo info{};
-      info.axes = grid_map.at(name).getAxesTuple();
-      info.igm_method = getIgmAbsorptionType();
-      info.filter_names = getFilterList();
-      boa << info;
-    }
+    // Store the info object describing the grids
+    PhzDataModel::PhotometryGridInfo info {grid_map, getIgmAbsorptionType(), getFilterList()};
+    boa << info;
     // Store the grids themselves
-    for (auto& name : region_names) {
-      GridContainer::gridBinaryExport(out, grid_map.at(name));
+    for (auto& pair : grid_map) {
+      GridContainer::gridBinaryExport(out, pair.second);
     }
     logger.info() << "Created the model grid in file " << filename;
   };

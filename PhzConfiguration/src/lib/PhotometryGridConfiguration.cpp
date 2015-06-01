@@ -82,7 +82,7 @@ PhzDataModel::PhotometryGridInfo PhotometryGridConfiguration::getPhotometryGridI
   }
 
   std::ifstream in{filename.string()};
-  PhzDataModel::PhotometryGridInfo info;
+  PhzDataModel::PhotometryGridInfo info {};
   boost::archive::binary_iarchive bia {in};
   bia >> info;
   return info;
