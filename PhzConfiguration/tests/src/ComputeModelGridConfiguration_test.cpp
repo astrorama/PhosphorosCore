@@ -160,13 +160,17 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, ComputeModelGridConfiguration_Fi
   original_grid(1,0,0,0)=photometry_2;
   original_grid(0,1,0,0)=photometry_3;
   original_grid(1,1,0,0)=photometry_4;
+  std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> grid_map {};
+  grid_map.emplace(std::make_pair(std::string(""), std::move(original_grid)));
 
-  output_func(original_grid);
+  output_func(grid_map);
 
   // Read the binary file created
   std::ifstream ifs {};
   ifs.open (test_file.string(), std::ios::binary);
   boost::archive::binary_iarchive ia(ifs);
+  std::vector<std::string> region_names;
+  ia >> region_names;
   Euclid::PhzDataModel::PhotometryGridInfo info;
   ia >> info;
   auto retrieved_grid = Euclid::PhzDataModel::phzGridBinaryImport<Euclid::PhzDataModel::PhotometryCellManager>(ifs);
@@ -175,7 +179,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, ComputeModelGridConfiguration_Fi
   BOOST_CHECK_EQUAL(2, info.filter_names.size());
   BOOST_CHECK_EQUAL("filter1", info.filter_names[0].qualifiedName());
   BOOST_CHECK_EQUAL("filter2", info.filter_names[1].qualifiedName());
-  BOOST_CHECK_EQUAL(original_grid.size(),retrieved_grid.size());
+  BOOST_CHECK_EQUAL(4,retrieved_grid.size());
 }
 
 //-----------------------------------------------------------------------------
@@ -205,13 +209,17 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionRelative_test, ComputeModelGridConfigur
   original_grid(1,0,0,0)=photometry_2;
   original_grid(0,1,0,0)=photometry_3;
   original_grid(1,1,0,0)=photometry_4;
+  std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> grid_map {};
+  grid_map.emplace(std::make_pair(std::string(""), std::move(original_grid)));
 
-  output_func(original_grid);
+  output_func(grid_map);
 
   // Read the binary file created
   std::ifstream ifs {};
   ifs.open (test_file.string(), std::ios::binary);
   boost::archive::binary_iarchive ia(ifs);
+  std::vector<std::string> region_names;
+  ia >> region_names;
   Euclid::PhzDataModel::PhotometryGridInfo info;
   ia >> info;
   auto retrieved_grid = Euclid::PhzDataModel::phzGridBinaryImport<Euclid::PhzDataModel::PhotometryCellManager>(ifs);
@@ -220,7 +228,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionRelative_test, ComputeModelGridConfigur
   BOOST_CHECK_EQUAL(2, info.filter_names.size());
   BOOST_CHECK_EQUAL("filter1", info.filter_names[0].qualifiedName());
   BOOST_CHECK_EQUAL("filter2", info.filter_names[1].qualifiedName());
-  BOOST_CHECK_EQUAL(original_grid.size(),retrieved_grid.size());
+  BOOST_CHECK_EQUAL(4, retrieved_grid.size());
 }
 
 //-----------------------------------------------------------------------------
@@ -249,13 +257,17 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionDefault_test, ComputeModelGridConfigura
   original_grid(1,0,0,0)=photometry_2;
   original_grid(0,1,0,0)=photometry_3;
   original_grid(1,1,0,0)=photometry_4;
+  std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> grid_map {};
+  grid_map.emplace(std::make_pair(std::string(""), std::move(original_grid)));
 
-  output_func(original_grid);
+  output_func(grid_map);
 
   // Read the binary file created
   std::ifstream ifs {};
   ifs.open (test_file.string(), std::ios::binary);
   boost::archive::binary_iarchive ia(ifs);
+  std::vector<std::string> region_names;
+  ia >> region_names;
   Euclid::PhzDataModel::PhotometryGridInfo info;
   ia >> info;
   auto retrieved_grid = Euclid::PhzDataModel::phzGridBinaryImport<Euclid::PhzDataModel::PhotometryCellManager>(ifs);
@@ -264,7 +276,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionDefault_test, ComputeModelGridConfigura
   BOOST_CHECK_EQUAL(2, info.filter_names.size());
   BOOST_CHECK_EQUAL("filter1", info.filter_names[0].qualifiedName());
   BOOST_CHECK_EQUAL("filter2", info.filter_names[1].qualifiedName());
-  BOOST_CHECK_EQUAL(original_grid.size(),retrieved_grid.size());
+  BOOST_CHECK_EQUAL(4,retrieved_grid.size());
 }
 
 //-----------------------------------------------------------------------------

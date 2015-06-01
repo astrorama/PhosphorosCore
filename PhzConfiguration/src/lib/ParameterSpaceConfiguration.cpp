@@ -110,7 +110,7 @@ static void checkForOverlaps(const std::map<std::string, std::vector<XYDataset::
 }
 
 
-std::map<std::string, PhzDataModel::ModelAxesTuple> ParameterSpaceConfiguration::getRegions() {
+std::map<std::string, PhzDataModel::ModelAxesTuple> ParameterSpaceConfiguration::getParameterSpaceRegions() {
   auto sed_map = getSedList();
   auto red_curve_map = getReddeningCurveList();
   auto ebv_map = getEbvList();

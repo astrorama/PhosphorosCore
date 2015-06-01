@@ -76,17 +76,29 @@ po::options_description ComputeModelGridConfiguration::getProgramOptions() {
 
 
 ComputeModelGridConfiguration::OutputFunction ComputeModelGridConfiguration::getOutputFunction() {
-  return [this](const PhzDataModel::PhotometryGrid& grid) {
+  return [this](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
     auto logger = Elements::Logging::getLogger("PhzOutput");
     auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogName());
     std::ofstream out {filename};
-    PhzDataModel::PhotometryGridInfo info{};
-    info.axes = grid.getAxesTuple();
-    info.igm_method = getIgmAbsorptionType();
-    info.filter_names = getFilterList();
     boost::archive::binary_oarchive boa {out};
-    boa << info;
-    GridContainer::gridBinaryExport(out, grid);
+    // First store a vector with all the region names
+    std::vector<std::string> region_names {};
+    for (auto& pair : grid_map) {
+      region_names.push_back(pair.first);
+    }
+    boa << region_names;
+    // Store the info objects of all the grids
+    for (auto& name : region_names) {
+      PhzDataModel::PhotometryGridInfo info{};
+      info.axes = grid_map.at(name).getAxesTuple();
+      info.igm_method = getIgmAbsorptionType();
+      info.filter_names = getFilterList();
+      boa << info;
+    }
+    // Store the grids themselves
+    for (auto& name : region_names) {
+      GridContainer::gridBinaryExport(out, grid_map.at(name));
+    }
     logger.info() << "Created the model grid in file " << filename;
   };
 }

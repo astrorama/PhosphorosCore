@@ -46,7 +46,7 @@ class ComputeModelGridConfiguration : public ParameterSpaceConfiguration,
   
 public:
   
-  typedef std::function<void(const PhzDataModel::PhotometryGrid&)> OutputFunction;
+  typedef std::function<void(const std::map<std::string, PhzDataModel::PhotometryGrid>&)> OutputFunction;
   
   /**
    * @brief

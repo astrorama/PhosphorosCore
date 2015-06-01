@@ -70,7 +70,7 @@ public:
    */
    virtual ~ParameterSpaceConfiguration()=default;
    
-   std::map<std::string, PhzDataModel::ModelAxesTuple> getRegions();
+   std::map<std::string, PhzDataModel::ModelAxesTuple> getParameterSpaceRegions();
 
 };
 
