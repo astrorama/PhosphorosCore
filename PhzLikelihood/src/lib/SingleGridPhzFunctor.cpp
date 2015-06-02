@@ -49,8 +49,14 @@ auto SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
   std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
   posterior_map.emplace(std::make_pair(std::string{""}, std::move(likelihood_grid)));
   
+  // Create the best_chi_square map
+  std::map<std::string, double> best_chi2_map {
+    {"", best_chi_square}
+  };
+  
   // Return the result
-  return result_type{best_fit_result, std::move(pdf_1D), std::move(posterior_map), *scale_factor_result, best_chi_square};
+  return result_type{best_fit_result, std::move(pdf_1D), std::move(posterior_map),
+                     *scale_factor_result, best_chi_square, std::move(best_chi2_map)};
 }
 
 } // end of namespace PhzLikelihood

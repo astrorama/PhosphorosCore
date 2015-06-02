@@ -66,6 +66,7 @@ void LikelihoodHandler::handleSourceOutput(const SourceCatalog::Source& source,
   std::string filename = (m_out_dir/(id+".fits")).string();
   fs::remove(filename);
   auto& posteriors_map = std::get<2>(results);
+  auto& best_chi2_map = std::get<5>(results);
   
   for (auto& pair : posteriors_map) {
     // Create the first HDU with the array. We do that in a scope so the file is
@@ -81,6 +82,7 @@ void LikelihoodHandler::handleSourceOutput(const SourceCatalog::Source& source,
       
       fits.addImage(pair.first, DOUBLE_IMG, ext_ax);
       fits.currentExtension().addKey("ID", source.getId(), "");
+      fits.currentExtension().addKey("CHI2", best_chi2_map.at(pair.first), "");
       
       std::valarray<double> data (pair.second.size());
       int i = 0;

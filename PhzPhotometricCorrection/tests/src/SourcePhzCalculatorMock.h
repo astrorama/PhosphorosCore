@@ -47,7 +47,7 @@ public:
         new PhzLikelihood::SourcePhzFunctor::result_type{
           m_phot_grid.begin(),
           PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}},
-          std::move(posterior_map), 0, 0
+          std::move(posterior_map), 0, 0, std::map<std::string, double>{}
         }
     ));
   };

@@ -149,9 +149,15 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
     posterior_map.emplace(std::make_pair(pair.first, std::move(std::get<2>(pair.second).at(""))));
   }
   
+  // Create te map with the best chi square per region
+  std::map<std::string, double> best_chi2_map {};
+  for (auto& pair : result_map) {
+    best_chi2_map.emplace(std::make_pair(pair.first, std::get<4>(pair.second)));
+  }
+  
   return result_type {std::get<0>(best_result_pair->second), std::move(final_1D_pdf),
                       std::move(posterior_map), std::get<3>(best_result_pair->second),
-                      std::get<4>(best_result_pair->second)};
+                      std::get<4>(best_result_pair->second), std::move(best_chi2_map)};
 }
 
 } // end of namespace PhzLikelihood

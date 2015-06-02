@@ -76,7 +76,7 @@ struct ComputeRedshiftsConfiguration_Fixture {
   }
   std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map = makePosteriorMap(std::move(res_likelihood));
   PhzOutput::OutputHandler::result_type res {
-    res_phot_grid.cbegin(), std::move(res_pdf), std::move(posterior_map), 0., 0.
+    res_phot_grid.cbegin(), std::move(res_pdf), std::move(posterior_map), 0., 0., std::map<std::string, double>{}
   };
 
   ComputeRedshiftsConfiguration_Fixture() {

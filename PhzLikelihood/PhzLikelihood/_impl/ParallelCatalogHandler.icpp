@@ -71,7 +71,8 @@ private:
         std::move(pdf_copy),
         std::move(posteriors_map_copy),
         std::get<3>(results),
-        std::get<4>(results)
+        std::get<4>(results),
+        std::get<5>(results)
       };
       m_result_vector.push_back(ResultType{source, std::move(results_copy)});
       ++m_progress;
