@@ -12,6 +12,7 @@
 #include "ElementsKernel/Real.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
+#include "PhzLikelihood/SumMarginalizationFunctor.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "tests/src/LikelihoodFunctionMock.h"
 #include "tests/src/BestFitFunctionMock.h"
