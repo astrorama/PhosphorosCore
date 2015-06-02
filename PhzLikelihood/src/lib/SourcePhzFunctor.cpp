@@ -71,7 +71,11 @@ static PhzDataModel::Pdf1D combine1DPdfs(const std::map<std::string, SourcePhzFu
       pdf_x.emplace_back(iter.template axisValue<0>());
       pdf_y.emplace_back(*iter);
     }
-    pdf_func_list.emplace_back(MathUtils::interpolate(pdf_x, pdf_y, MathUtils::InterpolationType::LINEAR));
+    // If we have a PDF with a single value we ignore it. There is no way to
+    // use it in a reasonable way, because we cannot normalize a dirac method.
+    if (pdf_x.size() > 1) {
+      pdf_func_list.emplace_back(MathUtils::interpolate(pdf_x, pdf_y, MathUtils::InterpolationType::LINEAR));
+    }
   }
   
   // Calculate the sum of all the PDFs
@@ -118,6 +122,8 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
                               const std::pair<const std::string, result_type>& second) {
                                   return std::get<4>(first.second) < std::get<4>(second.second);
                            });
+                           
+  auto final_1D_pdf = combine1DPdfs(result_map);
   
   // Create the map with all the posterior grids
   std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
@@ -125,7 +131,7 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
     posterior_map.emplace(std::make_pair(pair.first, std::move(std::get<2>(pair.second).at(""))));
   }
   
-  return result_type {std::get<0>(best_result_pair->second), combine1DPdfs(result_map),
+  return result_type {std::get<0>(best_result_pair->second), std::move(final_1D_pdf),
                       std::move(posterior_map), std::get<3>(best_result_pair->second),
                       std::get<4>(best_result_pair->second)};
 }

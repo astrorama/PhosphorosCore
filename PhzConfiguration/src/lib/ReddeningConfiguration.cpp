@@ -155,6 +155,8 @@ static std::vector<double> getRegionEbvList(const std::string& region_name,
       for (double value=min; value<=max; value+=step) {
         selected.insert(value);
       }
+      // We always add the max, for the case the step was not reaching it exactly
+      selected.insert(max);
     }
   }
   // Add the ebv-value option

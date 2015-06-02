@@ -83,7 +83,7 @@ static bool overlapingNames(const std::vector<XYDataset::QualifiedName>& first,
 
 static bool overlapingValues(const std::vector<double>& first,
                             const std::vector<double>& second) {
-  return (first.front() < second.back()) && (first.back() > second.front());
+  return (first.front() <= second.back()) && (first.back() >= second.front());
 }
 
 

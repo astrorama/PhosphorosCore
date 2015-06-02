@@ -21,10 +21,10 @@ public:
   virtual ~FindBestFitModelsMock() = default;
   MOCK_METHOD3(FunctorCall, map<int64_t, PhzDataModel::PhotometryGrid::const_iterator>(
                   const Catalog& calibration_catalog,
-                  const PhzDataModel::PhotometryGrid& model_photometric_grid,
+                  const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
                   const PhzDataModel::PhotometricCorrectionMap& photometric_correction));
   void expectFunctorCall(const Catalog& expected_catalog,
-                         const PhzDataModel::PhotometryGrid& expected_phot_grid,
+                         const std::map<std::string, PhzDataModel::PhotometryGrid>& expected_model_grid_map,
                          const PhzDataModel::PhotometricCorrectionMap& expected_phot_corr,
                          const map<int64_t, PhzDataModel::PhotometryGrid::const_iterator>& result) {
     EXPECT_CALL(*this, FunctorCall(
@@ -35,7 +35,9 @@ public:
           }
           return true;
         }),
-        Truly([&expected_phot_grid](const PhzDataModel::PhotometryGrid& phot_grid) { // Second argument check
+        Truly([&expected_model_grid_map](const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map) { // Second argument check
+          auto& expected_phot_grid = expected_model_grid_map.at("");
+          auto& phot_grid = model_grid_map.at("");
           BOOST_CHECK_EQUAL(phot_grid.size(), expected_phot_grid.size());
           for (auto iter=phot_grid.begin(), exp_iter=expected_phot_grid.begin(); iter!=phot_grid.end(); ++iter, ++exp_iter) {
             BOOST_CHECK(iter.axisValue<0>() == exp_iter.axisValue<0>());
@@ -155,20 +157,22 @@ BOOST_AUTO_TEST_CASE(FunctorCallSuccess) {
         initializer_list<string>{"Filter1", "Filter2"}),
         vector<FluxErrorPair>{   {3.1, 0.1}, {3.2, 0.2}}}}}}
   }};
-  const PhzDataModel::PhotometryGrid model_phot_grid {PhzDataModel::createAxesTuple(
+  PhzDataModel::PhotometryGrid model_phot_grid {PhzDataModel::createAxesTuple(
           {0.1, 0.2, 0.3}, // Z
           {0.4, 0.5, 0.6, 0.7}, // E(B-V)
           {{"Curve1"}, {"Curve2"}}, // Reddening Curves
           {{"SED1"}, {"SED2"}, {"SED3"}} // SEDs
   )};
+  std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
+  model_grid_map.emplace(std::make_pair(std::string{""}, std::move(model_phot_grid)));
   vector<PhzDataModel::PhotometricCorrectionMap> phot_corr_map_list {
     {{{"Filter1"}, 1.}, {{"Filter2"}, 1.}},
     {{{"Filter1"}, 2.}, {{"Filter2"}, 2.}},
     {{{"Filter1"}, 3.}, {{"Filter2"}, 3.}}
   };
   vector<std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator>> best_fit_map_list {
-    {{1, model_phot_grid.begin()}},
-    {{2, model_phot_grid.begin()}}
+    {{1, model_grid_map.at("").cbegin()}},
+    {{2, model_grid_map.at("").cbegin()}}
   };
   vector<std::map<int64_t, double>> scale_map_list {
     {{1, 0.}}, {{2, 0.}}
@@ -196,10 +200,10 @@ BOOST_AUTO_TEST_CASE(FunctorCallSuccess) {
     return true;
   }))).WillOnce(Return(true));
   InSequence in_sqauence;
-  find_best_fit_models_mock.expectFunctorCall(catalog, model_phot_grid, phot_corr_map_list[0], best_fit_map_list[0]);
+  find_best_fit_models_mock.expectFunctorCall(catalog, model_grid_map, phot_corr_map_list[0], best_fit_map_list[0]);
   calculate_scale_factors_map_mock.expectFunctorCall(catalog.begin(), catalog.end(), best_fit_map_list[0], scale_map_list[0]);
   calculate_photometric_correction_mock.expectFunctorCall(catalog.begin(), catalog.end(), scale_map_list[0], best_fit_map_list[0], phot_corr_map_list[1]);
-  find_best_fit_models_mock.expectFunctorCall(catalog, model_phot_grid, phot_corr_map_list[1], best_fit_map_list[1]);
+  find_best_fit_models_mock.expectFunctorCall(catalog, model_grid_map, phot_corr_map_list[1], best_fit_map_list[1]);
   calculate_scale_factors_map_mock.expectFunctorCall(catalog.begin(), catalog.end(), best_fit_map_list[1], scale_map_list[1]);
   calculate_photometric_correction_mock.expectFunctorCall(catalog.begin(), catalog.end(), scale_map_list[1], best_fit_map_list[1], phot_corr_map_list[2]);
   
@@ -209,7 +213,7 @@ BOOST_AUTO_TEST_CASE(FunctorCallSuccess) {
       bind(&CalculateScaleFactorsMapMock::FunctorCall, &calculate_scale_factors_map_mock, _1, _2, _3),
       bind(&CalculatePhotometricCorrectionMock::FunctorCall, &calculate_photometric_correction_mock, _1, _2, _3, _4)
   };
-  auto result_phot_corr_map = calculator(catalog, model_phot_grid,
+  auto result_phot_corr_map = calculator(catalog, model_grid_map,
                   bind(&StopCriteriaMock::FunctorCall, &stop_criteria_mock, _1), {});
   
   // Then

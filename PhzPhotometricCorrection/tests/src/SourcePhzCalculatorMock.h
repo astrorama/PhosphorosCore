@@ -23,9 +23,9 @@ public:
   virtual ~SourcePhzCalculatorMock() = default;
 
   SourcePhzCalculatorMock(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
-     const PhzDataModel::PhotometryGrid& phot_grid):
+     const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map):
        m_phot_corr_map{std::move(phot_corr_map)},
-       m_phot_grid(phot_grid){
+       m_phot_grid(model_grid_map.at("")){
         expectFunctorCall();
 
 
