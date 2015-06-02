@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <set>
 #include <memory>
+#include <limits>
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
@@ -59,6 +60,22 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
 
 static PhzDataModel::Pdf1D combine1DPdfs(const std::map<std::string, SourcePhzFunctor::result_type>& result_map) {
   
+  // All the likelihoods were shifted so the peak has value 1. This means that
+  // the 1D PDFs are also shifted with the same constant. We get the constants
+  // in such way so the region with the best chi square will have the multiplier 1
+  std::map<std::string, double> factor_map {};
+  double min_chi_square = std::numeric_limits<double>::max();
+  for (auto& pair : result_map) {
+    double chi_square = std::get<4>(pair.second);
+    factor_map[pair.first] = chi_square;
+    if (chi_square < min_chi_square) {
+      min_chi_square = chi_square;
+    }
+  }
+  for (auto& factor : factor_map) {
+    factor.second = std::exp(-.5 * (factor.second - min_chi_square));
+  }
+  
   // Create the functions representing all the PDF results and initialize the
   // knots for which we produce the final result for
   std::set<double> x_set {};
@@ -66,10 +83,11 @@ static PhzDataModel::Pdf1D combine1DPdfs(const std::map<std::string, SourcePhzFu
   for (auto& pair : result_map) {
     std::vector<double> pdf_x {};
     std::vector<double> pdf_y {};
+    double factor = factor_map.at(pair.first);
     for (auto iter=std::get<1>(pair.second).begin(); iter!=std::get<1>(pair.second).end(); ++iter) {
       x_set.insert(iter.template axisValue<0>());
       pdf_x.emplace_back(iter.template axisValue<0>());
-      pdf_y.emplace_back(*iter);
+      pdf_y.push_back(factor * *iter);
     }
     // If we have a PDF with a single value we ignore it. There is no way to
     // use it in a reasonable way, because we cannot normalize a dirac method.
