@@ -15,14 +15,17 @@ namespace Euclid {
 namespace PhzLikelihood {
 
 SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
-                                   const PhzDataModel::PhotometryGrid& phot_grid,
+                                   const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                                    std::vector<PriorFunction> priors,
                                    MarginalizationFunction marginalization_func,
                                    LikelihoodGridFunction likelihood_func,
                                    BestFitSearchFunction best_fit_search_func)
-        : m_phot_corr_map{std::move(phot_corr_map)},
-          m_single_grid_functor{phot_grid, std::move(priors), std::move(marginalization_func),
-                                std::move(likelihood_func), std::move(best_fit_search_func)} {
+        : m_phot_corr_map{std::move(phot_corr_map)} {
+  for (auto& pair : phot_grid_map) {
+    m_single_grid_functor_map.emplace(std::make_pair(pair.first,
+                SingleGridPhzFunctor{pair.second, priors, marginalization_func,
+                                     likelihood_func, best_fit_search_func}));
+  }
 }
 
 SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectionMap& pc_map,
@@ -49,7 +52,7 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
   // Apply the photometric correction to the given source photometry
   auto cor_source_phot = applyPhotCorr(m_phot_corr_map, source_phot);
   
-  return m_single_grid_functor(cor_source_phot);
+  return m_single_grid_functor_map.at("")(cor_source_phot);
   
 //  // Calculate the likelihood over all the models
 //  auto likelihood_res = m_likelihood_func(cor_source_phot, m_phot_grid);

@@ -41,8 +41,9 @@ public:
    * 
    * @param phot_corr_map
    *    A map with the photometric corrections to be applied for each filter
-   * @param phot_grid
-   *    A grid with the photometries of the models to perform the fitting with
+   * @param phot_grid_map
+   *    The const reference to the map containing the grids with the model
+   *    photometries for all the parameter space regions
    * @param priors
    *    The priors to apply on the likelihood grid
    * @param marginalization_func
@@ -53,7 +54,7 @@ public:
    *    the filters of the model photometries
    */
   CatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
-                 const PhzDataModel::PhotometryGrid& phot_grid,
+                 const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                  std::vector<PriorFunction> priors,
                  MarginalizationFunction marginalization_func);
   

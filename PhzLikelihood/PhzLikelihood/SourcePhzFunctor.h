@@ -7,6 +7,8 @@
 #ifndef PHZLIKELIHOOD_SOURCEPHZFUNCTOR_H
 #define	PHZLIKELIHOOD_SOURCEPHZFUNCTOR_H
 
+#include <map>
+#include <string>
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzLikelihood/SingleGridPhzFunctor.h"
 
@@ -39,18 +41,19 @@ public:
   
   /**
    * Constructs a new SourcePhzFunctor instance. It gets as parameters a map
-   * containing the photometric corrections, a const reference to the grid with
-   * the model photometries, the algorithm to use for calculating the likelihood
-   * grid, the algorithm for finding the best fitted model and the algorithm for
-   * performing the PDF marginalization. Note that the algorithms can be
-   * ommitted which will result to the default chi^2 for the likelihood
-   * calculation, the maximum likelihood value for the best fitted model and
-   * bayesian for the marginalization.
+   * containing the photometric corrections,a map with the grids with the model
+   * photometries for each parameter space region, the algorithm to use for
+   * calculating the likelihood grid, the algorithm for finding the best fitted
+   * model and the algorithm for performing the PDF marginalization. Note that
+   * the algorithms can be ommitted which will result to the default chi^2 for
+   * the likelihood calculation, the maximum likelihood value for the best
+   * fitted model and bayesian for the marginalization.
    *
    * @param phot_corr_map
    *    The map with the photometric corrections
-   * @param phot_grid
-   *    The const reference to the grid with the model photometries
+   * @param phot_grid_map
+   *    The const reference to the map containing the grids with the model
+   *    photometries for all the parameter space regions
    * @param priors
    *    The priors to apply to the likelihood
    * @param likelihood_func
@@ -61,7 +64,7 @@ public:
    *    The functor to use for performing the PDF marginalization
    */
   SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
-                   const PhzDataModel::PhotometryGrid& phot_grid,
+                   const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                    std::vector<PriorFunction> priors = {},
                    MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor{},
                    LikelihoodGridFunction likelihood_func = LikelihoodGridFunctor{},
@@ -83,7 +86,7 @@ public:
 private:
 
   PhzDataModel::PhotometricCorrectionMap m_phot_corr_map;
-  SingleGridPhzFunctor m_single_grid_functor;
+  std::map<std::string, SingleGridPhzFunctor> m_single_grid_functor_map;
 
 };
 

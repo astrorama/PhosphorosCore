@@ -56,7 +56,7 @@ class ComputeRedshifts : public Elements::Program {
     auto marginalization_func = conf.getMarginalizationFunc();
 
     PhzLikelihood::ParallelCatalogHandler handler {conf.getPhotometricCorrectionMap(),
-                                                   model_phot_grid.at(""), conf.getPriors(),
+                                                   model_phot_grid, conf.getPriors(),
                                                    marginalization_func};
 
     auto catalog = conf.getCatalog();
