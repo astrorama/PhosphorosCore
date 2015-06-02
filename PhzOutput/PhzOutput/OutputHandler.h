@@ -7,6 +7,8 @@
 #ifndef PHZOUTPUT_OUTPUTHANDLER_H
 #define	PHZOUTPUT_OUTPUTHANDLER_H
 
+#include <map>
+#include <string>
 #include "GridContainer/GridContainer.h"
 #include "SourceCatalog/Source.h"
 #include "PhzDataModel/PhotometryGrid.h"
@@ -24,7 +26,7 @@ public:
    * Defines the type of the PHZ results as following:
    * - An iterator pointing to the model photometry which is the best match
    * - A grid representing the 1D PDF over the redshift
-   * - A grid representing the multi dimensional likelihood
+   * - A map containing the posterios for all parameter space regions
    * - A double with the value of the alpha scale factor used for the fitting
    * - A double with the likelihood value of the best fitted model
    */

@@ -5,14 +5,23 @@
  */
 
 #include <tuple>
+#include <algorithm>
+#include <set>
+#include <memory>
 #include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Logging.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
+#include "MathUtils/function/Function.h"
+#include "MathUtils/function/function_tools.h"
+#include "MathUtils/interpolation/interpolation.h"
 #include "PhzDataModel/LikelihoodGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
+
+static Elements::Logging logger = Elements::Logging::getLogger("PhzLikelihood");
 
 SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
@@ -48,9 +57,69 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
   return SourceCatalog::Photometry{filter_names_ptr, std::move(fluxes)};
 }
 
+static PhzDataModel::Pdf1D combine1DPdfs(const std::map<std::string, SourcePhzFunctor::result_type>& result_map) {
+  
+  // Create the functions representing all the PDF results and initialize the
+  // knots for which we produce the final result for
+  std::set<double> x_set {};
+  std::vector<std::unique_ptr<MathUtils::Function>> pdf_func_list {};
+  for (auto& pair : result_map) {
+    std::vector<double> pdf_x {};
+    std::vector<double> pdf_y {};
+    for (auto iter=std::get<1>(pair.second).begin(); iter!=std::get<1>(pair.second).end(); ++iter) {
+      x_set.insert(iter.template axisValue<0>());
+      pdf_x.emplace_back(iter.template axisValue<0>());
+      pdf_y.emplace_back(*iter);
+    }
+    pdf_func_list.emplace_back(MathUtils::interpolate(pdf_x, pdf_y, MathUtils::InterpolationType::LINEAR));
+  }
+  
+  // Calculate the sum of all the PDFs
+  std::vector<double> final_x {x_set.begin(), x_set.end()};
+  std::vector<double> final_y {};
+  for (double x : final_x) {
+    double y = 0;
+    for (auto& func : pdf_func_list) {
+      y += (*func)(x);
+    }
+    final_y.push_back(y);
+  }
+  
+  // Normalize the final PDF
+  auto as_function = MathUtils::interpolate(final_x, final_y, MathUtils::InterpolationType::LINEAR);
+  double integral = MathUtils::integrate(*as_function, final_x.front(), final_x.back());
+  for (auto& pdf_value : final_y) {
+    pdf_value /= integral;
+  }
+  
+  // Convert the vectors to Pdf1D
+  PhzDataModel::Pdf1D result {{"Z", final_x}};
+  auto value_iter = final_y.begin();
+  for (auto cell_iter=result.begin(); cell_iter!=result.end(); ++cell_iter, ++ value_iter) {
+    *cell_iter = *value_iter;
+  }
+  
+  return result;
+}
+
 auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) const -> result_type {
   // Apply the photometric correction to the given source photometry
   auto cor_source_phot = applyPhotCorr(m_phot_corr_map, source_phot);
+  
+  // Calculate the results for all the regions
+  std::map<std::string, result_type> result_map {};
+  for (auto& pair : m_single_grid_functor_map) {
+    result_map.emplace(std::make_pair(pair.first, pair.second(cor_source_phot)));
+  }
+  
+  // Find the result with the best chi square (smaller values are better matches)
+  auto best_result_pair = std::min_element(result_map.begin(), result_map.end(),
+                           [](const std::pair<const std::string, result_type>& first,
+                              const std::pair<const std::string, result_type>& second) {
+                                  return std::get<4>(first.second) < std::get<4>(second.second);
+                           });
+                           
+  auto final_1D_pdf = combine1DPdfs(result_map);
   
   return m_single_grid_functor_map.at("")(cor_source_phot);
   
