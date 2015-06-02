@@ -30,8 +30,8 @@ public:
    * - A double with the value of the alpha scale factor used for the fitting
    * - A double with the likelihood value of the best fitted model
    */
-  typedef std::tuple<PhzDataModel::PhotometryGrid::const_iterator,
-                     PhzDataModel::Pdf1D, PhzDataModel::LikelihoodGrid,
+  typedef std::tuple<PhzDataModel::PhotometryGrid::const_iterator, PhzDataModel::Pdf1D,
+                     std::map<std::string, PhzDataModel::LikelihoodGrid>,
                      double, double> result_type;
   
   virtual ~OutputHandler() {}

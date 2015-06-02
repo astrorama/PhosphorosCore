@@ -93,7 +93,8 @@ public:
   /**
    * Calculates the PHZ results for the given source photometry. The likelihood
    * grid is calculated by using the likelihood algorithm (as given at the
-   * constructor).
+   * constructor). Note that the map of posteriors in the result contains only
+   * one pair, with key the empty string.
    *
    * @param source_phot
    *    The photometry of the source

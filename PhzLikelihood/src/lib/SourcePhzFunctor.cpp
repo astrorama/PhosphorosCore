@@ -118,36 +118,16 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
                               const std::pair<const std::string, result_type>& second) {
                                   return std::get<4>(first.second) < std::get<4>(second.second);
                            });
-                           
-  auto final_1D_pdf = combine1DPdfs(result_map);
   
-  return m_single_grid_functor_map.at("")(cor_source_phot);
+  // Create the map with all the posterior grids
+  std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
+  for (auto& pair : result_map) {
+    posterior_map.emplace(std::make_pair(pair.first, std::move(std::get<2>(pair.second).at(""))));
+  }
   
-//  // Calculate the likelihood over all the models
-//  auto likelihood_res = m_likelihood_func(cor_source_phot, m_phot_grid);
-//  PhzDataModel::LikelihoodGrid likelihood_grid {std::move(std::get<0>(likelihood_res))};
-//  PhzDataModel::ScaleFactordGrid scale_factor_grid {std::move(std::get<1>(likelihood_res))};
-//  double best_chi_square = std::get<2>(likelihood_res);
-//  
-//  // Apply all the priors to the likelihood
-//  for (auto& prior : m_priors) {
-//    prior(likelihood_grid, cor_source_phot, m_phot_grid, scale_factor_grid);
-//  }
-//  
-//  // Select the best fitted model
-//  auto best_fit = m_best_fit_search_func(likelihood_grid.begin(), likelihood_grid.end());
-//  // Create an iterator of PhotometryGrid instead of the LikelihoodGrid that we have
-//  auto best_fit_result = m_phot_grid.begin();
-//  best_fit_result.fixAllAxes(best_fit);
-//  // Get an iterator to the scale factor of the best fit model
-//  auto scale_factor_result = scale_factor_grid.begin();
-//  scale_factor_result.fixAllAxes(best_fit);
-//
-//  // Calculate the 1D PDF
-//  auto pdf_1D = m_marginalization_func(likelihood_grid);
-//  
-//  // Return the result
-//  return result_type{best_fit_result, std::move(pdf_1D), std::move(likelihood_grid), *scale_factor_result, best_chi_square};
+  return result_type {std::get<0>(best_result_pair->second), combine1DPdfs(result_map),
+                      std::move(posterior_map), std::get<3>(best_result_pair->second),
+                      std::get<4>(best_result_pair->second)};
 }
 
 } // end of namespace PhzLikelihood

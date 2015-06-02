@@ -63,7 +63,7 @@ void LikelihoodHandler::handleSourceOutput(const SourceCatalog::Source& source,
                                            const result_type& results) {
   std::string id = std::to_string(source.getId());
   std::string filename = (m_out_dir/(id+".fits")).string();
-  auto& likelihood_grid = std::get<2>(results);
+  auto& likelihood_grid = std::get<2>(results).at("");
   
   // Create the first HDU with the array. We do that in a scope so the file is
   // created and the data are flushed into it before we continue.

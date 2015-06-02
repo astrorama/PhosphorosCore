@@ -45,8 +45,12 @@ auto SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
   // Calculate the 1D PDF
   auto pdf_1D = m_marginalization_func(likelihood_grid);
   
+  // Create the porsterior map to return
+  std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
+  posterior_map.emplace(std::make_pair(std::string{""}, std::move(likelihood_grid)));
+  
   // Return the result
-  return result_type{best_fit_result, std::move(pdf_1D), std::move(likelihood_grid), *scale_factor_result, best_chi_square};
+  return result_type{best_fit_result, std::move(pdf_1D), std::move(posterior_map), *scale_factor_result, best_chi_square};
 }
 
 } // end of namespace PhzLikelihood
