@@ -11,7 +11,8 @@
 #include <boost/program_options.hpp>
 #include "ElementsKernel/ProgramHeaders.h"
 #include "PhzConfiguration/ComputeModelGridConfiguration.h"
-#include "PhzModeling/PhotometryGridCreator.h"
+//#include "PhzModeling/PhotometryGridCreator.h"
+#include "PhzModeling/SparseGridCreator.h"
 #include "PhzModeling/MadauIgmFunctor.h"
 
 using namespace std;
@@ -23,10 +24,6 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhosphorosComput
 class ProgressReporter {
   
 public:
-  
-  ProgressReporter(std::string region_name) : m_region_name{std::move(region_name)} {
-  }
-  
   void operator()(size_t step, size_t total) {
     int percentage_done = 100. * step / total;
     auto now_time = std::chrono::system_clock::now();
@@ -34,7 +31,7 @@ public:
     if (percentage_done > m_last_progress || std::chrono::duration_cast<std::chrono::seconds>(time_diff).count() >= 5) {
       m_last_progress = percentage_done;
       m_last_time = now_time;
-      logger.info() << "Parameter space region " << m_region_name << " progress: " << percentage_done << " % (" << step << "/" << total << ")";
+      logger.info() << "Parameter space progress: " << percentage_done << " % ";
     }
   }
   
@@ -42,7 +39,6 @@ private:
   
   int m_last_progress = -1;
   std::chrono::time_point<std::chrono::system_clock> m_last_time = std::chrono::system_clock::now();
-  std::string m_region_name;
   
 };
 
@@ -59,20 +55,13 @@ public:
     PhzConfiguration::ComputeModelGridConfiguration conf {args};
     
     auto filter_list = conf.getFilterList();
-    PhzModeling::PhotometryGridCreator creator {conf.getSedDatasetProvider(),
+    PhzModeling::SparseGridCreator creator {conf.getSedDatasetProvider(),
                                                 conf.getReddeningDatasetProvider(),
                                                 conf.getFilterDatasetProvider(),
                                                 conf.getIgmAbsorptionFunction()};
                                                 
     auto param_space_map = conf.getParameterSpaceRegions();
-    map<string, PhzDataModel::PhotometryGrid> results {};
-    std::size_t region_count = 0;
-    for (auto& pair : param_space_map) {
-      logger.info() << "Creating grid for parameter space region : \"" << pair.first << '\"';
-      std::stringstream region_name {};
-      region_name << '\"' << pair.first << "\" (" << ++region_count << "/" << param_space_map.size() << ")";
-      results.emplace(make_pair(pair.first, creator.createGrid(pair.second, filter_list, ProgressReporter{region_name.str()})));
-    }
+    auto results = creator.createGrid(param_space_map, filter_list, ProgressReporter{});
                                                      
     logger.info() << "Creating the output";
     auto output = conf.getOutputFunction();
