@@ -16,6 +16,7 @@
 #include "PhzConfiguration/SedConfiguration.h"
 #include "PhzConfiguration/RedshiftConfiguration.h"
 #include "PhzConfiguration/ReddeningConfiguration.h"
+#include "PhzDataModel/PhzModel.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -68,7 +69,8 @@ public:
    * @brief destructor.
    */
    virtual ~ParameterSpaceConfiguration()=default;
-
+   
+   std::map<std::string, PhzDataModel::ModelAxesTuple> getParameterSpaceRegions();
 
 };
 

@@ -76,7 +76,7 @@ BOOST_FIXTURE_TEST_CASE(getZList_function_test, RedshiftConfiguration_Fixture) {
   BOOST_TEST_MESSAGE(" ");
 
   cf::RedshiftConfiguration rconf(options_map);
-  auto z_list = rconf.getZList();
+  auto z_list = rconf.getZList().at("");
 
   BOOST_CHECK_EQUAL(z_list[1], 0.5);
   BOOST_CHECK_EQUAL(z_list[3], 1.5);
@@ -99,7 +99,7 @@ BOOST_FIXTURE_TEST_CASE(getZList_added_zvalue_function_test, RedshiftConfigurati
   options_map[Z_VALUE].value() = boost::any(z_value_vector);
 
   cf::RedshiftConfiguration rconf(options_map);
-  auto z_list = rconf.getZList();
+  auto z_list = rconf.getZList().at("");
 
   BOOST_CHECK_EQUAL(z_list[1], 0.5);
   BOOST_CHECK_EQUAL(z_list[3], 1.1);
@@ -127,7 +127,7 @@ BOOST_FIXTURE_TEST_CASE(getZList_more_ranges_function_test, RedshiftConfiguratio
   options_map[Z_RANGE].value() = boost::any(z_ranges_vector);
 
   cf::RedshiftConfiguration rconf(options_map);
-  auto z_list = rconf.getZList();
+  auto z_list = rconf.getZList().at("");
 
   BOOST_CHECK_EQUAL(z_list[1], 0.5);
   BOOST_CHECK_EQUAL(z_list[3], 1.5);
@@ -156,7 +156,7 @@ BOOST_FIXTURE_TEST_CASE(getZList_forbidden_ranges_function_test, RedshiftConfigu
 
   cf::RedshiftConfiguration rconf(options_map);
 
-  BOOST_CHECK_THROW(rconf.getZList(), Elements::Exception);
+  BOOST_CHECK_THROW(rconf.getZList().at(""), Elements::Exception);
 
 }
 
@@ -183,7 +183,7 @@ BOOST_FIXTURE_TEST_CASE(getZList_boundaries_function_test, RedshiftConfiguration
   options_map[Z_VALUE].value() = boost::any(z_values_vector);
 
   cf::RedshiftConfiguration rconf(options_map);
-  auto z_list = rconf.getZList();
+  auto z_list = rconf.getZList().at("");
 
   BOOST_CHECK_EQUAL(z_list[1], 0.5);
   BOOST_CHECK_EQUAL(z_list[3], 1.5);
@@ -212,7 +212,7 @@ BOOST_FIXTURE_TEST_CASE(wrong_z_range_function_test, RedshiftConfiguration_Fixtu
 
   cf::RedshiftConfiguration rconf(options_map);
 
- BOOST_CHECK_THROW(rconf.getZList(), Elements::Exception);
+ BOOST_CHECK_THROW(rconf.getZList().at(""), Elements::Exception);
 
 }
 
@@ -234,7 +234,7 @@ BOOST_FIXTURE_TEST_CASE(wrong_z_value_function_test, RedshiftConfiguration_Fixtu
 
   cf::RedshiftConfiguration rconf(options_map);
 
-  BOOST_CHECK_THROW(rconf.getZList(), Elements::Exception);
+  BOOST_CHECK_THROW(rconf.getZList().at(""), Elements::Exception);
 
 }
 
@@ -257,7 +257,7 @@ BOOST_FIXTURE_TEST_CASE(wrong_characters_zrange_test, RedshiftConfiguration_Fixt
 
   cf::RedshiftConfiguration rconf(options_map);
 
-  BOOST_CHECK_THROW(rconf.getZList(), Elements::Exception);
+  BOOST_CHECK_THROW(rconf.getZList().at(""), Elements::Exception);
 
 }
 
@@ -279,7 +279,7 @@ BOOST_FIXTURE_TEST_CASE(wrong_characters_zvalue_test, RedshiftConfiguration_Fixt
 
   cf::RedshiftConfiguration rconf(options_map);
 
-  BOOST_CHECK_THROW(rconf.getZList(), Elements::Exception);
+  BOOST_CHECK_THROW(rconf.getZList().at(""), Elements::Exception);
 
 }
 

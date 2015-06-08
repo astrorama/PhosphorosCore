@@ -7,10 +7,12 @@
 #include <map>
 #include <string>
 #include <chrono>
+#include <sstream>
 #include <boost/program_options.hpp>
 #include "ElementsKernel/ProgramHeaders.h"
 #include "PhzConfiguration/ComputeModelGridConfiguration.h"
-#include "PhzModeling/PhotometryGridCreator.h"
+//#include "PhzModeling/PhotometryGridCreator.h"
+#include "PhzModeling/SparseGridCreator.h"
 #include "PhzModeling/MadauIgmFunctor.h"
 
 using namespace std;
@@ -22,7 +24,6 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhosphorosComput
 class ProgressReporter {
   
 public:
-  
   void operator()(size_t step, size_t total) {
     int percentage_done = 100. * step / total;
     auto now_time = std::chrono::system_clock::now();
@@ -30,7 +31,7 @@ public:
     if (percentage_done > m_last_progress || std::chrono::duration_cast<std::chrono::seconds>(time_diff).count() >= 5) {
       m_last_progress = percentage_done;
       m_last_time = now_time;
-      logger.info() << "Progress: " << percentage_done << " % (" << step << "/" << total << ")";
+      logger.info() << "Parameter space progress: " << percentage_done << " % ";
     }
   }
   
@@ -53,20 +54,18 @@ public:
 
     PhzConfiguration::ComputeModelGridConfiguration conf {args};
     
-    PhzModeling::PhotometryGridCreator creator {conf.getSedDatasetProvider(),
+    auto filter_list = conf.getFilterList();
+    PhzModeling::SparseGridCreator creator {conf.getSedDatasetProvider(),
                                                 conf.getReddeningDatasetProvider(),
                                                 conf.getFilterDatasetProvider(),
                                                 conf.getIgmAbsorptionFunction()};
-    
-    auto param_space = PhzDataModel::createAxesTuple(conf.getZList(), conf.getEbvList(),
-                                                     conf.getReddeningCurveList(),
-                                                     conf.getSedList());
-    
-    auto grid = creator.createGrid(param_space, conf.getFilterList(), ProgressReporter{});
-    
+                                                
+    auto param_space_map = conf.getParameterSpaceRegions();
+    auto results = creator.createGrid(param_space_map, filter_list, ProgressReporter{});
+                                                     
     logger.info() << "Creating the output";
     auto output = conf.getOutputFunction();
-    output(grid);
+    output(results);
     
     return Elements::ExitCode::OK;
   }

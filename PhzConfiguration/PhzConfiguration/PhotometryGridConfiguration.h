@@ -80,7 +80,7 @@ public:
    * @throws Elements::Exception
    *    If the file does not exist
    */
-   PhzDataModel::PhotometryGrid getPhotometryGrid();
+   std::map<std::string, PhzDataModel::PhotometryGrid> getPhotometryGrid();
    
   /**
    * @brief

@@ -38,14 +38,24 @@ po::options_description ReddeningConfiguration::getProgramOptions() {
   options.add_options()
     (REDDENING_CURVE_GROUP.c_str(), po::value<std::vector<std::string>>(),
         "Use all the reddening curves in the given group and subgroups")
+    ((REDDENING_CURVE_GROUP+"-*").c_str(), po::value<std::vector<std::string>>(),
+        ("The same as "+REDDENING_CURVE_GROUP+" but for a specific parameter space region").c_str())
     (REDDENING_CURVE_EXCLUDE.c_str(), po::value<std::vector<std::string>>(),
         "a single name of the reddening curve to be excluded")
+    ((REDDENING_CURVE_EXCLUDE+"-*").c_str(), po::value<std::vector<std::string>>(),
+        ("The same as "+REDDENING_CURVE_EXCLUDE+" but for a specific parameter space region").c_str())
     (REDDENING_CURVE_NAME.c_str(), po::value<std::vector<std::string>>(),
         "A single reddening curve name")
+    ((REDDENING_CURVE_NAME+"-*").c_str(), po::value<std::vector<std::string>>(),
+        ("The same as "+REDDENING_CURVE_NAME+" but for a specific parameter space region").c_str())
     (EBV_RANGE.c_str(), po::value<std::vector<std::string>>(),
         "E(B-V) range: minimum maximum step")
+    ((EBV_RANGE+"-*").c_str(), po::value<std::vector<std::string>>(),
+        ("The same as "+EBV_RANGE+" but for a specific parameter space region").c_str())
     (EBV_VALUE.c_str(), po::value<std::vector<std::string>>(),
-        "A single E(B-V) value");
+        "A single E(B-V) value")
+    ((EBV_VALUE+"-*").c_str(), po::value<std::vector<std::string>>(),
+        ("The same as "+EBV_VALUE+" but for a specific parameter space region").c_str());
 
   return merge(options)
               (PhosphorosPathConfiguration::getProgramOptions());
@@ -56,22 +66,25 @@ ReddeningConfiguration::ReddeningConfiguration(const std::map<std::string, po::v
   m_options = options;
 }
 
-std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> ReddeningConfiguration::getReddeningDatasetProvider() {
+std::unique_ptr<XYDataset::XYDatasetProvider> ReddeningConfiguration::getReddeningDatasetProvider() {
   auto path = getAuxDataDir() / "ReddeningCurves";
-  std::unique_ptr<Euclid::XYDataset::FileParser> file_parser {new Euclid::XYDataset::AsciiParser{}};
-  return std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> {
-    new Euclid::XYDataset::FileSystemProvider{path.string(), std::move(file_parser)}
+  std::unique_ptr<XYDataset::FileParser> file_parser {new XYDataset::AsciiParser{}};
+  return std::unique_ptr<XYDataset::XYDatasetProvider> {
+    new XYDataset::FileSystemProvider{path.string(), std::move(file_parser)}
   };
 }
 
-std::vector<Euclid::XYDataset::QualifiedName> ReddeningConfiguration::getReddeningCurveList() {
+static std::vector<XYDataset::QualifiedName> getRegionReddeningCurveList(const std::string& region_name,
+                                          const std::map<std::string, po::variable_value>& options,
+                                          XYDataset::XYDatasetProvider& provider) {
+  // Get the postfix for the option names
+  std::string postfix = region_name.empty() ? "" : "-"+region_name;
   // We use a set to avoid duplicate entries
-  std::set<Euclid::XYDataset::QualifiedName> selected {};
-  if (!m_options[REDDENING_CURVE_GROUP].empty()) {
-    auto provider = getReddeningDatasetProvider();
-    auto group_list = m_options[REDDENING_CURVE_GROUP].as<std::vector<std::string>>();
+  std::set<XYDataset::QualifiedName, XYDataset::QualifiedName::AlphabeticalComparator> selected {};
+  if (options.count(REDDENING_CURVE_GROUP+postfix) > 0) {
+    auto group_list = options.at(REDDENING_CURVE_GROUP+postfix).as<std::vector<std::string>>();
     for (auto& group : group_list) {
-      auto names_in_group = provider->listContents(group);
+      auto names_in_group = provider.listContents(group);
       if (names_in_group.empty()) {
         logger.warn() << "Reddening group : \"" << group << "\" is empty!";
       }
@@ -81,33 +94,48 @@ std::vector<Euclid::XYDataset::QualifiedName> ReddeningConfiguration::getReddeni
     }
   }
   // Add reddening-name if any
-  if (!m_options[REDDENING_CURVE_NAME].empty()) {
-    auto name_list    = m_options[REDDENING_CURVE_NAME].as<std::vector<std::string>>();
+  if (options.count(REDDENING_CURVE_NAME+postfix) > 0) {
+    auto name_list    = options.at(REDDENING_CURVE_NAME+postfix).as<std::vector<std::string>>();
     for (auto& name : name_list) {
-      selected.insert(Euclid::XYDataset::QualifiedName{name});
+      selected.insert(XYDataset::QualifiedName{name});
     }
   }
   // Remove reddening-exclude if any
-  if (!m_options[REDDENING_CURVE_EXCLUDE].empty()) {
-    auto name_list = m_options[REDDENING_CURVE_EXCLUDE].as<std::vector<std::string>>();
+  if (options.count(REDDENING_CURVE_EXCLUDE+postfix) > 0) {
+    auto name_list = options.at(REDDENING_CURVE_EXCLUDE+postfix).as<std::vector<std::string>>();
     for (auto& name : name_list) {
-      selected.erase(Euclid::XYDataset::QualifiedName{name});
+      selected.erase(XYDataset::QualifiedName{name});
     }
   }
   if (selected.empty()) {
-    throw Elements::Exception() << "Empty reddening curve list";
+    throw Elements::Exception() << "Empty reddening curve list for parameter space region "
+                                << "with name \"" + region_name + "\"";
   }
-  return std::vector<Euclid::XYDataset::QualifiedName> {selected.begin(), selected.end()};
+  return std::vector<XYDataset::QualifiedName> {selected.begin(), selected.end()};
 }
 
-std::vector<double> ReddeningConfiguration::getEbvList() {
+std::map<std::string, std::vector<XYDataset::QualifiedName> > ReddeningConfiguration::getReddeningCurveList() {
+  auto region_name_list = findWildcardOptions({REDDENING_CURVE_NAME, REDDENING_CURVE_GROUP, REDDENING_CURVE_EXCLUDE}, m_options);
+  std::map<std::string, std::vector<XYDataset::QualifiedName>> result {};
+  auto provider = getReddeningDatasetProvider();
+  for (auto& region_name : region_name_list) {
+    result[region_name] = getRegionReddeningCurveList(region_name, m_options, *provider);
+  }
+  return result;
+}
+
+
+static std::vector<double> getRegionEbvList(const std::string& region_name,
+                              const std::map<std::string, po::variable_value>& options) {
+  // Get the postfix for the option names
+  std::string postfix = region_name.empty() ? "" : "-"+region_name;
 
   // A set is used to avoid duplicates and to order the different entries
   std::set<double> selected {};
-  if (!m_options[EBV_RANGE].empty()) {
-    auto ranges_list = m_options[EBV_RANGE].as<std::vector<std::string>>();
+  if (options.count(EBV_RANGE+postfix) > 0) {
+    auto ranges_list =options.at(EBV_RANGE+postfix).as<std::vector<std::string>>();
     for (auto& range_string : ranges_list) {
-      checkRangeString({EBV_RANGE}, range_string);
+      checkRangeString(EBV_RANGE+postfix, range_string);
       std::stringstream range_stream {range_string};
       double min {};
       double max {};
@@ -115,32 +143,34 @@ std::vector<double> ReddeningConfiguration::getEbvList() {
       std::string dummy{};
       range_stream >> min >> max >> step >> dummy;
       if (!dummy.empty()) {
-        throw Elements::Exception() <<"Invalid character(s) for the " << EBV_RANGE << " "
+        throw Elements::Exception() <<"Invalid character(s) for the " << (EBV_RANGE+postfix) << " "
                                     << "option from here : " << dummy;
       }
       // Check the range is allowed before inserting
       if ( (max < min) || (!selected.empty() && (*--selected.end() > min))) {
-        throw Elements::Exception()<< "Invalid range(s) for " << EBV_RANGE << " option : \""
+        throw Elements::Exception()<< "Invalid range(s) for " << (EBV_RANGE+postfix) << " option : \""
                                   <<range_stream.str()<<"\"";
       }
       // Insert value in the set
       for (double value=min; value<=max; value+=step) {
         selected.insert(value);
       }
+      // We always add the max, for the case the step was not reaching it exactly
+      selected.insert(max);
     }
   }
   // Add the ebv-value option
-  if (!m_options[EBV_VALUE].empty()) {
-    auto values_list = m_options[EBV_VALUE].as<std::vector<std::string>>();
+  if (options.count(EBV_VALUE+postfix) > 0) {
+    auto values_list =options.at(EBV_VALUE+postfix).as<std::vector<std::string>>();
     for (auto& values_string : values_list) {
-      checkValueString({EBV_VALUE}, values_string);
+      checkValueString(EBV_RANGE+postfix, values_string);
       std::stringstream values_stream {values_string};
       while (values_stream.good()) {
         double value {};
         std::string dummy{};
         values_stream >> value >> dummy;
         if (!dummy.empty()) {
-          throw Elements::Exception() <<"Invalid character(s) for the " << EBV_VALUE << " "
+          throw Elements::Exception() <<"Invalid character(s) for the " << (EBV_RANGE+postfix) << " "
                                       << "option from here : " << dummy;
         }
         selected.insert(value);
@@ -148,9 +178,19 @@ std::vector<double> ReddeningConfiguration::getEbvList() {
     }
   }
   if (selected.empty()) {
-    throw Elements::Exception() << "Empty ebv list (check the options " << EBV_RANGE << " and " << EBV_VALUE << ")";
+    throw Elements::Exception() << "Empty ebv list for parameter space region "
+                                << "with name \"" + region_name + "\"";
   }
   return std::vector<double> {selected.begin(), selected.end()};
+}
+
+std::map<std::string, std::vector<double>> ReddeningConfiguration::getEbvList() {
+  auto region_name_list = findWildcardOptions({EBV_RANGE, EBV_VALUE}, m_options);
+  std::map<std::string, std::vector<double>> result {};
+  for (auto& region_name : region_name_list) {
+    result[region_name] = getRegionEbvList(region_name, m_options);
+  }
+  return result;
 }
 
 }

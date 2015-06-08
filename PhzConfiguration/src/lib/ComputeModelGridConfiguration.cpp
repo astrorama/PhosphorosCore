@@ -76,17 +76,18 @@ po::options_description ComputeModelGridConfiguration::getProgramOptions() {
 
 
 ComputeModelGridConfiguration::OutputFunction ComputeModelGridConfiguration::getOutputFunction() {
-  return [this](const PhzDataModel::PhotometryGrid& grid) {
+  return [this](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
     auto logger = Elements::Logging::getLogger("PhzOutput");
     auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogName());
     std::ofstream out {filename};
-    PhzDataModel::PhotometryGridInfo info{};
-    info.axes = grid.getAxesTuple();
-    info.igm_method = getIgmAbsorptionType();
-    info.filter_names = getFilterList();
     boost::archive::binary_oarchive boa {out};
+    // Store the info object describing the grids
+    PhzDataModel::PhotometryGridInfo info {grid_map, getIgmAbsorptionType(), getFilterList()};
     boa << info;
-    GridContainer::gridBinaryExport(out, grid);
+    // Store the grids themselves
+    for (auto& pair : grid_map) {
+      GridContainer::gridBinaryExport(out, pair.second);
+    }
     logger.info() << "Created the model grid in file " << filename;
   };
 }

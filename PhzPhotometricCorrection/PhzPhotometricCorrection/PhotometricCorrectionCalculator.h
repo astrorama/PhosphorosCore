@@ -8,6 +8,7 @@
 #define	PHZPHOTOMETRICCORRECTION_PHOTOMETRICCORRECTIONCALCULATOR_H
 
 #include <map>
+#include <string>
 #include <functional>
 #include "SourceCatalog/Catalog.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
@@ -26,7 +27,7 @@ public:
   
   typedef std::function<std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator>(
                   const SourceCatalog::Catalog& calibration_catalog,
-                  const PhzDataModel::PhotometryGrid& model_photometric_grid,
+                  const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
                   const PhzDataModel::PhotometricCorrectionMap& photometric_correction
             )> FindBestFitModelsFunction;
   
@@ -54,7 +55,7 @@ public:
   
   PhzDataModel::PhotometricCorrectionMap operator()(
           const SourceCatalog::Catalog& catalog,
-          const PhzDataModel::PhotometryGrid& model_phot_grid,
+          const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
           StopCriteriaFunction stop_criteria_func,
           SelectorFunction selector,
           ProgressListener progress_listener=ProgressListener{});

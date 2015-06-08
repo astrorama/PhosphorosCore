@@ -146,20 +146,26 @@ struct FindBestFitModels_Fixture {
 BOOST_AUTO_TEST_SUITE (FindBestFitModels_test)
 BOOST_FIXTURE_TEST_CASE(Functional_call_test, FindBestFitModels_Fixture) {
   auto test_object = FindBestFitModels<PhzLikelihood::SourcePhzFunctor>();
-  auto result_map = test_object(sources,photo_grid,correctionMap);
+  std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
+  model_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
+  auto result_map = test_object(sources,model_grid_map,correctionMap);
 }
 
 BOOST_FIXTURE_TEST_CASE(Functional_call_mock_test, FindBestFitModels_Fixture) {
   auto test_object = FindBestFitModels<SourcePhzCalculatorMock>();
-  auto result_map = test_object(sources,photo_grid,correctionMap);
+  std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
+  model_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
+  auto result_map = test_object(sources,model_grid_map,correctionMap);
 }
 
 BOOST_FIXTURE_TEST_CASE(Functional_call_throw_test, FindBestFitModels_Fixture) {
   auto test_object = FindBestFitModels<SourcePhzCalculatorMock>();
+  std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
+  model_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
 
-  BOOST_CHECK_THROW(test_object(sources_missing_spectro,photo_grid,correctionMap),Elements::Exception)
+  BOOST_CHECK_THROW(test_object(sources_missing_spectro,model_grid_map,correctionMap),Elements::Exception)
 
-  BOOST_CHECK_THROW(test_object(sources_missing_photo,photo_grid,correctionMap),Elements::Exception)
+  BOOST_CHECK_THROW(test_object(sources_missing_photo,model_grid_map,correctionMap),Elements::Exception)
 }
 
 

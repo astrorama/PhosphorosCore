@@ -84,7 +84,7 @@ public:
    * @return
    * A vector of QualifiedName type
    */
-  std::vector<XYDataset::QualifiedName> getSedList();
+  std::map<std::string, std::vector<XYDataset::QualifiedName>> getSedList();
 
 private:
   /// Map containing all the sed options and their values

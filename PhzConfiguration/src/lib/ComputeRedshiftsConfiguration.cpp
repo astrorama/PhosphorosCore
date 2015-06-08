@@ -55,7 +55,7 @@ po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
 static fs::path getOutputPathFromOptions(const std::map<std::string, po::variable_value>& options,
                                          const fs::path& result_dir, const std::string& catalog_name) {
   fs::path input_catalog_name{options.at(INPUT_CATALOG_FILE).as<std::string>()};
-  auto input_filename = input_catalog_name.filename();
+  auto input_filename = input_catalog_name.filename().stem();
   fs::path result = result_dir / catalog_name / input_filename;
   if (options.count(PHZ_OUTPUT_DIR) > 0) {
     fs::path path = options.at(PHZ_OUTPUT_DIR).as<std::string>();

@@ -23,9 +23,9 @@ public:
   virtual ~SourcePhzCalculatorMock() = default;
 
   SourcePhzCalculatorMock(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
-     const PhzDataModel::PhotometryGrid& phot_grid):
+     const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map):
        m_phot_corr_map{std::move(phot_corr_map)},
-       m_phot_grid(phot_grid){
+       m_phot_grid(model_grid_map.at("")){
         expectFunctorCall();
 
 
@@ -40,14 +40,16 @@ public:
   }
 
   void expectFunctorCall() {
-      EXPECT_CALL(*this, FunctorCall(_)).WillOnce(Return(
-          new PhzLikelihood::SourcePhzFunctor::result_type{
-            m_phot_grid.begin(),
-            PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}},
-            PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{})),
-            0, 0
-          }
-      ));
+    std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
+    posterior_map.emplace(std::make_pair(std::string(""),
+              PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{}))));
+    EXPECT_CALL(*this, FunctorCall(_)).WillOnce(Return(
+        new PhzLikelihood::SourcePhzFunctor::result_type{
+          m_phot_grid.begin(),
+          PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}},
+          std::move(posterior_map), 0, 0, std::map<std::string, double>{}
+        }
+    ));
   };
 
 

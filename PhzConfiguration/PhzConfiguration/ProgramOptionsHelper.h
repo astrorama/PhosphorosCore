@@ -8,6 +8,7 @@
 #define	PHZCONFIGURATION_PROGRAMOPTIONSHELPER_H
 
 #include <vector>
+#include <set>
 #include <string>
 #include <boost/program_options.hpp>
 
@@ -33,6 +34,9 @@ private:
 };
 
 UniqueOptionsMerger merge(const boost::program_options::options_description& options);
+
+std::set<std::string> findWildcardOptions(const std::vector<std::string>& option_name_list,
+                      const std::map<std::string, boost::program_options::variable_value>& options);
 
 }
 }

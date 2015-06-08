@@ -141,7 +141,7 @@ BOOST_FIXTURE_TEST_CASE(getSedList_function_test, SedConfiguration_Fixture) {
   BOOST_TEST_MESSAGE(" ");
 
   cf::SedConfiguration sconf(options_map);
-  auto list = sconf.getSedList();
+  auto list = sconf.getSedList().at("");
 
   BOOST_CHECK_EQUAL(list[0].datasetName(), "Dataset_name_for_file1");
   BOOST_CHECK_EQUAL(list[1].datasetName(), "file2");
@@ -164,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE(getSedList_exclude_function_test, SedConfiguration_Fixtu
   options_map[SED_EXCLUDE].value() = boost::any(exclude_vector);
 
   cf::SedConfiguration sconf(options_map);
-  auto list = sconf.getSedList();
+  auto list = sconf.getSedList().at("");
 
   BOOST_CHECK_EQUAL(list.size(), 1);
   BOOST_CHECK_EQUAL(list[0].qualifiedName(), "MER/Dataset_name_for_file1");
@@ -186,7 +186,7 @@ BOOST_FIXTURE_TEST_CASE(getSedList_add_function_test, SedConfiguration_Fixture) 
   options_map[SED_NAME].value() = boost::any(add_vector);
 
   cf::SedConfiguration sconf(options_map);
-  auto list = sconf.getSedList();
+  auto list = sconf.getSedList().at("");
 
   BOOST_CHECK_EQUAL(list.size(), 3);
   BOOST_CHECK_EQUAL(list[0].qualifiedName(), "COSMOS/Dataset_name_for_file3");
@@ -204,14 +204,14 @@ BOOST_FIXTURE_TEST_CASE(getSedList_add_twice_function_test, SedConfiguration_Fix
   BOOST_TEST_MESSAGE(" ");
 
   cf::SedConfiguration sconf(options_map);
-  auto list = sconf.getSedList();
+  auto list = sconf.getSedList().at("");
 
   // Add twice the same sed
   add_vector.push_back("MER/Dataset_name_for_file1");
   options_map[SED_NAME].value() = boost::any(add_vector);
 
   cf::SedConfiguration sconf2(options_map);
-  auto list2 = sconf2.getSedList();
+  auto list2 = sconf2.getSedList().at("");
 
   BOOST_CHECK_EQUAL(list.size(), list2.size());
   BOOST_CHECK_EQUAL(list[0].qualifiedName(), "MER/Dataset_name_for_file1");

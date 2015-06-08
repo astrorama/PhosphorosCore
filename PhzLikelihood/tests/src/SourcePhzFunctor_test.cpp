@@ -12,6 +12,7 @@
 #include "ElementsKernel/Real.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
+#include "PhzLikelihood/SumMarginalizationFunctor.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "tests/src/LikelihoodFunctionMock.h"
 #include "tests/src/BestFitFunctionMock.h"
@@ -103,13 +104,14 @@ BOOST_FIXTURE_TEST_CASE(SourcePhzFunctor_test, SourcePhzFunctor_Fixture) {
   likelihood_function.expectFunctorCall(photometry_corrected, ref_photo_grid);
   BestFitFunctionMock best_fit_function;
   best_fit_function.expectFunctorCall();
+  std::map<std::string, PhzDataModel::PhotometryGrid> photo_grid_map {};
+  photo_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
 
   // When
-  PhzLikelihood::SourcePhzFunctor functor(correctionMap, photo_grid, {},
+  PhzLikelihood::SourcePhzFunctor functor(correctionMap, photo_grid_map, {},
       PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{},
       std::bind(&LikelihoodFunctionMock::operator(), &likelihood_function, _1, _2),
       std::bind(&BestFitFunctionMock::FunctorCall, &best_fit_function, _1, _2));
-
   auto best_model = functor(photometry_source);
 
 }

@@ -91,7 +91,7 @@ public:
    * @return
    * A vector of QualifiedName type
    */
-   std::vector<double> getZList();
+   std::map<std::string, std::vector<double>> getZList();
 
 private:
   /// Map containing all the filter options and their values
