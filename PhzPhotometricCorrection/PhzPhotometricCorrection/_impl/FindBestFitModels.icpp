@@ -82,6 +82,12 @@ map<int64_t, PhzDataModel::PhotometryGrid::const_iterator> FindBestFitModels<Sou
       PhzDataModel::PhotometryGrid& slice = const_cast<PhzDataModel::PhotometryGrid&>(const_slice);
       sliced_grid_map.emplace(std::make_pair(pair.first, std::move(slice)));
     }
+    // If we have no grids in the sliced_grid_map means that we have no region
+    // that contains the source redshift. For this reason we ignore it, as it
+    // is outside the regions we have models for
+    if (sliced_grid_map.empty()) {
+      continue;
+    }
 
     SourceCalculatorFunctor source_phz_calculator(photometric_correction, sliced_grid_map);
 
