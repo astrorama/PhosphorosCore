@@ -172,13 +172,13 @@ BOOST_FIXTURE_TEST_CASE(getSedList_exclude_function_test, SedConfiguration_Fixtu
 }
 
 //-----------------------------------------------------------------------------
-// Test the getSedList function adding a sed
+// Test the getSedList function when adding a sed
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE(getSedList_add_function_test, SedConfiguration_Fixture) {
 
   BOOST_TEST_MESSAGE(" ");
-  BOOST_TEST_MESSAGE("--> Testing the getSedList function with adding a sed");
+  BOOST_TEST_MESSAGE("--> Testing the getSedList function when adding a sed");
   BOOST_TEST_MESSAGE(" ");
 
   // Sed to be added
@@ -187,9 +187,12 @@ BOOST_FIXTURE_TEST_CASE(getSedList_add_function_test, SedConfiguration_Fixture) 
 
   cf::SedConfiguration sconf(options_map);
   auto list = sconf.getSedList().at("");
+  //zzz
+  for (auto i=0; i< list.size(); i++)
+    std::cout<<list[i].qualifiedName()<<" "<<std::endl;
 
   BOOST_CHECK_EQUAL(list.size(), 3);
-  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "COSMOS/Dataset_name_for_file3");
+  BOOST_CHECK_EQUAL(list[2].qualifiedName(), "COSMOS/Dataset_name_for_file3");
 
 }
 

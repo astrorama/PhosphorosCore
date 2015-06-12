@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <algorithm>
+#include <unordered_set>
 #include "ElementsKernel/Exception.h"
 #include "XYDataset/AsciiParser.h"
 #include "XYDataset/FileSystemProvider.h"
@@ -61,13 +63,27 @@ static std::vector<XYDataset::QualifiedName> getRegionSedList(const std::string&
                                        XYDataset::XYDatasetProvider& provider) {
   // Get the postfix for the option names
   std::string postfix = region_name.empty() ? "" : "-"+region_name;
+  // For final result
+  std::vector<XYDataset::QualifiedName> selected {};
   // We use a set to avoid duplicate entries
-  std::set<XYDataset::QualifiedName, XYDataset::QualifiedName::AlphabeticalComparator> selected {};
+  std::unordered_set<XYDataset::QualifiedName> exclude_set {};
+
+  // Remove sed-exclude if any
+  if (options.count(SED_EXCLUDE+postfix) > 0) {
+      auto name_list = options.at(SED_EXCLUDE+postfix).as<std::vector<std::string>>();
+      for (auto& name : name_list) {
+        exclude_set.emplace(name);
+      }
+    }
+
   if (options.count(SED_GROUP+postfix) > 0) {
     auto group_list = options.at(SED_GROUP+postfix).as<std::vector<std::string>>();
     for (auto& group : group_list) {
       for (auto& name : provider.listContents(group)) {
-        selected.insert(name);
+        if (exclude_set.find(name) == exclude_set.end()) {
+           exclude_set.emplace(name);
+           selected.push_back(name);
+        }
       }
     }
   }
@@ -75,21 +91,18 @@ static std::vector<XYDataset::QualifiedName> getRegionSedList(const std::string&
   if (options.count(SED_NAME+postfix) > 0) {
     auto name_list = options.at(SED_NAME+postfix).as<std::vector<std::string>>();
     for (auto& name : name_list) {
-      selected.insert(XYDataset::QualifiedName{name});
+      if (exclude_set.find(name) == exclude_set.end()) {
+         exclude_set.emplace(name);
+         selected.emplace_back(name);
+      }
     }
   }
-  // Remove sed-exclude if any
-  if (options.count(SED_EXCLUDE+postfix) > 0) {
-    auto name_list = options.at(SED_EXCLUDE+postfix).as<std::vector<std::string>>();
-    for (auto& name : name_list) {
-      selected.erase(XYDataset::QualifiedName{name});
-    }
-  }
+
   if (selected.empty()) {
     throw Elements::Exception() << "Empty sed list for parameter space region "
                                 << "with name \"" + region_name + "\"";
   }
-  return std::vector<XYDataset::QualifiedName> {selected.begin(), selected.end()};
+  return selected;
 }
 
 std::map<std::string, std::vector<XYDataset::QualifiedName>> SedConfiguration::getSedList() {
