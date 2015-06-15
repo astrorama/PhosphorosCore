@@ -195,7 +195,7 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_add_function_test, FilterConfiguration_Fix
   auto list = fconf.getFilterList();
 
   BOOST_CHECK_EQUAL(list.size(), 3);
-  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "COSMOS/Dataset_name_for_file3");
+  BOOST_CHECK_EQUAL(list[2].qualifiedName(), "COSMOS/Dataset_name_for_file3");
 
 }
 

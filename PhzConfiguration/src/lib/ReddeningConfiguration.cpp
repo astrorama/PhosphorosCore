@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <algorithm>
+#include <unordered_set>
 
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
@@ -78,9 +80,19 @@ static std::vector<XYDataset::QualifiedName> getRegionReddeningCurveList(const s
                                           const std::map<std::string, po::variable_value>& options,
                                           XYDataset::XYDatasetProvider& provider) {
   // Get the postfix for the option names
-  std::string postfix = region_name.empty() ? "" : "-"+region_name;
+  std::string postfix = region_name.empty() ? "" : "-"+ region_name;
+  // For final result
+  std::vector<XYDataset::QualifiedName> selected {};
   // We use a set to avoid duplicate entries
-  std::set<XYDataset::QualifiedName, XYDataset::QualifiedName::AlphabeticalComparator> selected {};
+  std::unordered_set<XYDataset::QualifiedName> exclude_set {};
+
+  // Remove reddening-exclude if any
+  if (options.count(REDDENING_CURVE_EXCLUDE+postfix) > 0) {
+    auto name_list = options.at(REDDENING_CURVE_EXCLUDE+postfix).as<std::vector<std::string>>();
+    for (auto& name : name_list) {
+      exclude_set.emplace(name);
+    }
+  }
   if (options.count(REDDENING_CURVE_GROUP+postfix) > 0) {
     auto group_list = options.at(REDDENING_CURVE_GROUP+postfix).as<std::vector<std::string>>();
     for (auto& group : group_list) {
@@ -89,7 +101,10 @@ static std::vector<XYDataset::QualifiedName> getRegionReddeningCurveList(const s
         logger.warn() << "Reddening group : \"" << group << "\" is empty!";
       }
       for (auto& name : names_in_group) {
-        selected.insert(name);
+        if (exclude_set.find(name) == exclude_set.end()) {
+           exclude_set.emplace(name);
+           selected.push_back(name);
+        }
       }
     }
   }
@@ -97,21 +112,18 @@ static std::vector<XYDataset::QualifiedName> getRegionReddeningCurveList(const s
   if (options.count(REDDENING_CURVE_NAME+postfix) > 0) {
     auto name_list    = options.at(REDDENING_CURVE_NAME+postfix).as<std::vector<std::string>>();
     for (auto& name : name_list) {
-      selected.insert(XYDataset::QualifiedName{name});
+      if (exclude_set.find(name) == exclude_set.end()) {
+         exclude_set.emplace(name);
+         selected.emplace_back(name);
+      }
     }
   }
-  // Remove reddening-exclude if any
-  if (options.count(REDDENING_CURVE_EXCLUDE+postfix) > 0) {
-    auto name_list = options.at(REDDENING_CURVE_EXCLUDE+postfix).as<std::vector<std::string>>();
-    for (auto& name : name_list) {
-      selected.erase(XYDataset::QualifiedName{name});
-    }
-  }
+
   if (selected.empty()) {
     throw Elements::Exception() << "Empty reddening curve list for parameter space region "
                                 << "with name \"" + region_name + "\"";
   }
-  return std::vector<XYDataset::QualifiedName> {selected.begin(), selected.end()};
+  return selected;
 }
 
 std::map<std::string, std::vector<XYDataset::QualifiedName> > ReddeningConfiguration::getReddeningCurveList() {

@@ -9,7 +9,10 @@
 #include <map>
 #include <algorithm>
 #include <unordered_set>
+
 #include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Logging.h"
+
 #include "XYDataset/AsciiParser.h"
 #include "XYDataset/FileSystemProvider.h"
 #include "PhzConfiguration/SedConfiguration.h"
@@ -20,6 +23,8 @@ namespace po = boost::program_options;
 
 namespace Euclid {
 namespace PhzConfiguration {
+
+static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
 static const std::string SED_GROUP {"sed-group"};
 static const std::string SED_EXCLUDE {"sed-exclude"};
@@ -58,11 +63,12 @@ std::unique_ptr<XYDataset::XYDatasetProvider> SedConfiguration::getSedDatasetPro
   };
 }
 
-static std::vector<XYDataset::QualifiedName> getRegionSedList(const std::string& region_name,
-                                       const std::map<std::string, po::variable_value>& options,
-                                       XYDataset::XYDatasetProvider& provider) {
+static std::vector<XYDataset::QualifiedName> getRegionSedList(
+                       const std::string& region_name,
+                       const std::map<std::string, po::variable_value>& options,
+                       XYDataset::XYDatasetProvider& provider) {
   // Get the postfix for the option names
-  std::string postfix = region_name.empty() ? "" : "-"+region_name;
+  std::string postfix = region_name.empty() ? "" : "-"+ region_name;
   // For final result
   std::vector<XYDataset::QualifiedName> selected {};
   // We use a set to avoid duplicate entries
@@ -78,8 +84,11 @@ static std::vector<XYDataset::QualifiedName> getRegionSedList(const std::string&
 
   if (options.count(SED_GROUP+postfix) > 0) {
     auto group_list = options.at(SED_GROUP+postfix).as<std::vector<std::string>>();
-    for (auto& group : group_list) {
-      for (auto& name : provider.listContents(group)) {
+    for (auto& group_name : group_list) {
+      if (group_name.empty()) {
+        logger.warn() << "SED group : \"" << group_name << "\" is empty!";
+      }
+      for (auto& name : provider.listContents(group_name)) {
         if (exclude_set.find(name) == exclude_set.end()) {
            exclude_set.emplace(name);
            selected.push_back(name);

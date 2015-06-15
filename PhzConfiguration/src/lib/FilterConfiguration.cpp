@@ -7,6 +7,9 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#include <unordered_set>
+
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 
@@ -57,18 +60,34 @@ std::unique_ptr<XYDataset::XYDatasetProvider> FilterConfiguration::getFilterData
 }
 
 std::vector<XYDataset::QualifiedName> FilterConfiguration::getFilterList() {
+
+  // For final result
+  std::vector<XYDataset::QualifiedName> selected {};
   // We use a set to avoid duplicate entries
-  std::set<XYDataset::QualifiedName, XYDataset::QualifiedName::AlphabeticalComparator> selected {};
+  std::unordered_set<XYDataset::QualifiedName> exclude_set {};
+
+  // Remove filter-exclude if any
+  if (!m_options[FILTER_EXCLUDE].empty()) {
+    auto name_list = m_options[FILTER_EXCLUDE].as<std::vector<std::string>>();
+    for (auto& name : name_list) {
+      exclude_set.emplace(name);
+    }
+  }
+
+  // We use a set to avoid duplicate entries
   if (!m_options[FILTER_GROUP].empty()) {
     auto provider = getFilterDatasetProvider();
     auto group_list = m_options[FILTER_GROUP].as<std::vector<std::string>>();
     for (auto& group : group_list) {
       auto names_in_group = provider->listContents(group);
       if (names_in_group.empty()) {
-        logger.warn() << "Filter group \"" << group << "\" is empty!";
+        logger.warn() << "Filter group : \"" << group << "\" is empty!";
       }
       for (auto& name : names_in_group) {
-        selected.insert(name);
+        if (exclude_set.find(name) == exclude_set.end()) {
+           exclude_set.emplace(name);
+           selected.push_back(name);
+        }
       }
     }
   }
@@ -76,23 +95,13 @@ std::vector<XYDataset::QualifiedName> FilterConfiguration::getFilterList() {
   if (!m_options[FILTER_NAME].empty()) {
     auto name_list    = m_options[FILTER_NAME].as<std::vector<std::string>>();
     for (auto& name : name_list) {
-      selected.insert(XYDataset::QualifiedName{name});
-    }
-  }
-  // Remove filter-exclude if any
-  if (!m_options[FILTER_EXCLUDE].empty()) {
-    auto name_list = m_options[FILTER_EXCLUDE].as<std::vector<std::string>>();
-    for (auto& name : name_list) {
-      // Check the name exists before excluding
-      auto foundInList = selected.find(name);
-      if (foundInList != selected.end()) {
-         selected.erase(XYDataset::QualifiedName{name});
-      }
-      else {
-         logger.warn() << "filter-exclude: \"" << name << "\" not found in the list!";
+      if (exclude_set.find(name) == exclude_set.end()) {
+         exclude_set.emplace(name);
+         selected.push_back(name);
       }
     }
   }
+
   if (selected.empty()) {
     // In case the user did not provide any group-name
     // we check the default group name which is the catalog_name
@@ -102,15 +111,14 @@ std::vector<XYDataset::QualifiedName> FilterConfiguration::getFilterList() {
     auto provider = getFilterDatasetProvider();
     auto names_in_group = provider->listContents(catalog_name);
     for (auto& name : names_in_group) {
-      selected.insert(name);
-    }
+      selected.emplace_back(name);    }
   }//Eof first empty
 
   if (selected.empty()) {
     throw Elements::Exception() << "Empty filter list";
   } // Eof empty
 
-  return std::vector<XYDataset::QualifiedName> {selected.begin(), selected.end()};
+  return selected;
 }
 
 }
