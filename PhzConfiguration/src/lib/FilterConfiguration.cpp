@@ -42,11 +42,11 @@ po::options_description FilterConfiguration::getProgramOptions() {
   
   return merge(options)
               (PhosphorosPathConfiguration::getProgramOptions())
-              (CatalogNameConfiguration::getProgramOptions());
+              (CatalogTypeConfiguration::getProgramOptions());
 }
 
 FilterConfiguration::FilterConfiguration(const std::map<std::string, po::variable_value>& options)
-        : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options) {
+        : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options) {
   m_options = options;
 }
 
@@ -104,12 +104,12 @@ std::vector<XYDataset::QualifiedName> FilterConfiguration::getFilterList() {
 
   if (selected.empty()) {
     // In case the user did not provide any group-name
-    // we check the default group name which is the catalog_name
-    std::string catalog_name = getCatalogName();
+    // we check the default group name which is the catalog_type
+    std::string catalog_type = getCatalogType();
     // Look for a group with this name
-    logger.warn() << "No filters set by the user, trying to use the default group : \"" << catalog_name << "\" ";
+    logger.warn() << "No filters set by the user, trying to use the default group : \"" << catalog_type << "\" ";
     auto provider = getFilterDatasetProvider();
-    auto names_in_group = provider->listContents(catalog_name);
+    auto names_in_group = provider->listContents(catalog_type);
     for (auto& name : names_in_group) {
       selected.emplace_back(name);    }
   }//Eof first empty

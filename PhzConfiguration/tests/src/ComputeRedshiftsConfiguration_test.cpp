@@ -32,7 +32,8 @@ namespace fs = boost::filesystem;
 
 struct ComputeRedshiftsConfiguration_Fixture {
 
-  const std::string CATALOG_NAME {"catalog-name"};
+  const std::string CATALOG_TYPE {"catalog-type"
+      ""};
   const std::string RESULTS_DIR {"results-dir"};
   const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
   const std::string OUTPUT_CATALOG_FORMAT {"output-catalog-format"};
@@ -115,7 +116,7 @@ struct ComputeRedshiftsConfiguration_Fixture {
     options_map[MODEL_GRID_FILE].value() = boost::any(model_grid.string());
     
     options_map[PHZ_OUTPUT_DIR].value() = boost::any(phz_out_dir.string());
-    options_map[CATALOG_NAME].value() = boost::any(std::string{"CatalogName"});
+    options_map[CATALOG_TYPE].value() = boost::any(std::string{"CatalogType"});
     options_map[RESULTS_DIR].value() = boost::any(results_dir.string());
   }
   ~ComputeRedshiftsConfiguration_Fixture() {
@@ -482,7 +483,7 @@ BOOST_FIXTURE_TEST_CASE(relativePhzOutputDir_test, ComputeRedshiftsConfiguration
   }
   
   // Then
-  BOOST_CHECK(fs::exists(results_dir / "CatalogName" / "input_catalog" / relative_path / "phz_cat.txt"));
+  BOOST_CHECK(fs::exists(results_dir / "CatalogType" / "input_catalog" / relative_path / "phz_cat.txt"));
 
 }
 
@@ -508,7 +509,7 @@ BOOST_FIXTURE_TEST_CASE(defaultPhzOutputDir_test, ComputeRedshiftsConfiguration_
   }
   
   // Then
-  BOOST_CHECK(fs::exists(results_dir / "CatalogName" / "input_catalog" / "phz_cat.txt"));
+  BOOST_CHECK(fs::exists(results_dir / "CatalogType" / "input_catalog" / "phz_cat.txt"));
 
 }
 

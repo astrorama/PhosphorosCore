@@ -44,14 +44,14 @@ po::options_description PhotometryCatalogConfiguration::getProgramOptions() {
 
 static fs::path getFilterMappingFileFromOptions(const std::map<std::string, po::variable_value>& options,
                                                 const fs::path& intermediate_dir,
-                                                const std::string& catalog_name) {
-  fs::path result = intermediate_dir / catalog_name / "filter_mapping.txt";
+                                                const std::string& catalog_type) {
+  fs::path result = intermediate_dir / catalog_type / "filter_mapping.txt";
   if (options.count(FILTER_MAPPING_FILE) > 0) {
     fs::path path {options.at(FILTER_MAPPING_FILE).as<std::string>()};
     if (path.is_absolute()) {
       result = path;
     } else {
-      result = intermediate_dir / catalog_name / path;
+      result = intermediate_dir / catalog_type / path;
     }
   }
   if (!fs::exists(result)) {
@@ -82,11 +82,11 @@ static std::vector<std::pair<std::string, std::pair<std::string, std::string>>> 
 
 
 PhotometryCatalogConfiguration::PhotometryCatalogConfiguration(const std::map<std::string, po::variable_value>& options)
-        : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options),
+        : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options),
           CatalogConfiguration(options) {
   
   // Parse the file with the mapping
-  auto filename = getFilterMappingFileFromOptions(options, getIntermediateDir(), getCatalogName());
+  auto filename = getFilterMappingFileFromOptions(options, getIntermediateDir(), getCatalogType());
   auto all_filter_name_mapping = parseFile(filename);
   
   // Remove the filters which are marked to exclude

@@ -32,28 +32,28 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration
 
 static std::string getFilenameFromOptions(const std::map<std::string, po::variable_value>& options,
                                           const fs::path& intermediate_dir,
-                                          const std::string& catalog_name) {
-  fs::path result = intermediate_dir / catalog_name / "ModelGrids" / "model_grid.dat";
+                                          const std::string& catalog_type) {
+  fs::path result = intermediate_dir / catalog_type / "ModelGrids" / "model_grid.dat";
   if (options.count(OUTPUT_MODEL_GRID) > 0) {
     fs::path path = options.at(OUTPUT_MODEL_GRID).as<std::string>();
     if (path.is_absolute()) {
       result = path;
     } else {
-      result = intermediate_dir / catalog_name / "ModelGrids" / path;
+      result = intermediate_dir / catalog_type / "ModelGrids" / path;
     }
   }
   return result.string();
 }
 
 ComputeModelGridConfiguration::ComputeModelGridConfiguration(const std::map<std::string, po::variable_value>& options)
-         : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options),
+         : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options),
            ParameterSpaceConfiguration(options), FilterConfiguration(options),
            IgmConfiguration(options) {
 
   m_options = options;
 
   // Extract file option
-  std::string filename = getFilenameFromOptions(options, getIntermediateDir(), getCatalogName());
+  std::string filename = getFilenameFromOptions(options, getIntermediateDir(), getCatalogType());
 
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
@@ -78,7 +78,7 @@ po::options_description ComputeModelGridConfiguration::getProgramOptions() {
 ComputeModelGridConfiguration::OutputFunction ComputeModelGridConfiguration::getOutputFunction() {
   return [this](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
     auto logger = Elements::Logging::getLogger("PhzOutput");
-    auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogName());
+    auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogType());
     std::ofstream out {filename};
     boost::archive::binary_oarchive boa {out};
     // Store the info object describing the grids

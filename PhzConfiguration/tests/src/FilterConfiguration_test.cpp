@@ -29,7 +29,7 @@ struct FilterConfiguration_Fixture {
 
   const std::string AUX_DATA_DIR {"aux-data-dir"};
   const std::string FILTER_GROUP {"filter-group"};
-  const std::string CATALOG_NAME {"catalog-name"};
+  const std::string CATALOG_TYPE {"catalog-type"};
   const std::string FILTER_EXCLUDE {"filter-exclude"};
   const std::string FILTER_NAME {"filter-name"};
 
@@ -76,7 +76,7 @@ struct FilterConfiguration_Fixture {
 
     // Fill up options
     options_map[AUX_DATA_DIR].value() = boost::any(base_directory);
-    options_map[CATALOG_NAME].value() = boost::any(std::string{"CAT_NAME"});
+    options_map[CATALOG_TYPE].value() = boost::any(std::string{"CAT_NAME"});
     options_map[FILTER_GROUP].value() = boost::any(group_vector);
 
   }
@@ -235,7 +235,7 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_noparams_function_test, FilterConfiguratio
   BOOST_TEST_MESSAGE(" ");
 
   options_map[FILTER_GROUP].value() = boost::any(std::vector<std::string>{});
-  options_map[CATALOG_NAME].value() = boost::any(std::string {"MER"});
+  options_map[CATALOG_TYPE].value() = boost::any(std::string {"MER"});
   cf::FilterConfiguration fconf(options_map);
   auto list = fconf.getFilterList();
 

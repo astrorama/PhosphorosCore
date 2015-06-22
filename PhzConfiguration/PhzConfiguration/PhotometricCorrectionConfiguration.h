@@ -12,7 +12,7 @@
 #include <boost/program_options.hpp>
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzConfiguration/PhosphorosPathConfiguration.h"
-#include "PhzConfiguration/CatalogNameConfiguration.h"
+#include "PhzConfiguration/CatalogTypeConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -30,8 +30,8 @@ namespace PhzConfiguration {
  * - enable-photometric-correction : Use or not the photometric corrections (YES or NO)
  * 
  * If the photometric-correction-file is a relative path, it is relative to the
- * directory INTERMEDIATE_DIR/CATALOG_NAME. If it is missing completely it is
- * set to the default INTERMEDIATE_DIR/CATALOG_NAME/photometric_corrections.txt.
+ * directory INTERMEDIATE_DIR/CATALOG_TYPE. If it is missing completely it is
+ * set to the default INTERMEDIATE_DIR/CATALOG_TYPE/photometric_corrections.txt.
  * It provides a photometriccorrection map with all the corrections set to 1 for
  * all the filters defined as photometry filters of the input catalog with the
  * filter-mapping-file parameter. Otherwise if the photometric-correction-file
@@ -43,7 +43,7 @@ namespace PhzConfiguration {
  * ElementException: Photometric Correction file does not exist
  */
 class PhotometricCorrectionConfiguration : public virtual PhosphorosPathConfiguration,
-                                           public virtual CatalogNameConfiguration {
+                                           public virtual CatalogTypeConfiguration {
   
 public:
   

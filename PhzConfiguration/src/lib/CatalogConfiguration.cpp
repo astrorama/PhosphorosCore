@@ -42,28 +42,28 @@ po::options_description CatalogConfiguration::getProgramOptions() {
         "The index of the column representing the source ID");
   return merge(options)
               (PhosphorosPathConfiguration::getProgramOptions())
-              (CatalogNameConfiguration::getProgramOptions());
+              (CatalogTypeConfiguration::getProgramOptions());
 }
 
 static fs::path getCatalogFileFromOptions(const std::map<std::string, po::variable_value>& options,
-                                          const fs::path& catalogs_dir, const std::string& catalog_name) {
+                                          const fs::path& catalogs_dir, const std::string& catalog_type) {
   if (options.count(INPUT_CATALOG_FILE) == 0) {
     logger.error() << "Missing option " << INPUT_CATALOG_FILE;
     throw Elements::Exception() << "Missing mandatory option :" << INPUT_CATALOG_FILE;
   }
   fs::path path {options.at(INPUT_CATALOG_FILE).as<std::string>()};
   if (path.is_relative()) {
-    path = catalogs_dir / catalog_name / path;
+    path = catalogs_dir / catalog_type / path;
   }
   return path; 
 }
 
 CatalogConfiguration::CatalogConfiguration(const std::map<std::string, po::variable_value>& options)
-            : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options) {
+            : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options) {
   
   m_options = options;
   
-  auto catalog_file = getCatalogFileFromOptions(options, getCatalogsDir(), getCatalogName());
+  auto catalog_file = getCatalogFileFromOptions(options, getCatalogsDir(), getCatalogType());
   if (!fs::exists(catalog_file)) {
     logger.error() << "File " << catalog_file << " not found";
     throw Elements::Exception() << "Input catalog file " << catalog_file << " does not exist";
@@ -116,7 +116,7 @@ Table::Table readAsciiTable(std::string file) {
 const Table::Table& CatalogConfiguration::getAsTable() {
   if (m_table_ptr == nullptr) {
     std::string catalog_file = getCatalogFileFromOptions(
-                        m_options, getCatalogsDir(), getCatalogName()).string();
+                        m_options, getCatalogsDir(), getCatalogType()).string();
 
     // Get the format of the file
     FormatType format;

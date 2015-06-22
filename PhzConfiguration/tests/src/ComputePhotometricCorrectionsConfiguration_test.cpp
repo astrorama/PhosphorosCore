@@ -24,7 +24,7 @@ namespace fs = boost::filesystem;
 
 struct ComputePhotometricCorrectionsConfiguration_Fixture {
   
-  const std::string CATALOG_NAME {"catalog-name"};
+  const std::string CATALOG_TYPE {"catalog-type"};
   const std::string INTERMEDIATE_PRODUCTS_DIR {"intermediate-products-dir"};
   const std::string OUTPUT_PHOT_CORR_FILE {"output-phot-corr-file"};
   const std::string PHOT_CORR_ITER_NO {"phot-corr-iter-no"};
@@ -65,7 +65,7 @@ struct ComputePhotometricCorrectionsConfiguration_Fixture {
     boa << grid_info;
     grid_out.close();
     
-    options_map[CATALOG_NAME].value() = boost::any{std::string{"CatalogName"}};
+    options_map[CATALOG_TYPE].value() = boost::any{std::string{"CatalogType"}};
     options_map[INTERMEDIATE_PRODUCTS_DIR].value() = boost::any{temp_dir.path().string()};
     options_map[INPUT_CATALOG_FILE].value() = boost::any{input_catalog.string()};
     options_map[SOURCE_ID_COLUMN_INDEX].value() = boost::any{1};

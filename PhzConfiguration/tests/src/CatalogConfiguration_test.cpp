@@ -24,7 +24,7 @@ namespace cf = Euclid::PhzConfiguration;
 
 struct CatalogConfiguration_fixture {
 
-  const std::string CATALOG_NAME {"catalog-name"};
+  const std::string CATALOG_TYPE {"catalog-type"};
   const std::string INPUT_CATALOG_FILE {"input-catalog-file"};
   const std::string INPUT_CATALOG_FORMAT {"input-catalog-format"};
   const std::string SOURCE_ID_COLUMN_NAME {"source-id-column-name"};
@@ -71,17 +71,17 @@ struct CatalogConfiguration_fixture {
 
     makeFile(fits_file_name, "SIMPLE  =");
 
-    options_map_name[CATALOG_NAME].value() = std::string{"CatalogName"};
+    options_map_name[CATALOG_TYPE].value() = std::string{"CatalogType"};
     options_map_name[INPUT_CATALOG_FILE].value() = ascii_file_name;
     options_map_name[INPUT_CATALOG_FORMAT].value() = std::string("ASCII");
     options_map_name[SOURCE_ID_COLUMN_NAME].value() = std::string("ID");
 
-    options_map_id[CATALOG_NAME].value() = std::string{"CatalogName"};
+    options_map_id[CATALOG_TYPE].value() = std::string{"CatalogType"};
     options_map_id[INPUT_CATALOG_FILE].value() = ascii_file_name;
     options_map_id[INPUT_CATALOG_FORMAT].value() = std::string("ASCII");
     options_map_id[SOURCE_ID_COLUMN_INDEX].value() = 1;
 
-    options_map_fits[CATALOG_NAME].value() = std::string{"CatalogName"};
+    options_map_fits[CATALOG_TYPE].value() = std::string{"CatalogType"};
     options_map_fits[INPUT_CATALOG_FILE].value() = ascii_file_name;
     options_map_fits[INPUT_CATALOG_FORMAT].value() = std::string("FITS");
     options_map_fits[SOURCE_ID_COLUMN_NAME].value() = std::string("ID");
@@ -91,23 +91,23 @@ struct CatalogConfiguration_fixture {
     options_map_missing_file[SOURCE_ID_COLUMN_NAME].value() = std::string(
         "ID");
 
-    options_map_wrong_file[CATALOG_NAME].value() = std::string{"CatalogName"};
+    options_map_wrong_file[CATALOG_TYPE].value() = std::string{"CatalogType"};
     options_map_wrong_file[INPUT_CATALOG_FILE].value() = base_directory;
     options_map_wrong_file[INPUT_CATALOG_FORMAT].value() = std::string(
         "ASCII");
     options_map_wrong_file[SOURCE_ID_COLUMN_NAME].value() = std::string("ID");
 
-    options_map_missing_type[CATALOG_NAME].value() = std::string{"CatalogName"};
+    options_map_missing_type[CATALOG_TYPE].value() = std::string{"CatalogType"};
     options_map_missing_type[INPUT_CATALOG_FILE].value() = ascii_file_name;
     options_map_missing_type[SOURCE_ID_COLUMN_NAME].value() = std::string(
         "ID");
 
-    options_map_missing_column[CATALOG_NAME].value() = std::string{"CatalogName"};
+    options_map_missing_column[CATALOG_TYPE].value() = std::string{"CatalogType"};
     options_map_missing_column[INPUT_CATALOG_FILE].value() = ascii_file_name;
     options_map_missing_column[INPUT_CATALOG_FORMAT].value() = std::string(
         "ASCII");
 
-    options_map_2_columns[CATALOG_NAME].value() = std::string{"CatalogName"};
+    options_map_2_columns[CATALOG_TYPE].value() = std::string{"CatalogType"};
     options_map_2_columns[INPUT_CATALOG_FILE].value() = ascii_file_name;
     options_map_2_columns[INPUT_CATALOG_FORMAT].value() = std::string(
         "ASCII");

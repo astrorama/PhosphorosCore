@@ -29,7 +29,7 @@ namespace fs = boost::filesystem;
 
 struct ComputeModelGridConfiguration_Fixture {
 
-  const std::string CATALOG_NAME {"catalog-name"};
+  const std::string CATALOG_TYPE {"catalog-type"};
   const std::string INTERMEDIATE_PRODUCTS_DIR {"intermediate-products-dir"};
   const std::string OUTPUT_MODEL_GRID {"output-model-grid"};
   const std::string IAM_ABSORPTION_TYPE {"igm-absorption-type"};
@@ -59,7 +59,7 @@ struct ComputeModelGridConfiguration_Fixture {
   std::map<std::string, po::variable_value> options_map;
 
   ComputeModelGridConfiguration_Fixture() {
-    options_map[CATALOG_NAME].value() = boost::any(std::string{"CatalogName"});
+    options_map[CATALOG_TYPE].value() = boost::any(std::string{"CatalogType"});
     options_map[INTERMEDIATE_PRODUCTS_DIR].value() = boost::any(temp_dir.path().string());
   }
   ~ComputeModelGridConfiguration_Fixture() {
@@ -191,7 +191,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionRelative_test, ComputeModelGridConfigur
   BOOST_TEST_MESSAGE(" ");
 
   // Create a binary file
-  fs::path test_file = temp_dir.path()/"CatalogName/ModelGrids/my/path/test_writing_binary_file.dat";
+  fs::path test_file = temp_dir.path()/"CatalogType/ModelGrids/my/path/test_writing_binary_file.dat";
   options_map[OUTPUT_MODEL_GRID].value() = std::string{"my/path/test_writing_binary_file.dat"};
   options_map[IAM_ABSORPTION_TYPE].value() = std::string{"MADAU"};
   options_map[FILTER_NAME].value() = std::vector<std::string>{};
@@ -238,7 +238,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionDefault_test, ComputeModelGridConfigura
   BOOST_TEST_MESSAGE(" ");
 
   // Create a binary file
-  fs::path test_file = temp_dir.path()/"CatalogName/ModelGrids/model_grid.dat";
+  fs::path test_file = temp_dir.path()/"CatalogType/ModelGrids/model_grid.dat";
   options_map[IAM_ABSORPTION_TYPE].value() = std::string{"MADAU"};
   options_map[FILTER_NAME].value() = std::vector<std::string>{};
   options_map[FILTER_NAME].as<std::vector<std::string>>().push_back("filter1");

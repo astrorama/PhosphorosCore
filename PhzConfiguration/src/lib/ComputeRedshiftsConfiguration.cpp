@@ -53,29 +53,29 @@ po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
 }
 
 static fs::path getOutputPathFromOptions(const std::map<std::string, po::variable_value>& options,
-                                         const fs::path& result_dir, const std::string& catalog_name) {
+                                         const fs::path& result_dir, const std::string& catalog_type) {
   fs::path input_catalog_name{options.at(INPUT_CATALOG_FILE).as<std::string>()};
   auto input_filename = input_catalog_name.filename().stem();
-  fs::path result = result_dir / catalog_name / input_filename;
+  fs::path result = result_dir / catalog_type / input_filename;
   if (options.count(PHZ_OUTPUT_DIR) > 0) {
     fs::path path = options.at(PHZ_OUTPUT_DIR).as<std::string>();
     if (path.is_absolute()) {
       result = path;
     } else {
-      result = result_dir / catalog_name / input_filename / path;
+      result = result_dir / catalog_type / input_filename / path;
     }
   }
   return result;
 }
 
 ComputeRedshiftsConfiguration::ComputeRedshiftsConfiguration(const std::map<std::string, po::variable_value>& options)
-          : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options),
+          : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options),
             CatalogConfiguration(options), PhotometryCatalogConfiguration(options),
             PhotometricCorrectionConfiguration(options), PhotometryGridConfiguration(options),
             PriorConfiguration() {
   m_options = options;
 
-  auto output_dir = getOutputPathFromOptions(options, getResultsDir(), getCatalogName());
+  auto output_dir = getOutputPathFromOptions(options, getResultsDir(), getCatalogType());
 
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryOnly(output_dir.string());
@@ -108,7 +108,7 @@ private:
 
 std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfiguration::getOutputHandler() {
   std::unique_ptr<MultiOutputHandler> result {new MultiOutputHandler{}};
-  auto output_dir = getOutputPathFromOptions(m_options, getResultsDir(), getCatalogName());
+  auto output_dir = getOutputPathFromOptions(m_options, getResultsDir(), getCatalogType());
 
   std::string cat_flag = m_options.count(CREATE_OUTPUT_CATALOG_FLAG) > 0
                      ? m_options.at(CREATE_OUTPUT_CATALOG_FLAG).as<std::string>()

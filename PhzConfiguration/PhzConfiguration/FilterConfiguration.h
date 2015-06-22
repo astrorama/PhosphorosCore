@@ -13,7 +13,7 @@
 #include <boost/program_options.hpp>
 #include "XYDataset/XYDatasetProvider.h"
 #include "PhzConfiguration/PhosphorosPathConfiguration.h"
-#include "PhzConfiguration/CatalogNameConfiguration.h"
+#include "PhzConfiguration/CatalogTypeConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -32,7 +32,7 @@ namespace PhzConfiguration {
  * ElementException: Empty filter list
  */
 class FilterConfiguration : public virtual PhosphorosPathConfiguration,
-                            public virtual CatalogNameConfiguration {
+                            public virtual CatalogTypeConfiguration {
   
 public:
   

@@ -40,24 +40,24 @@ po::options_description PhotometricCorrectionConfiguration::getProgramOptions() 
       "The flag to enable photometric correction usage or not. One of NO (default) or YES");
   return merge(options)
               (PhosphorosPathConfiguration::getProgramOptions())
-              (CatalogNameConfiguration::getProgramOptions());
+              (CatalogTypeConfiguration::getProgramOptions());
 }
 
 PhotometricCorrectionConfiguration::PhotometricCorrectionConfiguration(const std::map<std::string, po::variable_value>& options)
-            : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options) {
+            : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options) {
   m_options = options;
 }
 
 
 static fs::path getFileFromOptions(const std::map<std::string, po::variable_value>& options,
-                                   const fs::path& intermediate_dir, const std::string& catalog_name) {
-  fs::path result = intermediate_dir / catalog_name / "photometric_corrections.txt";
+                                   const fs::path& intermediate_dir, const std::string& catalog_type) {
+  fs::path result = intermediate_dir / catalog_type / "photometric_corrections.txt";
   if (options.count(PHOTOMETRIC_CORRECTION_FILE) > 0) {
     fs::path path {options.at(PHOTOMETRIC_CORRECTION_FILE).as<std::string>()};
     if (path.is_absolute()) {
       result = path;
     } else {
-      result = intermediate_dir / catalog_name / path;
+      result = intermediate_dir / catalog_type / path;
     }
   }
   return result;
@@ -73,7 +73,7 @@ PhzDataModel::PhotometricCorrectionMap PhotometricCorrectionConfiguration::getPh
                      : "NO";
   if (flag == "YES") {
     // Check the file exist
-    auto correction_file = getFileFromOptions(m_options, getIntermediateDir(), getCatalogName()).string();
+    auto correction_file = getFileFromOptions(m_options, getIntermediateDir(), getCatalogType()).string();
     if (!fs::exists(correction_file)) {
       logger.error() << "File " << correction_file << " not found";
       throw Elements::Exception() << "Photometric Correction file (photometric-correction-file option) does not exist : " << correction_file;

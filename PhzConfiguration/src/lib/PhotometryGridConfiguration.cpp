@@ -36,27 +36,27 @@ po::options_description PhotometryGridConfiguration::getProgramOptions() {
 }
 
 static fs::path getFilenameFromOptions(const std::map<std::string, po::variable_value>& options,
-                                       const fs::path& intermediate_dir, const std::string& catalog_name) {
-  fs::path result = intermediate_dir / catalog_name / "ModelGrids" / "model_grid.dat";
+                                       const fs::path& intermediate_dir, const std::string& catalog_type) {
+  fs::path result = intermediate_dir / catalog_type / "ModelGrids" / "model_grid.dat";
   if (options.count(MODEL_GRID_FILE) > 0) {
     fs::path path = options.at(MODEL_GRID_FILE).as<std::string>();
     if (path.is_absolute()) {
       result = path;
     } else {
-      result = intermediate_dir / catalog_name / "ModelGrids" / path;
+      result = intermediate_dir / catalog_type / "ModelGrids" / path;
     }
   }
   return result;
 }
 
 PhotometryGridConfiguration::PhotometryGridConfiguration(const std::map<std::string, po::variable_value>& options)
-                  : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options) {
+                  : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options) {
   m_options = options;
 }
 
 std::map<std::string, PhzDataModel::PhotometryGrid> PhotometryGridConfiguration::getPhotometryGrid() {
   
-  auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogName());
+  auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogType());
   if (!fs::exists(filename)) {
     logger.error() << "File " << filename << " not found!";
     throw Elements::Exception() << "Model grid file (" << MODEL_GRID_FILE
@@ -78,7 +78,7 @@ std::map<std::string, PhzDataModel::PhotometryGrid> PhotometryGridConfiguration:
 
 PhzDataModel::PhotometryGridInfo PhotometryGridConfiguration::getPhotometryGridInfo() {
 
-  auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogName());
+  auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogType());
   if (!fs::exists(filename)) {
     logger.error() << "File " << filename << " not found!";
     throw Elements::Exception() << "Model grid file (" << MODEL_GRID_FILE

@@ -75,8 +75,8 @@ public:
    * Constructs a new ComputePhotometricCorrectionsConfiguration instance
    * @details
    * If the option output-phot-corr-file is a relative path, it is relative to
-   * the INTERMEDIATE_DIR/CATALOG_NAME directory. If it is missing completely,
-   * the default INTERMEDIATE_DIR/CATALOG_NAME/photometric_corrections.txt is
+   * the INTERMEDIATE_DIR/CATALOG_TYPE directory. If it is missing completely,
+   * the default INTERMEDIATE_DIR/CATALOG_TYPE/photometric_corrections.txt is
    * used.
    *
    * @param options

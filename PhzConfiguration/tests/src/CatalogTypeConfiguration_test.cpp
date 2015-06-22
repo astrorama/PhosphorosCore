@@ -1,18 +1,18 @@
 /** 
- * @file CatalogNameConfiguration_test.cpp
+ * @file CatalogTypeConfiguration_test.cpp
  * @date May 27, 2015
  * @author Nikolaos Apostolakos
  */
 
 #include <boost/test/unit_test.hpp>
 #include "ElementsKernel/Exception.h"
-#include "PhzConfiguration/CatalogNameConfiguration.h"
+#include "PhzConfiguration/CatalogTypeConfiguration.h"
 
 namespace po = boost::program_options;
 
-struct CatalogNameConfiguration_Fixture {
+struct CatalogTypeConfiguration_Fixture {
 
-  const std::string CATALOG_NAME {"catalog-name"};
+  const std::string CATALOG_TYPE {"catalog-type"};
   
   std::string valid_name {"Catalog_1"};
   std::string invalid_name {"Invalid Catalog"};
@@ -24,35 +24,35 @@ struct CatalogNameConfiguration_Fixture {
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (CatalogNameConfiguration_test)
+BOOST_AUTO_TEST_SUITE (CatalogTypeConfiguration_test)
 
 //-----------------------------------------------------------------------------
 // Test the getProgramOptions function
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, CatalogNameConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, CatalogTypeConfiguration_Fixture) {
 
   // When
-  auto result = Euclid::PhzConfiguration::CatalogNameConfiguration::getProgramOptions();
+  auto result = Euclid::PhzConfiguration::CatalogTypeConfiguration::getProgramOptions();
   
   // Then
   BOOST_CHECK_EQUAL(result.options().size(), 1);
-  BOOST_CHECK_NO_THROW(result.find(CATALOG_NAME, false));
+  BOOST_CHECK_NO_THROW(result.find(CATALOG_TYPE, false));
   
 }
 
 //-----------------------------------------------------------------------------
-// Test with a valid catalog name
+// Test with a valid catalog type name
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(validCatalogName_test, CatalogNameConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(validCatalogType_test, CatalogTypeConfiguration_Fixture) {
   
   // Given
-  options_map[CATALOG_NAME].value() = boost::any(valid_name);
+  options_map[CATALOG_TYPE].value() = boost::any(valid_name);
 
   // When
-  Euclid::PhzConfiguration::CatalogNameConfiguration conf {options_map};
-  auto result = conf.getCatalogName();
+  Euclid::PhzConfiguration::CatalogTypeConfiguration conf {options_map};
+  auto result = conf.getCatalogType();
   
   // Then
   BOOST_CHECK_EQUAL(result, valid_name);
@@ -60,33 +60,33 @@ BOOST_FIXTURE_TEST_CASE(validCatalogName_test, CatalogNameConfiguration_Fixture)
 }
 
 //-----------------------------------------------------------------------------
-// Test with the empty string as catalog name
+// Test with the empty string as catalog type name
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(emptyStringCatalogName_test, CatalogNameConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(emptyStringCatalogType_test, CatalogTypeConfiguration_Fixture) {
   
   // Given
-  options_map[CATALOG_NAME].value() = boost::any(empty_string);
+  options_map[CATALOG_TYPE].value() = boost::any(empty_string);
 
   // When
-  Euclid::PhzConfiguration::CatalogNameConfiguration conf {options_map};
+  Euclid::PhzConfiguration::CatalogTypeConfiguration conf {options_map};
   
   // Then
-  BOOST_CHECK_THROW(conf.getCatalogName(), Elements::Exception);
+  BOOST_CHECK_THROW(conf.getCatalogType(), Elements::Exception);
   
 }
 
 //-----------------------------------------------------------------------------
-// Test with missing catalog name
+// Test with missing catalog type name
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(missingCatalogName_test, CatalogNameConfiguration_Fixture) {
+BOOST_FIXTURE_TEST_CASE(missingCatalogType_test, CatalogTypeConfiguration_Fixture) {
 
   // When
-  Euclid::PhzConfiguration::CatalogNameConfiguration conf {options_map};
+  Euclid::PhzConfiguration::CatalogTypeConfiguration conf {options_map};
   
   // Then
-  BOOST_CHECK_THROW(conf.getCatalogName(), Elements::Exception);
+  BOOST_CHECK_THROW(conf.getCatalogType(), Elements::Exception);
   
 }
 

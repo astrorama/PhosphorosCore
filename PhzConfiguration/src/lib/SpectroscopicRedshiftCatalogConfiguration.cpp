@@ -44,7 +44,7 @@ po::options_description SpectroscopicRedshiftCatalogConfiguration::getProgramOpt
 
 SpectroscopicRedshiftCatalogConfiguration::SpectroscopicRedshiftCatalogConfiguration(
                                       const std::map<std::string, po::variable_value>& options)
-                 : PhosphorosPathConfiguration(options), CatalogNameConfiguration(options),
+                 : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options),
                    CatalogConfiguration(options) {
 
   auto options_local = options;

@@ -49,8 +49,8 @@ public:
    *
    * @details
    * If the filter-mapping-file is a relative path, it is relative to the
-   * `INTERMEDIATE_DIR/CATALOG_NAME` directory. If it is not given at all the
-   * defalut`INTERMEDIATE_DIR/CATALOG_NAME/filter_mapping.txt` is used.
+   * `INTERMEDIATE_DIR/CATALOG_TYPE` directory. If it is not given at all the
+   * defalut`INTERMEDIATE_DIR/CATALOG_TYPE/filter_mapping.txt` is used.
    * 
    * The filter-mapping-file must contain lines which contain three space
    * separated values, the filter name, the flux column name and the flux error

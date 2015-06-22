@@ -17,7 +17,7 @@
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzConfiguration/PhosphorosPathConfiguration.h"
-#include "PhzConfiguration/CatalogNameConfiguration.h"
+#include "PhzConfiguration/CatalogTypeConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -36,7 +36,7 @@ namespace PhzConfiguration {
  */
 
 class PhotometryGridConfiguration : public virtual PhosphorosPathConfiguration,
-                                    public virtual CatalogNameConfiguration {
+                                    public virtual CatalogTypeConfiguration {
 
 public:
 
@@ -72,8 +72,8 @@ public:
    * options as a PhzDataModel::PhotometryGrid object.
    * @details
    * If the given path is relative, it is relative to the directory
-   * INTERMEDIATE_DIR/CATALOG_NAME/ModelGrids. It it is missing completely the
-   * default is INTERMEDIATE_DIR/CATALOG_NAME/ModelGrids/model_grid.dat
+   * INTERMEDIATE_DIR/CATALOG_TYPE/ModelGrids. It it is missing completely the
+   * default is INTERMEDIATE_DIR/CATALOG_TYPE/ModelGrids/model_grid.dat
    * 
    * @returns
    * A PhzDataModel::PhotometryGrid object (the photometry grid)

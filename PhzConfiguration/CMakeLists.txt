@@ -53,6 +53,6 @@ elements_add_unit_test(PhotometricCorrectionConfiguration_test tests/src/Photome
 elements_add_unit_test(PhosphorosPathConfiguration_test tests/src/PhosphorosPathConfiguration_test.cpp
                        LINK_LIBRARIES PhzConfiguration TYPE Boost)
                        
-elements_add_unit_test(CatalogNameConfiguration_test tests/src/CatalogNameConfiguration_test.cpp
+elements_add_unit_test(CatalogTypeConfiguration_test tests/src/CatalogTypeConfiguration_test.cpp
                        LINK_LIBRARIES PhzConfiguration TYPE Boost)
                        
