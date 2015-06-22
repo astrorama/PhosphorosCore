@@ -10,7 +10,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
-#include "EnableGMock.h"
+#include "ElementsKernel/EnableGMock.h"
 
 using namespace testing;
 
