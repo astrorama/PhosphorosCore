@@ -58,6 +58,17 @@ public:
         }))
     ).WillOnce(Return(result));
   }
+  
+  // The following returns a lambda object, which can be copied or moved, to be
+  // used when these actions are needed (the mock instance does not support them). Note
+  // that this object is valid only as long as the mock object is not deleted.
+  Euclid::PhzPhotometricCorrection::PhotometricCorrectionCalculator::FindBestFitModelsFunction getFunctorObject() {
+    return [=](const SourceCatalog::Catalog& calibration_catalog,
+               const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
+               const PhzDataModel::PhotometricCorrectionMap& photometric_correction) {
+      return this->FunctorCall(calibration_catalog, model_grid_map, photometric_correction);
+    };
+  }
 };
 
 class CalculateScaleFactorsMapMock {
@@ -86,6 +97,17 @@ public:
           }
           return true;
         }))).WillOnce(Return(result));
+  }
+  
+  // The following returns a lambda object, which can be copied or moved, to be
+  // used when these actions are needed (the mock instance does not support them). Note
+  // that this object is valid only as long as the mock object is not deleted.
+  Euclid::PhzPhotometricCorrection::PhotometricCorrectionCalculator::CalculateScaleFactorsMapFunction getFunctorObject() {
+    return [=](SourceCatalog::Catalog::const_iterator source_begin,
+               SourceCatalog::Catalog::const_iterator source_end,
+               const std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator>& model_phot_map) {
+      return this->FunctorCall(source_begin, source_end, model_phot_map);
+    };
   }
 };
 
@@ -125,12 +147,34 @@ public:
           return true;
         }))).WillOnce(Return(result));
   }
+  
+  // The following returns a lambda object, which can be copied or moved, to be
+  // used when these actions are needed (the mock instance does not support them). Note
+  // that this object is valid only as long as the mock object is not deleted.
+  Euclid::PhzPhotometricCorrection::PhotometricCorrectionCalculator::CalculatePhotometricCorrectionFunction getFunctorObject() {
+    return [=](SourceCatalog::Catalog::const_iterator source_begin,
+               SourceCatalog::Catalog::const_iterator source_end,
+               const std::map<int64_t, double>& scale_factor_map,
+               const std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator>& model_phot_map,
+               Euclid::PhzPhotometricCorrection::PhotometricCorrectionCalculator::SelectorFunction) {
+      return this->FunctorCall(source_begin, source_end, scale_factor_map, model_phot_map);
+    };
+  }
 };
 
 class StopCriteriaMock {
 public:
   virtual ~StopCriteriaMock() = default;
   MOCK_METHOD1(FunctorCall, bool(const PhzDataModel::PhotometricCorrectionMap& phot_corr));
+  
+  // The following returns a lambda object, which can be copied or moved, to be
+  // used when these actions are needed (the mock instance does not support them). Note
+  // that this object is valid only as long as the mock object is not deleted.
+  Euclid::PhzPhotometricCorrection::PhotometricCorrectionCalculator::StopCriteriaFunction getFunctorObject() {
+    return [=](const PhzDataModel::PhotometricCorrectionMap& phot_corr) {
+      return this->FunctorCall(phot_corr);
+    };
+  }
 };
 
 //-----------------------------------------------------------------------------
@@ -209,12 +253,12 @@ BOOST_AUTO_TEST_CASE(FunctorCallSuccess) {
   
   // When
   PhotometricCorrectionCalculator calculator {
-      bind(&FindBestFitModelsMock::FunctorCall, & find_best_fit_models_mock, _1, _2, _3),
-      bind(&CalculateScaleFactorsMapMock::FunctorCall, &calculate_scale_factors_map_mock, _1, _2, _3),
-      bind(&CalculatePhotometricCorrectionMock::FunctorCall, &calculate_photometric_correction_mock, _1, _2, _3, _4)
+                  find_best_fit_models_mock.getFunctorObject(),
+                  calculate_scale_factors_map_mock.getFunctorObject(),
+                  calculate_photometric_correction_mock.getFunctorObject()
   };
   auto result_phot_corr_map = calculator(catalog, model_grid_map,
-                  bind(&StopCriteriaMock::FunctorCall, &stop_criteria_mock, _1), {});
+                                    stop_criteria_mock.getFunctorObject(), {});
   
   // Then
   BOOST_CHECK_EQUAL(result_phot_corr_map.size(), 2);

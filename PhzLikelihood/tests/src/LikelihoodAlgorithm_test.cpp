@@ -72,9 +72,14 @@ BOOST_FIXTURE_TEST_CASE(SameFilterOrder, LikelihoodAlgorithmFixture) {
   }
   
   // When
+//  auto scale_factor_functor_call = [&scale_factor_calc_mock](SourceCatalog::Photometry::const_iterator source_begin,
+//                                      SourceCatalog::Photometry::const_iterator source_end,
+//                                      SourceCatalog::Photometry::const_iterator model_begin) {
+//              return scale_factor_calc_mock.FunctorCall(source_begin, source_end, model_begin);
+//            };
   PhzLikelihood::LikelihoodLogarithmAlgorithm likelihood_algo {
-            std::bind(&ScaleFactorCalcMock::FunctorCall, &scale_factor_calc_mock, _1, _2, _3),
-            std::bind(&LikelihoodLogarithmCalcMock::FunctorCall, &likelihood_log_calc_mock, _1, _2, _3, _4)};
+                                  scale_factor_calc_mock.getFunctorObject(),
+                                  likelihood_log_calc_mock.getFunctorObject()};
   likelihood_algo(source_phot, model_phot_list.begin(), model_phot_list.end(),
                   likelihood_list.begin(), scale_factor_list.begin());
   
@@ -117,8 +122,8 @@ BOOST_FIXTURE_TEST_CASE(DifferentFilterOrder, LikelihoodAlgorithmFixture) {
   
   // When
   PhzLikelihood::LikelihoodLogarithmAlgorithm likelihood_algo {
-            std::bind(&ScaleFactorCalcMock::FunctorCall, &scale_factor_calc_mock, _1, _2, _3),
-            std::bind(&LikelihoodLogarithmCalcMock::FunctorCall, &likelihood_calc_mock, _1, _2, _3, _4)};
+                                      scale_factor_calc_mock.getFunctorObject(),
+                                      likelihood_calc_mock.getFunctorObject()};
   likelihood_algo(source_phot_unordered, model_phot_list.begin(), model_phot_list.end(),
                   likelihood_list.begin(), scale_factor_list.begin());
   
@@ -168,8 +173,8 @@ BOOST_FIXTURE_TEST_CASE(MissingSourcePhotometry, LikelihoodAlgorithmFixture) {
   
   // When
   PhzLikelihood::LikelihoodLogarithmAlgorithm likelihood_algo {
-            std::bind(&ScaleFactorCalcMock::FunctorCall, &scale_factor_calc_mock, _1, _2, _3),
-            std::bind(&LikelihoodLogarithmCalcMock::FunctorCall, &likelihood_calc_mock, _1, _2, _3, _4)};
+                                      scale_factor_calc_mock.getFunctorObject(),
+                                      likelihood_calc_mock.getFunctorObject()};
   likelihood_algo(source_phot_missing, model_phot_list.begin(), model_phot_list.end(),
                   likelihood_list.begin(), scale_factor_list.begin());
   

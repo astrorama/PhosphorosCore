@@ -16,6 +16,7 @@
 #include "FluxErrorPair_boost.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzLikelihood/LikelihoodGridFunctor.h"
+#include "PhzLikelihood/SourcePhzFunctor.h"
 
 using namespace testing;
 
@@ -72,6 +73,17 @@ public:
                                         0.
                     }));
   }
+  
+  // The following returns a lambda object, which can be copied or moved, to be
+  // used when these actions are needed (the mock instance does not support them). Note
+  // that this object is valid only as long as the mock object is not deleted.
+  PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction getFunctorObject() {
+    return [=](const SourceCatalog::Photometry& source_phot,      
+               const PhzDataModel::PhotometryGrid& phot_grid) {
+      return this->operator ()(source_phot, phot_grid);
+    };
+  }
+  
 };
 
 }

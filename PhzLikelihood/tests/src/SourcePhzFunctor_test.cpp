@@ -110,8 +110,7 @@ BOOST_FIXTURE_TEST_CASE(SourcePhzFunctor_test, SourcePhzFunctor_Fixture) {
   // When
   PhzLikelihood::SourcePhzFunctor functor(correctionMap, photo_grid_map, {},
       PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{},
-      std::bind(&LikelihoodFunctionMock::operator(), &likelihood_function, _1, _2),
-      std::bind(&BestFitFunctionMock::FunctorCall, &best_fit_function, _1, _2));
+      likelihood_function.getFunctorObject(), best_fit_function.getFunctorObject());
   auto best_model = functor(photometry_source);
 
 }
