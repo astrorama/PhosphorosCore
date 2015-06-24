@@ -38,6 +38,7 @@ private:
   std::shared_ptr<Table::ColumnInfo> m_column_info {new Table::ColumnInfo {{
       Table::ColumnInfo::info_type("ID", typeid(int64_t)),
       Table::ColumnInfo::info_type("SED", typeid(std::string)),
+      Table::ColumnInfo::info_type("SED-Index", typeid(int64_t)),
       Table::ColumnInfo::info_type("ReddeningCurve", typeid(std::string)),
       Table::ColumnInfo::info_type("E(B-V)", typeid(double)),
       Table::ColumnInfo::info_type("Z", typeid(double)),
