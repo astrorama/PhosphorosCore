@@ -16,7 +16,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/filesystem.hpp>
 
-#include "../../PhzConfiguration/ComputeRedshiftsConfiguration.h"
+#include "PhzConfiguration/ComputeRedshiftsConfiguration.h"
 #include "ElementsKernel/Temporary.h"
 #include "ElementsKernel/Real.h"
 #include "ElementsKernel/Exception.h"
@@ -47,7 +47,7 @@ struct ComputeRedshiftsConfiguration_Fixture {
   const std::string PHOTOMETRIC_CORRECTION_FILE {"photometric-correction-file"};
   const std::string ENABLE_PHOTOMETRIC_CORRECTION {"enable-photometric-correction"};
   const std::string FILTER_MAPPING_FILE {"filter-mapping-file"};
-  
+
   Elements::TempDir temp_dir {};
   fs::path results_dir = temp_dir.path();
   fs::path input_catalog = temp_dir.path()/"input_catalog.txt";
@@ -60,16 +60,16 @@ struct ComputeRedshiftsConfiguration_Fixture {
   std::vector<double> ebvs{0.0,0.001};
   std::vector<Euclid::XYDataset::QualifiedName> reddeing_curves{{"reddeningCurves/Curve1"}};
   std::vector<Euclid::XYDataset::QualifiedName> seds{{"sed/Curve1"}};
-  
+
   std::map<std::string, po::variable_value> options_map;
-  
+
   SourceCatalog::Source source {123, {}};
   PhzDataModel::PhotometryGrid res_phot_grid {PhzDataModel::createAxesTuple(
           {0.}, {0.}, {{"Name"}}, {{"Name"}}
   )};
   PhzDataModel::Pdf1D res_pdf {{"Z", {0.}}};
   PhzDataModel::LikelihoodGrid res_likelihood {res_phot_grid.getAxesTuple()};
-  
+
   std::map<std::string, PhzDataModel::LikelihoodGrid> makePosteriorMap(PhzDataModel::LikelihoodGrid&& posterior) {
     std::map<std::string, PhzDataModel::LikelihoodGrid> result {};
     result.emplace(std::string(""), std::move(posterior));
@@ -89,13 +89,13 @@ struct ComputeRedshiftsConfiguration_Fixture {
             << "2         1.01     0.02     2.      0.2     4.      0.4\n";
     cat_out.close();
     options_map[INPUT_CATALOG_FILE].value() = boost::any(input_catalog.string());
-    
+
     std::ofstream map_out {filter_mapping.string()};
     map_out << "Filter1 F1 F1_ERR\n"
             << "Filter2 F2 F2_ERR\n";
     map_out.close();
     options_map[FILTER_MAPPING_FILE].value() = boost::any(filter_mapping.string());
-    
+
     // Create files
     std::ofstream correction_file(phot_corr.string());
     // Fill up file
@@ -106,7 +106,7 @@ struct ComputeRedshiftsConfiguration_Fixture {
     correction_file.close();
     options_map[PHOTOMETRIC_CORRECTION_FILE].value() = boost::any(phot_corr.string());
     options_map[ENABLE_PHOTOMETRIC_CORRECTION].value() = boost::any(std::string{"YES"});
-    
+
     PhzDataModel::PhotometryGridInfo grid_info;
     grid_info.filter_names = {{"Filter1"}, {"Filter2"}};
     std::ofstream grid_out {model_grid.string()};
@@ -114,7 +114,7 @@ struct ComputeRedshiftsConfiguration_Fixture {
     boa << grid_info;
     grid_out.close();
     options_map[MODEL_GRID_FILE].value() = boost::any(model_grid.string());
-    
+
     options_map[PHZ_OUTPUT_DIR].value() = boost::any(phz_out_dir.string());
     options_map[CATALOG_TYPE].value() = boost::any(std::string{"CatalogType"});
     options_map[RESULTS_DIR].value() = boost::any(results_dir.string());
@@ -167,7 +167,7 @@ BOOST_FIXTURE_TEST_CASE(checkConstructorOK_test, ComputeRedshiftsConfiguration_F
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the constructor with normal inputs");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // check
   BOOST_CHECK_NO_THROW(cf::ComputeRedshiftsConfiguration{options_map});
 
@@ -183,15 +183,15 @@ BOOST_FIXTURE_TEST_CASE(constructorNoPhzOutputWriteAccess_test, ComputeRedshifts
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the constructor with phz-output-dir without write access");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
   fs::path no_write_dir = temp_dir.path() / "no_write";
   PhzUtils::createDirectoryIfAny(no_write_dir.string());
   options_map[PHZ_OUTPUT_DIR].value() = boost::any(no_write_dir.string());
-  
+
   // When
   fs::permissions(no_write_dir, fs::perms::remove_perms|fs::perms::owner_write|fs::perms::others_write|fs::perms::group_write);
-  
+
   // Then
   BOOST_CHECK_THROW(cf::ComputeRedshiftsConfiguration{options_map}, Elements::Exception);
 
@@ -207,7 +207,7 @@ BOOST_FIXTURE_TEST_CASE(constructorMissingFilterInModelGrid_test, ComputeRedshif
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the constructor with model grid with missing filter");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
   PhzDataModel::PhotometryGridInfo grid_info;
   grid_info.filter_names = {{"Filter1"}, {"Filter3"}};
@@ -215,7 +215,7 @@ BOOST_FIXTURE_TEST_CASE(constructorMissingFilterInModelGrid_test, ComputeRedshif
   boost::archive::binary_oarchive boa {grid_out};
   boa << grid_info;
   grid_out.close();
-  
+
   // Then
   BOOST_CHECK_THROW(cf::ComputeRedshiftsConfiguration{options_map}, Elements::Exception);
 
@@ -231,7 +231,7 @@ BOOST_FIXTURE_TEST_CASE(constructorMissingFilterInPhotCorr_test, ComputeRedshift
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the constructor with photometric correction with missing filter");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
     std::ofstream correction_file(phot_corr.string());
     // Fill up file
@@ -240,7 +240,7 @@ BOOST_FIXTURE_TEST_CASE(constructorMissingFilterInPhotCorr_test, ComputeRedshift
     correction_file << "Filter1     1.1 \n";
     correction_file << "Filter3     2.2 \n";
     correction_file.close();
-  
+
   // Then
   BOOST_CHECK_THROW(cf::ComputeRedshiftsConfiguration{options_map}, Elements::Exception);
 
@@ -255,10 +255,10 @@ BOOST_FIXTURE_TEST_CASE(getOutputHandlerNoOutput_test, ComputeRedshiftsConfigura
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getOutputHandler with no output enabled");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // When
   cf::ComputeRedshiftsConfiguration conf {options_map};
-  
+
   // Then
   BOOST_CHECK_THROW(conf.getOutputHandler(), Elements::Exception);
 
@@ -273,13 +273,13 @@ BOOST_FIXTURE_TEST_CASE(getOutputHandlerWrongFormat_test, ComputeRedshiftsConfig
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getOutputHandler with wrong output-catalog-format");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
   options_map[OUTPUT_CATALOG_FORMAT].value() = boost::any(std::string{"wrong"});
-  
+
   // When
   cf::ComputeRedshiftsConfiguration conf {options_map};
-  
+
   // Then
   BOOST_CHECK_THROW(conf.getOutputHandler(), Elements::Exception);
 
@@ -294,13 +294,13 @@ BOOST_FIXTURE_TEST_CASE(getOutputHandlerWronCatalogFlag_test, ComputeRedshiftsCo
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getOutputHandler with wrong create-output-catalog");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
   options_map[CREATE_OUTPUT_CATALOG_FLAG].value() = boost::any(std::string{"wrong"});
-  
+
   // When
   cf::ComputeRedshiftsConfiguration conf {options_map};
-  
+
   // Then
   BOOST_CHECK_THROW(conf.getOutputHandler(), Elements::Exception);
 
@@ -315,13 +315,13 @@ BOOST_FIXTURE_TEST_CASE(getOutputHandlerWrongPdfFlag_test, ComputeRedshiftsConfi
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getOutputHandler with wrong create-output-pdf");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
   options_map[CREATE_OUTPUT_PDF_FLAG].value() = boost::any(std::string{"wrong"});
-  
+
   // When
   cf::ComputeRedshiftsConfiguration conf {options_map};
-  
+
   // Then
   BOOST_CHECK_THROW(conf.getOutputHandler(), Elements::Exception);
 
@@ -336,13 +336,13 @@ BOOST_FIXTURE_TEST_CASE(getOutputHandlerWrongPosteriorsFlag_test, ComputeRedshif
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getOutputHandler with wrong create-output-posteriors");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
   options_map[CREATE_OUTPUT_POSTERIORS_FLAG].value() = boost::any(std::string{"wrong"});
-  
+
   // When
   cf::ComputeRedshiftsConfiguration conf {options_map};
-  
+
   // Then
   BOOST_CHECK_THROW(conf.getOutputHandler(), Elements::Exception);
 
@@ -358,17 +358,17 @@ BOOST_FIXTURE_TEST_CASE(getOutputHandlerCreateCatalogAscii_test, ComputeRedshift
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getOutputHandler for catalog output");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
   options_map[CREATE_OUTPUT_CATALOG_FLAG].value() = boost::any(std::string{"YES"});
   cf::ComputeRedshiftsConfiguration conf {options_map};
-  
+
   // When
   {
     auto out_handler = conf.getOutputHandler();
     out_handler->handleSourceOutput(source, res);
   }
-  
+
   // Then
   BOOST_CHECK(fs::exists(phz_out_dir / "phz_cat.txt"));
   BOOST_CHECK(!fs::exists(phz_out_dir / "pdf.fits"));
@@ -386,18 +386,18 @@ BOOST_FIXTURE_TEST_CASE(getOutputHandlerCreateCatalogFits_test, ComputeRedshifts
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getOutputHandler for catalog output");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
   options_map[CREATE_OUTPUT_CATALOG_FLAG].value() = boost::any(std::string{"YES"});
   options_map[OUTPUT_CATALOG_FORMAT].value() = boost::any(std::string{"FITS"});
   cf::ComputeRedshiftsConfiguration conf {options_map};
-  
+
   // When
   {
     auto out_handler = conf.getOutputHandler();
     out_handler->handleSourceOutput(source, res);
   }
-  
+
   // Then
   BOOST_CHECK(fs::exists(phz_out_dir / "phz_cat.fits"));
   BOOST_CHECK(!fs::exists(phz_out_dir / "pdf.fits"));
@@ -414,17 +414,17 @@ BOOST_FIXTURE_TEST_CASE(getOutputHandlerCreatePdf_test, ComputeRedshiftsConfigur
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getOutputHandler for pdf output");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
   options_map[CREATE_OUTPUT_PDF_FLAG].value() = boost::any(std::string{"YES"});
   cf::ComputeRedshiftsConfiguration conf {options_map};
-  
+
   // When
   {
     auto out_handler = conf.getOutputHandler();
     out_handler->handleSourceOutput(source, res);
   }
-  
+
   // Then
   BOOST_CHECK(!fs::exists(phz_out_dir / "phz_cat.txt"));
   BOOST_CHECK(fs::exists(phz_out_dir / "pdf.fits"));
@@ -441,17 +441,17 @@ BOOST_FIXTURE_TEST_CASE(getOutputHandlerCreatePosteriors_test, ComputeRedshiftsC
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the getOutputHandler for posteriors output");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
   options_map[CREATE_OUTPUT_POSTERIORS_FLAG].value() = boost::any(std::string{"YES"});
   cf::ComputeRedshiftsConfiguration conf {options_map};
-  
+
   // When
   {
     auto out_handler = conf.getOutputHandler();
     out_handler->handleSourceOutput(source, res);
   }
-  
+
   // Then
   BOOST_CHECK(!fs::exists(phz_out_dir / "phz_cat.txt"));
   BOOST_CHECK(!fs::exists(phz_out_dir / "pdf.fits"));
@@ -469,19 +469,19 @@ BOOST_FIXTURE_TEST_CASE(relativePhzOutputDir_test, ComputeRedshiftsConfiguration
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing for relative phz-output-dir");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
   std::string relative_path {"relative/path"};
   options_map[PHZ_OUTPUT_DIR].value() = boost::any(std::string{"relative/path"});
   options_map[CREATE_OUTPUT_CATALOG_FLAG].value() = boost::any(std::string{"YES"});
   cf::ComputeRedshiftsConfiguration conf {options_map};
-  
+
   // When
   {
     auto out_handler = conf.getOutputHandler();
     out_handler->handleSourceOutput(source, res);
   }
-  
+
   // Then
   BOOST_CHECK(fs::exists(results_dir / "CatalogType" / "input_catalog" / relative_path / "phz_cat.txt"));
 
@@ -496,18 +496,18 @@ BOOST_FIXTURE_TEST_CASE(defaultPhzOutputDir_test, ComputeRedshiftsConfiguration_
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing for relative phz-output-dir");
   BOOST_TEST_MESSAGE(" ");
-  
+
   // Given
   options_map.erase(PHZ_OUTPUT_DIR);
   options_map[CREATE_OUTPUT_CATALOG_FLAG].value() = boost::any(std::string{"YES"});
   cf::ComputeRedshiftsConfiguration conf {options_map};
-  
+
   // When
   {
     auto out_handler = conf.getOutputHandler();
     out_handler->handleSourceOutput(source, res);
   }
-  
+
   // Then
   BOOST_CHECK(fs::exists(results_dir / "CatalogType" / "input_catalog" / "phz_cat.txt"));
 
