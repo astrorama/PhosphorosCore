@@ -54,7 +54,7 @@ struct ComputeModelGridConfiguration_Fixture {
   Euclid::SourceCatalog::Photometry photometry_4{filter_1,values_4};
 
   Elements::TempDir temp_dir {};
-  fs::path path_filename = temp_dir.path()/"binary_file.dat";
+  fs::path path_filename = temp_dir.path() / "binary_file.dat";
 
   std::map<std::string, po::variable_value> options_map;
 
@@ -104,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE(constructor_exception_test, ComputeModelGridConfiguratio
   fs::permissions(test_file, fs::perms::remove_perms|fs::perms::owner_write|
                             fs::perms::others_write|fs::perms::group_write);
 
-  fs::path  path_filename = test_file/"no_write_permission.dat";
+  fs::path  path_filename = test_file / "no_write_permission.dat";
   options_map[OUTPUT_MODEL_GRID].value() = path_filename.string();
 
   BOOST_CHECK_THROW(cf::ComputeModelGridConfiguration cpgc(options_map), Elements::Exception);
@@ -121,7 +121,7 @@ BOOST_FIXTURE_TEST_CASE(directory_test, ComputeModelGridConfiguration_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing the directory creation in the constructor");
   BOOST_TEST_MESSAGE(" ");
 
-  fs::path test_file = temp_dir.path()/"test/directory/creation/test_writing_binary_file.dat";
+  fs::path test_file = temp_dir.path() / "test" / "directory" / "creation" / "test_writing_binary_file.dat";
   options_map[OUTPUT_MODEL_GRID].value() = test_file.string();
 
   cf::ComputeModelGridConfiguration cpgc(options_map);
@@ -144,7 +144,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, ComputeModelGridConfiguration_Fi
   BOOST_TEST_MESSAGE(" ");
 
   // Create a binary file
-  fs::path test_file = temp_dir.path()/"test/directory/creation/test_writing_binary_file.dat";
+  fs::path test_file = temp_dir.path() / "test" / "directory" / "creation" / "test_writing_binary_file.dat";
   options_map[OUTPUT_MODEL_GRID].value() = test_file.string();
   options_map[IAM_ABSORPTION_TYPE].value() = std::string{"MADAU"};
   options_map[FILTER_NAME].value() = std::vector<std::string>{};
@@ -191,8 +191,9 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionRelative_test, ComputeModelGridConfigur
   BOOST_TEST_MESSAGE(" ");
 
   // Create a binary file
-  fs::path test_file = temp_dir.path()/"CatalogType/ModelGrids/my/path/test_writing_binary_file.dat";
-  options_map[OUTPUT_MODEL_GRID].value() = std::string{"my/path/test_writing_binary_file.dat"};
+  fs::path test_file = temp_dir.path() / "CatalogType" / "ModelGrids" / "my" / "path" / "test_writing_binary_file.dat";
+  fs::path out_put_model_grid { fs::path("my") / fs::path("path") / fs::path("test_writing_binary_file.dat") };
+  options_map[OUTPUT_MODEL_GRID].value() = out_put_model_grid.string();
   options_map[IAM_ABSORPTION_TYPE].value() = std::string{"MADAU"};
   options_map[FILTER_NAME].value() = std::vector<std::string>{};
   options_map[FILTER_NAME].as<std::vector<std::string>>().push_back("filter1");
@@ -238,7 +239,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionDefault_test, ComputeModelGridConfigura
   BOOST_TEST_MESSAGE(" ");
 
   // Create a binary file
-  fs::path test_file = temp_dir.path()/"CatalogType/ModelGrids/model_grid.dat";
+  fs::path test_file = temp_dir.path() / "CatalogType" / "ModelGrids/model_grid.dat";
   options_map[IAM_ABSORPTION_TYPE].value() = std::string{"MADAU"};
   options_map[FILTER_NAME].value() = std::vector<std::string>{};
   options_map[FILTER_NAME].as<std::vector<std::string>>().push_back("filter1");

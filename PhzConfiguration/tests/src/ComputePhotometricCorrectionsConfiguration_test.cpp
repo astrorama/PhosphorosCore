@@ -37,10 +37,10 @@ struct ComputePhotometricCorrectionsConfiguration_Fixture {
   const std::string MODEL_GRID_FILE {"model-grid-file"};
 
   Elements::TempDir temp_dir {};
-  fs::path input_catalog = temp_dir.path()/"input_catalog.txt";
-  fs::path phot_grid = temp_dir.path()/"phot_grid.txt";
-  fs::path filter_mapping = temp_dir.path()/"filter_mapping.txt";
-  fs::path output_file = temp_dir.path()/"phot_corr.txt";
+  fs::path input_catalog = temp_dir.path() / "input_catalog.txt";
+  fs::path phot_grid = temp_dir.path() / "phot_grid.txt";
+  fs::path filter_mapping = temp_dir.path() / "filter_mapping.txt";
+  fs::path output_file = temp_dir.path() / "phot_corr.txt";
   
   map<string, po::variable_value> options_map {};
   
@@ -127,16 +127,6 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions, ComputePhotometricCorrectionsConfigur
 // Test the constructor throws exception if the output file cannot be created
 //-----------------------------------------------------------------------------
 
-//BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, ComputePhotometricCorrectionsConfiguration_Fixture) {
-//
-//  // Given
-//  options_map[OUTPUT_PHOT_CORR_FILE].value() = boost::any{temp_dir.path().string()};
-//
-//  // Then
-//  BOOST_CHECK_THROW(ComputePhotometricCorrectionsConfiguration{options_map}, Elements::Exception);
-//
-//}
-
 BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, ComputePhotometricCorrectionsConfiguration_Fixture) {
 
   BOOST_TEST_MESSAGE(" ");
@@ -149,7 +139,7 @@ BOOST_FIXTURE_TEST_CASE(outFileCannotBeCreated, ComputePhotometricCorrectionsCon
   fs::permissions(test_file, fs::perms::remove_perms|fs::perms::owner_write|
                  fs::perms::others_write|fs::perms::group_write);
 
-  fs::path  path_filename = test_file/"no_write_permission.dat";
+  fs::path  path_filename = test_file / "no_write_permission.dat";
   options_map[OUTPUT_PHOT_CORR_FILE].value() = path_filename.string();
 
   BOOST_CHECK_THROW(ComputePhotometricCorrectionsConfiguration cpgc(options_map), Elements::Exception);
