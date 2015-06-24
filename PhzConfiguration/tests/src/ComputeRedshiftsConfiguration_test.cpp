@@ -50,16 +50,16 @@ struct ComputeRedshiftsConfiguration_Fixture {
 
   Elements::TempDir temp_dir {};
   fs::path results_dir = temp_dir.path();
-  fs::path input_catalog = temp_dir.path()/"input_catalog.txt";
-  fs::path model_grid = temp_dir.path()/"model_grid.txt";
-  fs::path filter_mapping = temp_dir.path()/"filter_mapping.txt";
-  fs::path phz_out_dir = temp_dir.path()/"out_dir";
-  fs::path phot_corr = temp_dir.path()/"phot_corr.txt";
+  fs::path input_catalog = temp_dir.path() / "input_catalog.txt";
+  fs::path model_grid = temp_dir.path() / "model_grid.txt";
+  fs::path filter_mapping = temp_dir.path() / "filter_mapping.txt";
+  fs::path phz_out_dir = temp_dir.path() / "out_dir";
+  fs::path phot_corr = temp_dir.path() / "phot_corr.txt";
 
   std::vector<double> zs{0.0,0.1};
   std::vector<double> ebvs{0.0,0.001};
-  std::vector<Euclid::XYDataset::QualifiedName> reddeing_curves{{"reddeningCurves/Curve1"}};
-  std::vector<Euclid::XYDataset::QualifiedName> seds{{"sed/Curve1"}};
+  std::vector<Euclid::XYDataset::QualifiedName> reddeing_curves{{(fs::path("reddeningCurves") / fs::path("Curve1")).string()}};
+  std::vector<Euclid::XYDataset::QualifiedName> seds{{(fs::path("sed") / fs::path("Curve1")).string()}};
 
   std::map<std::string, po::variable_value> options_map;
 
