@@ -1,4 +1,4 @@
-/** 
+/**
  * @file LikelihoodGridFunctor.h
  * @date May 15, 2015
  * @author Nikolaos Apostolakos
@@ -18,18 +18,18 @@ namespace PhzLikelihood {
 
 /**
  * @class LikelihoodGridFunctor
- * 
+ *
  * @brief
  * Calculates the likelihood grid of a source over a model photometry grid
- * 
+ *
  * @details
  * The computed likelihood grids are normalized in such way, so their pick value
  * always has the value 1.
  */
 class LikelihoodGridFunctor {
-  
+
 public:
-  
+
   /**
    * The result type of the LikelihoodGridFunctor. It contains the following:
    * - A grid containing the Likelihood of each model, normalized so the maximum
@@ -54,16 +54,16 @@ public:
                              PhzDataModel::LikelihoodGrid::iterator likelihood_log_begin,
                              PhzDataModel::ScaleFactordGrid::iterator scale_factor_begin)
                        > LikelihoodLogarithmFunction;
-  
+
   /**
    * Constructs a new LikelihoodGridFunctor instance.
    */
   LikelihoodGridFunctor();
-  
+
   /**
    * Computes the likelihood of the given source photometry over the given
    * photometry grid.
-   * 
+   *
    * @param source_phot
    *    The photometry of the source
    * @param phot_grid
@@ -74,11 +74,12 @@ public:
    */
   result_type operator()(const SourceCatalog::Photometry& source_phot,
                          const PhzDataModel::PhotometryGrid& phot_grid);
-  
+
 private:
-  
+
   LikelihoodLogarithmFunction m_likelihood_log_func;
-  
+  LikelihoodLogarithmFunction m_likelihood_with_upper_limit_log_func;
+
 };
 
 } // end of namespace PhzLikelihood

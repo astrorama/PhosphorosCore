@@ -15,11 +15,10 @@
 #include "PhzConfiguration/PhotometricCorrectionConfiguration.h"
 
 #include <boost/test/unit_test.hpp>
-#include "CreateDirectory.h"
-
 
 namespace po = boost::program_options;
 namespace cf = Euclid::PhzConfiguration;
+namespace fs = boost::filesystem;
 
 struct PhotometricCorrectionConfiguration_Fixture {
 
@@ -30,11 +29,11 @@ struct PhotometricCorrectionConfiguration_Fixture {
   const std::string FILTER_MAPPING_FILE {"filter-mapping-file"};
 
   Elements::TempDir temp_dir;
-  std::string base_directory { temp_dir.path().native()+"/base_dir/" };
-  std::string cor_filename { base_directory + "/file_correction.txt" };
-  std::string cor_nofile { base_directory + "/NOFILE.txt" };
-  std::string mapping_file { base_directory + "/filter_malling.txt" };
-  std::string input_cat_file { base_directory + "/input_cat.txt" };
+  fs::path base_directory { temp_dir.path() / "base_dir" / "" };
+  std::string cor_filename { (base_directory / "file_correction.txt").string() };
+  std::string cor_nofile { (base_directory / "NOFILE.txt").string() };
+  std::string mapping_file { (base_directory / "filter_malling.txt").string() };
+  std::string input_cat_file { (base_directory / "input_cat.txt").string() };
 
   std::map<std::string, po::variable_value> options_map_nofile;
   std::map<std::string, po::variable_value> options_map_data;
@@ -42,7 +41,7 @@ struct PhotometricCorrectionConfiguration_Fixture {
 
   PhotometricCorrectionConfiguration_Fixture() {
 
-	makeDirectory(base_directory);
+    fs::create_directories(base_directory);
     // Create files
     std::ofstream correction_file(cor_filename);
     // Fill up file
@@ -138,7 +137,7 @@ BOOST_FIXTURE_TEST_CASE(getPhotometricCorrectionMap_test, PhotometricCorrectionC
   auto correction_data_map = pcc.getPhotometricCorrectionMap();
 
   BOOST_CHECK_EQUAL(correction_data_map.size(), 3);
-  auto itmap = correction_data_map.find({"mer/filter_name1"});
+  auto itmap = correction_data_map.find({(fs::path("mer") / "filter_name1").string()});
   if (itmap==correction_data_map.end()){
     BOOST_FAIL("The filter was not found.");
   }
@@ -160,7 +159,7 @@ BOOST_FIXTURE_TEST_CASE(getPhotometricCorrectionMap_filter_name_mapping_test, Ph
   auto correction_data_map = pcc.getPhotometricCorrectionMap();
 
   BOOST_CHECK_EQUAL(correction_data_map.size(), 2);
-  auto itmap = correction_data_map.find({"mer/filter2"});
+  auto itmap = correction_data_map.find({(fs::path("mer") / "filter2").string()});
   if (itmap==correction_data_map.end()){
      BOOST_FAIL("The filter was not found.");
    }

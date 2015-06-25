@@ -20,10 +20,10 @@
 #include "XYDataset/FileSystemProvider.h"
 #include "SourceCatalog/SourceAttributes/SpectroscopicRedshift.h"
 #include "PhzConfiguration/SpectroscopicRedshiftCatalogConfiguration.h"
-#include "CreateDirectory.h"
 
 namespace po = boost::program_options;
 namespace cf = Euclid::PhzConfiguration;
+namespace fs = boost::filesystem;
 
 struct SpectroscopicRedshiftCatalogConfiguration_Fixture {
   
@@ -49,10 +49,10 @@ struct SpectroscopicRedshiftCatalogConfiguration_Fixture {
   std::map<std::string, po::variable_value> options_map_z_deltaZ_index_plus_name;
 
   Elements::TempDir temp_dir;
-  std::string base_directory { temp_dir.path().native() + "/euclid_test/" };
-  std::string ascii_file_name { base_directory + "test_SpecZ_Catalog.txt" };
+  fs::path base_directory { temp_dir.path() / "euclid_test" / "" };
+  std::string ascii_file_name { (base_directory / "test_SpecZ_Catalog.txt").string() };
   SpectroscopicRedshiftCatalogConfiguration_Fixture() {
-    makeDirectory(base_directory);
+    fs::create_directories(base_directory);
     makeFile(ascii_file_name, "# ID      Z        DeltaZ\n"
         "# long    double   double\n"
         "\n"

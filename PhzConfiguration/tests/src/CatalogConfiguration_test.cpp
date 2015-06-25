@@ -17,10 +17,10 @@
 #include "XYDataset/AsciiParser.h"
 #include "XYDataset/FileSystemProvider.h"
 #include "PhzConfiguration/CatalogConfiguration.h"
-#include "CreateDirectory.h"
 
 namespace po = boost::program_options;
 namespace cf = Euclid::PhzConfiguration;
+namespace fs = boost::filesystem;
 
 struct CatalogConfiguration_fixture {
 
@@ -49,14 +49,14 @@ struct CatalogConfiguration_fixture {
   std::map<std::string, po::variable_value> options_map_missing_column;
 
   Elements::TempDir temp_dir;
-  std::string base_directory { temp_dir.path().native() + "/euclid_test/" };
-  std::string ascii_file_name { base_directory + "test_catalog.txt" };
-  std::string ascii_strange_file_name { base_directory
-      + "test_strange_catalog.toto" };
-  std::string fits_file_name { base_directory + "test_catalog.fits" };
+
+  fs::path base_directory { temp_dir.path() / "euclid_test" / "" };
+  std::string ascii_file_name { (base_directory / "test_catalog.txt").string() };
+  std::string ascii_strange_file_name { (base_directory / "test_strange_catalog.toto").string() };
+  std::string fits_file_name { (base_directory / "test_catalog.fits").string() };
 
   CatalogConfiguration_fixture() {
-    makeDirectory(base_directory);
+    fs::create_directories(base_directory);
     makeFile(ascii_file_name, "# ID     Info\n"
         "# long    string\n"
         "\n"
@@ -92,7 +92,7 @@ struct CatalogConfiguration_fixture {
         "ID");
 
     options_map_wrong_file[CATALOG_TYPE].value() = std::string{"CatalogType"};
-    options_map_wrong_file[INPUT_CATALOG_FILE].value() = base_directory;
+    options_map_wrong_file[INPUT_CATALOG_FILE].value() = base_directory.string();
     options_map_wrong_file[INPUT_CATALOG_FORMAT].value() = std::string(
         "ASCII");
     options_map_wrong_file[SOURCE_ID_COLUMN_NAME].value() = std::string("ID");
