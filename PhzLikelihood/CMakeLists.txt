@@ -21,6 +21,8 @@ elements_add_unit_test(ScaleFactorFunctor_test tests/src/ScaleFactorFunctor_test
                        LINK_LIBRARIES PhzLikelihood TYPE Boost)
 elements_add_unit_test(ChiSquareFunctor_test tests/src/ChiSquareFunctor_test.cpp
                        LINK_LIBRARIES PhzLikelihood TYPE Boost)
+elements_add_unit_test(ChiSquareWithUpperLimitFunctor_test tests/src/ChiSquareWithUpperLimitFunctor_test.cpp
+                       LINK_LIBRARIES PhzLikelihood TYPE Boost)
 
 #===== Tests using GMock =======================================================
 if(GMOCK_FOUND)
@@ -36,4 +38,9 @@ if(GMOCK_FOUND)
   elements_add_unit_test(MaxMarginalizationFunctor_test tests/src/MaxMarginalizationFunctor_test.cpp
                          LINK_LIBRARIES GMock PhzLikelihood TYPE Boost
                          INCLUDE_DIRS GMock)
+  elements_add_unit_test(ScaleFactorWithUpperLimitFunctor_test tests/src/ScaleFactorWithUpperLimitFunctor_test.cpp
+                         LINK_LIBRARIES GMock PhzLikelihood TYPE Boost
+                         INCLUDE_DIRS GMock PhzLikelihood)
+
+
 endif(GMOCK_FOUND)

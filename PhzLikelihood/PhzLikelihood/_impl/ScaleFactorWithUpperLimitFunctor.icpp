@@ -8,7 +8,6 @@
 #define	SCALEFACTORWITHUPPERLIMITFUNCTOR_ICPP
 
 #include <cmath>
-#include "PhzLikelihood/ChiSquareWithUpperLimitFunctor.h"
 #include "ElementsKernel/Real.h"
 #include "ElementsKernel/Logging.h"
 
@@ -34,19 +33,23 @@ static Elements::Logging scale_factor_logger = Elements::Logging::getLogger("Sca
   * @return
   * The computed Scale Factor as a double.
   */
-template<typename SourceIter, typename ModelIter>
-double ScaleFactorWithUpperLimitFunctor::operator ()(SourceIter source, SourceIter source_end,
+template<typename InitialScaleFactorFunctor, typename ChiSquareFunctor>
+template<typename SourceIter, typename ModelIter >
+double ScaleFactorWithUpperLimitFunctor<InitialScaleFactorFunctor,ChiSquareFunctor>::operator ()(
+                                       SourceIter source,
+                                       SourceIter source_end,
                                        ModelIter model) const {
 
-    ChiSquareWithUpperLimitFunctor chiSquareFunctor;
-    ScaleFactorFunctor scaleForDetectedPhotometry;
-
-    auto s_med = scaleForDetectedPhotometry(source, source_end, model);
+    auto s_med = m_initial_scale_factor_functor(source, source_end, model);
     auto s_min = 0.8*s_med;
     auto s_max = 1.1*s_med;
-    auto val_min = chiSquareFunctor(source, source_end, model, s_min);
-    auto val_med = chiSquareFunctor(source, source_end, model, s_med);
-    auto val_max = chiSquareFunctor(source, source_end, model, s_max);
+    auto val_min = m_chi_square_functor(source, source_end, model, s_min);
+    auto val_med = m_chi_square_functor(source, source_end, model, s_med);
+    auto val_max = m_chi_square_functor(source, source_end, model, s_max);
+
+    if (std::isinf(val_min) || std::isinf(val_med) || std::isinf(val_max)){
+      return s_med;
+    }
 
     auto denom = (s_med - s_min)*(val_med-val_max)-(s_med - s_max)*(val_med-val_min);
 
@@ -67,9 +70,9 @@ double ScaleFactorWithUpperLimitFunctor::operator ()(SourceIter source, SourceIt
       }
 
       s_med = new_s_med;
-      val_med= chiSquareFunctor(source, source_end, model, s_med);
+      val_med= m_chi_square_functor(source, source_end, model, s_med);
       denom = (s_med - s_min)*(val_med-val_max)-(s_med - s_max)*(val_med-val_min);
-    } while (!Elements::isEqual(0.,denom) &&  dist>m_accuracy && loop < m_loop_max);
+    } while (std::isfinite(val_med) && !Elements::isEqual(0.,denom) && dist>m_accuracy && loop < m_loop_max);
 
     if (loop == m_loop_max){
       scale_factor_logger.warn()<<"The Scale Factor computation for source with non detection reached the maximum allowed iterations before the expected accuracy.";

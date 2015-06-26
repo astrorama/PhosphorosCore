@@ -22,6 +22,7 @@ namespace PhzLikelihood {
  * The applied weight being the model flux over the (source) error squared.
  * The model is assumed to be error free.
  */
+template< typename InitialScaleFactorFunctor, typename ChiSquareFunctor>
 class ScaleFactorWithUpperLimitFunctor {
 
 public:
@@ -52,6 +53,8 @@ public:
 private:
   double m_accuracy;
   int m_loop_max;
+  InitialScaleFactorFunctor m_initial_scale_factor_functor;
+  ChiSquareFunctor m_chi_square_functor;
 
 };
 

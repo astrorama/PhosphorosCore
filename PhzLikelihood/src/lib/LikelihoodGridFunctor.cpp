@@ -22,8 +22,8 @@ namespace PhzLikelihood {
 
 LikelihoodGridFunctor::LikelihoodGridFunctor()
           : m_likelihood_log_func {LikelihoodLogarithmAlgorithm{ScaleFactorFunctor{}, ChiSquareFunctor{}}},
-            m_likelihood_with_upper_limit_log_func {LikelihoodLogarithmAlgorithm{ScaleFactorWithUpperLimitFunctor{},
-                                                                                 ChiSquareWithUpperLimitFunctor{}}}{ }
+            m_likelihood_with_upper_limit_log_func {LikelihoodLogarithmAlgorithm{ScaleFactorWithUpperLimitFunctor<ScaleFactorFunctor,ChiSquareWithUpperLimitFunctor>{},
+                                                    ChiSquareWithUpperLimitFunctor{}}}{ }
 
 
 auto LikelihoodGridFunctor::operator()(const SourceCatalog::Photometry& source_phot,

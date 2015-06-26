@@ -44,7 +44,7 @@ double ChiSquareWithUpperLimitFunctor::operator ()(SourceIter source, SourceIter
       }
 
       if ((*source).upper_limit_flag){
-        chi_square += log(Units::sqrt_of_halfpi*abs((*source).error)*(1+erf(((*source).flux-scale*(*model).flux)
+        chi_square -= 2.0*log(Units::sqrt_of_halfpi*abs((*source).error)*(1+erf(((*source).flux-scale*(*model).flux)
             /(Units::sqrt_of_two*abs((*source).error)))));
       } else{
         double difference = scale * (*model).flux - (*source).flux;
