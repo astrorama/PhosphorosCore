@@ -1,7 +1,7 @@
 /**
- * @file LikelihoodFunctor.h
- * @date December 2, 2014
- * @author Nikolaos Apostolakos
+ * @file ChiSquareWithUpperLimitFunctor.h
+ * @date June 26, 2015
+ * @author Florian Dubath
  */
 
 #ifndef PHZLIKELIHOOD_CHISQUAREWITHUPPERLIMITFUNCTOR_H
@@ -10,16 +10,17 @@
 namespace Euclid {
 namespace PhzLikelihood {
 /**
- * @class Euclid::PhzLikelihood::ChiSquareFunctor
+ * @class Euclid::PhzLikelihood::ChiSquareWithUpperLimitFunctor
  * @brief
  * This functor is in charge of computing the natural logarithm of the Likelihood
  * of a source with respect to a given model. This implementation use the Chi^2 pathway.
+ * This functor take into account the case of non detection (upper limit) in some of the photometries.
  * @details
- * The Likelihood logarithm is computed as the -Chi^2/2. The the Chi^2 is computed as
+ * The Likelihood logarithm is computed as the -Chi^2/2. The  Chi^2 is computed as
  * the weighted sum over the filters of the square of the difference between the model and the source flux.
+ * The weight being the inverse of the source flux error.
  * It take also into account photometry with upper limit (non detection) as inarXiv:1210.0285
- * The weight being the inverse of the source flux error. The model normalization
- * is provided as the "Scale Factor" and this value is computed to minimize the Chi^2.
+ * The model normalization is provided as the "Scale Factor" and this value is computed to minimize the Chi^2.
  */
 class ChiSquareWithUpperLimitFunctor {
 

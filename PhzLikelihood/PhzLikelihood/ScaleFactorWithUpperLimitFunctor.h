@@ -1,7 +1,7 @@
 /**
- * @file ScaleFactorFunctor.h
- * @date December 2, 2014
- * @author Nikolaos Apostolakos
+ * @file ScaleFactorWithUpperLimitFunctor.h
+ * @date June 26, 2015
+ * @author Florian Dubath
  */
 
 #ifndef PHZLIKELIHOOD_SCALEFACTORWITHUPPERLIMITFUNCTOR_H
@@ -12,20 +12,31 @@ namespace PhzLikelihood {
 /**
  * @class Euclid::PhzLikelihood::ScaleFactorFunctor
  * @brief
- * This functor is in charge of computing the Scale Factor of the source. This factor
- * enters the computation of the Chi^2.
+ * This functor is in charge of computing the Scale Factor of the source.
+ * It can handle the case of source with non detection (upper limit) in some
+ * of the photometries. This factor enters the computation of the Chi^2.
  * @details
- * The scale Factor is computed (analytically) as the value minimizing the Chi^2.
- * For a single Filter the Scale Factor is the ratio between the source flux and the model flux.
- * When multiple filter are available the Scale Factor is computed as the ratio between the
- * weighted sum of the source flux and the weighted sum of the model flux.
- * The applied weight being the model flux over the (source) error squared.
- * The model is assumed to be error free.
+ * An approximate scale Factor is computed by the InitialScaleFactorFunctor,
+ * then starting from this value, the algorithm do a numerical minimization
+ * (parabolic interpolation, see https://www.uam.es/personal_pdi/ciencias/ppou/CNC/TEMA6/f10.pdf)
+ * of the Chi^2 (which value is computed by the ChiSquareFunctor).
+ * When the calculated Chi^2 is infinite (for model very unlikely) the initial
+ * scale factor value is returned.
  */
-template< typename InitialScaleFactorFunctor, typename ChiSquareFunctor>
+template<typename InitialScaleFactorFunctor, typename ChiSquareFunctor>
 class ScaleFactorWithUpperLimitFunctor {
 
 public:
+  /**
+   * @brief constructor
+   * @param accuracy
+   * The calculation will stop if the difference between
+   * the minimum value computed to the n-th step and the n+1 step is smaller than the accuracy.
+   *
+   * @param  loop_max
+   * The calculation will stop if the expected accuracy is not reached after this
+   * number of iteration. In this case a warning is outputed.
+   */
   ScaleFactorWithUpperLimitFunctor(double accuracy = 0.00000001, int loop_max = 50) :
     m_accuracy(accuracy),m_loop_max(loop_max){}
 
