@@ -40,7 +40,8 @@ double ScaleFactorWithUpperLimitFunctor<InitialScaleFactorFunctor,ChiSquareFunct
                                        SourceIter source_end,
                                        ModelIter model) const {
 
-    auto s_med = m_initial_scale_factor_functor(source, source_end, model);
+    auto s_init = m_initial_scale_factor_functor(source, source_end, model);
+    auto s_med = s_init;
     auto s_min = 0.8*s_med;
     auto s_max = 1.1*s_med;
     auto val_min = m_chi_square_functor(source, source_end, model, s_min);
@@ -48,14 +49,14 @@ double ScaleFactorWithUpperLimitFunctor<InitialScaleFactorFunctor,ChiSquareFunct
     auto val_max = m_chi_square_functor(source, source_end, model, s_max);
 
     if (std::isinf(val_min) || std::isinf(val_med) || std::isinf(val_max)){
-      return s_med;
+      return s_init;
     }
 
     auto denom = (s_med - s_min)*(val_med-val_max)-(s_med - s_max)*(val_med-val_min);
 
     auto dist = s_max - s_min;
     int loop=0;
-    do {
+    while (std::isfinite(val_med) && !Elements::isEqual(0.,denom) && dist>m_accuracy && loop < m_loop_max) {
       loop++;
       auto new_s_med = s_med - 0.5*((s_med-s_min)*(s_med-s_min)*(val_med-val_max)
            -(s_med - s_max)*(s_med - s_max)*(val_med-val_min))/denom;
@@ -72,13 +73,17 @@ double ScaleFactorWithUpperLimitFunctor<InitialScaleFactorFunctor,ChiSquareFunct
       s_med = new_s_med;
       val_med= m_chi_square_functor(source, source_end, model, s_med);
       denom = (s_med - s_min)*(val_med-val_max)-(s_med - s_max)*(val_med-val_min);
-    } while (std::isfinite(val_med) && !Elements::isEqual(0.,denom) && dist>m_accuracy && loop < m_loop_max);
+    }
 
     if (loop == m_loop_max){
       scale_factor_logger.warn()<<"The Scale Factor computation for source with non detection reached the maximum allowed iterations before the expected accuracy.";
     }
 
-    return s_med;
+    if (dist<=m_accuracy){
+      return s_med;
+    }
+
+    return s_init;
 }
 
 } // end of namespace PhzLikelihood

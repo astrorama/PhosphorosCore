@@ -59,6 +59,21 @@ public:
   }
 };
 
+
+// function to be minimized
+class FunctionChiSquareS {
+public:
+  virtual ~FunctionChiSquareS() = default;
+
+  template<typename SourceIter, typename ModelIter>
+  double operator()(SourceIter , SourceIter ,
+                    ModelIter , double scale) const{
+    return (scale -1.0)*(scale -1.0)*(scale -1.0);
+
+  }
+};
+
+
 // function to be minimized
 class FunctionChiSquareU {
 public:
@@ -75,12 +90,12 @@ public:
 // function to be minimized
 class FunctionChiSquareV {
 public:
-  virtual ~FunctionChiSquareU() = default;
+  virtual ~FunctionChiSquareV() = default;
 
   template<typename SourceIter, typename ModelIter>
   double operator()(SourceIter , SourceIter ,
                     ModelIter , double scale) const{
-    return abs((scale -1.0)*(scale -1.0)*(scale -1.0));
+    return (scale -1.0)*(scale -1.0)-0.001*cos(100*(scale -1.0));
 
   }
 };
@@ -99,6 +114,9 @@ struct ScaleFactorWithUpperLimitFunctor_Fixture {
   }
 };
 
+
+
+
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE (ScaleFactorWithUpperLimitFunctor_test)
@@ -110,6 +128,16 @@ BOOST_FIXTURE_TEST_CASE(infinit_test, ScaleFactorWithUpperLimitFunctor_Fixture) 
 
   auto value = scale_factor_functor(source_List.begin(),source_List.end(),model_List.begin());
   BOOST_CHECK(Elements::isEqual(value, InitialScaleFactorCalcMock()(source_List.begin(),source_List.end(),model_List.begin())));
+
+}
+
+// expected behavior: when no solution is found return the initial value
+BOOST_FIXTURE_TEST_CASE(search_S_test, ScaleFactorWithUpperLimitFunctor_Fixture) {
+
+  PhzLikelihood::ScaleFactorWithUpperLimitFunctor<InitialScaleFactorCalcMock,FunctionChiSquareS> scale_factor_functor{accuracy,loop_max};
+
+  auto value = scale_factor_functor(source_List.begin(),source_List.end(),model_List.begin());
+  BOOST_CHECK(Elements::isEqual(value,1.5));
 
 }
 
@@ -130,5 +158,7 @@ BOOST_FIXTURE_TEST_CASE(search_V_test, ScaleFactorWithUpperLimitFunctor_Fixture)
   BOOST_CHECK(abs(value-1.)< accuracy);
 
 }
+
+
 
 BOOST_AUTO_TEST_SUITE_END ()
