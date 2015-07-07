@@ -7,7 +7,7 @@ namespace GridContainer {
 
 std::unique_ptr<PhzDataModel::LuminosityCorrectionCellManager>
       GridCellManagerTraits<PhzDataModel::LuminosityCorrectionCellManager>::factory(size_t size){
-  SourceCatalog::LuminosityCorrection default_LuminosityCorrection {{},{},0.};
+  SourceCatalog::LuminosityCorrection default_LuminosityCorrection {{},0.};
   return std::unique_ptr<PhzDataModel::LuminosityCorrectionCellManager> {
     new PhzDataModel::LuminosityCorrectionCellManager(size, default_LuminosityCorrection)
     };

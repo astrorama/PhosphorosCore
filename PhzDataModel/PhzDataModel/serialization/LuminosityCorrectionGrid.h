@@ -39,7 +39,6 @@ void save(Archive& ar, const Euclid::PhzDataModel::LuminosityCorrectionGrid& gri
                                     << "different reference filters is not supported";
       }
 
-      ar << correction.getMeasurementFilter();
       ar << correction.getCorrection();
   }
 }
@@ -58,10 +57,9 @@ void load(Archive& ar, Euclid::PhzDataModel::LuminosityCorrectionGrid& grid, con
   std::string reference_filter_name;
   ar >> reference_filter_name;
   for (auto& cell : grid) {
-    std::string measeurement_filter;
     double correction_value;
-    ar >> measeurement_filter >> correction_value;
-    cell = Euclid::SourceCatalog::LuminosityCorrection {reference_filter_name, measeurement_filter, correction_value};
+    ar >> correction_value;
+    cell = Euclid::SourceCatalog::LuminosityCorrection {reference_filter_name, correction_value};
   }
 }
 
