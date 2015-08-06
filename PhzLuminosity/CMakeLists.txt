@@ -4,14 +4,13 @@ elements_subdir(PhzLuminosity 0.1)
 elements_depends_on_subdirs(ElementsKernel)
 elements_depends_on_subdirs(PhysicsUtils)
 elements_depends_on_subdirs(XYDataset)
-elements_depends_on_subdirs(PhzLikelihood)
 elements_depends_on_subdirs(PhzDataModel)
 
 
 #===== Libraries ===============================================================
 elements_add_library(PhzLuminosity src/lib/*.cpp
-                  LINK_LIBRARIES ${CMAKE_DL_LIBS} ElementsKernel PhysicsUtils PhzDataModel XYDataset PhzLikelihood
-                  INCLUDE_DIRS ElementsKernel PhysicsUtils PhzDataModel XYDataset PhzLikelihood
+                  LINK_LIBRARIES ${CMAKE_DL_LIBS} ElementsKernel PhysicsUtils PhzDataModel XYDataset
+                  INCLUDE_DIRS ElementsKernel PhysicsUtils PhzDataModel XYDataset
                   PUBLIC_HEADERS PhzLuminosity )
 
 #===== Boost tests =============================================================

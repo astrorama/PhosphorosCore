@@ -36,6 +36,10 @@ public:
    */
   CustomLuminosityFunction(std::unique_ptr<MathUtils::Function> functionCurve,std::string name);
 
+  CustomLuminosityFunction ( const CustomLuminosityFunction & other);
+
+  CustomLuminosityFunction& operator= ( const CustomLuminosityFunction & other);
+
   /**
    * @brief constructor
    *

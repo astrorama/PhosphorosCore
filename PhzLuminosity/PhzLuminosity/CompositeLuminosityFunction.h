@@ -33,7 +33,7 @@ public:
    * @param regions
    * a Vector<unique_ptr<ILuminosityFunction>> which are the sub-function.
    */
-  CompositeLuminosityFunction(std::vector<std::unique_ptr<ILuminosityFunction>> regions);
+  CompositeLuminosityFunction(std::vector<std::unique_ptr<ILuminosityFunction>> regions, const std::string & basePath);
 
   /**
    * @brief Constructor
@@ -44,6 +44,9 @@ public:
    */
   CompositeLuminosityFunction(std::vector<LuminosityFunctionInfo> infos, std::string basePath);
 
+  CompositeLuminosityFunction ( const CompositeLuminosityFunction & other);
+
+  CompositeLuminosityFunction&  operator= ( const CompositeLuminosityFunction & other);
 
   /**
    * @brief get the infos allowing to persist the function.
@@ -105,6 +108,7 @@ public:
 
 private:
   std::vector<std::unique_ptr<ILuminosityFunction>> m_regions;
+  std::string m_base_path;
 };
 
 }

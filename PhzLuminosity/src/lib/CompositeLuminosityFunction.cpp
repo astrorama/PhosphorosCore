@@ -19,12 +19,13 @@ namespace Euclid {
 namespace PhzLuminosity {
 
 CompositeLuminosityFunction::CompositeLuminosityFunction(
-    std::vector<std::unique_ptr<ILuminosityFunction>> regions) :
-    m_regions { std::move(regions) } {
+    std::vector<std::unique_ptr<ILuminosityFunction>> regions,
+    const std::string & basePath) :
+    m_regions { std::move(regions) } ,m_base_path{basePath}{
 
 }
 
-CompositeLuminosityFunction::CompositeLuminosityFunction(std::vector<LuminosityFunctionInfo> infos, std::string basePath ){
+CompositeLuminosityFunction::CompositeLuminosityFunction(std::vector<LuminosityFunctionInfo> infos, std::string basePath ): m_base_path{basePath}{
 
   for(auto& info: infos){
     std::vector<XYDataset::QualifiedName> seds {};
@@ -48,6 +49,19 @@ CompositeLuminosityFunction::CompositeLuminosityFunction(std::vector<LuminosityF
       m_regions.push_back(std::unique_ptr<PhzLuminosity::ILuminosityFunction>{std::move(custom)});
     }
   }
+}
+
+CompositeLuminosityFunction::CompositeLuminosityFunction ( const CompositeLuminosityFunction & other) : CompositeLuminosityFunction::CompositeLuminosityFunction{other.getInfos(),other.m_base_path}{
+
+}
+
+CompositeLuminosityFunction&   CompositeLuminosityFunction::operator= ( const CompositeLuminosityFunction & other){
+  m_base_path = other.m_base_path;
+
+  CompositeLuminosityFunction dummy{other.getInfos(),other.m_base_path};
+
+  m_regions = std::move(dummy.m_regions);
+  return *this;
 }
 
 std::vector<LuminosityFunctionInfo> CompositeLuminosityFunction::getInfos() const{

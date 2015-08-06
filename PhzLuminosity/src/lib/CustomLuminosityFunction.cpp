@@ -27,6 +27,20 @@ CustomLuminosityFunction::CustomLuminosityFunction(
   m_function = MathUtils::interpolate(functionCurveDataset,MathUtils::InterpolationType::CUBIC_SPLINE);
 }
 
+CustomLuminosityFunction::CustomLuminosityFunction ( const CustomLuminosityFunction & other){
+  m_function = other.m_function->clone();
+  m_function_name = other.m_function_name;
+  m_domain=other.m_domain;
+
+}
+
+CustomLuminosityFunction& CustomLuminosityFunction :: operator= ( const CustomLuminosityFunction & other){
+  m_function = other.m_function->clone();
+  m_function_name = other.m_function_name;
+  m_domain=other.m_domain;
+  return *this;
+}
+
 
 double CustomLuminosityFunction::operator()(const GridCoordinate &, double luminosity){
   return (*m_function)(luminosity);

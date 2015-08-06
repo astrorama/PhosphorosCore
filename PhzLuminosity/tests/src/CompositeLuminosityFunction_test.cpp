@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_SUITE (CompositeLuminosityFunction_Test)
 //---------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE(test_functional, CompositeLuminosityFunction_Fixture) {
-  PhzLuminosity::CompositeLuminosityFunction luminosity_function{std::move(vector)};
+  PhzLuminosity::CompositeLuminosityFunction luminosity_function{std::move(vector),"base"};
 
   auto coordinate = Euclid::PhzLuminosity::GridCoordinate { 0.5, 0., {
                "test" }, { "test_sed" } };
@@ -73,13 +73,13 @@ BOOST_FIXTURE_TEST_CASE(test_functional, CompositeLuminosityFunction_Fixture) {
 
 BOOST_FIXTURE_TEST_CASE(test_getInfos, CompositeLuminosityFunction_Fixture) {
   auto expected = vector.size();
-  PhzLuminosity::CompositeLuminosityFunction luminosity_function{std::move(vector)};
+  PhzLuminosity::CompositeLuminosityFunction luminosity_function{std::move(vector),"base"};
 
   BOOST_CHECK_EQUAL(luminosity_function.getInfos().size(),expected);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_join, CompositeLuminosityFunction_Fixture) {
-  PhzLuminosity::CompositeLuminosityFunction luminosity_function{std::move(vector)};
+  PhzLuminosity::CompositeLuminosityFunction luminosity_function{std::move(vector),"base"};
 
   auto coordinate = Euclid::PhzLuminosity::GridCoordinate { 0.5, 0., {
                "test" }, { "test_sed" } };
@@ -105,7 +105,7 @@ BOOST_FIXTURE_TEST_CASE(test_join, CompositeLuminosityFunction_Fixture) {
 }
 
 BOOST_FIXTURE_TEST_CASE(test_split_throw, CompositeLuminosityFunction_Fixture) {
-  PhzLuminosity::CompositeLuminosityFunction luminosity_function{std::move(vector)};
+  PhzLuminosity::CompositeLuminosityFunction luminosity_function{std::move(vector),"base"};
 
 
   auto coordinate_4 = Euclid::PhzLuminosity::GridCoordinate { 11.5, 0., {
@@ -131,7 +131,7 @@ BOOST_FIXTURE_TEST_CASE(test_split_throw, CompositeLuminosityFunction_Fixture) {
 }
 
 BOOST_FIXTURE_TEST_CASE(test_split, CompositeLuminosityFunction_Fixture) {
-  PhzLuminosity::CompositeLuminosityFunction luminosity_function{std::move(vector)};
+  PhzLuminosity::CompositeLuminosityFunction luminosity_function{std::move(vector),"base"};
 
   auto coordinate = Euclid::PhzLuminosity::GridCoordinate { 0.25, 0., {
                "test" }, { "test_sed" } };
