@@ -64,6 +64,35 @@ BOOST_FIXTURE_TEST_CASE(test_functional_form, SchechterLuminosityFunction_Fixtur
   }
 }
 
+BOOST_FIXTURE_TEST_CASE(test_getInfo, SchechterLuminosityFunction_Fixture) {
+  double phio = 0.5;
+  double mo = 0.7;
+  double alpha = -1.25;
+
+  auto function = Euclid::PhzLuminosity::SchechterLuminosityFunction { phio, mo,
+      alpha };
+  function.setValidityRange({{"test_sed_1"},{"test_sed"},{"test_sed_2"}},0.,2.);
+
+  auto infos = function.getInfos();
+
+  BOOST_CHECK_EQUAL(infos.size(),1);
+  auto& info = infos[0];
+
+  BOOST_CHECK(Elements::isEqual(info.phi_star,phio));
+  BOOST_CHECK(Elements::isEqual(info.mag_star,mo));
+  BOOST_CHECK(Elements::isEqual(info.alpha,alpha));
+
+  BOOST_CHECK_EQUAL(info.SEDs.size(),3);
+  BOOST_CHECK_EQUAL(info.SEDs[0],"test_sed_1");
+  BOOST_CHECK_EQUAL(info.SEDs[1],"test_sed");
+  BOOST_CHECK_EQUAL(info.SEDs[2],"test_sed_2");
+
+  BOOST_CHECK(Elements::isEqual(info.z_min,0.));
+  BOOST_CHECK(Elements::isEqual(info.z_max,2.));
+
+  BOOST_CHECK_EQUAL(info.datasetName,"");
+}
+
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END ()

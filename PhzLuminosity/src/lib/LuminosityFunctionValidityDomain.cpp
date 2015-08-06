@@ -31,5 +31,17 @@ LuminosityFunctionValidityDomain::LuminosityFunctionValidityDomain(const std::ve
    :m_seds{seds},m_z_min{z_min}, m_z_max{z_max}{ }
 
 
+std::vector<XYDataset::QualifiedName> LuminosityFunctionValidityDomain::getSeds() const{
+  return m_seds;
+}
+
+double LuminosityFunctionValidityDomain::getMaxZ() const{
+  return m_z_max;
+}
+
+double LuminosityFunctionValidityDomain::getMinZ() const{
+  return m_z_min;
+}
+
 }
 }

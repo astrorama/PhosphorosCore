@@ -6,7 +6,14 @@
  */
 
 #include "ElementsKernel/Exception.h"
+
+
+#include "XYDataset/AsciiParser.h"
+#include "XYDataset/FileSystemProvider.h"
+
 #include "PhzLuminosity/CompositeLuminosityFunction.h"
+#include "PhzLuminosity/SchechterLuminosityFunction.h"
+#include "PhzLuminosity/CustomLuminosityFunction.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
@@ -15,6 +22,43 @@ CompositeLuminosityFunction::CompositeLuminosityFunction(
     std::vector<std::unique_ptr<ILuminosityFunction>> regions) :
     m_regions { std::move(regions) } {
 
+}
+
+CompositeLuminosityFunction::CompositeLuminosityFunction(std::vector<LuminosityFunctionInfo> infos, std::string basePath ){
+
+  for(auto& info: infos){
+    std::vector<XYDataset::QualifiedName> seds {};
+    for(auto& sed_name : info.SEDs){
+      seds.push_back(XYDataset::QualifiedName{sed_name});
+    }
+
+    if (info.datasetName.length()==0){
+      auto sechter = new PhzLuminosity::SchechterLuminosityFunction{info.phi_star,info.mag_star,info.alpha};
+      sechter->setValidityRange(seds,info.z_min,info.z_max);
+      m_regions.push_back(std::unique_ptr<PhzLuminosity::ILuminosityFunction>{std::move(sechter)});
+    } else {
+      auto dataset_identifier = XYDataset::QualifiedName{info.datasetName};
+
+      std::unique_ptr<XYDataset::FileParser> fp { new XYDataset::AsciiParser{} };
+      XYDataset::FileSystemProvider fsp (basePath, std::move(fp));
+      auto dataset_ptr = fsp.getDataset(dataset_identifier);
+
+      auto custom = new PhzLuminosity::CustomLuminosityFunction{*(dataset_ptr.get()),info.datasetName};
+      custom->setValidityRange(seds,info.z_min,info.z_max);
+      m_regions.push_back(std::unique_ptr<PhzLuminosity::ILuminosityFunction>{std::move(custom)});
+    }
+  }
+}
+
+std::vector<LuminosityFunctionInfo> CompositeLuminosityFunction::getInfos() const{
+  std::vector<LuminosityFunctionInfo> infos{};
+  for (auto & region : m_regions) {
+    for (auto & info : region->getInfos()){
+      infos.push_back(std::move(info));
+    }
+  }
+
+  return infos;
 }
 
 bool CompositeLuminosityFunction::doesApply(const GridCoordinate& gridCoordinate) {

@@ -34,7 +34,7 @@ public:
    * A unique_ptr on a Euclid::MathUtils::Function representing the relation between the
    * absolute magnitude and the galaxy density.
    */
-  CustomLuminosityFunction(std::unique_ptr<MathUtils::Function> functionCurve);
+  CustomLuminosityFunction(std::unique_ptr<MathUtils::Function> functionCurve,std::string name);
 
   /**
    * @brief constructor
@@ -43,7 +43,7 @@ public:
    * A XYDataset::XYDataset representing the relation between the
    * absolute magnitude and the galaxy density.
    */
-  CustomLuminosityFunction(const XYDataset::XYDataset & functionCurveDataset);
+  CustomLuminosityFunction(const XYDataset::XYDataset & functionCurveDataset,std::string name);
 
   /**
     * @brief Check if a given coordinate is in the validity region of the Luminosity Function.
@@ -68,6 +68,11 @@ public:
   double operator()(const GridCoordinate& gridCoordinate, double luminosity);
 
   /**
+   * @brief get the infos allowing to persist the function.
+   */
+  std::vector<LuminosityFunctionInfo> getInfos() const;
+
+  /**
     * @brief Setter for the Validity domain.
     *
     * @param seds
@@ -90,6 +95,7 @@ public:
 private:
 
   std::unique_ptr<MathUtils::Function> m_function;
+  std::string m_function_name;
 
   LuminosityFunctionValidityDomain m_domain{{},-1.,-1.};
 };

@@ -36,13 +36,28 @@ public:
   CompositeLuminosityFunction(std::vector<std::unique_ptr<ILuminosityFunction>> regions);
 
   /**
+   * @brief Constructor
+   *
+   * @details get a list of LuminosityFunctionInfo and the base path
+   * (into which looking for the DataSet for custom Luminosity functions) and build
+   * the sub-function accordingly.
+   */
+  CompositeLuminosityFunction(std::vector<LuminosityFunctionInfo> infos, std::string basePath);
+
+
+  /**
+   * @brief get the infos allowing to persist the function.
+   */
+  std::vector<LuminosityFunctionInfo> getInfos() const;
+
+  /**
     * @brief Check if a given coordinate is in the validity region of the Luminosity Function.
     * return true if any of the sub-function accept the coordinate.
     *
     * @param GridCoordinate
     * The coordinate in the model parameter-space
     */
-  bool doesApply(const GridCoordinate& gridCoordinate);
+   bool doesApply(const GridCoordinate& gridCoordinate) ;
 
   /**
     * @brief Functional call.
@@ -56,7 +71,7 @@ public:
     * @return The density of galaxy for the parameter space coordinate and the
     * provided luminosity by delegating the computation to one of the sub-functions.
     */
-  double operator()(const GridCoordinate& gridCoordinate, double luminosity);
+  double operator()(const GridCoordinate& gridCoordinate, double luminosity) ;
 
   /**
    * @brief remove a sub-function and replace it by the provided list of sub-functions

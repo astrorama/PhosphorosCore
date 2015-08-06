@@ -8,7 +8,8 @@
 #ifndef PHZLUMINOSITY_PHZLUMINOSITY_ILUMINOSITYFUNCTION_H_
 #define PHZLUMINOSITY_PHZLUMINOSITY_ILUMINOSITYFUNCTION_H_
 
-#include "PhzLuminosity/LuminosityComputationFunctor.h"
+#include "PhzLuminosity/GridCoordinate.h"
+#include "PhzLuminosity/LuminosityFunctionInfo.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
@@ -44,6 +45,11 @@ public:
      * @return The density of galaxy for the parameter space coordinate and the provided luminosity.
      */
     virtual double operator()(const GridCoordinate& , double ){return 0.;};
+
+    /**
+     * @brief get the infos allowing to persist the function.
+     */
+    virtual std::vector<LuminosityFunctionInfo> getInfos() const {return {};};
 };
 
 }

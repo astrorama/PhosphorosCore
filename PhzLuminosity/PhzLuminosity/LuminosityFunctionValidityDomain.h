@@ -50,7 +50,11 @@ public:
     */
   bool doesApply(const GridCoordinate& gridCoordinate);
 
+  std::vector<XYDataset::QualifiedName> getSeds() const;
 
+  double getMaxZ() const;
+
+  double getMinZ() const;
 private:
 
   std::vector<XYDataset::QualifiedName> m_seds;

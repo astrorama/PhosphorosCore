@@ -13,26 +13,10 @@
 #include "XYDataset/QualifiedName.h"
 #include "PhysicsUtils/Cosmology.h"
 #include "PhzDataModel/PhzModel.h"
-
+#include "PhzLuminosity/GridCoordinate.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
-
-/**
- * @class Euclid::PhzLuminosity::GridCoordinate
- *
- * @brief Structure used to store the coordinate in the parameter space of a given model.
- */
-struct GridCoordinate{
-  GridCoordinate(double new_z, double new_ebv, XYDataset::QualifiedName new_reddening_curve, XYDataset::QualifiedName new_sed);
-
-  virtual ~GridCoordinate() = default;
-
-  double z;
-  double ebv;
-  XYDataset::QualifiedName reddening_curve;
-  XYDataset::QualifiedName sed;
-};
 
 
 /**

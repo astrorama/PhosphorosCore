@@ -62,6 +62,11 @@ public:
   double operator()(const GridCoordinate& gridCoordinate, double luminosity);
 
   /**
+   * @brief get the infos allowing to persist the function.
+   */
+  std::vector<LuminosityFunctionInfo> getInfos() const;
+
+  /**
    * @brief Setter for the Validity domain.
    *
    * @param seds
