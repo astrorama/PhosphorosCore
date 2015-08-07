@@ -93,6 +93,22 @@ BOOST_FIXTURE_TEST_CASE(test_getInfo, SchechterLuminosityFunction_Fixture) {
   BOOST_CHECK_EQUAL(info.datasetName,"");
 }
 
+//BOOST_FIXTURE_TEST_CASE(export_data, SchechterLuminosityFunction_Fixture) {
+//  double phio = 0.04;
+//  double mo = -19.;
+//  double alpha = -1.0;
+//
+//  auto function = Euclid::PhzLuminosity::SchechterLuminosityFunction { phio, mo,
+//        alpha };
+//
+//  auto coordinate = Euclid::PhzLuminosity::GridCoordinate { 1., 0., {
+//      "test" }, { "test_sed" } };
+//
+//  for (auto m=-100;m<300;m++){
+//    std::cout<<m/10.<<" "<<function(coordinate,m/10.)<<"\n";
+//  }
+//}
+
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END ()

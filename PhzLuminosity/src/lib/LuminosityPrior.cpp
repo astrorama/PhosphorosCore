@@ -6,17 +6,19 @@
  */
 
 
-
+#include <cmath>
 #include "PhzLuminosity/LuminosityPrior.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
+
 
 LuminosityPrior::LuminosityPrior(
     XYDataset::QualifiedName luminosity_filter,
     std::vector<LuminosityFunctionInfo> infos,
     std::string basePath )
 : m_luminosity_computation{luminosity_filter}, m_luminosity_function{infos,basePath}{
+
 
 }
 
@@ -26,6 +28,9 @@ void LuminosityPrior::operator()(
     const SourceCatalog::Photometry& sourcePhotometry,
     const PhzDataModel::PhotometryGrid& modelGrid,
     const PhzDataModel::ScaleFactordGrid& scaleFactorGrid){
+
+
+
 
   auto likelihood_iter = likelihoodGrid.begin();
   auto scal_iter = scaleFactorGrid.begin();
@@ -40,8 +45,7 @@ void LuminosityPrior::operator()(
     double magnitude = m_luminosity_computation(coordinate,*scal_iter,sourcePhotometry,modelGrid);
 
     double prior = m_luminosity_function(coordinate,magnitude);
-    *likelihood_iter *= prior;
-
+    *likelihood_iter += std::log(prior);
     ++likelihood_iter;
     ++scal_iter;
   }
