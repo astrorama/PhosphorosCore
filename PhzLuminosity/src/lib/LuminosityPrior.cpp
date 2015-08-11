@@ -9,9 +9,12 @@
 #include <cmath>
 #include "PhzLuminosity/LuminosityPrior.h"
 
+//#include "ElementsKernel/Logging.h"
+
 namespace Euclid {
 namespace PhzLuminosity {
 
+//static Elements::Logging logger = Elements::Logging::getLogger("LuminosityPrior");
 
 LuminosityPrior::LuminosityPrior(
     XYDataset::QualifiedName luminosity_filter,
@@ -45,7 +48,11 @@ void LuminosityPrior::operator()(
     double magnitude = m_luminosity_computation(coordinate,*scal_iter,sourcePhotometry,modelGrid);
 
     double prior = m_luminosity_function(coordinate,magnitude);
-    *likelihood_iter += std::log(prior);
+    *likelihood_iter *= prior;
+
+
+    //logger.info() << "SED  :" << coordinate.sed.qualifiedName() << " z :"<< coordinate.z <<" magnitude:"<<magnitude <<"\n";
+
     ++likelihood_iter;
     ++scal_iter;
   }
