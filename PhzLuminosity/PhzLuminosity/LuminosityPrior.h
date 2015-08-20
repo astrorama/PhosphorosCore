@@ -8,30 +8,31 @@
 #ifndef PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYPRIOR_H_
 #define PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYPRIOR_H_
 
+#include <PhzLuminosity/LuminosityFunctionSet.h>
 #include <vector>
+#include <memory>
 
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/LikelihoodGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 
-#include "PhzLuminosity/CompositeLuminosityFunction.h"
-#include "PhzLuminosity/LuminosityFunctionInfo.h"
-#include "PhzLuminosity/LuminosityComputationFunctor.h"
+#include "PhzLuminosity/LuminosityFunctionSet.h"
+#include "PhzLuminosity/LuminosityCalculator.h"
+#include "PhzLuminosity/SedGroupManager.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
-
-
 
 
 class LuminosityPrior{
 public:
 
 LuminosityPrior(
-    XYDataset::QualifiedName luminosity_filter,
-    std::vector<LuminosityFunctionInfo> infos,
-    std::string basePath );
+    PhzDataModel::PhotometryGrid luminosityModelGrid,
+    std::unique_ptr<LuminosityCalculator> luminosityCalculator,
+    SedGroupManager sedGroupManager,
+    LuminosityFunctionSet luminosityFunctionSet );
 
 void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
       const SourceCatalog::Photometry& sourcePhotometry,
@@ -40,8 +41,10 @@ void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
 
 private:
 
-LuminosityComputationFunctor m_luminosity_computation;
-CompositeLuminosityFunction m_luminosity_function;
+  PhzDataModel::PhotometryGrid m_luminosity_model_grid;
+  std::unique_ptr<LuminosityCalculator> m_luminosity_calculator;
+  SedGroupManager m_sed_group_manager;
+  LuminosityFunctionSet m_luminosity_function_set;
 };
 
 }

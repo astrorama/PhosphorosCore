@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_SUITE (SchechterLuminosityFunction_Test)
 
 //---------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(test_functional_form, SchechterLuminosityFunction_Fixture) {
+BOOST_FIXTURE_TEST_CASE(test_functional_form_mag, SchechterLuminosityFunction_Fixture) {
 
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
@@ -42,9 +42,8 @@ BOOST_FIXTURE_TEST_CASE(test_functional_form, SchechterLuminosityFunction_Fixtur
           double m = l * 5.;
 
           auto function = Euclid::PhzLuminosity::SchechterLuminosityFunction {
-              phio, mo, alpha };
-          auto coordinate = Euclid::PhzLuminosity::GridCoordinate { 1., 0., {
-              "test" }, { "test_sed" } };
+              phio, mo, alpha, true };
+
 
           double m_diff = mo - m;
           double exp_1 = 0.4 * m_diff;
@@ -54,7 +53,7 @@ BOOST_FIXTURE_TEST_CASE(test_functional_form, SchechterLuminosityFunction_Fixtur
           auto expected = 0.4 * std::log(10.) * phio * std::pow(10., exp_2)
               * std::exp(-exp_3);
 
-          auto computed = function(coordinate, m);
+          auto computed = function(m);
 
           BOOST_CHECK(Elements::isEqual(expected, computed));
 
@@ -64,50 +63,42 @@ BOOST_FIXTURE_TEST_CASE(test_functional_form, SchechterLuminosityFunction_Fixtur
   }
 }
 
-BOOST_FIXTURE_TEST_CASE(test_getInfo, SchechterLuminosityFunction_Fixture) {
-  double phio = 0.5;
-  double mo = 0.7;
-  double alpha = -1.25;
 
-  auto function = Euclid::PhzLuminosity::SchechterLuminosityFunction { phio, mo,
-      alpha };
-  function.setValidityRange({{"test_sed_1"},{"test_sed"},{"test_sed_2"}},0.,2.);
+BOOST_FIXTURE_TEST_CASE(test_functional_form_flux, SchechterLuminosityFunction_Fixture) {
 
-  auto infos = function.getInfos();
+  for (int i = 1; i < 10; i++) {
+    for (int j = 1; j < 10; j++) {
+      for (int k = 0; k < 10; k++) {
+        for (int l = 0; l < 10; l++) {
 
-  BOOST_CHECK_EQUAL(infos.size(),1);
-  auto& info = infos[0];
+          double phio = i * 0.5;
+          double Lo = j * 0.5;
+          double alpha = -1.45 + k * 0.1;
+          double L = l * 5.;
 
-  BOOST_CHECK(Elements::isEqual(info.phi_star,phio));
-  BOOST_CHECK(Elements::isEqual(info.mag_star,mo));
-  BOOST_CHECK(Elements::isEqual(info.alpha,alpha));
+          auto function = Euclid::PhzLuminosity::SchechterLuminosityFunction {
+              phio, Lo, alpha, false };
 
-  BOOST_CHECK_EQUAL(info.SEDs.size(),3);
-  BOOST_CHECK_EQUAL(info.SEDs[0],"test_sed_1");
-  BOOST_CHECK_EQUAL(info.SEDs[1],"test_sed");
-  BOOST_CHECK_EQUAL(info.SEDs[2],"test_sed_2");
 
-  BOOST_CHECK(Elements::isEqual(info.z_min,0.));
-  BOOST_CHECK(Elements::isEqual(info.z_max,2.));
+          double normalization_ratio = phio/Lo;
+          double L_ratio = L/Lo;
 
-  BOOST_CHECK_EQUAL(info.datasetName,"");
+          double pow_1 = std::pow(L_ratio, alpha);
+
+          auto expected = normalization_ratio*pow_1* std::exp(-L_ratio);
+
+          auto computed = function(L);
+
+          //BOOST_CHECK(Elements::isEqual(expected, computed));
+          BOOST_CHECK_EQUAL(expected, computed);
+
+        }
+      }
+    }
+  }
 }
 
-//BOOST_FIXTURE_TEST_CASE(export_data, SchechterLuminosityFunction_Fixture) {
-//  double phio = 0.04;
-//  double mo = -19.;
-//  double alpha = -1.0;
-//
-//  auto function = Euclid::PhzLuminosity::SchechterLuminosityFunction { phio, mo,
-//        alpha };
-//
-//  auto coordinate = Euclid::PhzLuminosity::GridCoordinate { 1., 0., {
-//      "test" }, { "test_sed" } };
-//
-//  for (auto m=-100;m<300;m++){
-//    std::cout<<m/10.<<" "<<function(coordinate,m/10.)<<"\n";
-//  }
-//}
+
 
 //-----------------------------------------------------------------------------
 

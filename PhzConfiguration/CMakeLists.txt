@@ -8,11 +8,15 @@ elements_depends_on_subdirs(PhzModeling)
 elements_depends_on_subdirs(PhzLikelihood)
 elements_depends_on_subdirs(PhzPhotometricCorrection)
 elements_depends_on_subdirs(PhzUtils)
+elements_depends_on_subdirs(PhzLuminosity)
 
 elements_add_library(PhzConfiguration src/lib/*.cpp
-                     LINK_LIBRARIES  XYDataset PhzDataModel PhzOutput PhzPhotometricCorrection PhzLikelihood PhzModeling PhzUtils
-                     INCLUDE_DIRS XYDataset PhzDataModel PhzUtils
+                     LINK_LIBRARIES  XYDataset PhzDataModel PhzOutput PhzPhotometricCorrection PhzLikelihood PhzModeling PhzUtils PhzLuminosity
+                     INCLUDE_DIRS XYDataset PhzDataModel PhzUtils PhzLuminosity
                      PUBLIC_HEADERS PhzConfiguration)
+
+
+
 
 elements_add_unit_test(FilterConfiguration_test tests/src/FilterConfiguration_test.cpp
                        LINK_LIBRARIES XYDataset PhzConfiguration TYPE Boost)
@@ -46,13 +50,12 @@ elements_add_unit_test(SpectroscopicRedshiftCatalogConfiguration_test tests/src/
 
 elements_add_unit_test(ComputePhotometricCorrectionsConfiguration_test tests/src/ComputePhotometricCorrectionsConfiguration_test.cpp
                        LINK_LIBRARIES PhzDataModel PhzConfiguration TYPE Boost)
-                       
+
 elements_add_unit_test(PhotometricCorrectionConfiguration_test tests/src/PhotometricCorrectionConfiguration_test.cpp
                        LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration TYPE Boost)
-                       
+
 elements_add_unit_test(PhosphorosPathConfiguration_test tests/src/PhosphorosPathConfiguration_test.cpp
                        LINK_LIBRARIES PhzConfiguration TYPE Boost)
-                       
+
 elements_add_unit_test(CatalogTypeConfiguration_test tests/src/CatalogTypeConfiguration_test.cpp
                        LINK_LIBRARIES PhzConfiguration TYPE Boost)
-                       

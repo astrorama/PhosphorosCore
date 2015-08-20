@@ -12,38 +12,23 @@ namespace Euclid {
 namespace PhzLuminosity {
 
 
-SchechterLuminosityFunction::SchechterLuminosityFunction(double phi_star, double mag_star ,double alpha):
-  m_phi_star{phi_star},m_mag_star{mag_star},m_alpha{alpha}{}
+SchechterLuminosityFunction::SchechterLuminosityFunction(double phi_star, double mag_L_star ,double alpha,bool inMag):
+  m_phi_star{phi_star},m_mag_L_star{mag_L_star},m_alpha{alpha},m_in_mag{inMag}{}
 
-bool SchechterLuminosityFunction::doesApply(const GridCoordinate& gridCoordinate){
-  return m_domain.doesApply(gridCoordinate);
-}
 
-double SchechterLuminosityFunction::operator()(const GridCoordinate &, double luminosity){
-  double ms_m =0.4*( m_mag_star-luminosity);
-  return 0.4*std::log(10.)*m_phi_star*std::pow(10.,ms_m*(m_alpha+1))*std::exp(-std::pow(10.,ms_m));
-}
 
-void SchechterLuminosityFunction::setValidityRange(const std::vector<XYDataset::QualifiedName> & seds, double z_min, double z_max){
-   m_domain = LuminosityFunctionValidityDomain{seds,z_min,z_max};
-}
-
-std::vector<LuminosityFunctionInfo> SchechterLuminosityFunction::getInfos() const{
-  std::vector<LuminosityFunctionInfo> infos{};
-  LuminosityFunctionInfo info;
-  for (auto sed_dataset_name :m_domain.getSeds()){
-    info.SEDs.push_back(sed_dataset_name.qualifiedName());
+double SchechterLuminosityFunction::operator()(const double luminosity) const{
+  if (m_in_mag){
+    double ms_m =0.4*( m_mag_L_star-luminosity);
+    return 0.4*std::log(10.)*m_phi_star*std::pow(10.,ms_m*(m_alpha+1))*std::exp(-std::pow(10.,ms_m));
+  } else {
+    double l_l_star = luminosity/m_mag_L_star;
+    return (m_phi_star/m_mag_L_star)*std::pow(l_l_star,m_alpha)*std::exp(-l_l_star);
   }
-  info.z_min = m_domain.getMinZ();
-  info.z_max = m_domain.getMaxZ();
+}
 
-  info.phi_star=m_phi_star;
-  info.mag_star=m_mag_star;
-  info.alpha=m_alpha;
-
-  infos.push_back(info);
-  return infos;
-
+std::unique_ptr<MathUtils::Function> SchechterLuminosityFunction::clone() const{
+  return std::unique_ptr<MathUtils::Function>{new SchechterLuminosityFunction(this->m_phi_star,this->m_mag_L_star,this->m_alpha,this->m_in_mag)};
 }
 
 }

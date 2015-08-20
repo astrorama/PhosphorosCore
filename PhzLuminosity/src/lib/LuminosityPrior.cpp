@@ -6,10 +6,8 @@
  */
 
 
-#include <cmath>
-#include "PhzLuminosity/LuminosityPrior.h"
-
 //#include "ElementsKernel/Logging.h"
+#include "PhzLuminosity/LuminosityPrior.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
@@ -17,37 +15,32 @@ namespace PhzLuminosity {
 //static Elements::Logging logger = Elements::Logging::getLogger("LuminosityPrior");
 
 LuminosityPrior::LuminosityPrior(
-    XYDataset::QualifiedName luminosity_filter,
-    std::vector<LuminosityFunctionInfo> infos,
-    std::string basePath )
-: m_luminosity_computation{luminosity_filter}, m_luminosity_function{infos,basePath}{
-
+    PhzDataModel::PhotometryGrid luminosityModelGrid,
+    std::unique_ptr<LuminosityCalculator> luminosityCalculator,
+    SedGroupManager sedGroupManager,
+    LuminosityFunctionSet luminosityFunctionSet ): m_luminosity_model_grid{std::move(luminosityModelGrid)},
+m_luminosity_calculator{std::move(luminosityCalculator)},
+m_sed_group_manager(sedGroupManager),
+m_luminosity_function_set{std::move(luminosityFunctionSet)}{
 
 }
 
-
-void LuminosityPrior::operator()(
-    PhzDataModel::LikelihoodGrid& likelihoodGrid,
-    const SourceCatalog::Photometry& sourcePhotometry,
-    const PhzDataModel::PhotometryGrid& modelGrid,
-    const PhzDataModel::ScaleFactordGrid& scaleFactorGrid){
-
-
+void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
+      const SourceCatalog::Photometry& ,
+      const PhzDataModel::PhotometryGrid& ,
+      const PhzDataModel::ScaleFactordGrid& scaleFactorGrid){
 
 
   auto likelihood_iter = likelihoodGrid.begin();
   auto scal_iter = scaleFactorGrid.begin();
   while (likelihood_iter!=likelihoodGrid.end()){
-    GridCoordinate coordinate{
-          likelihood_iter.axisValue<PhzDataModel::ModelParameter::Z>(),
-          likelihood_iter.axisValue<PhzDataModel::ModelParameter::EBV>(),
-          likelihood_iter.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>(),
-          likelihood_iter.axisValue<PhzDataModel::ModelParameter::SED>()
-    };
+    double z = likelihood_iter.axisValue<PhzDataModel::ModelParameter::Z>();
+    auto SED = likelihood_iter.axisValue<PhzDataModel::ModelParameter::SED>();
 
-    double magnitude = m_luminosity_computation(coordinate,*scal_iter,sourcePhotometry,modelGrid);
+    std::string sed_group = m_sed_group_manager.getGroupName(SED);
+    double luminosity = (*m_luminosity_calculator)(scal_iter, m_luminosity_model_grid);
 
-    double prior = m_luminosity_function(coordinate,magnitude);
+    double prior = m_luminosity_function_set(sed_group,z,luminosity);
     *likelihood_iter *= prior;
 
 

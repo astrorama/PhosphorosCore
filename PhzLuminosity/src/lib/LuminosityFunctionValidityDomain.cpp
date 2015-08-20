@@ -11,28 +11,43 @@
 namespace Euclid {
 namespace PhzLuminosity {
 
-bool LuminosityFunctionValidityDomain::doesApply(const GridCoordinate& gridCoordinate){
-  if(m_z_min >= 0 && gridCoordinate.z < m_z_min){
+LuminosityFunctionValidityDomain::LuminosityFunctionValidityDomain(const std::string& sedGroupName, double z_min, double z_max)
+   :m_sed_group_name{sedGroupName},m_z_min{z_min}, m_z_max{z_max}{ }
+
+
+
+bool LuminosityFunctionValidityDomain::operator< (const LuminosityFunctionValidityDomain& other) const{
+  if (this->m_sed_group_name<other.m_sed_group_name){
+    return true;
+  }
+
+  if (this->m_z_max<other.m_z_max){
+      return true;
+  }
+
+  return false;
+}
+
+
+bool LuminosityFunctionValidityDomain::doesApply(const std::string& sedGroupName, double z) const{
+  if (sedGroupName != m_sed_group_name){
+      return false;
+  }
+
+  if(z < m_z_min){
     return false;
   }
 
-  if(m_z_max >= 0 && gridCoordinate.z > m_z_max){
-    return false;
-  }
-
-  if (m_seds.size()>0 &&  std::find(m_seds.begin(), m_seds.end(), gridCoordinate.sed) == m_seds.end()){
+  if(z > m_z_max){
     return false;
   }
 
   return true;
 }
 
-LuminosityFunctionValidityDomain::LuminosityFunctionValidityDomain(const std::vector<XYDataset::QualifiedName> & seds, double z_min, double z_max)
-   :m_seds{seds},m_z_min{z_min}, m_z_max{z_max}{ }
 
-
-std::vector<XYDataset::QualifiedName> LuminosityFunctionValidityDomain::getSeds() const{
-  return m_seds;
+std::string LuminosityFunctionValidityDomain::getSedGroupName() const{
+  return m_sed_group_name;
 }
 
 double LuminosityFunctionValidityDomain::getMaxZ() const{
