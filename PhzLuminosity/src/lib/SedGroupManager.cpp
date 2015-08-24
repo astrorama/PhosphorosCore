@@ -14,6 +14,8 @@ namespace PhzLuminosity {
 SedGroupManager::SedGroupManager(std::vector<SedGroup> sedGroups)
   :m_sed_groups{std::move(sedGroups)}{}
 
+
+
 std::string SedGroupManager::getGroupName(XYDataset::QualifiedName sed) const{
   for (auto group: m_sed_groups){
     if (group.isInGroup(sed)){

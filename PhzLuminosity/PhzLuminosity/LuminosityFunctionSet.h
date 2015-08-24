@@ -49,7 +49,7 @@ public:
     * @return The density of galaxy for the parameter space coordinate and the
     * provided luminosity by delegating the computation to one of the sub-functions.
     */
-  double operator()(const std::string& sedGRoup,double z, double luminosity) ;
+  double operator()(const std::string& sedGRoup,double z, double luminosity) const ;
 
 
 

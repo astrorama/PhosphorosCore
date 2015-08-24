@@ -59,3 +59,13 @@ elements_add_unit_test(PhosphorosPathConfiguration_test tests/src/PhosphorosPath
 
 elements_add_unit_test(CatalogTypeConfiguration_test tests/src/CatalogTypeConfiguration_test.cpp
                        LINK_LIBRARIES PhzConfiguration TYPE Boost)
+
+
+elements_add_unit_test(LuminosityTypeConfiguration_test tests/src/LuminosityTypeConfiguration_test.cpp
+                       LINK_LIBRARIES PhzConfiguration PhzLuminosity TYPE Boost)
+
+elements_add_unit_test(LuminositySedGroupConfiguration_test tests/src/LuminositySedGroupConfiguration_test.cpp
+                       LINK_LIBRARIES PhzConfiguration PhzLuminosity TYPE Boost)
+
+elements_add_unit_test(LuminosityFunctionConfiguration_test tests/src/LuminosityFunctionConfiguration_test.cpp
+                       LINK_LIBRARIES PhzConfiguration PhzLuminosity TYPE Boost)

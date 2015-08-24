@@ -45,12 +45,12 @@ po::options_description LuminosityPriorConfiguration::getProgramOptions() {
 PhzLuminosity::LuminosityPrior LuminosityPriorConfiguration::getLuminosityPrior(){
 
   // get the luminosity calculator
-  std::unique_ptr<PhzLuminosity::LuminosityCalculator> luminosityCalculator=nullptr;
+  std::shared_ptr<PhzLuminosity::LuminosityCalculator> luminosityCalculator=nullptr;
   bool inMag = luminosityInMagnitude();
   if (luminosityReddened()){
-    luminosityCalculator= std::unique_ptr<PhzLuminosity::LuminosityCalculator>{new PhzLuminosity::ReddenedLuminosityCalculator{getLuminosityFilter(),inMag}};
+    luminosityCalculator= std::shared_ptr<PhzLuminosity::LuminosityCalculator>{new PhzLuminosity::ReddenedLuminosityCalculator{getLuminosityFilter(),inMag}};
   } else {
-    luminosityCalculator= std::unique_ptr<PhzLuminosity::LuminosityCalculator>{new PhzLuminosity::UnreddenedLuminosityCalculator{getLuminosityFilter(),inMag}};
+    luminosityCalculator= std::shared_ptr<PhzLuminosity::LuminosityCalculator>{new PhzLuminosity::UnreddenedLuminosityCalculator{getLuminosityFilter(),inMag}};
   }
 
   // get the grid
@@ -77,7 +77,11 @@ PhzLuminosity::LuminosityPrior LuminosityPriorConfiguration::getLuminosityPrior(
   boost::archive::binary_iarchive bia {in};
   bia >> info;
   // Read grids from the file
-   return PhzLuminosity::LuminosityPrior{std::move(PhzDataModel::phzGridBinaryImport<PhzDataModel::PhotometryCellManager>(in)),
+
+  //todo
+  auto grid = PhzDataModel::phzGridBinaryImport<PhzDataModel::PhotometryCellManager>(in);
+  std::shared_ptr<PhzDataModel::PhotometryGrid> ptr_grid{new PhzDataModel::PhotometryGrid{std::move(grid)}};
+   return PhzLuminosity::LuminosityPrior{ptr_grid,
                                            std::move(luminosityCalculator),
                                            std::move(getLuminositySedGroupManager()),
                                            std::move(getLuminosityFunction())};

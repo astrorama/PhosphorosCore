@@ -46,7 +46,7 @@ LuminosityFunctionSet&  LuminosityFunctionSet::operator= ( const LuminosityFunct
     * @return The density of galaxy for the parameter space coordinate and the
     * provided luminosity by delegating the computation to one of the sub-functions.
     */
-double LuminosityFunctionSet::operator()(const std::string& sedGroup,double z, double luminosity) {
+double LuminosityFunctionSet::operator()(const std::string& sedGroup,double z, double luminosity) const {
   for(auto& region :m_luminosity_functions){
     if (region.first.doesApply(sedGroup,z)){
       return (*region.second.get())(luminosity);

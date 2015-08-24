@@ -32,6 +32,10 @@ public:
    */
   SedGroup(const std::string& groupName, std::vector<XYDataset::QualifiedName> seds);
 
+  SedGroup(const SedGroup&) = default;
+
+  SedGroup& operator=(const SedGroup& ) = default;
+
   virtual ~SedGroup() = default;
 
   /**

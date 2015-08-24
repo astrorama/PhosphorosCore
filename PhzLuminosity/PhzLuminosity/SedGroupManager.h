@@ -29,6 +29,10 @@ public:
    */
   SedGroupManager(std::vector<SedGroup> sedGroups);
 
+  SedGroupManager(const SedGroupManager & other)=default;
+
+  SedGroupManager&  operator= ( const SedGroupManager & other)=default;
+
   virtual ~SedGroupManager() = default;
 
   /**

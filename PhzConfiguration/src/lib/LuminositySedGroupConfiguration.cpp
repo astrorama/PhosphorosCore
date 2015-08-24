@@ -18,12 +18,12 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string LUMINOSITY_SED_GROUP {"luminosity-sed-group-"};
+static const std::string LUMINOSITY_SED_GROUP {"luminosity-sed-group"};
 
 po::options_description LuminositySedGroupConfiguration::getProgramOptions() {
   po::options_description options {"SED group for the Luminosity Function options"};
   options.add_options()
-  ((LUMINOSITY_SED_GROUP + std::string("<Group Name>")).c_str(), po::value<std::string>(),
+  ((LUMINOSITY_SED_GROUP + std::string("-<Group Name>")).c_str(), po::value<std::string>(),
       (std::string("A SED group with the SEDs it contains (use as:")
       +LUMINOSITY_SED_GROUP
       +std::string("myGroup = folder/SED1,folder/SED2,folder2/SED3 )")).c_str());
@@ -34,8 +34,7 @@ po::options_description LuminositySedGroupConfiguration::getProgramOptions() {
 PhzLuminosity::SedGroupManager LuminositySedGroupConfiguration::getLuminositySedGroupManager() {
   std::vector<PhzLuminosity::SedGroup> sedGroups { };
 
-  auto group_name_list = findWildcardOptions( { LUMINOSITY_SED_GROUP },
-      m_options);
+  auto group_name_list = findWildcardOptions( { LUMINOSITY_SED_GROUP }, m_options);
 
   if (group_name_list.size() == 0) {
     throw Elements::Exception()
@@ -43,7 +42,7 @@ PhzLuminosity::SedGroupManager LuminositySedGroupConfiguration::getLuminositySed
   }
 
   for (auto& group_name : group_name_list) {
-    std::string sed_list = m_options[LUMINOSITY_SED_GROUP + group_name].as<std::string>();
+    std::string sed_list = m_options[LUMINOSITY_SED_GROUP  +"-"+  group_name].as<std::string>();
 
     std::vector<std::string> sed_names;
 

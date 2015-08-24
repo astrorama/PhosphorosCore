@@ -15,8 +15,8 @@ namespace PhzLuminosity {
 //static Elements::Logging logger = Elements::Logging::getLogger("LuminosityPrior");
 
 LuminosityPrior::LuminosityPrior(
-    PhzDataModel::PhotometryGrid luminosityModelGrid,
-    std::unique_ptr<LuminosityCalculator> luminosityCalculator,
+    std::shared_ptr<PhzDataModel::PhotometryGrid> luminosityModelGrid,
+    std::shared_ptr<LuminosityCalculator> luminosityCalculator,
     SedGroupManager sedGroupManager,
     LuminosityFunctionSet luminosityFunctionSet ): m_luminosity_model_grid{std::move(luminosityModelGrid)},
 m_luminosity_calculator{std::move(luminosityCalculator)},
@@ -28,7 +28,7 @@ m_luminosity_function_set{std::move(luminosityFunctionSet)}{
 void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
       const SourceCatalog::Photometry& ,
       const PhzDataModel::PhotometryGrid& ,
-      const PhzDataModel::ScaleFactordGrid& scaleFactorGrid){
+      const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const{
 
 
   auto likelihood_iter = likelihoodGrid.begin();
@@ -38,7 +38,7 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
     auto SED = likelihood_iter.axisValue<PhzDataModel::ModelParameter::SED>();
 
     std::string sed_group = m_sed_group_manager.getGroupName(SED);
-    double luminosity = (*m_luminosity_calculator)(scal_iter, m_luminosity_model_grid);
+    double luminosity = (*m_luminosity_calculator)(scal_iter, *(m_luminosity_model_grid.get()));
 
     double prior = m_luminosity_function_set(sed_group,z,luminosity);
     *likelihood_iter *= prior;

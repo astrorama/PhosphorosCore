@@ -72,7 +72,7 @@ ComputeRedshiftsConfiguration::ComputeRedshiftsConfiguration(const std::map<std:
           : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options),
             CatalogConfiguration(options), PhotometryCatalogConfiguration(options),
             PhotometricCorrectionConfiguration(options), PhotometryGridConfiguration(options),
-            PriorConfiguration() {
+            PriorConfiguration(options) {
   m_options = options;
 
   auto output_dir = getOutputPathFromOptions(options, getResultsDir(), getCatalogType());
