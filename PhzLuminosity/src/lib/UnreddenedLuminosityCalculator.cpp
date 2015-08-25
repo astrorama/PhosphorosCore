@@ -22,6 +22,8 @@ namespace PhzLuminosity {
     auto model_iter = modelPhotometryGrid.begin();
     model_iter.template fixAxisByIndex<PhzDataModel::ModelParameter::Z>(0);
     model_iter.template fixAxisByIndex<PhzDataModel::ModelParameter::EBV>(0);
+    model_iter.template fixAxisByValue<PhzDataModel::ModelParameter::REDDENING_CURVE>(
+        scaleFactor.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>());
     model_iter.template fixAxisByValue<PhzDataModel::ModelParameter::SED>(
         scaleFactor.axisValue<PhzDataModel::ModelParameter::SED>());
 

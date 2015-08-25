@@ -53,10 +53,10 @@ bool LuminosityTypeConfiguration::luminosityReddened(){
 
    std::string type = m_options[LUMINOSITY_WITH_REDDENING].as<std::string>();
 
-   if (type == "TRUE") {
+   if (type == "YES") {
      return true;
    }
-   if (type == "FALSE") {
+   if (type == "NO") {
      return false;
    }
    throw Elements::Exception() << "Unknown " << LUMINOSITY_WITH_REDDENING

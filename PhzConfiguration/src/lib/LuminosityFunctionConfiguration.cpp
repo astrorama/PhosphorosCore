@@ -38,21 +38,21 @@ static const std::string LUMINOSITY_FUNCTION_SCHECHTER_PHI {"luminosity-function
 po::options_description LuminosityFunctionConfiguration::getProgramOptions() {
   po::options_description options {"Luminosity Function options, to be postfixed with the function id."};
   options.add_options()
-  ((LUMINOSITY_FUNCTION_SED_GROUP+"-<Id>").c_str(), po::value<std::string>(),
+  ((LUMINOSITY_FUNCTION_SED_GROUP+"-*").c_str(), po::value<std::string>(),
       "The SED group the function is valid for (Mandatory for each Luminosity Function)")
-  ((LUMINOSITY_FUNCTION_MIN_Z+"-<Id>").c_str(), po::value<std::string>(),
+  ((LUMINOSITY_FUNCTION_MIN_Z+"-*").c_str(), po::value<double>(),
       "The lower bound of the redshift range the function is valid for (Mandatory for each Luminosity Function)")
-  ((LUMINOSITY_FUNCTION_MAX_Z+"-<Id>").c_str(), po::value<std::string>(),
+  ((LUMINOSITY_FUNCTION_MAX_Z+"-*").c_str(), po::value<double>(),
       "The upper bound of the redshift range the function is valid for (Mandatory for each Luminosity Function)")
-  ((LUMINOSITY_FUNCTION_CURVE_NAME+"-<Id>").c_str(), po::value<std::string>(),
+  ((LUMINOSITY_FUNCTION_CURVE_NAME+"-*").c_str(), po::value<std::string>(),
       "The sampling of the Curve defining the function (If omitted Schechter options are mandatories)")
-  ((LUMINOSITY_FUNCTION_SCHECHTER_ALPHA+"-<Id>").c_str(), po::value<std::string>(),
+  ((LUMINOSITY_FUNCTION_SCHECHTER_ALPHA+"-*").c_str(), po::value<double>(),
       "The steepness of the Schechter luminosity function (Mandatory if the function-curve is skipped)")
-  ((LUMINOSITY_FUNCTION_SCHECHTER_M+"-<Id>").c_str(), po::value<std::string>(),
+  ((LUMINOSITY_FUNCTION_SCHECHTER_M+"-*").c_str(), po::value<double>(),
       "The magnitude normalization point of the Schechter luminosity function (Mandatory if the function-curve is skipped and the Luminosity is measured in magnitude)")
-  ((LUMINOSITY_FUNCTION_SCHECHTER_L+"-<Id>").c_str(), po::value<std::string>(),
+  ((LUMINOSITY_FUNCTION_SCHECHTER_L+"-*").c_str(), po::value<double>(),
       "The flux normalization point of the Schechter luminosity function (Mandatory if the function-curve is skipped and the Luminosity is measured in flux)")
-  ((LUMINOSITY_FUNCTION_SCHECHTER_PHI+"-<Id>").c_str(), po::value<std::string>(),
+  ((LUMINOSITY_FUNCTION_SCHECHTER_PHI+"-*").c_str(), po::value<double>(),
       "The normalization value of the Schechter luminosity function (Mandatory if the function-curve is skipped)");
 
   return merge(LuminosityTypeConfiguration::getProgramOptions())

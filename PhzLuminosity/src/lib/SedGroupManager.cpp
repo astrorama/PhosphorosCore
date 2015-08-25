@@ -6,11 +6,16 @@
  */
 
 
+#include "ElementsKernel/Logging.h"
 #include "ElementsKernel/Exception.h"
 #include "PhzLuminosity/SedGroupManager.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
+
+
+static Elements::Logging logger = Elements::Logging::getLogger("SedGroupManager");
+
 SedGroupManager::SedGroupManager(std::vector<SedGroup> sedGroups)
   :m_sed_groups{std::move(sedGroups)}{}
 
@@ -22,6 +27,9 @@ std::string SedGroupManager::getGroupName(XYDataset::QualifiedName sed) const{
       return group.getName();
     }
   }
+
+  logger.error() << "The SED '"<< sed.qualifiedName()<<"' is not part of any of the SED groups. "
+      "Please check your configuration."<<"\n";
 
   throw Elements::Exception() << "The SED '"<< sed.qualifiedName()<<"' is not part of any of the SED groups. "
       "Please check your configuration.";

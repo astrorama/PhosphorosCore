@@ -49,7 +49,8 @@ po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
   return merge(options)
               (PhotometricCorrectionConfiguration::getProgramOptions())
               (PhotometryCatalogConfiguration::getProgramOptions())
-              (PhotometryGridConfiguration::getProgramOptions());
+              (PhotometryGridConfiguration::getProgramOptions())
+              (PriorConfiguration::getProgramOptions());
 }
 
 static fs::path getOutputPathFromOptions(const std::map<std::string, po::variable_value>& options,

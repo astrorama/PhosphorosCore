@@ -1,4 +1,4 @@
-/** 
+/**
  * @file PriorConfiguration.cpp
  * @date March 23, 2015
  * @author Nikolaos Apostolakos
@@ -35,21 +35,6 @@ std::vector<PhzLikelihood::CatalogHandler::PriorFunction> PriorConfiguration::ge
   if (!parsed){
     if(m_options.count(LUMINOSITY_PRIOR)==1 && m_options[LUMINOSITY_PRIOR].as<std::string>().compare("YES")==0){
       LuminosityPriorConfiguration lum_prior_conf{m_options};
-
-
-
-//      std::function<void(PhzDataModel::LikelihoodGrid&,
-//          const SourceCatalog::Photometry&,
-//          const PhzDataModel::PhotometryGrid&,
-//          const PhzDataModel::ScaleFactordGrid&)> prior_function(lum_prior);
-
-//      std::function<void(PhzDataModel::LikelihoodGrid&,
-//               const SourceCatalog::Photometry&,
-//               const PhzDataModel::PhotometryGrid&,
-//               const PhzDataModel::ScaleFactordGrid&)> prior_function =std::move( std::bind(std::move(lum_prior),std::placeholders::_1,std::placeholders::_2,std::placeholders::_3,std::placeholders::_4));
-//
-//      addPrior(std::move(prior_function));
-
       addPrior(lum_prior_conf.getLuminosityPrior());
     }
 

@@ -18,8 +18,8 @@ LuminosityPrior::LuminosityPrior(
     std::shared_ptr<PhzDataModel::PhotometryGrid> luminosityModelGrid,
     std::shared_ptr<LuminosityCalculator> luminosityCalculator,
     SedGroupManager sedGroupManager,
-    LuminosityFunctionSet luminosityFunctionSet ): m_luminosity_model_grid{std::move(luminosityModelGrid)},
-m_luminosity_calculator{std::move(luminosityCalculator)},
+    LuminosityFunctionSet luminosityFunctionSet ): m_luminosity_model_grid{luminosityModelGrid},
+m_luminosity_calculator{luminosityCalculator},
 m_sed_group_manager(sedGroupManager),
 m_luminosity_function_set{std::move(luminosityFunctionSet)}{
 
@@ -43,15 +43,10 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
     double prior = m_luminosity_function_set(sed_group,z,luminosity);
     *likelihood_iter *= prior;
 
-
-    //logger.info() << "SED  :" << coordinate.sed.qualifiedName() << " z :"<< coordinate.z <<" magnitude:"<<magnitude <<"\n";
-
     ++likelihood_iter;
     ++scal_iter;
   }
-
 }
-
 
 }
 }

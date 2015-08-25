@@ -23,10 +23,8 @@ static const std::string LUMINOSITY_SED_GROUP {"luminosity-sed-group"};
 po::options_description LuminositySedGroupConfiguration::getProgramOptions() {
   po::options_description options {"SED group for the Luminosity Function options"};
   options.add_options()
-  ((LUMINOSITY_SED_GROUP + std::string("-<Group Name>")).c_str(), po::value<std::string>(),
-      (std::string("A SED group with the SEDs it contains (use as:")
-      +LUMINOSITY_SED_GROUP
-      +std::string("myGroup = folder/SED1,folder/SED2,folder2/SED3 )")).c_str());
+      ((LUMINOSITY_SED_GROUP+"-*").c_str(),po::value<std::string>(),
+          "A SED Group defined by its name and the (comma separated) list of SED it contains.");
   return options;
 }
 

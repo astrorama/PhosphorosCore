@@ -23,6 +23,8 @@ ReddenedLuminosityCalculator::ReddenedLuminosityCalculator(
     double z =  scaleFactor.axisValue<PhzDataModel::ModelParameter::Z>();
     auto model_iter = modelPhotometryGrid.begin();
     model_iter.template fixAxisByIndex<PhzDataModel::ModelParameter::Z>(0);
+    model_iter.template fixAxisByValue<PhzDataModel::ModelParameter::REDDENING_CURVE>(
+        scaleFactor.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>());
     model_iter.template fixAxisByValue<PhzDataModel::ModelParameter::EBV>(
         scaleFactor.axisValue<PhzDataModel::ModelParameter::EBV>());
     model_iter.template fixAxisByValue<PhzDataModel::ModelParameter::SED>(

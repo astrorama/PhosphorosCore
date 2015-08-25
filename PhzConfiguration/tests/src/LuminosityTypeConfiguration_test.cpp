@@ -54,7 +54,7 @@ BOOST_FIXTURE_TEST_CASE(magnitude_test, LuminosityTypeConfiguration_fixture) {
     std::map<std::string, po::variable_value> options_map{};
 
     options_map[LUMINOSITY_FILTER].value() = boost::any(std::string{"filter-name"});
-    options_map[LUMINOSITY_WITH_REDDENING].value() = boost::any(std::string{"TRUE"});
+    options_map[LUMINOSITY_WITH_REDDENING].value() = boost::any(std::string{"YES"});
 
     // No option: default case - magnitute
     cf::LuminosityTypeConfiguration config{options_map};
@@ -87,12 +87,12 @@ BOOST_FIXTURE_TEST_CASE(reddened_test, LuminosityTypeConfiguration_fixture) {
     BOOST_CHECK(config.luminosityReddened());
 
     // Reddened option
-    options_map[LUMINOSITY_WITH_REDDENING].value() = boost::any(std::string{"TRUE"});
+    options_map[LUMINOSITY_WITH_REDDENING].value() = boost::any(std::string{"YES"});
     cf::LuminosityTypeConfiguration config2{options_map};
     BOOST_CHECK(config2.luminosityReddened());
 
     // un-reddened option
-    options_map[LUMINOSITY_WITH_REDDENING].value() = boost::any(std::string{"FALSE"});
+    options_map[LUMINOSITY_WITH_REDDENING].value() = boost::any(std::string{"NO"});
     cf::LuminosityTypeConfiguration config3{options_map};
     BOOST_CHECK(!config3.luminosityReddened());
 
@@ -107,7 +107,7 @@ BOOST_FIXTURE_TEST_CASE(filter_test, LuminosityTypeConfiguration_fixture) {
      std::map<std::string, po::variable_value> options_map{};
 
      options_map[LUMINOSITY_UNIT_TYPE].value() = boost::any(std::string{"MAGNITUDE"});
-     options_map[LUMINOSITY_WITH_REDDENING].value() = boost::any(std::string{"TRUE"});
+     options_map[LUMINOSITY_WITH_REDDENING].value() = boost::any(std::string{"YES"});
 
      // No option: error
      cf::LuminosityTypeConfiguration config{options_map};
