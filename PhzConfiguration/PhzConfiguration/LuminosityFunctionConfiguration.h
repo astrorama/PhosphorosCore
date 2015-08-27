@@ -26,7 +26,7 @@ public:
   static boost::program_options::options_description getProgramOptions();
 
   LuminosityFunctionConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
-                     : LuminosityTypeConfiguration{options}, PhosphorosPathConfiguration{options}, m_options{options}{};
+                     : LuminosityTypeConfiguration(options), PhosphorosPathConfiguration(options), m_options{options}{};
 
    virtual ~LuminosityFunctionConfiguration()=default;
 

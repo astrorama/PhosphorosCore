@@ -73,8 +73,8 @@ PhzDataModel::PhotometryGrid LuminosityPriorConfiguration::getLuminosityModelGri
 }
 
 LuminosityPriorConfiguration::LuminosityPriorConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
-                     : LuminosityTypeConfiguration{options},PhosphorosPathConfiguration{options}, LuminosityFunctionConfiguration{options}, LuminositySedGroupConfiguration{options},
-                       CatalogTypeConfiguration{options}, m_options{options} {
+                     : LuminosityTypeConfiguration(options),PhosphorosPathConfiguration(options), LuminosityFunctionConfiguration(options), LuminositySedGroupConfiguration(options),
+                       CatalogTypeConfiguration(options), m_options{options} {
   if(m_options.count(LUMINOSITY_PRIOR)==1 && m_options[LUMINOSITY_PRIOR].as<std::string>().compare("YES")==0){
     // get the luminosity calculator
      std::shared_ptr<PhzLuminosity::LuminosityCalculator> luminosityCalculator=nullptr;
