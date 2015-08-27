@@ -44,6 +44,8 @@ public:
    */
   std::string getGroupName(XYDataset::QualifiedName sed) const;
 
+  std::vector<std::string> getGroupsName() const;
+
   /**
    * @brief Return the list of SED name belonging to a given Group.
    * Throw an Exception if no group with the provided name is found.
@@ -52,6 +54,8 @@ public:
    * The name of the group one want the SED list.
    */
   std::vector<std::string> getGroupSeds(std::string groupName) const;
+
+  double getSedWeight(XYDataset::QualifiedName sed) const;
 
 private:
   std::vector<SedGroup> m_sed_groups;

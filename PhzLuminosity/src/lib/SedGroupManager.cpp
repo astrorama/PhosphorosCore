@@ -36,9 +36,31 @@ std::string SedGroupManager::getGroupName(XYDataset::QualifiedName sed) const{
 
 }
 
+double SedGroupManager::getSedWeight(XYDataset::QualifiedName sed) const{
+  for (auto group: m_sed_groups){
+      if (group.isInGroup(sed)){
+        return 1./group.getSedsNumber();
+      }
+    }
+
+    logger.error() << "The SED '"<< sed.qualifiedName()<<"' is not part of any of the SED groups. "
+        "Please check your configuration."<<"\n";
+
+    throw Elements::Exception() << "The SED '"<< sed.qualifiedName()<<"' is not part of any of the SED groups. "
+        "Please check your configuration.";
+}
+
+std::vector<std::string> SedGroupManager::getGroupsName() const{
+  std::vector<std::string> list{};
+  for (auto& group: m_sed_groups){
+    list.push_back(group.getName());
+   }
+  return list;
+}
+
 
 std::vector<std::string> SedGroupManager::getGroupSeds(std::string groupName) const{
-  for (auto group: m_sed_groups){
+  for (auto& group: m_sed_groups){
     if (group.getName()==groupName){
       return group.getSedNameList();
     }

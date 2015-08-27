@@ -1,4 +1,4 @@
-/** 
+/**
  * @file BayesianMarginalizationFunctor.h
  * @date March 24, 2015
  * @author Nikolaos Apostolakos
@@ -9,16 +9,23 @@
 
 #include "PhzDataModel/Pdf1D.h"
 #include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzLikelihood/SedAxisCorrection.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
 
 class BayesianMarginalizationFunctor {
-  
+
 public:
-  
+
+  BayesianMarginalizationFunctor(){};
+
+  BayesianMarginalizationFunctor(std::shared_ptr<SedAxisCorrection> sed_correction_ptr);
+
   PhzDataModel::Pdf1D operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const;
-  
+private:
+  std::shared_ptr<SedAxisCorrection> m_sed_correction_ptr=nullptr;
+
 };
 
 } // end of namespace PhzLikelihood

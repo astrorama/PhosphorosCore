@@ -15,6 +15,7 @@
 #include "PhzConfiguration/LuminosityFunctionConfiguration.h"
 #include "PhzConfiguration/LuminositySedGroupConfiguration.h"
 #include "PhzConfiguration/CatalogTypeConfiguration.h"
+#include "PhzConfiguration/PriorConfiguration.h"
 namespace Euclid {
 namespace PhzConfiguration {
 
@@ -22,21 +23,20 @@ class LuminosityPriorConfiguration: public virtual LuminosityTypeConfiguration,
                                     public virtual PhosphorosPathConfiguration,
                                     public virtual LuminosityFunctionConfiguration,
                                     public virtual LuminositySedGroupConfiguration,
-                                    public virtual CatalogTypeConfiguration{
+                                    public virtual CatalogTypeConfiguration,
+                                    public virtual PriorConfiguration{
 
 public:
 
   static boost::program_options::options_description getProgramOptions();
 
-  LuminosityPriorConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
-                     : LuminosityTypeConfiguration{options},PhosphorosPathConfiguration{options}, LuminosityFunctionConfiguration{options}, LuminositySedGroupConfiguration{options},
-                       CatalogTypeConfiguration{options}, m_options{options} {};
+  LuminosityPriorConfiguration(const std::map<std::string, boost::program_options::variable_value>& options);
 
    virtual ~LuminosityPriorConfiguration()=default;
 
+   bool DoApplyLuminosityPrior();
 
-
-  PhzLuminosity::LuminosityPrior getLuminosityPrior();
+   PhzDataModel::PhotometryGrid getLuminosityModelGrid();
 
 private:
 

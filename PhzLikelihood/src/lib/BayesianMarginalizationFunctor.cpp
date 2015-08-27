@@ -1,4 +1,4 @@
-/** 
+/**
  * @file BayesianMarginalizationFunctor.cpp
  * @date March 24, 2015
  * @author Nikolaos Apostolakos
@@ -11,6 +11,10 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
+
+BayesianMarginalizationFunctor::BayesianMarginalizationFunctor(std::shared_ptr<SedAxisCorrection> sed_correction_ptr)
+:m_sed_correction_ptr{move(sed_correction_ptr)}{}
+
 PhzDataModel::Pdf1D BayesianMarginalizationFunctor::operator()(
                     const PhzDataModel::LikelihoodGrid& likelihood_grid) const {
   // Make a copy of the likelihood grid, so we can modify it
@@ -20,15 +24,21 @@ PhzDataModel::Pdf1D BayesianMarginalizationFunctor::operator()(
   for (; orig_iter!=likelihood_grid.end(); ++orig_iter, ++copy_iter) {
     *copy_iter = *orig_iter;
   }
-  
+
   // Apply corrections for the numerical axes which will be marginalized
   NumericalAxisCorrection<PhzDataModel::ModelParameter::EBV> ebv_corr {};
   ebv_corr(likelihood_copy);
-  
+
+  if (m_sed_correction_ptr!=nullptr){
+    (*(m_sed_correction_ptr.get()))(likelihood_copy);
+  }
+
   // Calcualte the 1D PDF as a simple SUM
   SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z> sum_marg {};
   return sum_marg(likelihood_copy);
 }
+
+
 
 
 } // end of namespace PhzLikelihood

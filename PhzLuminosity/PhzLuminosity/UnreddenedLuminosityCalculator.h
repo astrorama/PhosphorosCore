@@ -23,7 +23,7 @@ public:
   virtual ~UnreddenedLuminosityCalculator() = default;
 
   virtual double operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scaleFactor,
-       const PhzDataModel::PhotometryGrid & modelPhotometryGrid) ;
+       std::shared_ptr<PhzDataModel::PhotometryGrid> modelPhotometryGrid) ;
 
 };
 

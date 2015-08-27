@@ -34,9 +34,7 @@ LuminosityPrior(
     SedGroupManager sedGroupManager,
     LuminosityFunctionSet luminosityFunctionSet );
 
-LuminosityPrior(const LuminosityPrior & other)=default;
-
-LuminosityPrior&  operator= ( const LuminosityPrior & other) = default;
+LuminosityPrior(const LuminosityPrior & other) = default;
 
 void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
       const SourceCatalog::Photometry& sourcePhotometry,

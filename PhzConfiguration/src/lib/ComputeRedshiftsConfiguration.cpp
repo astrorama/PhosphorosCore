@@ -15,11 +15,17 @@
 #include "PhzUtils/FileUtils.h"
 #include "CheckPhotometries.h"
 #include "PhzConfiguration/ProgramOptionsHelper.h"
+#include "CheckLuminosityParameter.h"
+#include "PhzLikelihood/SedAxisCorrection.h"
+#include "ElementsKernel/Logging.h"
 
 namespace po = boost::program_options;
 
 namespace Euclid {
 namespace PhzConfiguration {
+
+
+static Elements::Logging logger = Elements::Logging::getLogger("ComputeRedshiftsConfiguration");
 
 static const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
 static const std::string OUTPUT_CATALOG_FORMAT {"output-catalog-format"};
@@ -47,6 +53,7 @@ po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
         "The method used for collapsing the axes when producing the 1D PDF (one of SUM, MAX, BAYESIAN)");
 
   return merge(options)
+              (LuminosityPriorConfiguration::getProgramOptions())
               (PhotometricCorrectionConfiguration::getProgramOptions())
               (PhotometryCatalogConfiguration::getProgramOptions())
               (PhotometryGridConfiguration::getProgramOptions())
@@ -73,11 +80,12 @@ ComputeRedshiftsConfiguration::ComputeRedshiftsConfiguration(const std::map<std:
           : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options),
             CatalogConfiguration(options), PhotometryCatalogConfiguration(options),
             PhotometricCorrectionConfiguration(options), PhotometryGridConfiguration(options),
-            PriorConfiguration(options) {
+            LuminosityTypeConfiguration(options),LuminosityFunctionConfiguration(options),
+            LuminositySedGroupConfiguration(options),LuminosityPriorConfiguration(options) {
   m_options = options;
 
   auto output_dir = getOutputPathFromOptions(options, getResultsDir(), getCatalogType());
-
+  logger.info()<<"Starting configuration checks.";
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryOnly(output_dir.string());
 
@@ -89,6 +97,23 @@ ComputeRedshiftsConfiguration::ComputeRedshiftsConfiguration(const std::map<std:
   // Check that we have photometric corrections for all the filters
   checkHaveAllCorrections(getPhotometricCorrectionMap(),
                           getPhotometryFiltersToProcess());
+
+  // Check the luminosity parameter
+  if (DoApplyLuminosityPrior()){
+
+    CheckLuminosityParameter check_liuminosity{};
+    if (!check_liuminosity.checkSedGroupCompletness(getPhotometryGridInfo(),getLuminositySedGroupManager())){
+      logger.error()<< "Incompatibility between the SED groups and the Model Grid.";
+      throw Elements::Exception() << "Incompatibility between the SED groups and the Model Grid.";
+    }
+
+    if (!check_liuminosity.checkLuminosityModelGrid(getPhotometryGridInfo(),getLuminosityModelGrid(),luminosityReddened())){
+      logger.error()<<"Incompatibility between the Model Grid and the Luminosity Model Grid.";
+      throw Elements::Exception() << "Incompatibility between the Model Grid and the Luminosity Model Grid.";
+    }
+  }
+
+  logger.info()<<"End of configuration checks.";
 }
 
 class MultiOutputHandler : public PhzOutput::OutputHandler {
@@ -156,7 +181,7 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfiguration::getOutp
     throw Elements::Exception() << "Invalid value for option "
                                 << CREATE_OUTPUT_POSTERIORS_FLAG << " : " << post_flag;
   }
-  
+
   if (cat_flag == "NO" && pdf_flag == "NO" && post_flag == "NO") {
     throw Elements::Exception() << "At least one of the options " << CREATE_OUTPUT_CATALOG_FLAG
                                 << ", " << CREATE_OUTPUT_PDF_FLAG << ", " << CREATE_OUTPUT_POSTERIORS_FLAG
@@ -177,7 +202,14 @@ PhzLikelihood::SourcePhzFunctor::MarginalizationFunction ComputeRedshiftsConfigu
     return PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{};
   }
   if (m_options[AXES_COLLAPSE_TYPE].as<std::string>() == "BAYESIAN") {
-    return PhzLikelihood::BayesianMarginalizationFunctor{};
+    if (DoApplyLuminosityPrior()){
+      return PhzLikelihood::BayesianMarginalizationFunctor{std::shared_ptr<PhzLikelihood::SedAxisCorrection>{new PhzLikelihood::SedAxisCorrection(std::move(getLuminositySedGroupManager()))}};
+    } else {
+      return PhzLikelihood::BayesianMarginalizationFunctor{};
+    }
+
+
+
   }
   throw Elements::Exception() << "Unknown " << AXES_COLLAPSE_TYPE << " \""
                     << m_options[AXES_COLLAPSE_TYPE].as<std::string>() << "\"";

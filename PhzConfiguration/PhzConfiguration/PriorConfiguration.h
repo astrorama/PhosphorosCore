@@ -20,8 +20,6 @@ public:
 
   static boost::program_options::options_description getProgramOptions();
 
-  PriorConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
-                     : m_options{options} {};
 
   virtual ~PriorConfiguration() = default;
 
@@ -34,7 +32,6 @@ protected:
 private:
   bool parsed =false;
   std::vector<PhzLikelihood::CatalogHandler::PriorFunction> m_priors {};
-  std::map<std::string, boost::program_options::variable_value> m_options;
 
 };
 

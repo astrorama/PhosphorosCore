@@ -16,10 +16,11 @@ namespace PhzLuminosity {
 
 
  double UnreddenedLuminosityCalculator::operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scaleFactor,
-      const PhzDataModel::PhotometryGrid & modelPhotometryGrid) {
+     std::shared_ptr<PhzDataModel::PhotometryGrid> modelPhotometryGrid) {
 
     double z =  scaleFactor.axisValue<PhzDataModel::ModelParameter::Z>();
-    auto model_iter = modelPhotometryGrid.begin();
+
+    auto model_iter = modelPhotometryGrid->cbegin();
     model_iter.template fixAxisByIndex<PhzDataModel::ModelParameter::Z>(0);
     model_iter.template fixAxisByIndex<PhzDataModel::ModelParameter::EBV>(0);
     model_iter.template fixAxisByValue<PhzDataModel::ModelParameter::REDDENING_CURVE>(

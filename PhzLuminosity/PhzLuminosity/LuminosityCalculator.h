@@ -24,7 +24,7 @@ public:
   virtual ~LuminosityCalculator() = default;
 
   virtual double operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scaleFactor,
-       const PhzDataModel::PhotometryGrid & modelPhotometryGrid)=0;
+          std::shared_ptr<PhzDataModel::PhotometryGrid> modelPhotometryGrid)=0;
 
   double getLuminosityFromModel(
       const PhzDataModel::PhotometryGrid::const_iterator& model,
