@@ -18,7 +18,7 @@ namespace PhzLuminosity {
 
  double UnreddenedLuminosityCalculator::operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scaleFactor,
      const double& z,
-     const XYDataset::QualifiedName& sed) {
+     const XYDataset::QualifiedName& sed) const{
 
     auto model_iter = m_model_photometry_grid->cbegin();
     model_iter.template fixAxisByIndex<PhzDataModel::ModelParameter::Z>(0);
@@ -31,7 +31,9 @@ namespace PhzLuminosity {
 
   }
 
-
+std::unique_ptr<LuminosityCalculator> UnreddenedLuminosityCalculator::clone() const{
+   return std::unique_ptr<LuminosityCalculator>{new UnreddenedLuminosityCalculator(m_luminosity_filter,m_model_photometry_grid,m_in_mag)};
+ }
 
 }
 }

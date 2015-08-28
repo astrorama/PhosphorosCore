@@ -25,9 +25,10 @@ public:
 
   double operator() (const PhzDataModel::ScaleFactordGrid::const_iterator& scaleFactor,
       const double& z,
-      const XYDataset::QualifiedName& sed) override;
+      const XYDataset::QualifiedName& sed) const override;
 
 
+  std::unique_ptr<LuminosityCalculator> clone() const override;
 
 };
 

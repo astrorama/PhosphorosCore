@@ -21,7 +21,7 @@ ReddenedLuminosityCalculator::ReddenedLuminosityCalculator(
 
   double ReddenedLuminosityCalculator::operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scaleFactor,
       const double& z,
-      const XYDataset::QualifiedName& sed){
+      const XYDataset::QualifiedName& sed) const{
 
     auto model_iter = m_model_photometry_grid->cbegin();
     model_iter.template fixAxisByIndex<PhzDataModel::ModelParameter::Z>(0);
@@ -36,6 +36,9 @@ ReddenedLuminosityCalculator::ReddenedLuminosityCalculator(
   }
 
 
+std::unique_ptr<LuminosityCalculator> ReddenedLuminosityCalculator::clone() const{
+    return std::unique_ptr<LuminosityCalculator>{new ReddenedLuminosityCalculator(m_luminosity_filter,m_model_photometry_grid,m_in_mag)};
+  }
 
 }
 }

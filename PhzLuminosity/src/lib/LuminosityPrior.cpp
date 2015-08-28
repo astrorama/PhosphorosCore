@@ -15,7 +15,7 @@ namespace PhzLuminosity {
 //static Elements::Logging logger = Elements::Logging::getLogger("LuminosityPrior");
 
 LuminosityPrior::LuminosityPrior(
-    std::shared_ptr<LuminosityCalculator> luminosityCalculator,
+    std::unique_ptr<const LuminosityCalculator> luminosityCalculator,
     SedGroupManager sedGroupManager,
     LuminosityFunctionSet luminosityFunctionSet ):
 m_luminosity_calculator{std::move(luminosityCalculator)},
@@ -24,7 +24,12 @@ m_luminosity_function_set{std::move(luminosityFunctionSet)}{
 
 }
 
+LuminosityPrior::LuminosityPrior(const LuminosityPrior & other):
+    m_luminosity_calculator{other.m_luminosity_calculator->clone()},
+    m_sed_group_manager(other.m_sed_group_manager),
+    m_luminosity_function_set{other.m_luminosity_function_set}{
 
+}
 
 
 void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
