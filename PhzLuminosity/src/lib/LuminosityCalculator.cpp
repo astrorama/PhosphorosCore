@@ -30,7 +30,7 @@ double LuminosityCalculator::getLuminosityFromModel(
     throw Elements::Exception() << "The luminosity filter '" << m_luminosity_filter.qualifiedName() << "' is not defined for the model";
   }
 
-  double result ;
+  double result{0.};
 
   if (m_in_mag){
     result= -2.5 * std::log10(flux->flux*scaleFactor) - m_cosmology.DistanceModulus(z);

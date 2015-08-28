@@ -21,11 +21,11 @@ namespace PhzLuminosity {
      const XYDataset::QualifiedName& sed) const{
 
     auto model_iter = m_model_photometry_grid->cbegin();
-    model_iter.template fixAxisByIndex<PhzDataModel::ModelParameter::Z>(0);
-    model_iter.template fixAxisByIndex<PhzDataModel::ModelParameter::EBV>(0);
-    model_iter.template fixAxisByValue<PhzDataModel::ModelParameter::REDDENING_CURVE>(
+    model_iter.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(0);
+    model_iter.fixAxisByIndex<PhzDataModel::ModelParameter::EBV>(0);
+    model_iter.fixAxisByValue<PhzDataModel::ModelParameter::REDDENING_CURVE>(
         scaleFactor.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>());
-    model_iter.template fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
+    model_iter.fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
 
     return getLuminosityFromModel(model_iter,*scaleFactor,z);
 
