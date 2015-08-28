@@ -6,24 +6,25 @@
  */
 
 
-#include "ElementsKernel/Logging.h"
+//#include "ElementsKernel/Logging.h"
 #include "PhzLuminosity/LuminosityPrior.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
 
-static Elements::Logging logger = Elements::Logging::getLogger("LuminosityPrior");
+//static Elements::Logging logger = Elements::Logging::getLogger("LuminosityPrior");
 
 LuminosityPrior::LuminosityPrior(
-    std::shared_ptr<PhzDataModel::PhotometryGrid> luminosityModelGrid,
     std::shared_ptr<LuminosityCalculator> luminosityCalculator,
     SedGroupManager sedGroupManager,
-    LuminosityFunctionSet luminosityFunctionSet ): m_luminosity_model_grid{luminosityModelGrid},
-m_luminosity_calculator{luminosityCalculator},
+    LuminosityFunctionSet luminosityFunctionSet ):
+m_luminosity_calculator{std::move(luminosityCalculator)},
 m_sed_group_manager(std::move(sedGroupManager)),
 m_luminosity_function_set{std::move(luminosityFunctionSet)}{
 
 }
+
+
 
 
 void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
@@ -49,10 +50,7 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
       scal_iter.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(z_index);
 
       while (likelihood_iter != likelihoodGrid.end()) {
-//       if (sed_index>0){
-//         logger.info() << "anyth_ing";
-//       }
-        double luminosity = m_luminosity_calculator->operator ()(scal_iter,m_luminosity_model_grid);
+        double luminosity = m_luminosity_calculator->operator ()(scal_iter,z,SED);
 
         double prior = m_luminosity_function_set(sed_group, z, luminosity);
         *likelihood_iter *= prior;
@@ -60,13 +58,8 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
         ++likelihood_iter;
         ++scal_iter;
       }
-     // logger.info() << "anything";
     }
-    logger.info() << "here";
-    logger.info() << sed_index;
-   // exit(0);
   }
-  logger.info() << "\n\n\n\n\n\n\n\n";
 }
 
 }

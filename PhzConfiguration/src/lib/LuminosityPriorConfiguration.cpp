@@ -77,19 +77,20 @@ LuminosityPriorConfiguration::LuminosityPriorConfiguration(const std::map<std::s
                        CatalogTypeConfiguration(options), m_options{options} {
   if(m_options.count(LUMINOSITY_PRIOR)==1 && m_options[LUMINOSITY_PRIOR].as<std::string>().compare("YES")==0){
     // get the luminosity calculator
+     std::shared_ptr<PhzDataModel::PhotometryGrid> ptr_grid{new PhzDataModel::PhotometryGrid{std::move(getLuminosityModelGrid())}};
+
      std::shared_ptr<PhzLuminosity::LuminosityCalculator> luminosityCalculator=nullptr;
      bool inMag = luminosityInMagnitude();
      if (luminosityReddened()){
-       luminosityCalculator= std::shared_ptr<PhzLuminosity::LuminosityCalculator>{new PhzLuminosity::ReddenedLuminosityCalculator{getLuminosityFilter(),inMag}};
+       luminosityCalculator= std::shared_ptr<PhzLuminosity::LuminosityCalculator>{new PhzLuminosity::ReddenedLuminosityCalculator{getLuminosityFilter(),ptr_grid,inMag}};
      } else {
-       luminosityCalculator= std::shared_ptr<PhzLuminosity::LuminosityCalculator>{new PhzLuminosity::UnreddenedLuminosityCalculator{getLuminosityFilter(),inMag}};
+       luminosityCalculator= std::shared_ptr<PhzLuminosity::LuminosityCalculator>{new PhzLuminosity::UnreddenedLuminosityCalculator{getLuminosityFilter(),ptr_grid,inMag}};
      }
 
 
 
-     std::shared_ptr<PhzDataModel::PhotometryGrid> ptr_grid{new PhzDataModel::PhotometryGrid{std::move(getLuminosityModelGrid())}};
-     addPrior(PhzLuminosity::LuminosityPrior{ptr_grid,
-                                              std::move(luminosityCalculator),
+
+     addPrior(PhzLuminosity::LuminosityPrior{ std::move(luminosityCalculator),
                                               std::move(getLuminositySedGroupManager()),
                                               std::move(getLuminosityFunction())});
 

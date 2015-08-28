@@ -8,7 +8,7 @@
 #ifndef PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYCALCULATOR_H_
 #define PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYCALCULATOR_H_
 
-
+#include <memory>
 #include "XYDataset/QualifiedName.h"
 #include "PhysicsUtils/Cosmology.h"
 #include "PhzDataModel/PhotometryGrid.h"
@@ -19,12 +19,16 @@ namespace PhzLuminosity {
 
 class LuminosityCalculator{
 public:
-  LuminosityCalculator(XYDataset::QualifiedName luminosity_filter,bool inMag=true);
+  LuminosityCalculator(XYDataset::QualifiedName luminosity_filter,
+      std::shared_ptr<PhzDataModel::PhotometryGrid> modelPhotometryGrid,
+      bool inMag=true);
 
   virtual ~LuminosityCalculator() = default;
 
   virtual double operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scaleFactor,
-          std::shared_ptr<PhzDataModel::PhotometryGrid> modelPhotometryGrid)=0;
+        const double& z,
+        const XYDataset::QualifiedName& sed)=0;
+
 
   double getLuminosityFromModel(
       const PhzDataModel::PhotometryGrid::const_iterator& model,
@@ -33,8 +37,10 @@ public:
 
 protected:
   XYDataset::QualifiedName m_luminosity_filter;
-  PhysicsUtils::Cosmology m_cosmology{};
+  std::shared_ptr<PhzDataModel::PhotometryGrid> m_model_photometry_grid;
   bool m_in_mag;
+  PhysicsUtils::Cosmology m_cosmology{};
+
 };
 
 }

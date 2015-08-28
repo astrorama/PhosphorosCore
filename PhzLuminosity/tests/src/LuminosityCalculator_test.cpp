@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_SUITE (LuminosityCalculator_test)
 
 BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
 
-  PhzLuminosity::ReddenedLuminosityCalculator lum_comp_funct{luminosityFilterName,true};
+  PhzLuminosity::ReddenedLuminosityCalculator lum_comp_funct{luminosityFilterName,nullptr,true};
 
   auto model_iter = model_grid.cbegin();
   while (model_iter != model_grid.cend()){
@@ -120,7 +120,7 @@ BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
 
 BOOST_FIXTURE_TEST_CASE(test_flux, LuminosityCalculator_Fixture) {
 
-  PhzLuminosity::ReddenedLuminosityCalculator lum_comp_funct{luminosityFilterName,false};
+  PhzLuminosity::ReddenedLuminosityCalculator lum_comp_funct{luminosityFilterName,nullptr,false};
 
   auto model_iter = model_grid.cbegin();
   while (model_iter != model_grid.cend()){

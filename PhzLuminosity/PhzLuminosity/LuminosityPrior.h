@@ -29,7 +29,6 @@ class LuminosityPrior{
 public:
 
 LuminosityPrior(
-    std::shared_ptr<PhzDataModel::PhotometryGrid> luminosityModelGrid,
     std::shared_ptr<LuminosityCalculator> luminosityCalculator,
     SedGroupManager sedGroupManager,
     LuminosityFunctionSet luminosityFunctionSet );
@@ -43,7 +42,6 @@ void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
 
 private:
 
-  std::shared_ptr<PhzDataModel::PhotometryGrid> m_luminosity_model_grid;
   std::shared_ptr<LuminosityCalculator> m_luminosity_calculator;
   SedGroupManager m_sed_group_manager;
   LuminosityFunctionSet m_luminosity_function_set;

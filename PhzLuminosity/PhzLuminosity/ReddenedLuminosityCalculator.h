@@ -18,12 +18,15 @@ namespace PhzLuminosity {
 class ReddenedLuminosityCalculator: public LuminosityCalculator {
 public:
   ReddenedLuminosityCalculator(XYDataset::QualifiedName luminosity_filter,
+      std::shared_ptr<PhzDataModel::PhotometryGrid> modelPhotometryGrid,
       bool inMag = true) ;
 
   virtual ~ReddenedLuminosityCalculator() = default;
 
-  virtual double operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scaleFactor,
-       std::shared_ptr<PhzDataModel::PhotometryGrid> modelPhotometryGrid) ;
+  double operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scaleFactor,
+      const double& z,
+      const XYDataset::QualifiedName& sed) override;
+
 
 };
 

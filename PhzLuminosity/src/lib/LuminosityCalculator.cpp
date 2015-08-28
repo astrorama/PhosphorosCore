@@ -14,8 +14,9 @@ namespace PhzLuminosity {
 static Elements::Logging logger = Elements::Logging::getLogger("LuminosityCalculator");
 
 LuminosityCalculator::LuminosityCalculator(
-    XYDataset::QualifiedName luminosity_filter, bool inMag) :
-    m_luminosity_filter { std::move(luminosity_filter) }, m_in_mag { inMag } {
+    XYDataset::QualifiedName luminosity_filter,
+    std::shared_ptr<PhzDataModel::PhotometryGrid> modelPhotometryGrid,bool inMag) :
+    m_luminosity_filter { std::move(luminosity_filter) }, m_model_photometry_grid{modelPhotometryGrid}, m_in_mag { inMag } {
 }
 
 double LuminosityCalculator::getLuminosityFromModel(
