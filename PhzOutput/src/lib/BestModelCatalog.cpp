@@ -42,8 +42,8 @@ void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
   auto reddening_curve = best_model.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>().qualifiedName();
   auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
   auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
-  auto scale = std::get<3>(results);
-  auto likelihood = std::get<4>(results);
+  auto scale = std::get<4>(results);
+  auto likelihood = std::get<5>(results);
   m_row_list.push_back(Table::Row{{source.getId(), sed, sed_index, reddening_curve, ebv, z, scale, likelihood}, m_column_info});
 }
 

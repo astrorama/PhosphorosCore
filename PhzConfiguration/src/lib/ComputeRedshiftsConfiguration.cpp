@@ -33,6 +33,7 @@ static const std::string PHZ_OUTPUT_DIR {"phz-output-dir"};
 static const std::string INPUT_CATALOG_FILE {"input-catalog-file"};
 static const std::string CREATE_OUTPUT_CATALOG_FLAG {"create-output-catalog"};
 static const std::string CREATE_OUTPUT_PDF_FLAG {"create-output-pdf"};
+static const std::string CREATE_OUTPUT_LIKELIHOODS_FLAG {"create-output-likelihoods"};
 static const std::string CREATE_OUTPUT_POSTERIORS_FLAG {"create-output-posteriors"};
 
 po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
@@ -47,8 +48,10 @@ po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
           "The output catalog flag for creating the file (YES/NO, default: NO)")
       (CREATE_OUTPUT_PDF_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
           "The output pdf flag for creating the file (YES/NO, default: NO)")
+      (CREATE_OUTPUT_LIKELIHOODS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
+           "The output likelihoods flag for creating the file (YES/NO, default: NO)")
       (CREATE_OUTPUT_POSTERIORS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
-           "The output posteriors flag for creating the file (YES/NO, default: NO)")
+                "The output posteriors flag for creating the file (YES/NO, default: NO)")
       (AXES_COLLAPSE_TYPE.c_str(), po::value<std::string>(),
         "The method used for collapsing the axes when producing the 1D PDF (one of SUM, MAX, BAYESIAN)");
 
@@ -171,20 +174,33 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfiguration::getOutp
                                 << CREATE_OUTPUT_PDF_FLAG << " : " << pdf_flag;
   }
 
-  std::string post_flag = m_options.count(CREATE_OUTPUT_POSTERIORS_FLAG) > 0
-                     ? m_options.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>()
+  std::string like_flag = m_options.count(CREATE_OUTPUT_LIKELIHOODS_FLAG) > 0
+                     ? m_options.at(CREATE_OUTPUT_LIKELIHOODS_FLAG).as<std::string>()
                      : "NO";
-  if (post_flag == "YES") {
-    auto out_post_file = output_dir / "posteriors";
-    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::LikelihoodHandler{out_post_file.string()}});
-  } else if (post_flag != "NO") {
+  if (like_flag == "YES") {
+    auto out_like_file = output_dir / "likelihoods";
+    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::LikelihoodHandler<2>{out_like_file.string()}});
+  } else if (like_flag != "NO") {
     throw Elements::Exception() << "Invalid value for option "
-                                << CREATE_OUTPUT_POSTERIORS_FLAG << " : " << post_flag;
+                                << CREATE_OUTPUT_LIKELIHOODS_FLAG << " : " << like_flag;
   }
 
-  if (cat_flag == "NO" && pdf_flag == "NO" && post_flag == "NO") {
+
+  std::string post_flag = m_options.count(CREATE_OUTPUT_POSTERIORS_FLAG) > 0
+                      ? m_options.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>()
+                      : "NO";
+   if (post_flag == "YES") {
+     auto out_post_file = output_dir / "posteriors";
+     result->addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::LikelihoodHandler<3>{out_post_file.string()}});
+   } else if (post_flag != "NO") {
+     throw Elements::Exception() << "Invalid value for option "
+                                 << CREATE_OUTPUT_POSTERIORS_FLAG << " : " << post_flag;
+   }
+
+  if (cat_flag == "NO" && pdf_flag == "NO" && like_flag == "NO" && post_flag == "NO") {
     throw Elements::Exception() << "At least one of the options " << CREATE_OUTPUT_CATALOG_FLAG
-                                << ", " << CREATE_OUTPUT_PDF_FLAG << ", " << CREATE_OUTPUT_POSTERIORS_FLAG
+                                << ", " << CREATE_OUTPUT_PDF_FLAG << ", " << CREATE_OUTPUT_LIKELIHOODS_FLAG
+                                << ", " << CREATE_OUTPUT_POSTERIORS_FLAG
                                 << " must be set to YES";
   }
 

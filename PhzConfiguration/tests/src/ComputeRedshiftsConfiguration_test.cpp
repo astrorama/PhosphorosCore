@@ -69,16 +69,26 @@ struct ComputeRedshiftsConfiguration_Fixture {
   )};
   PhzDataModel::Pdf1D res_pdf {{"Z", {0.}}};
   PhzDataModel::LikelihoodGrid res_likelihood {res_phot_grid.getAxesTuple()};
+  PhzDataModel::LikelihoodGrid res_posterior {res_phot_grid.getAxesTuple()};
 
   std::map<std::string, PhzDataModel::LikelihoodGrid> makePosteriorMap(PhzDataModel::LikelihoodGrid&& posterior) {
     std::map<std::string, PhzDataModel::LikelihoodGrid> result {};
     result.emplace(std::string(""), std::move(posterior));
     return result;
   }
-  std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map = makePosteriorMap(std::move(res_likelihood));
+  std::map<std::string, PhzDataModel::LikelihoodGrid> likelihood_map = makePosteriorMap(std::move(res_likelihood));
+  std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map = makePosteriorMap(std::move(res_posterior));
   PhzOutput::OutputHandler::result_type res {
-    res_phot_grid.cbegin(), std::move(res_pdf), std::move(posterior_map), 0., 0., std::map<std::string, double>{{"", 0.}}
+        res_phot_grid.cbegin(),
+        std::move(res_pdf),
+        std::move(likelihood_map),
+        std::move(posterior_map),
+        0.,
+        0.,
+        std::map<std::string, double>{{"", 0.}}
   };
+
+
 
   ComputeRedshiftsConfiguration_Fixture() {
     std::ofstream cat_out {input_catalog.string()};

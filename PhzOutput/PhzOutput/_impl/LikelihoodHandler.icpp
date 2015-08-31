@@ -10,7 +10,7 @@
 #include "Table/FitsWriter.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzOutput/LikelihoodHandler.h"
+//#include "PhzOutput/LikelihoodHandler.h"
 #include "PhzUtils/FileUtils.h"
 
 namespace fs = boost::filesystem;
@@ -20,7 +20,8 @@ namespace PhzOutput {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
-LikelihoodHandler::LikelihoodHandler(boost::filesystem::path out_dir)
+template<int TupleIndex>
+LikelihoodHandler<TupleIndex>::LikelihoodHandler(boost::filesystem::path out_dir)
           : m_out_dir{std::move(out_dir)} {
 
   // Check directory and write permissions
@@ -60,13 +61,14 @@ void addAxis(const string& filename, const string& region_name,
   writer.write(fits, axis.name()+"_"+region_name, table);
 }
 
-void LikelihoodHandler::handleSourceOutput(const SourceCatalog::Source& source,
+template<int TupleIndex>
+void LikelihoodHandler<TupleIndex>::handleSourceOutput(const SourceCatalog::Source& source,
                                            const result_type& results) {
   std::string id = std::to_string(source.getId());
   std::string filename = (m_out_dir/(id+".fits")).string();
   fs::remove(filename);
-  auto& posteriors_map = std::get<2>(results);
-  auto& best_chi2_map = std::get<5>(results);
+  auto& posteriors_map = std::get<TupleIndex>(results);
+  auto& best_chi2_map = std::get<6>(results);
   
   for (auto& pair : posteriors_map) {
     // Create the first HDU with the array. We do that in a scope so the file is

@@ -1,4 +1,4 @@
-/** 
+/**
  * @file ParallelCatalogHandler.icpp
  * @date February 27, 2015
  * @author Nikolaos Apostolakos
@@ -27,9 +27,9 @@ struct ResultType {
 // This is a helper class which handles the execution of a part of the catalog.
 template <typename SourceIter>
 class ParallelJob {
-  
+
 public:
-  
+
   ParallelJob(const CatalogHandler& handler, SourceIter begin,
               SourceIter end, std::atomic<size_t>& progress)
         : handler(handler), begin(begin), end(end), m_progress(progress) { }
@@ -40,9 +40,9 @@ public:
     handler.handleSources(begin, end, output);
     return result;
   }
-  
+
 private:
-  
+
   class Output : public PhzOutput::OutputHandler {
   public :
     Output(std::vector<ResultType>& result_vector, std::atomic<size_t>& progress) : m_result_vector(result_vector), m_progress(progress) {}
@@ -55,33 +55,50 @@ private:
       for (size_t i=0; i<pdf.size(); ++i) {
         pdf_copy(i) = pdf(i);
       }
-      auto& posteriors_map = std::get<2>(results);
-      std::map<std::string, PhzDataModel::LikelihoodGrid> posteriors_map_copy {};
+
+      auto& likelihood_map = std::get<2>(results);
+      std::map<std::string, PhzDataModel::LikelihoodGrid> likelihood_map_copy {};
+      for (auto& pair : likelihood_map) {
+        PhzDataModel::LikelihoodGrid lieklihood_copy {pair.second.getAxesTuple()};
+        auto likelihood_iter = pair.second.begin();
+        auto likelihood_copy_iter = lieklihood_copy.begin();
+        for (; likelihood_iter!=pair.second.end(); ++likelihood_iter, ++likelihood_copy_iter) {
+          *likelihood_copy_iter = *likelihood_iter;
+        }
+        likelihood_map_copy.emplace(std::make_pair(pair.first, std::move(lieklihood_copy)));
+      }
+
+      auto& posteriors_map = std::get<3>(results);
+      std::map<std::string, PhzDataModel::LikelihoodGrid> posteriors_map_copy { };
       for (auto& pair : posteriors_map) {
-        PhzDataModel::LikelihoodGrid posterior_copy {pair.second.getAxesTuple()};
+        PhzDataModel::LikelihoodGrid posterior_copy { pair.second.getAxesTuple() };
         auto posterior_iter = pair.second.begin();
         auto posterior_copy_iter = posterior_copy.begin();
-        for (; posterior_iter!=pair.second.end(); ++posterior_iter, ++posterior_copy_iter) {
+        for (; posterior_iter != pair.second.end();
+            ++posterior_iter, ++posterior_copy_iter) {
           *posterior_copy_iter = *posterior_iter;
         }
-        posteriors_map_copy.emplace(std::make_pair(pair.first, std::move(posterior_copy)));
+        posteriors_map_copy.emplace(
+            std::make_pair(pair.first, std::move(posterior_copy)));
       }
+
       PhzOutput::OutputHandler::result_type results_copy {
         std::get<0>(results),
         std::move(pdf_copy),
+        std::move(likelihood_map_copy),
         std::move(posteriors_map_copy),
-        std::get<3>(results),
         std::get<4>(results),
-        std::get<5>(results)
+        std::get<5>(results),
+        std::get<6>(results),
       };
       m_result_vector.push_back(ResultType{source, std::move(results_copy)});
       ++m_progress;
     }
   private:
-    std::vector<ResultType>& m_result_vector;  
+    std::vector<ResultType>& m_result_vector;
     std::atomic<size_t>& m_progress;
   };
-  
+
   const PhzLikelihood::CatalogHandler& handler;
   SourceIter begin;
   SourceIter end;
@@ -95,14 +112,14 @@ void ParallelCatalogHandler::handleSources(SourceIter source_begin, SourceIter s
                                            ProgressListener progress_listener) const {
   auto logger = Elements::Logging::getLogger("ParallelCatalogHandler");
   std::vector<std::future<std::vector<ResultType>>> futures;
-    
+
   std::atomic<size_t> progress {0};
   size_t total_sources = source_end - source_begin;
   logger.info() << "Processing " << total_sources << " sources";
   uint threads = std::thread::hardware_concurrency();
   logger.info() << "Using " << threads << " threads";
   uint step = total_sources / threads;
-  
+
   for (uint i=0; i< threads; ++i) {
     auto begin = source_begin + i*step;
     auto end = ((i+1) == threads) ? source_end : source_begin + (i+1)*step;
@@ -110,7 +127,7 @@ void ParallelCatalogHandler::handleSources(SourceIter source_begin, SourceIter s
                   << begin->getId() << ',' << (end-1)->getId() << ']';
     futures.push_back(std::async(std::launch::async, ParallelJob<SourceIter>{m_catalog_handler, begin, end, progress}));
   }
-  
+
   if (progress_listener) {
     progress_listener(0, total_sources);
     while (progress < total_sources) {
@@ -119,7 +136,7 @@ void ParallelCatalogHandler::handleSources(SourceIter source_begin, SourceIter s
     }
     progress_listener(total_sources, total_sources);
   }
-  
+
   logger.info() << "Thread jobs finished. Handling output...";
   for (auto& f : futures) {
     for (auto& result : f.get()) {

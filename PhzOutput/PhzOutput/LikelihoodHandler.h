@@ -1,4 +1,4 @@
-/** 
+/**
  * @file LikelihoodHandler.h
  * @date March 13, 2015
  * @author Nikolaos Apostolakos
@@ -13,26 +13,30 @@
 namespace Euclid {
 namespace PhzOutput {
 
+template<int TupleIndex>
 class LikelihoodHandler : public OutputHandler {
-  
+
 public:
-  
+
   LikelihoodHandler(boost::filesystem::path out_dir);
-  
+
   virtual ~LikelihoodHandler() = default;
-  
+
   void handleSourceOutput(const SourceCatalog::Source& source,
                           const result_type& results) override;
 
-  
+
 private:
-  
+
   boost::filesystem::path m_out_dir;
-  
+
 };
 
 } // end of namespace PhzOutput
 } // end of namespace Euclid
+
+
+#include "PhzOutput/_impl/LikelihoodHandler.icpp"
 
 #endif	/* PHZOUTPUT_LIKELIHOODHANDLER_H */
 
