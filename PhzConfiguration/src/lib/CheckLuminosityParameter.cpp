@@ -52,6 +52,16 @@ bool CheckLuminosityParameter::checkSedGroupCompletness(const PhzDataModel::Phot
 bool CheckLuminosityParameter::checkLuminosityModelGrid(const PhzDataModel::PhotometryGridInfo& modelGridInfo,
                 const PhzDataModel::PhotometryGrid& luminosityGrid,bool withReddening){
 
+  auto luminosity_z = luminosityGrid.getAxis<PhzDataModel::ModelParameter::Z>();
+  bool found=false;
+  for (double z:luminosity_z){
+    if (z==0.){
+      found=true;
+      break;
+    }
+  }
+  if (!found) return false;
+
   if (!checkAxis<XYDataset::QualifiedName,PhzDataModel::ModelParameter::SED>(modelGridInfo,luminosityGrid)){
     return false;
   }
@@ -64,6 +74,16 @@ bool CheckLuminosityParameter::checkLuminosityModelGrid(const PhzDataModel::Phot
     if (!checkAxis<double,PhzDataModel::ModelParameter::EBV>(modelGridInfo,luminosityGrid)){
       return false;
     }
+  } else {
+    auto luminosity_ebv = luminosityGrid.getAxis<PhzDataModel::ModelParameter::EBV>();
+     found=false;
+     for (double ebv:luminosity_ebv){
+       if (ebv==0.){
+         found=true;
+         break;
+       }
+     }
+     if (!found) return false;
   }
 
   return true;
