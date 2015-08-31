@@ -35,11 +35,20 @@ public:
       double scaleFactor,
       double z) const;
 
+
+
+
 protected:
+  double getLuminosityDistance(double z) const;
+  double getDistanceModulus(double z) const;
+
   XYDataset::QualifiedName m_luminosity_filter;
   std::shared_ptr<PhzDataModel::PhotometryGrid> m_model_photometry_grid;
   bool m_in_mag;
   PhysicsUtils::Cosmology m_cosmology{};
+  mutable std::map<double,double> m_luminosity_distance_map{};
+  mutable std::map<double,double> m_distance_modulus_map{};
+
 
 
 };

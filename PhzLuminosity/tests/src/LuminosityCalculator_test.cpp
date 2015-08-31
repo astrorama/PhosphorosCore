@@ -107,7 +107,7 @@ BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
 
         double flux = model_iter->find(luminosityFilterName.qualifiedName())->flux;
         double mag_1 =  2.5 * std::log10(flux*alpha);
-        double dm = cosmology.DistanceModulus(z);
+        double dm = cosmology.distanceModulus(z);
 
         double expected = -mag_1-dm;
         BOOST_CHECK(Elements::isEqual(computed,expected));
