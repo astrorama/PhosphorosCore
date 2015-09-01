@@ -60,7 +60,7 @@ public:
                                                 conf.getFilterDatasetProvider(),
                                                 PhzModeling::NoIgmFunctor{}};
                                                 
-    auto param_space_map = conf.getParameterSpaceRegions();
+    auto param_space_map = conf.getLuminosityParameterSpaceRegions();
     auto results = creator.createGrid(param_space_map, filter_list, ProgressReporter{});
                                                      
     logger.info() << "Creating the output";

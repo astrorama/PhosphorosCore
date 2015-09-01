@@ -46,8 +46,7 @@ protected:
   std::shared_ptr<PhzDataModel::PhotometryGrid> m_model_photometry_grid;
   bool m_in_mag;
   PhysicsUtils::Cosmology m_cosmology{};
-  mutable std::map<double,double> m_luminosity_distance_map{};
-  mutable std::map<double,double> m_distance_modulus_map{};
+
 
 
 

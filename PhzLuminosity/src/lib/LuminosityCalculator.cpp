@@ -14,6 +14,9 @@ namespace PhzLuminosity {
 
 static Elements::Logging logger = Elements::Logging::getLogger("LuminosityCalculator");
 
+thread_local std::map<double,double> m_luminosity_distance_map{};
+thread_local std::map<double,double> m_distance_modulus_map{};
+
 LuminosityCalculator::LuminosityCalculator(
     XYDataset::QualifiedName luminosity_filter,
     std::shared_ptr<PhzDataModel::PhotometryGrid> modelPhotometryGrid,bool inMag) :
