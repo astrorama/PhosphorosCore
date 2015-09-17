@@ -38,6 +38,7 @@ public:
 
    PhzDataModel::PhotometryGrid getLuminosityModelGrid();
 
+
 private:
 
   std::map<std::string, boost::program_options::variable_value> m_options;

@@ -35,14 +35,15 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration
 
 static std::string getFilenameFromOptions(const std::map<std::string, po::variable_value>& options,
                                           const fs::path& intermediate_dir,
-                                          const std::string& catalog_type) {
-  fs::path result = intermediate_dir / catalog_type / "LuminosityModelGrids" / "model_grid.dat";
+                                          const std::string& catalog_name,
+                                          const std::string& model_name) {
+  fs::path result = intermediate_dir / catalog_name / "LuminosityModelGrids" / model_name / "luminosity_model_grid.dat";
   if (options.count(OUTPUT_LUMINOSITY_MODEL_GRID) > 0) {
     fs::path path = options.at(OUTPUT_LUMINOSITY_MODEL_GRID).as<std::string>();
     if (path.is_absolute()) {
       result = path;
     } else {
-      result = intermediate_dir / catalog_type / "LuminosityModelGrids" / path;
+      result = intermediate_dir / catalog_name / "LuminosityModelGrids" / model_name / path;
     }
   }
   return result.string();
@@ -70,7 +71,7 @@ ComputeLuminosityModelGridConfiguration::ComputeLuminosityModelGridConfiguration
   m_options = options;
 
   // Extract file option
-  std::string filename = getFilenameFromOptions(options, getIntermediateDir(), getCatalogType());
+  std::string filename = getFilenameFromOptions(options, getIntermediateDir(),getCatalogType(), getModelName());
 
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
@@ -125,7 +126,7 @@ std::unique_ptr<XYDataset::XYDatasetProvider> ComputeLuminosityModelGridConfigur
 ComputeLuminosityModelGridConfiguration::OutputFunction ComputeLuminosityModelGridConfiguration::getOutputFunction() {
   return [this](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
     auto logger = Elements::Logging::getLogger("PhzOutput");
-    auto filename = getFilenameFromOptions(m_options, getIntermediateDir(), getCatalogType());
+    auto filename = getFilenameFromOptions(m_options, getIntermediateDir(),getCatalogType(), getModelName());
     std::ofstream out {filename};
     boost::archive::binary_oarchive boa {out};
     // Store the info object describing the grids

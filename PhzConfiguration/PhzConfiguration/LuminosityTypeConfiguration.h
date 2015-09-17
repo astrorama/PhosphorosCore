@@ -33,6 +33,9 @@ public:
 
   XYDataset::QualifiedName getLuminosityFilter();
 
+
+  std::string getModelName();
+
 private:
 
   std::map<std::string, boost::program_options::variable_value> m_options;

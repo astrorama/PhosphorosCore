@@ -54,6 +54,7 @@ public:
    * - output-catalog-format : the format of the PHZ catalog (ASCII, FITS)
    * - create-output-catalog : flag for storing the output catalog file(YES/NO, default: NO)
    * - create-output-pdf     : flag for storing the PDF file(YES/NO, default: NO)
+   * - create-output-likelihoods : flag for storing the likelihood file(s)(YES/NO, default: NO)
    * - create-output-posteriors : flag for storing the posterior file(s)(YES/NO, default: NO)
    * - axes-collapse-type    : the method used for collapsing the axes
    * @return A boost::program_options::options_description object describing

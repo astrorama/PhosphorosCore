@@ -44,16 +44,19 @@ po::options_description LuminosityPriorConfiguration::getProgramOptions() {
 }
 
 
+
+
+
 PhzDataModel::PhotometryGrid LuminosityPriorConfiguration::getLuminosityModelGrid(){
   // get the grid
 
-      fs::path filename = getIntermediateDir() / getCatalogType() / "LuminosityModelGrids" / "luminosity_model_grid.dat";
+      fs::path filename = getIntermediateDir() / getCatalogType() /  "LuminosityModelGrids" / getModelName() / "luminosity_model_grid.dat";
         if (m_options.count(LUMINOSITY_MODEL_GRID_FILE) > 0) {
           fs::path path = m_options.at(LUMINOSITY_MODEL_GRID_FILE).as<std::string>();
           if (path.is_absolute()) {
             filename = path;
           } else {
-            filename = getIntermediateDir() / getCatalogType() / "LuminosityModelGrids" / path;
+            filename = getIntermediateDir() / getCatalogType() /  "LuminosityModelGrids" / getModelName()/ "LuminosityModelGrids" / path;
           }
         }
 
