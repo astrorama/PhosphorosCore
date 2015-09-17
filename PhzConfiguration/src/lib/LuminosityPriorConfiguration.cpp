@@ -56,7 +56,7 @@ PhzDataModel::PhotometryGrid LuminosityPriorConfiguration::getLuminosityModelGri
           if (path.is_absolute()) {
             filename = path;
           } else {
-            filename = getIntermediateDir() / getCatalogType() /  "LuminosityModelGrids" / getModelName()/ "LuminosityModelGrids" / path;
+            filename = getIntermediateDir() / getCatalogType() /  "LuminosityModelGrids" / getModelName()/  path;
           }
         }
 
