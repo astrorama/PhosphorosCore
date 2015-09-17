@@ -10,6 +10,14 @@ elements_depends_on_subdirs(PhzPhotometricCorrection)
 elements_depends_on_subdirs(PhzUtils)
 elements_depends_on_subdirs(PhzLuminosity)
 
+
+if(ELEMENTS_HIDE_WARNINGS)
+  if(UNIX)
+    set_property(SOURCE src/lib/CheckLuminosityParameter.cpp
+                 PROPERTY COMPILE_FLAGS -Wno-float-equal)
+  endif()
+endif()
+
 elements_add_library(PhzConfiguration src/lib/*.cpp
                      LINK_LIBRARIES  XYDataset PhzDataModel PhzOutput PhzPhotometricCorrection PhzLikelihood PhzModeling PhzUtils PhzLuminosity
                      INCLUDE_DIRS XYDataset PhzDataModel PhzUtils PhzLuminosity

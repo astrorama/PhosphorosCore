@@ -11,6 +11,7 @@
 #include "CheckLuminosityParameter.h"
 
 
+
 namespace Euclid {
 namespace PhzConfiguration {
 
