@@ -33,8 +33,14 @@ public:
    */
   LuminosityFunctionSet(std::map<LuminosityFunctionValidityDomain,std::unique_ptr<MathUtils::Function>> luminosityFunctions);
 
+  /**
+   * @brief Copy constructor
+   */
   LuminosityFunctionSet ( const LuminosityFunctionSet & other);
 
+  /**
+   * @brief Copy operator
+   */
   LuminosityFunctionSet&  operator= ( const LuminosityFunctionSet & other);
 
   /**
@@ -49,7 +55,7 @@ public:
     * @return The density of galaxy for the parameter space coordinate and the
     * provided luminosity by delegating the computation to one of the sub-functions.
     */
-  double operator()(const std::string& sedGRoup,double z, double luminosity) const ;
+  double operator()(const std::string& sedGroup,double z, double luminosity) const ;
 
 
 

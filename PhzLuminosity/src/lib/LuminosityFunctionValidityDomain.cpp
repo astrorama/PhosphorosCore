@@ -11,8 +11,8 @@
 namespace Euclid {
 namespace PhzLuminosity {
 
-LuminosityFunctionValidityDomain::LuminosityFunctionValidityDomain(const std::string& sedGroupName, double z_min, double z_max)
-   :m_sed_group_name{sedGroupName},m_z_min{z_min}, m_z_max{z_max}{ }
+LuminosityFunctionValidityDomain::LuminosityFunctionValidityDomain(const std::string& sed_group_name, double z_min, double z_max)
+   :m_sed_group_name{sed_group_name},m_z_min{z_min}, m_z_max{z_max}{ }
 
 
 
@@ -29,8 +29,8 @@ bool LuminosityFunctionValidityDomain::operator< (const LuminosityFunctionValidi
 }
 
 
-bool LuminosityFunctionValidityDomain::doesApply(const std::string& sedGroupName, double z) const{
-  if (sedGroupName != m_sed_group_name){
+bool LuminosityFunctionValidityDomain::doesApply(const std::string& sed_group_name, double z) const{
+  if (sed_group_name != m_sed_group_name){
       return false;
   }
 

@@ -91,7 +91,9 @@ struct LuminosityCalculator_Fixture {
 BOOST_AUTO_TEST_SUITE (LuminosityCalculator_test)
 
 //---------------------------------------------------------------------------
-
+/**
+ * Check the 'getLuminosity()' in magnitude
+ */
 BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
 
   PhzLuminosity::ReddenedLuminosityCalculator lum_comp_funct{luminosityFilterName,nullptr,true};
@@ -118,6 +120,9 @@ BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
   }
 }
 
+/**
+ * Check the 'getLuminosity()' in flux
+ */
 BOOST_FIXTURE_TEST_CASE(test_flux, LuminosityCalculator_Fixture) {
 
   PhzLuminosity::ReddenedLuminosityCalculator lum_comp_funct{luminosityFilterName,nullptr,false};

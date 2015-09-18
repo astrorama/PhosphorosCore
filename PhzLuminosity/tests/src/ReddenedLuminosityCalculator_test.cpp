@@ -91,7 +91,9 @@ struct LuminosityCalculator_Fixture {
 BOOST_AUTO_TEST_SUITE (LuminosityCalculator_test)
 
 //---------------------------------------------------------------------------
-
+/**
+ * Check that the operator() select the right model into the luminosity model grid
+ */
 BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
   std::shared_ptr<PhzDataModel::PhotometryGrid>  model_grid_ptr{new PhzDataModel::PhotometryGrid{std::move(model_grid)}};
 

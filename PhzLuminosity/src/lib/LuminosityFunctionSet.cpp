@@ -34,18 +34,7 @@ LuminosityFunctionSet&  LuminosityFunctionSet::operator= ( const LuminosityFunct
   return *this;
 }
 
-  /**
-    * @brief Functional call.
-    *
-    * @param GridCoordinate
-    * The coordinate in the model parameter-space
-    *
-    * @param double
-    * The Absolute Magnitude in the appropriated filter
-    *
-    * @return The density of galaxy for the parameter space coordinate and the
-    * provided luminosity by delegating the computation to one of the sub-functions.
-    */
+
 double LuminosityFunctionSet::operator()(const std::string& sedGroup,double z, double luminosity) const {
   for(auto& region :m_luminosity_functions){
     if (region.first.doesApply(sedGroup,z)){

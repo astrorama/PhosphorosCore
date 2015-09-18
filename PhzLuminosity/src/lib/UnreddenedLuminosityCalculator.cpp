@@ -12,11 +12,11 @@ namespace Euclid {
 namespace PhzLuminosity {
 
   UnreddenedLuminosityCalculator::UnreddenedLuminosityCalculator(XYDataset::QualifiedName luminosity_filter,
-      std::shared_ptr<PhzDataModel::PhotometryGrid> modelPhotometryGrid,
-      bool inMag) : LuminosityCalculator(luminosity_filter, modelPhotometryGrid, inMag) { }
+      std::shared_ptr<PhzDataModel::PhotometryGrid> model_photometry_grid,
+      bool in_mag) : LuminosityCalculator(luminosity_filter, model_photometry_grid, in_mag) { }
 
 
- double UnreddenedLuminosityCalculator::operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scaleFactor,
+ double UnreddenedLuminosityCalculator::operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor,
      const double& z,
      const XYDataset::QualifiedName& sed) const{
 
@@ -24,10 +24,10 @@ namespace PhzLuminosity {
     model_iter.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(0);
     model_iter.fixAxisByIndex<PhzDataModel::ModelParameter::EBV>(0);
     model_iter.fixAxisByValue<PhzDataModel::ModelParameter::REDDENING_CURVE>(
-        scaleFactor.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>());
+        scale_factor.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>());
     model_iter.fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
 
-    return getLuminosityFromModel(model_iter,*scaleFactor,z);
+    return getLuminosityFromModel(model_iter,*scale_factor,z);
 
   }
 

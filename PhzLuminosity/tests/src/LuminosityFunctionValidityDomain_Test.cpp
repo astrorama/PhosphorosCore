@@ -58,8 +58,6 @@ BOOST_FIXTURE_TEST_CASE(test_validity_domain, LuminosityFunctionValidityDomain_F
 BOOST_FIXTURE_TEST_CASE(test_getters, LuminosityFunctionValidityDomain_Fixture) {
   auto domain = Euclid::PhzLuminosity::LuminosityFunctionValidityDomain{"group",0.5,2.};
 
-
-
   BOOST_CHECK(Elements::isEqual(0.5, domain.getMinZ()));
   BOOST_CHECK(Elements::isEqual(2., domain.getMaxZ()));
 

@@ -37,7 +37,9 @@ struct LuminosityFunctionSet_Fixture {
 BOOST_AUTO_TEST_SUITE (LuminosityFunctionSet_test)
 
 //---------------------------------------------------------------------------
-
+/**
+ * check the functional call select the right luminosity function
+ */
 BOOST_FIXTURE_TEST_CASE(test_functional, LuminosityFunctionSet_Fixture) {
 
      XYDataset::XYDataset dataset1 = XYDataset::XYDataset::factory({0.,200.},{2.,2.});
@@ -50,17 +52,31 @@ BOOST_FIXTURE_TEST_CASE(test_functional, LuminosityFunctionSet_Fixture) {
 
      PhzLuminosity::LuminosityFunctionValidityDomain domain2{"group",3.,6.};
 
+     XYDataset::XYDataset dataset3 = XYDataset::XYDataset::factory({0.,200.},{4.,4.});
+     auto f3 = MathUtils::interpolate(dataset3,MathUtils::InterpolationType::CUBIC_SPLINE);
+
+     PhzLuminosity::LuminosityFunctionValidityDomain domain3{"group2",0.,3.};
+
+     XYDataset::XYDataset dataset4 = XYDataset::XYDataset::factory({0.,200.},{5.,5.});
+     auto f4 = MathUtils::interpolate(dataset4,MathUtils::InterpolationType::CUBIC_SPLINE);
+
+     PhzLuminosity::LuminosityFunctionValidityDomain domain4{"group2",3.,6.};
+
      std::map<PhzLuminosity::LuminosityFunctionValidityDomain,std::unique_ptr<MathUtils::Function>> map{};
 
-     auto pair1 = std::make_pair(std::move(domain1),std::move(f1));
-     map.insert(std::move(pair1));
-     map.emplace(std::make_pair(std::move(domain2),std::move(f2)));
+     map[std::move(domain1)]=std::move(f1);
+     map[std::move(domain2)]=std::move(f2);
+     map[std::move(domain3)]=std::move(f3);
+     map[std::move(domain4)]=std::move(f4);
+
 
      PhzLuminosity::LuminosityFunctionSet function_set{std::move(map)};
 
 
      BOOST_CHECK(Elements::isEqual(function_set("group",1.,10.), 2.));
      BOOST_CHECK(Elements::isEqual(function_set("group",5.,10.), 3.));
+     BOOST_CHECK(Elements::isEqual(function_set("group2",1.,10.), 4.));
+     BOOST_CHECK(Elements::isEqual(function_set("group2",5.,10.), 5.));
 }
 
 

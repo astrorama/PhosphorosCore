@@ -27,7 +27,7 @@ public:
   /*
    * @brief Constructor
    *
-   * @param sedGroupName
+   * @param sed_group_name
    * The name of a SED Group.
    *
    * @param z_min
@@ -37,7 +37,7 @@ public:
    * A double representing the upper bound (included) of the validity domain in z.
    *
    */
-  LuminosityFunctionValidityDomain(const std::string& sedGroupName, double z_min, double z_max);
+  LuminosityFunctionValidityDomain(const std::string& sed_group_name, double z_min, double z_max);
 
   /**
    * @brief operator< implemented to allow this calss to be used as a map key.
@@ -47,13 +47,13 @@ public:
   /**
     * @brief Check if a given coordinate is in this validity domain.
     *
-    * @param sedGroupName
+    * @param sed_group_name
     * The name of a SED group
     *
     * @param z
     * A redshift value
     */
-  bool doesApply(const std::string& sedGroupName, double z) const;
+  bool doesApply(const std::string& sed_group_name, double z) const;
 
   /**
    * @brief Getter on the SED group name

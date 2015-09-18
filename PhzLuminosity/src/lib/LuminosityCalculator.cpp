@@ -19,8 +19,8 @@ thread_local std::map<double,double> m_distance_modulus_map{};
 
 LuminosityCalculator::LuminosityCalculator(
     XYDataset::QualifiedName luminosity_filter,
-    std::shared_ptr<PhzDataModel::PhotometryGrid> modelPhotometryGrid,bool inMag) :
-    m_luminosity_filter { std::move(luminosity_filter) }, m_model_photometry_grid{modelPhotometryGrid}, m_in_mag { inMag } {
+    std::shared_ptr<PhzDataModel::PhotometryGrid> model_photometry_grid,bool in_mag) :
+    m_luminosity_filter { std::move(luminosity_filter) }, m_model_photometry_grid{model_photometry_grid}, m_in_mag { in_mag } {
 }
 
 
@@ -48,7 +48,7 @@ double LuminosityCalculator::getDistanceModulus(double z) const{
 
 double LuminosityCalculator::getLuminosityFromModel(
     const PhzDataModel::PhotometryGrid::const_iterator& model,
-    double scaleFactor,
+    double scale_factor,
     double z) const{
   auto flux = model->find(m_luminosity_filter.qualifiedName());
   if (flux==nullptr){
@@ -59,11 +59,11 @@ double LuminosityCalculator::getLuminosityFromModel(
   double result{0.};
 
   if (m_in_mag){
-    result= -2.5 * std::log10(flux->flux*scaleFactor) - getDistanceModulus(z);
+    result= -2.5 * std::log10(flux->flux*scale_factor) - getDistanceModulus(z);
 
   } else {
     double luminous_distance = getLuminosityDistance(z)/10.;
-    result= flux->flux*scaleFactor*luminous_distance*luminous_distance;
+    result= flux->flux*scale_factor*luminous_distance*luminous_distance;
   }
 
 
