@@ -232,21 +232,7 @@ public:
    * If no source photometry is flagged as upper limit, this method returns the
    * same result with the ScaleFactorNormal<Adder> class. If there is at least
    * one source photometry flagged as upper limit, the scale factor is computed
-   * by minimizing the function:
-   * \f[
-   *   \chi^2_{\left( \alpha \right)} =
-   *      \sum_{i}\left( \frac{F_{s,i}-\alpha F_{m,i}}{E_{s,i}} \right)^2
-   *      -2\sum_{j}\ln\left\{ \frac{1}{2} \left[ 1 + 
-   *      erf\left( \frac{F_{s,j}-\alpha F_{m,j}}{\sqrt{2}E_{s,j}} \right) \right] \right\}
-   * \f]
-   * where:
-   * - \f$ i \f$ : Are the filters where there is a detection
-   * - \f$ j \f$ : Are the filters where there is no detection (the upper limit
-   *               flag is set)
-   * - \f$ F_s \f$ : Is the flux of the source
-   * - \f$ F_m \f$ : Is the flux of the model
-   * - \f$ E_s \f$ : Is the error of the source
-   * - \f$ \alpha \f$ : Is the scale factor
+   * by minimizing the LikelihoodLogaritmFunc function.
    * 
    * Note that depending on the type of the Adder template parameter, the missing
    * data flag is respected or not.
@@ -338,6 +324,14 @@ using ScaleFactorFunctorUpperLimit = _Impl::ScaleFactorUpperLimit<_Impl::NormalF
 /// Functor for computing the scale factor which optimizes the chi square, with
 /// support for upper limit and missing data
 using ScaleFactorFunctorUpperLimitMissingData = _Impl::ScaleFactorUpperLimit<_Impl::MissingDataFractionAdder, ChiSquareLikelihoodLogarithmUpperLimitMissingData>;
+
+/// Functor for computing the scale factor which optimizes the chi square, with
+/// support for upper limit (faster less accurate)
+using ScaleFactorFunctorUpperLimitFast = _Impl::ScaleFactorUpperLimit<_Impl::NormalFractionAdder, ChiSquareLikelihoodLogarithmUpperLimitFast>;
+
+/// Functor for computing the scale factor which optimizes the chi square, with
+/// support for upper limit and missing data (faster less accurate)
+using ScaleFactorFunctorUpperLimitFastMissingData = _Impl::ScaleFactorUpperLimit<_Impl::MissingDataFractionAdder, ChiSquareLikelihoodLogarithmUpperLimitFastMissingData>;
 
 } // end of namespace PhzLikelihood
 } // end of namespace Euclid

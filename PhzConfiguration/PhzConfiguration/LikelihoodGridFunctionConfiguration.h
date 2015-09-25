@@ -31,6 +31,7 @@ private:
   
   bool m_enable_missing_data = false;
   bool m_enable_upper_limit = false;
+  bool m_fast_upper_limit = false;
   
 };
 

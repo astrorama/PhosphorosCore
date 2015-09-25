@@ -162,7 +162,7 @@ struct ChiSquareLikelihoodLogarithm_Fixture {
     make_tuple(4.15484616448,   1.2501508154,    0.00328150694694, 2.79661768564),
     make_tuple(2.77705562377,   3.82104254934,   4.6328259136,     1.40649732065),
     make_tuple(2.67291417812,   4.8160222852,    0.308371595531,   1.42278986658),
-    make_tuple(3.142386677,     1.04986361414,   0.880691306516,   1.46249792769),
+    make_tuple(3.142386677,     1.04986361414,   0.880691306516,   1.46249792769)
   };
   
   vector<double> chi_square_data {
@@ -371,6 +371,109 @@ struct ChiSquareLikelihoodLogarithm_Fixture {
     0.07888026843934465
   };
   
+  vector<double> upper_limit_fast_data {
+    0.,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    0.,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    0.,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    0.,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    0.,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    0.,
+    0.,
+    0.,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    0.,
+    1416.7928370645282,
+    0.,
+    0.
+  };
+  
 };
 
 //-----------------------------------------------------------------------------
@@ -473,6 +576,60 @@ BOOST_FIXTURE_TEST_CASE(ChiSquareUpperLimit_flag_true_test, ChiSquareLikelihoodL
   
   auto data_it = test_data.begin();
   auto expected_it = upper_limit_data.begin();
+  for (; data_it!=test_data.end(); ++data_it, ++expected_it) {
+    
+    // Given
+    SourceCatalog::FluxErrorPair source {get<0>(*data_it), get<1>(*data_it), false, upper_limit_flag};
+    SourceCatalog::FluxErrorPair model {get<2>(*data_it), 0., false, false};
+    double scale = get<3>(*data_it);
+    
+    // When
+    auto result = chi_square_functor(source, model, scale);
+    
+    // Then
+    BOOST_CHECK_CLOSE_FRACTION(result, *expected_it, close_tolerance);
+    
+  }
+}
+
+//-----------------------------------------------------------------------------
+// Check the functor ChiSquareUpperLimitFast with the upper limit flag set to false
+//-----------------------------------------------------------------------------
+BOOST_FIXTURE_TEST_CASE(ChiSquareUpperLimitFast_flag_false_test, ChiSquareLikelihoodLogarithm_Fixture) {
+  
+  // Given
+  ChiSquareUpperLimitFast chi_square_functor {};
+  ChiSquareNormal chi_square_functor_normal {};
+  bool upper_limit_flag = false;
+  
+  for (auto data_it=test_data.begin(); data_it!=test_data.end(); ++data_it) {
+    
+    // Given
+    SourceCatalog::FluxErrorPair source {get<0>(*data_it), get<1>(*data_it), false, upper_limit_flag};
+    SourceCatalog::FluxErrorPair model {get<2>(*data_it), 0., false, false};
+    double scale = get<3>(*data_it);
+    
+    // When
+    auto result = chi_square_functor(source, model, scale);
+    double expected = chi_square_functor_normal(source, model, scale);
+    
+    // Then
+    BOOST_CHECK_CLOSE_FRACTION(result, expected, close_tolerance);
+    
+  }
+}
+
+//-----------------------------------------------------------------------------
+// Check the functor ChiSquareUpperLimitFast with the upper limit flag set to true
+//-----------------------------------------------------------------------------
+BOOST_FIXTURE_TEST_CASE(ChiSquareUpperLimitFast_flag_true_test, ChiSquareLikelihoodLogarithm_Fixture) {
+  
+  // Given
+  ChiSquareUpperLimitFast chi_square_functor {};
+  bool upper_limit_flag = true;
+  
+  auto data_it = test_data.begin();
+  auto expected_it = upper_limit_fast_data.begin();
   for (; data_it!=test_data.end(); ++data_it, ++expected_it) {
     
     // Given

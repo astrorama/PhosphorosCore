@@ -470,7 +470,7 @@ BOOST_AUTO_TEST_CASE(ScaleFactorNormal_test) {
 }
 
 //-----------------------------------------------------------------------------
-// Check the functor ScaleFactorNormal
+// Check the functor ScaleFactorUpperLimit
 //-----------------------------------------------------------------------------
 BOOST_FIXTURE_TEST_CASE(ScaleFactorUpperLimit_test, ScaleFactorFunctor_Fixture) {
   
@@ -507,8 +507,6 @@ BOOST_FIXTURE_TEST_CASE(ScaleFactorUpperLimit_test, ScaleFactorFunctor_Fixture) 
     
     // Then
     BOOST_CHECK_CLOSE_FRACTION(result, get<12>(data), 1E-3);
-//    BOOST_CHECK_MESSAGE(std::abs(result - get<12>(data)) < 1E-4, 
-//                        "Scale factor should be " << get<12>(data) << " but was " << result << " (" << count << ")");
     count += 1;
     
   }

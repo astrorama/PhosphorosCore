@@ -29,7 +29,7 @@ po::options_description LikelihoodGridFunctionConfiguration::getProgramOptions()
     (ENABLE_MISSING_DATA.c_str(), po::value<std::string>(),
         "Enables or disables the check for missing data. One of OFF, ON(default)")
     (ENABLE_UPPER_LIMIT.c_str(), po::value<std::string>(),
-        "Enables or disables the upper limit handling. One of OFF, ON(default)");
+        "Enables or disables the upper limit handling. One of OFF, ON(default), FAST");
   
   return merge(options)
               (PhotometryCatalogConfiguration::getProgramOptions());
@@ -56,12 +56,18 @@ LikelihoodGridFunctionConfiguration::LikelihoodGridFunctionConfiguration(
   
   std::string upper_limit = "ON";
   bool upper_limit_flag = true;
+  m_fast_upper_limit = false;
   if (options.count(ENABLE_UPPER_LIMIT) == 1) {
     upper_limit = options.at(ENABLE_UPPER_LIMIT).as<std::string>();
     if (upper_limit == "OFF") {
       upper_limit_flag = false;
+      m_fast_upper_limit = false;
     } else if (upper_limit == "ON") {
       upper_limit_flag = true;
+      m_fast_upper_limit = false;
+    } else if (upper_limit == "FAST") {
+      upper_limit_flag = true;
+      m_fast_upper_limit = true;
     } else {
       throw Elements::Exception() << "Unknown " << ENABLE_UPPER_LIMIT << " option \'" << upper_limit << "\'";
     }
@@ -91,16 +97,26 @@ PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction LikelihoodGridFunctionCo
   PhzLikelihood::LikelihoodLogarithmAlgorithm::LikelihoodLogarithmCalc likelihood_logarithm {};
   if (m_enable_missing_data) {
     if (m_enable_upper_limit) {
-      scale_factor = PhzLikelihood::ScaleFactorFunctorUpperLimitMissingData {};
-      likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmUpperLimitMissingData {};
+      if (m_fast_upper_limit) {
+        scale_factor = PhzLikelihood::ScaleFactorFunctorUpperLimitFastMissingData {};
+        likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmUpperLimitFastMissingData {};
+      } else {
+        scale_factor = PhzLikelihood::ScaleFactorFunctorUpperLimitMissingData {};
+        likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmUpperLimitMissingData {};
+      }
     } else {
       scale_factor = PhzLikelihood::ScaleFactorFunctorMissingData {};
       likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmMissingData {};
     }
   } else {
     if (m_enable_upper_limit) {
-      scale_factor = PhzLikelihood::ScaleFactorFunctorUpperLimit {};
-      likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmUpperLimit {};
+      if (m_fast_upper_limit) {
+        scale_factor = PhzLikelihood::ScaleFactorFunctorUpperLimitFast {};
+        likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmUpperLimitFast {};
+      } else {
+        scale_factor = PhzLikelihood::ScaleFactorFunctorUpperLimit {};
+        likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmUpperLimit {};
+      }
     } else {
       scale_factor = PhzLikelihood::ScaleFactorFunctorSimple {};
       likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmSimple {};
