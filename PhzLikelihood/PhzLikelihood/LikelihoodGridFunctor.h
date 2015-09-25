@@ -58,7 +58,7 @@ public:
   /**
    * Constructs a new LikelihoodGridFunctor instance.
    */
-  LikelihoodGridFunctor();
+  LikelihoodGridFunctor(LikelihoodLogarithmFunction likelihood_log_func);
 
   /**
    * Computes the likelihood of the given source photometry over the given
@@ -78,7 +78,6 @@ public:
 private:
 
   LikelihoodLogarithmFunction m_likelihood_log_func;
-  LikelihoodLogarithmFunction m_likelihood_with_upper_limit_log_func;
 
 };
 
