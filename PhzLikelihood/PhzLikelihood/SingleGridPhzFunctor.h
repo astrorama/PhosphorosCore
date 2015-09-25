@@ -19,6 +19,10 @@
 #include "PhzLikelihood/LikelihoodGridFunctor.h"
 #include "PhzLikelihood/BayesianMarginalizationFunctor.h"
 
+#include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
+#include "PhzLikelihood/ScaleFactorFunctor.h"
+#include "PhzLikelihood/ChiSquareLikelihoodLogarithm.h"
+
 namespace Euclid {
 namespace PhzLikelihood {
 
@@ -87,7 +91,7 @@ public:
   SingleGridPhzFunctor(const PhzDataModel::PhotometryGrid& phot_grid,
                        std::vector<PriorFunction> priors = {},
                        MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor{},
-                       LikelihoodGridFunction likelihood_func = LikelihoodGridFunctor{},
+                       LikelihoodGridFunction likelihood_func = LikelihoodGridFunctor{LikelihoodLogarithmAlgorithm{ScaleFactorFunctorSimple{}, ChiSquareLikelihoodLogarithmSimple{}}},
                        BestFitSearchFunction best_fit_search_func = std::max_element<PhzDataModel::LikelihoodGrid::iterator>);
 
   /**

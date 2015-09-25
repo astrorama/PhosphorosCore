@@ -48,7 +48,7 @@ po::options_description ComputeRedshiftsConfiguration::getProgramOptions() {
 
   return merge(options)
               (PhotometricCorrectionConfiguration::getProgramOptions())
-              (PhotometryCatalogConfiguration::getProgramOptions())
+              (LikelihoodGridFunctionConfiguration::getProgramOptions())
               (PhotometryGridConfiguration::getProgramOptions());
 }
 
@@ -71,6 +71,7 @@ static fs::path getOutputPathFromOptions(const std::map<std::string, po::variabl
 ComputeRedshiftsConfiguration::ComputeRedshiftsConfiguration(const std::map<std::string, po::variable_value>& options)
           : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options),
             CatalogConfiguration(options), PhotometryCatalogConfiguration(options),
+            LikelihoodGridFunctionConfiguration(options),
             PhotometricCorrectionConfiguration(options), PhotometryGridConfiguration(options),
             PriorConfiguration() {
   m_options = options;

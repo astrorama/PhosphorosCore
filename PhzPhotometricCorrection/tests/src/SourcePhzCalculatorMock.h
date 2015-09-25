@@ -12,6 +12,8 @@
 #include <boost/test/test_tools.hpp>
 #include "ElementsKernel/EnableGMock.h"
 
+#include "PhzLikelihood/SourcePhzFunctor.h"
+
 using namespace testing;
 
 namespace Euclid {
@@ -23,7 +25,8 @@ public:
   virtual ~SourcePhzCalculatorMock() = default;
 
   SourcePhzCalculatorMock(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
-     const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map):
+     const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
+     PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction):
        m_phot_corr_map{std::move(phot_corr_map)},
        m_phot_grid(model_grid_map.at("")){
         expectFunctorCall();

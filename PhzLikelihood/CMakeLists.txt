@@ -16,14 +16,14 @@ elements_add_library(PhzLikelihood src/lib/*.cpp
                   LINK_LIBRARIES PhzDataModel PhzOutput
                   PUBLIC_HEADERS PhzLikelihood )
 
-#===== Boost tests =============================================================
-elements_add_unit_test(ScaleFactorFunctor_test tests/src/ScaleFactorFunctor_test.cpp
-                       LINK_LIBRARIES PhzLikelihood TYPE Boost)
-elements_add_unit_test(ChiSquareFunctor_test tests/src/ChiSquareFunctor_test.cpp
-                       LINK_LIBRARIES PhzLikelihood TYPE Boost)
-
 #===== Tests using GMock =======================================================
 if(GMOCK_FOUND)
+  elements_add_unit_test(ScaleFactorFunctor_test tests/src/ScaleFactorFunctor_test.cpp
+                         LINK_LIBRARIES GMock PhzLikelihood TYPE Boost
+                         INCLUDE_DIRS GMock)
+  elements_add_unit_test(ChiSquareLikelihoodLogarithm_test tests/src/ChiSquareLikelihoodLogarithm_test.cpp
+                         LINK_LIBRARIES GMock PhzLikelihood TYPE Boost
+                         INCLUDE_DIRS GMock)
   elements_add_unit_test(LikelihoodAlgorithm_test tests/src/LikelihoodAlgorithm_test.cpp
                          LINK_LIBRARIES GMock PhzLikelihood TYPE Boost
                          INCLUDE_DIRS GMock)
