@@ -41,7 +41,7 @@ public:
 
 
   CalculateScaleFactorMap(ScaleFactorCalc scaleFactorFunction
-      = CalculateScaleFactorMap::ScaleFactorCalc(PhzLikelihood::ScaleFactorFunctor()));
+      = CalculateScaleFactorMap::ScaleFactorCalc(PhzLikelihood::ScaleFactorFunctorSimple()));
 
   /**
     * @brief Compute the Scale Factor Map

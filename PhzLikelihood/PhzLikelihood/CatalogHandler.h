@@ -34,6 +34,8 @@ public:
   
   typedef SourcePhzFunctor::PriorFunction PriorFunction;
   
+  typedef SourcePhzFunctor::LikelihoodGridFunction LikelihoodGridFunction;
+  
   /**
    * Constructs a new CatalogHandler instance. If the given photometric
    * correction map does not contain corrections for all the filters of the
@@ -44,6 +46,8 @@ public:
    * @param phot_grid_map
    *    The const reference to the map containing the grids with the model
    *    photometries for all the parameter space regions
+   * @param likelihood_grid_func
+   *    The function to use for computing the likelihood grid for a single source
    * @param priors
    *    The priors to apply on the likelihood grid
    * @param marginalization_func
@@ -55,6 +59,7 @@ public:
    */
   CatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                  const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
+                 LikelihoodGridFunction likelihood_grid_func,
                  std::vector<PriorFunction> priors,
                  MarginalizationFunction marginalization_func);
   

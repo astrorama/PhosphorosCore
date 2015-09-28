@@ -26,9 +26,9 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhzLikelihood");
 
 SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
+                                   LikelihoodGridFunction likelihood_func,
                                    std::vector<PriorFunction> priors,
                                    MarginalizationFunction marginalization_func,
-                                   LikelihoodGridFunction likelihood_func,
                                    BestFitSearchFunction best_fit_search_func)
         : m_phot_corr_map{std::move(phot_corr_map)} {
   for (auto& pair : phot_grid_map) {

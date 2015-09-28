@@ -16,6 +16,7 @@
 #include "PhzConfiguration/PhotometryCatalogConfiguration.h"
 #include "PhzConfiguration/PhotometryGridConfiguration.h"
 #include "PhzConfiguration/PriorConfiguration.h"
+#include "PhzConfiguration/LikelihoodGridFunctionConfiguration.h"
 #include "PhzConfiguration/LuminosityPriorConfiguration.h"
 
 namespace Euclid {
@@ -31,9 +32,11 @@ namespace PhzConfiguration {
  * - Photometric correction
  * - Photometry catalog
  * - Model photometry grid
+ * - Priors
+ * - LikelihoodGridFunction
  * and it adds the required configuration for the output of the executable.
  */
-class ComputeRedshiftsConfiguration : public virtual PhotometryCatalogConfiguration,
+class ComputeRedshiftsConfiguration : public virtual LikelihoodGridFunctionConfiguration,
                                       public virtual PhotometricCorrectionConfiguration,
                                       public virtual PhotometryGridConfiguration,
                                       public virtual PriorConfiguration,
