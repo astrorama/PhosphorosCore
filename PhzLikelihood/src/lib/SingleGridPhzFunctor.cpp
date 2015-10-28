@@ -4,6 +4,7 @@
  * @author Nikolaos Apostolakos
  */
 
+#include <algorithm>
 #include "PhzLikelihood/SingleGridPhzFunctor.h"
 
 namespace Euclid {
@@ -30,14 +31,7 @@ auto SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
   
   // copy the likelihood Grid
   PhzDataModel::LikelihoodGrid posterior_grid{likelihood_grid.getAxesTuple()};
-  auto likelihood_iter = likelihood_grid.begin();
-  auto posterior_iter = posterior_grid.begin();
-  while (likelihood_iter!=likelihood_grid.end()){
-    *posterior_iter=*likelihood_iter;
-    ++likelihood_iter;
-    ++posterior_iter;
-  }
-
+  std::copy(likelihood_grid.begin(), likelihood_grid.end(), posterior_grid.begin());
 
   // Apply all the priors to the likelihood
   for (auto& prior : m_priors) {

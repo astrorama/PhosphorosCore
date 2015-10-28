@@ -18,7 +18,7 @@ namespace PhzLuminosity {
 /**
  * @class Euclid::PhzLuminosity::LuminosityFunctionValidityDomain
  *
- * @brief The domain of validity int the plane (z, SED) for a luminosity function.
+ * @brief The domain of validity in the plane (z, SED) for a luminosity function.
  *
  */
 class LuminosityFunctionValidityDomain{

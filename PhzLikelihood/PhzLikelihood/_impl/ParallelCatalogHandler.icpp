@@ -9,6 +9,7 @@
 #include <future>
 #include <thread>
 #include <chrono>
+#include <algorithm>
 #include "ElementsKernel/Logging.h"
 
 namespace Euclid {
@@ -59,25 +60,16 @@ private:
       auto& likelihood_map = std::get<2>(results);
       std::map<std::string, PhzDataModel::LikelihoodGrid> likelihood_map_copy {};
       for (auto& pair : likelihood_map) {
-        PhzDataModel::LikelihoodGrid lieklihood_copy {pair.second.getAxesTuple()};
-        auto likelihood_iter = pair.second.begin();
-        auto likelihood_copy_iter = lieklihood_copy.begin();
-        for (; likelihood_iter!=pair.second.end(); ++likelihood_iter, ++likelihood_copy_iter) {
-          *likelihood_copy_iter = *likelihood_iter;
-        }
-        likelihood_map_copy.emplace(std::make_pair(pair.first, std::move(lieklihood_copy)));
+        PhzDataModel::LikelihoodGrid likelihood_copy {pair.second.getAxesTuple()};
+        std::copy(pair.second.begin(), pair.second.end(), likelihood_copy.begin());
+        likelihood_map_copy.emplace(std::make_pair(pair.first, std::move(likelihood_copy)));
       }
 
       auto& posteriors_map = std::get<3>(results);
       std::map<std::string, PhzDataModel::LikelihoodGrid> posteriors_map_copy { };
       for (auto& pair : posteriors_map) {
         PhzDataModel::LikelihoodGrid posterior_copy { pair.second.getAxesTuple() };
-        auto posterior_iter = pair.second.begin();
-        auto posterior_copy_iter = posterior_copy.begin();
-        for (; posterior_iter != pair.second.end();
-            ++posterior_iter, ++posterior_copy_iter) {
-          *posterior_copy_iter = *posterior_iter;
-        }
+        std::copy(pair.second.begin(), pair.second.end(), posterior_copy.begin());
         posteriors_map_copy.emplace(
             std::make_pair(pair.first, std::move(posterior_copy)));
       }
@@ -89,7 +81,7 @@ private:
         std::move(posteriors_map_copy),
         std::get<4>(results),
         std::get<5>(results),
-        std::get<6>(results),
+        std::get<6>(results)
       };
       m_result_vector.push_back(ResultType{source, std::move(results_copy)});
       ++m_progress;

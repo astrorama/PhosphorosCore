@@ -27,7 +27,7 @@ public:
    * - An iterator pointing to the model photometry which is the best match
    * - A grid representing the 1D PDF over the redshift
    * - A map containing the likelihood (before applying priors) for all parameter space regions
-   * - A map containing the posterios for all parameter space regions
+   * - A map containing the posterior for all parameter space regions
    * - A double with the value of the alpha scale factor used for the fitting
    * - A double with the likelihood value of the best fitted model
    * - A map containing the best chi square for each region

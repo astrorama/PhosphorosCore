@@ -38,7 +38,7 @@ LuminosityFunctionSet&  LuminosityFunctionSet::operator= ( const LuminosityFunct
 double LuminosityFunctionSet::operator()(const std::string& sedGroup,double z, double luminosity) const {
   for(auto& region :m_luminosity_functions){
     if (region.first.doesApply(sedGroup,z)){
-      return (*region.second.get())(luminosity);
+      return (*region.second)(luminosity);
     }
   }
 
