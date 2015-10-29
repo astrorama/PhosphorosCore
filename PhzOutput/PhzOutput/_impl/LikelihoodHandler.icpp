@@ -101,7 +101,7 @@ void LikelihoodHandler<TupleIndex>::handleSourceOutput(const SourceCatalog::Sour
     addAxis<2>(filename, pair.first, pair.second);
     addAxis<3>(filename, pair.first, pair.second);
   }
-  logger.info() << "Created likelihood grid for source " << id << " in file " << filename;
+  logger.info() << "Created file " << filename << " for source " << id;
 }
 
 } // end of namespace PhzOutput
