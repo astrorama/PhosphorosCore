@@ -13,6 +13,7 @@
 #include "ElementsKernel/Exception.h"
 #include <boost/test/unit_test.hpp>
 #include "PhzDataModel/PhotometryGrid.h"
+#include "PhysicsUtils/CosmologicalDistances.h"
 
 #include "PhzLuminosity/ReddenedLuminosityCalculator.h"
 
@@ -23,7 +24,8 @@ struct LuminosityCalculator_Fixture {
 
   XYDataset::QualifiedName luminosityFilterName{"group/FilterName"};
 
-  PhysicsUtils::Cosmology cosmology{};
+  PhysicsUtils::CosmologicalParameters cosmology{};
+  PhysicsUtils::CosmologicalDistances distances{};
 
   std::vector<double> zs{0.0,0.2,0.6,1.0};
   std::vector<double> ebvs{0.0,0.1,0.2};
@@ -109,7 +111,7 @@ BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
 
         double flux = model_iter->find(luminosityFilterName.qualifiedName())->flux;
         double mag_1 =  2.5 * std::log10(flux*alpha);
-        double dm = cosmology.distanceModulus(z);
+        double dm = distances.distanceModulus(z,cosmology);
 
         double expected = -mag_1-dm;
         BOOST_CHECK(Elements::isEqual(computed,expected));
@@ -138,7 +140,7 @@ BOOST_FIXTURE_TEST_CASE(test_flux, LuminosityCalculator_Fixture) {
 
         double flux = model_iter->find(luminosityFilterName.qualifiedName())->flux;
 
-        double l_s = cosmology.luminousDistance(z)*cosmology.luminousDistance(z)/100.;
+        double l_s = distances.luminousDistance(z,cosmology)*distances.luminousDistance(z,cosmology)/100.;
 
         double expected = flux*alpha*l_s;
         BOOST_CHECK(Elements::isEqual(computed,expected));

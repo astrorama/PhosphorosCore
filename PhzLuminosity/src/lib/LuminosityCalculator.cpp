@@ -7,6 +7,7 @@
 
 #include "ElementsKernel/Logging.h"
 #include "PhzLuminosity/LuminosityCalculator.h"
+#include "PhysicsUtils/CosmologicalDistances.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
@@ -30,7 +31,8 @@ double LuminosityCalculator::getLuminosityDistance(double z) const{
     return m_luminosity_distance_map[z];
   }
 
-  double dist = m_cosmology.luminousDistance(z);
+  PhysicsUtils::CosmologicalDistances distances{};
+  double dist = distances.luminousDistance(z, m_cosmology);
   m_luminosity_distance_map[z]=dist;
   return dist;
 }
@@ -41,7 +43,8 @@ double LuminosityCalculator::getDistanceModulus(double z) const{
       return m_distance_modulus_map[z];
     }
 
-    double dist = m_cosmology.distanceModulus(z);
+    PhysicsUtils::CosmologicalDistances distances{};
+    double dist = distances.distanceModulus(z, m_cosmology);
     m_distance_modulus_map[z]=dist;
     return dist;
 }

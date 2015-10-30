@@ -9,7 +9,6 @@
 #define PHZLUMINOSITY_PHZLUMINOSITY_REDDENEDLUMINOSITYCALCULATOR_H_
 
 #include "XYDataset/QualifiedName.h"
-#include "PhysicsUtils/Cosmology.h"
 #include "PhzLuminosity/LuminosityCalculator.h"
 
 namespace Euclid {

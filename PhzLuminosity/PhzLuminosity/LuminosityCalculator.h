@@ -9,7 +9,7 @@
 #define PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYCALCULATOR_H_
 #include <memory>
 #include "XYDataset/QualifiedName.h"
-#include "PhysicsUtils/Cosmology.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 
@@ -95,7 +95,7 @@ protected:
   XYDataset::QualifiedName m_luminosity_filter;
   std::shared_ptr<PhzDataModel::PhotometryGrid> m_model_photometry_grid;
   bool m_in_mag;
-  PhysicsUtils::Cosmology m_cosmology{};
+  PhysicsUtils::CosmologicalParameters m_cosmology{};
 
 };
 
