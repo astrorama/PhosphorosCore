@@ -1,4 +1,4 @@
-elements_subdir(PhzModeling 0.1)
+elements_subdir(PhzModeling)
 
 elements_depends_on_subdirs(XYDataset)
 elements_depends_on_subdirs(GridContainer)

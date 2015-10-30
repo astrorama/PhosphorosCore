@@ -1,4 +1,4 @@
-elements_subdir(PhzLuminosity 0.1)
+elements_subdir(PhzLuminosity)
 
 
 elements_depends_on_subdirs(ElementsKernel)

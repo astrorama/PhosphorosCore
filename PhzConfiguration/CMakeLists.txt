@@ -1,4 +1,4 @@
-elements_subdir(PhzConfiguration 0.1)
+elements_subdir(PhzConfiguration)
 
 elements_depends_on_subdirs(ElementsKernel)
 elements_depends_on_subdirs(XYDataset)

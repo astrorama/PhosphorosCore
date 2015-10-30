@@ -1,4 +1,4 @@
-elements_subdir(PhzPhotometricCorrection 0.1)
+elements_subdir(PhzPhotometricCorrection)
 
 elements_depends_on_subdirs(SourceCatalog)
 elements_depends_on_subdirs(PhzDataModel)

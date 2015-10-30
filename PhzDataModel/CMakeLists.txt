@@ -1,4 +1,4 @@
-elements_subdir(PhzDataModel 0.1)
+elements_subdir(PhzDataModel)
 
 elements_depends_on_subdirs(ElementsKernel)
 elements_depends_on_subdirs(MathUtils)
