@@ -17,9 +17,6 @@ elements_add_library(PhzDataModel src/lib/*.cpp
 #===== Boost tests =============================================================                     
 elements_add_unit_test(FilterInfo_test tests/src/FilterInfo_test.cpp
                        LINK_LIBRARIES PhzDataModel TYPE Boost)
-                                           
-elements_add_unit_test(LuminosityCorrectionGrid_test tests/src/LuminosityCorrectionGrid_test.cpp
-                       LINK_LIBRARIES PhzDataModel TYPE Boost)
 
 elements_add_unit_test(PhotometricCorrectionMap_test tests/src/PhotometricCorrectionMap_test.cpp
                        LINK_LIBRARIES PhzDataModel TYPE Boost)
