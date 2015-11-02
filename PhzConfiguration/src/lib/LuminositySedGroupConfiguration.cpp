@@ -29,9 +29,9 @@ po::options_description LuminositySedGroupConfiguration::getProgramOptions() {
 }
 
 
-PhzLuminosity::SedGroupManager LuminositySedGroupConfiguration::getLuminositySedGroupManager() {
-  std::vector<PhzLuminosity::SedGroup> sedGroups { };
-
+PhzDataModel::QualifiedNameGroupManager LuminositySedGroupConfiguration::getLuminositySedGroupManager() {
+  PhzDataModel::QualifiedNameGroupManager::group_list_type groups {};
+  
   auto group_name_list = findWildcardOptions( { LUMINOSITY_SED_GROUP }, m_options);
 
   if (group_name_list.size() == 0) {
@@ -47,17 +47,13 @@ PhzLuminosity::SedGroupManager LuminositySedGroupConfiguration::getLuminositySed
     boost::split(sed_names, sed_list, boost::is_any_of(","),
         boost::token_compress_on);
 
-    std::vector<XYDataset::QualifiedName> seds { };
-    for (std::string sed_name : sed_names) {
-      seds.emplace_back(XYDataset::QualifiedName(sed_name));
-    }
+    std::set<XYDataset::QualifiedName> seds {sed_names.begin(), sed_names.end()};
 
-    PhzLuminosity::SedGroup new_group { group_name, std::move(seds) };
-    sedGroups.push_back(std::move(new_group));
+    groups[group_name] = seds;
 
   }
 
-  return PhzLuminosity::SedGroupManager { sedGroups };
+  return PhzDataModel::QualifiedNameGroupManager {groups};
 }
 
 

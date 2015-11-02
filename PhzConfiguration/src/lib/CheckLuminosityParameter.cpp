@@ -19,29 +19,26 @@ namespace PhzConfiguration {
 static Elements::Logging logger = Elements::Logging::getLogger("CheckLuminosityParameter");
 
 bool CheckLuminosityParameter::checkSedGroupCompletness(const PhzDataModel::PhotometryGridInfo& modelGridInfo,
-                    const PhzLuminosity::SedGroupManager sedGroupManager){
+                    const PhzDataModel::QualifiedNameGroupManager& sedGroupManager) {
 
   auto grid_seds = getCompleteList<XYDataset::QualifiedName,PhzDataModel::ModelParameter::SED>(modelGridInfo);
 
   // check that the cardinality match
-  auto groups = sedGroupManager.getGroupsName();
-
-  std::vector<std::string> group_seds{};
-  for (auto& group_name : groups){
-    for(auto& name :sedGroupManager.getGroupSeds(group_name)){
-      group_seds.push_back(name);
-    }
+  std::size_t group_size = 0;
+  for (auto& pair : sedGroupManager.getManagedGroups()) {
+    group_size += pair.second.size();
   }
 
-  if (group_seds.size()!=grid_seds.size()){
-    logger.info()<<"SED lists have not the same size (SEDs in SED groups)"<<group_seds.size()<<" !=(SEDs in the grid)"<<grid_seds.size();
+  if (group_size != grid_seds.size()){
+    logger.info() << "SED lists have not the same size (SEDs in SED groups) " << group_size
+                  << " != (SEDs in the grid) " << grid_seds.size();
     return false;
   }
 
   // check that all grid SED are known by the manager
   try{
     for (auto& sed : grid_seds){
-      sedGroupManager.getGroupName(sed);
+      sedGroupManager.findGroupContaining(sed);
     }
   }catch(const Elements::Exception&) {
     return false;

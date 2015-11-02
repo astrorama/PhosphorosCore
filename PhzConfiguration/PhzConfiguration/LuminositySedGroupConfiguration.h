@@ -11,7 +11,7 @@
 #include <string>
 
 #include <boost/program_options.hpp>
-#include "PhzLuminosity/SedGroupManager.h"
+#include "PhzDataModel/QualifiedNameGroupManager.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -27,7 +27,7 @@ public:
 
    virtual ~LuminositySedGroupConfiguration()=default;
 
-   PhzLuminosity::SedGroupManager getLuminositySedGroupManager();
+   PhzDataModel::QualifiedNameGroupManager getLuminositySedGroupManager();
 
 
 private:

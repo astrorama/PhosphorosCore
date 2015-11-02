@@ -9,7 +9,7 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
-SedAxisCorrection::SedAxisCorrection(PhzLuminosity::SedGroupManager group_manager)
+SedAxisCorrection::SedAxisCorrection(PhzDataModel::QualifiedNameGroupManager group_manager)
   :m_group_manager{std::move(group_manager)}{}
 
 void SedAxisCorrection::operator()(PhzDataModel::LikelihoodGrid& likelihood_grid){
@@ -24,7 +24,7 @@ void SedAxisCorrection::operator()(PhzDataModel::LikelihoodGrid& likelihood_grid
 
 
     for (size_t i=0; i<axis.size(); ++i) {
-      weights.push_back(m_group_manager.getSedWeight(axis[i]));
+      weights.push_back(1. / m_group_manager.findGroupContaining(axis[i]).second.size());
     }
 
     // Apply the weights in each slice of the likelihood grid

@@ -11,7 +11,7 @@
 #include "XYDataset/QualifiedName.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
-#include "PhzLuminosity/SedGroupManager.h"
+#include "PhzDataModel/QualifiedNameGroupManager.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -21,7 +21,7 @@ namespace PhzConfiguration {
 class CheckLuminosityParameter{
 public:
   bool checkSedGroupCompletness(const PhzDataModel::PhotometryGridInfo& modelGridInfo,
-                  const PhzLuminosity::SedGroupManager sedGroupManager);
+                  const PhzDataModel::QualifiedNameGroupManager& sedGroupManager);
 
   bool checkLuminosityModelGrid(const PhzDataModel::PhotometryGridInfo& modelGridInfo,
                   const PhzDataModel::PhotometryGrid& luminosityGrid,bool withReddening);

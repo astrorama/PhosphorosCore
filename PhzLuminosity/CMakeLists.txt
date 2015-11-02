@@ -14,12 +14,6 @@ elements_add_library(PhzLuminosity src/lib/*.cpp
                   PUBLIC_HEADERS PhzLuminosity )
 
 #===== Boost tests =============================================================
-elements_add_unit_test(SedGroup_test tests/src/SedGroup_test.cpp
-                       LINK_LIBRARIES XYDataset PhzLuminosity TYPE Boost)
-
-elements_add_unit_test(SedGroupManager_test tests/src/SedGroupManager_test.cpp
-                       LINK_LIBRARIES XYDataset PhzLuminosity TYPE Boost)
-
 elements_add_unit_test(LuminosityFunctionValidityDomain_Test tests/src/LuminosityFunctionValidityDomain_Test.cpp
                        LINK_LIBRARIES XYDataset PhzLuminosity TYPE Boost)
 

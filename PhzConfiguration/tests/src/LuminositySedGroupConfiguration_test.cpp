@@ -54,30 +54,10 @@ BOOST_FIXTURE_TEST_CASE(SedGroupManager_test, LuminositySedGroupConfiguration_fi
       std::string { sed_1 + "," + sed_2 + "," + sed_3 });
   cf::LuminositySedGroupConfiguration config2 { options_map };
   auto manager = config2.getLuminositySedGroupManager();
-  BOOST_CHECK_NO_THROW(manager.getGroupSeds(name_1));
-  auto list = manager.getGroupSeds(name_1);
-
-  BOOST_CHECK_EQUAL(list.size(), 3);
-
-  bool found_1 = false;
-  bool found_2 = false;
-  bool found_3 = false;
-
-  for (auto& name : list) {
-    if (sed_1.compare(name) == 0) {
-      found_1 = true;
-    }
-
-    if (sed_2.compare(name) == 0) {
-      found_2 = true;
-    }
-
-    if (sed_3.compare(name) == 0) {
-      found_3 = true;
-    }
-  }
-
-  BOOST_CHECK(found_1 && found_2 && found_3);
+  
+  BOOST_CHECK_EQUAL(manager.findGroupContaining(sed_1).first, name_1);
+  BOOST_CHECK_EQUAL(manager.findGroupContaining(sed_2).first, name_1);
+  BOOST_CHECK_EQUAL(manager.findGroupContaining(sed_3).first, name_1);
 
   // 2 Group
   const std::string name_2 = "name2";
@@ -88,51 +68,13 @@ BOOST_FIXTURE_TEST_CASE(SedGroupManager_test, LuminositySedGroupConfiguration_fi
       std::string { sed_4 + "," + sed_5 });
   cf::LuminositySedGroupConfiguration config3 { options_map };
   manager = config3.getLuminositySedGroupManager();
-  BOOST_CHECK_NO_THROW(manager.getGroupSeds(name_1));
-  list = manager.getGroupSeds(name_1);
-
-  BOOST_CHECK_EQUAL(list.size(), 3);
-
-  found_1 = false;
-  found_2 = false;
-  found_3 = false;
-
-  for (auto& name : list) {
-    if (sed_1.compare(name) == 0) {
-      found_1 = true;
-    }
-
-    if (sed_2.compare(name) == 0) {
-      found_2 = true;
-    }
-
-    if (sed_3.compare(name) == 0) {
-      found_3 = true;
-    }
-  }
-
-  BOOST_CHECK(found_1 && found_2 && found_3);
-
-  BOOST_CHECK_NO_THROW(manager.getGroupSeds(name_2));
-  list = manager.getGroupSeds(name_2);
-
-  BOOST_CHECK_EQUAL(list.size(), 2);
-
-  found_1 = false;
-  found_2 = false;
-
-  for (auto& name : list) {
-    if (sed_4.compare(name) == 0) {
-      found_1 = true;
-    }
-
-    if (sed_5.compare(name) == 0) {
-      found_2 = true;
-    }
-
-  }
-
-  BOOST_CHECK(found_1 && found_2);
+  
+  BOOST_CHECK_EQUAL(manager.findGroupContaining(sed_1).first, name_1);
+  BOOST_CHECK_EQUAL(manager.findGroupContaining(sed_2).first, name_1);
+  BOOST_CHECK_EQUAL(manager.findGroupContaining(sed_3).first, name_1);
+  
+  BOOST_CHECK_EQUAL(manager.findGroupContaining(sed_4).first, name_2);
+  BOOST_CHECK_EQUAL(manager.findGroupContaining(sed_5).first, name_2);
 
 }
 

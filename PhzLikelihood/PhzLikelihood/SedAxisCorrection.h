@@ -8,7 +8,7 @@
 #define	PHZLIKELIHOOD_SEDAXISCORRECTION_H
 
 #include "PhzDataModel/LikelihoodGrid.h"
-#include "PhzLuminosity/SedGroupManager.h"
+#include "PhzDataModel/QualifiedNameGroupManager.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -18,12 +18,12 @@ class SedAxisCorrection {
 
 public:
 
-  SedAxisCorrection(PhzLuminosity::SedGroupManager group_manager);
+  SedAxisCorrection(PhzDataModel::QualifiedNameGroupManager group_manager);
 
   void operator()(PhzDataModel::LikelihoodGrid& likelihood_grid);
 
 private:
-  PhzLuminosity::SedGroupManager m_group_manager;
+  PhzDataModel::QualifiedNameGroupManager m_group_manager;
 
 };
 

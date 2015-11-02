@@ -19,7 +19,7 @@
 
 #include "PhzLuminosity/LuminosityFunctionSet.h"
 #include "PhzLuminosity/LuminosityCalculator.h"
-#include "PhzLuminosity/SedGroupManager.h"
+#include "PhzDataModel/QualifiedNameGroupManager.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
@@ -30,7 +30,7 @@ public:
 
 LuminosityPrior(
     std::unique_ptr<const LuminosityCalculator> luminosityCalculator,
-    SedGroupManager sedGroupManager,
+    PhzDataModel::QualifiedNameGroupManager sedGroupManager,
     LuminosityFunctionSet luminosityFunctionSet );
 
 LuminosityPrior(const LuminosityPrior & other);
@@ -43,7 +43,7 @@ void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
 private:
 
   std::unique_ptr<const LuminosityCalculator> m_luminosity_calculator;
-  SedGroupManager m_sed_group_manager;
+  PhzDataModel::QualifiedNameGroupManager m_sed_group_manager;
   LuminosityFunctionSet m_luminosity_function_set;
 };
 
