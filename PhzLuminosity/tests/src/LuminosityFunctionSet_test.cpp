@@ -1,82 +1,271 @@
-/*
- * LuminosityFunctionSet_test.cpp
- *
- *  Created on: Aug 19, 2015
- *      Author: fdubath
+/**
+ * @file tests/src/lib/LuminosityFunctionSet_test.cpp
+ * @date 19 August 2015
+ * @author Florian Dubath
  */
+
+
+#include <boost/test/unit_test.hpp>
+#include <boost/test/test_tools.hpp>
 
 #include <memory>
 #include <map>
 #include <vector>
 #include <utility>
-#include "MathUtils/function/Polynomial.h"
-#include "MathUtils/interpolation/interpolation.h"
 #include "ElementsKernel/Real.h"
 #include "ElementsKernel/Exception.h"
-#include <boost/test/unit_test.hpp>
-#include <PhzLuminosity/LuminosityFunctionSet.h>
-#include <PhzLuminosity/LuminosityFunctionValidityDomain.h>
-
-
+#include "PhzLuminosity/LuminosityFunctionSet.h"
+#include "PhzLuminosity/LuminosityFunctionValidityDomain.h"
+#include "MathUtils/function/Function.h"
+#include "MathUtils/function/FunctionAdapter.h"
 
 using namespace Euclid;
-
-struct LuminosityFunctionSet_Fixture {
-
-  LuminosityFunctionSet_Fixture(){
-
-
-
-  }
-
-};
 
 
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE (LuminosityFunctionSet_test)
 
+BOOST_AUTO_TEST_CASE(non_overlap_group_name) {
+
+  std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
+                        std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
+
+  std::unique_ptr<MathUtils::Function> f_1 {new MathUtils::FunctionAdapter{[](double){return 1.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_1{"group_1",0.,1.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_1),std::move(f_1)));
+
+  std::unique_ptr<MathUtils::Function> f_2 {new MathUtils::FunctionAdapter{[](double){return 2.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_2{"group_2",0.,1.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_2),std::move(f_2)));
+
+  BOOST_CHECK_NO_THROW(PhzLuminosity::LuminosityFunctionSet{std::move(luminosityFunctions)});
+
+}
+
+BOOST_AUTO_TEST_CASE(overlap_group_name) {
+
+  std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
+                        std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
+
+  std::unique_ptr<MathUtils::Function> f_1 {new MathUtils::FunctionAdapter{[](double){return 1.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_1{"group_1",0.,1.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_1),std::move(f_1)));
+
+  std::unique_ptr<MathUtils::Function> f_2 {new MathUtils::FunctionAdapter{[](double){return 2.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_2{"group_1",0.,1.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_2),std::move(f_2)));
+
+  BOOST_CHECK_THROW(PhzLuminosity::LuminosityFunctionSet{std::move(luminosityFunctions)},Elements::Exception);
+
+}
+
+BOOST_AUTO_TEST_CASE(half_overlap_group_name) {
+
+  std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
+                        std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
+
+  std::unique_ptr<MathUtils::Function> f_1 {new MathUtils::FunctionAdapter{[](double){return 1.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_1{"group_1",0.,1.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_1),std::move(f_1)));
+
+  std::unique_ptr<MathUtils::Function> f_2 {new MathUtils::FunctionAdapter{[](double){return 2.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_2{"group_1",0.5,1.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_2),std::move(f_2)));
+
+  BOOST_CHECK_THROW(PhzLuminosity::LuminosityFunctionSet{std::move(luminosityFunctions)},Elements::Exception);
+
+}
+
+BOOST_AUTO_TEST_CASE(half_overlap_2_group_name) {
+
+  std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
+                        std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
+
+  std::unique_ptr<MathUtils::Function> f_1 {new MathUtils::FunctionAdapter{[](double){return 1.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_1{"group_1",0.,1.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_1),std::move(f_1)));
+
+  std::unique_ptr<MathUtils::Function> f_2 {new MathUtils::FunctionAdapter{[](double){return 2.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_2{"group_1",0.,0.5};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_2),std::move(f_2)));
+
+  BOOST_CHECK_THROW(PhzLuminosity::LuminosityFunctionSet{std::move(luminosityFunctions)},Elements::Exception);
+
+}
+
+BOOST_AUTO_TEST_CASE(inner_overlap_group_name) {
+
+  std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
+                        std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
+
+  std::unique_ptr<MathUtils::Function> f_1 {new MathUtils::FunctionAdapter{[](double){return 1.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_1{"group_1",0.,1.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_1),std::move(f_1)));
+
+  std::unique_ptr<MathUtils::Function> f_2 {new MathUtils::FunctionAdapter{[](double){return 2.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_2{"group_1",0.25,0.5};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_2),std::move(f_2)));
+
+  BOOST_CHECK_THROW(PhzLuminosity::LuminosityFunctionSet{std::move(luminosityFunctions)},Elements::Exception);
+
+}
+
+BOOST_AUTO_TEST_CASE(inner_overlap_2_group_name) {
+
+  std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
+                        std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
+
+  std::unique_ptr<MathUtils::Function> f_1 {new MathUtils::FunctionAdapter{[](double){return 1.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_1{"group_1",0.25,0.5};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_1),std::move(f_1)));
+
+  std::unique_ptr<MathUtils::Function> f_2 {new MathUtils::FunctionAdapter{[](double){return 2.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_2{"group_1",0.,1.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_2),std::move(f_2)));
+
+  BOOST_CHECK_THROW(PhzLuminosity::LuminosityFunctionSet{std::move(luminosityFunctions)},Elements::Exception);
+
+}
+
+BOOST_AUTO_TEST_CASE(tail_overlap_group_name) {
+
+  std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
+                        std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
+
+  std::unique_ptr<MathUtils::Function> f_1 {new MathUtils::FunctionAdapter{[](double){return 1.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_1{"group_1",1.,2.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_1),std::move(f_1)));
+
+  std::unique_ptr<MathUtils::Function> f_2 {new MathUtils::FunctionAdapter{[](double){return 2.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_2{"group_1",1.5,3.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_2),std::move(f_2)));
+
+  BOOST_CHECK_THROW(PhzLuminosity::LuminosityFunctionSet{std::move(luminosityFunctions)},Elements::Exception);
+
+}
+
+BOOST_AUTO_TEST_CASE(tail_overlap_2_group_name) {
+
+  std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
+                        std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
+
+  std::unique_ptr<MathUtils::Function> f_1 {new MathUtils::FunctionAdapter{[](double){return 1.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_1{"group_1",1.,2.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_1),std::move(f_1)));
+
+  std::unique_ptr<MathUtils::Function> f_2 {new MathUtils::FunctionAdapter{[](double){return 2.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_2{"group_1",0.,1.5};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_2),std::move(f_2)));
+
+  BOOST_CHECK_THROW(PhzLuminosity::LuminosityFunctionSet{std::move(luminosityFunctions)},Elements::Exception);
+
+}
+
+BOOST_AUTO_TEST_CASE(border_overlap_group_name) {
+
+  std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
+                        std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
+
+  std::unique_ptr<MathUtils::Function> f_1 {new MathUtils::FunctionAdapter{[](double){return 1.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_1{"group_1",0.,1.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_1),std::move(f_1)));
+
+  std::unique_ptr<MathUtils::Function> f_2 {new MathUtils::FunctionAdapter{[](double){return 2.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_2{"group_1",1.,2.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_2),std::move(f_2)));
+
+  BOOST_CHECK_NO_THROW(PhzLuminosity::LuminosityFunctionSet{std::move(luminosityFunctions)});
+
+}
+
+BOOST_AUTO_TEST_CASE(border_overlap_2_group_name) {
+
+  std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
+                        std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
+
+  std::unique_ptr<MathUtils::Function> f_1 {new MathUtils::FunctionAdapter{[](double){return 1.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_1{"group_1",1.,2.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_1),std::move(f_1)));
+
+  std::unique_ptr<MathUtils::Function> f_2 {new MathUtils::FunctionAdapter{[](double){return 2.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_2{"group_1",0.,1.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_2),std::move(f_2)));
+
+  BOOST_CHECK_NO_THROW(PhzLuminosity::LuminosityFunctionSet{std::move(luminosityFunctions)});
+
+}
 //---------------------------------------------------------------------------
 /**
  * check the functional call select the right luminosity function
  */
-BOOST_FIXTURE_TEST_CASE(test_functional, LuminosityFunctionSet_Fixture) {
 
-     XYDataset::XYDataset dataset1 = XYDataset::XYDataset::factory({0.,200.},{2.,2.});
-     auto f1 = MathUtils::interpolate(dataset1,MathUtils::InterpolationType::CUBIC_SPLINE);
+BOOST_AUTO_TEST_CASE(test_functional) {
 
-     PhzLuminosity::LuminosityFunctionValidityDomain domain1{"group",0.,3.};
+  std::vector<
+      std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
+          std::unique_ptr<MathUtils::Function>>>luminosityFunctions {};
 
-     XYDataset::XYDataset dataset2 = XYDataset::XYDataset::factory({0.,200.},{3.,3.});
-     auto f2 = MathUtils::interpolate(dataset2,MathUtils::InterpolationType::CUBIC_SPLINE);
+  std::unique_ptr<MathUtils::Function> f_1 {new MathUtils::FunctionAdapter {[](double) {return 1.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_1 {"group_1",0.,1.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_1),std::move(f_1)));
 
-     PhzLuminosity::LuminosityFunctionValidityDomain domain2{"group",3.,6.};
+  std::unique_ptr<MathUtils::Function> f_2 {new MathUtils::FunctionAdapter {[](double) {return 2.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_2 {"group_1",1.,2.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_2),std::move(f_2)));
 
-     XYDataset::XYDataset dataset3 = XYDataset::XYDataset::factory({0.,200.},{4.,4.});
-     auto f3 = MathUtils::interpolate(dataset3,MathUtils::InterpolationType::CUBIC_SPLINE);
+  std::unique_ptr<MathUtils::Function> f_3 {new MathUtils::FunctionAdapter {[](double) {return 3.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_3 {"group_2",0.,1.5};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_3),std::move(f_3)));
 
-     PhzLuminosity::LuminosityFunctionValidityDomain domain3{"group2",0.,3.};
+  std::unique_ptr<MathUtils::Function> f_4 {new MathUtils::FunctionAdapter {[](double) {return 4.;}}};
+  PhzLuminosity::LuminosityFunctionValidityDomain domain_4 {"group_2",1.5,2.};
+  luminosityFunctions.push_back(std::make_pair(std::move(domain_4),std::move(f_4)));
 
-     XYDataset::XYDataset dataset4 = XYDataset::XYDataset::factory({0.,200.},{5.,5.});
-     auto f4 = MathUtils::interpolate(dataset4,MathUtils::InterpolationType::CUBIC_SPLINE);
+  PhzLuminosity::LuminosityFunctionSet set {std::move(luminosityFunctions)};
 
-     PhzLuminosity::LuminosityFunctionValidityDomain domain4{"group2",3.,6.};
+  BOOST_CHECK_THROW(set.getLuminosityFunction("group_3",0.5),Elements::Exception);
 
-     std::map<PhzLuminosity::LuminosityFunctionValidityDomain,std::unique_ptr<MathUtils::Function>> map{};
-
-     map[std::move(domain1)]=std::move(f1);
-     map[std::move(domain2)]=std::move(f2);
-     map[std::move(domain3)]=std::move(f3);
-     map[std::move(domain4)]=std::move(f4);
-
-
-     PhzLuminosity::LuminosityFunctionSet function_set{std::move(map)};
+  BOOST_CHECK_THROW(set.getLuminosityFunction("group_1",3.),Elements::Exception);
 
 
-     BOOST_CHECK(Elements::isEqual(function_set("group",1.,10.), 2.));
-     BOOST_CHECK(Elements::isEqual(function_set("group",5.,10.), 3.));
-     BOOST_CHECK(Elements::isEqual(function_set("group2",1.,10.), 4.));
-     BOOST_CHECK(Elements::isEqual(function_set("group2",5.,10.), 5.));
+  auto& result=set.getLuminosityFunction("group_1",0.5);
+  BOOST_CHECK_EQUAL(result.first.getSedGroupName(),"group_1");
+  BOOST_CHECK_EQUAL(result.first.getMinZ(),0.);
+  BOOST_CHECK_EQUAL(result.first.getMaxZ(),1.);
+  BOOST_CHECK_EQUAL((*result.second)(0.5),1.);
+
+  auto& result1=set.getLuminosityFunction("group_1",1.5);
+  BOOST_CHECK_EQUAL(result1.first.getSedGroupName(),"group_1");
+  BOOST_CHECK_EQUAL(result1.first.getMinZ(),1.);
+  BOOST_CHECK_EQUAL(result1.first.getMaxZ(),2.);
+  BOOST_CHECK_EQUAL((*result1.second)(1.5),2.);
+
+  auto& result2=set.getLuminosityFunction("group_2",1.);
+  BOOST_CHECK_EQUAL(result2.first.getSedGroupName(),"group_2");
+  BOOST_CHECK_EQUAL(result2.first.getMinZ(),0.);
+  BOOST_CHECK_EQUAL(result2.first.getMaxZ(),1.5);
+  BOOST_CHECK_EQUAL((*result2.second)(1.),3.);
+
+  auto& result3=set.getLuminosityFunction("group_2",1.75);
+  BOOST_CHECK_EQUAL(result3.first.getSedGroupName(),"group_2");
+  BOOST_CHECK_EQUAL(result3.first.getMinZ(),1.5);
+  BOOST_CHECK_EQUAL(result3.first.getMaxZ(),2.);
+  BOOST_CHECK_EQUAL((*result3.second)(1.75),4.);
+
+  // border (order dependent)
+  auto& result4=set.getLuminosityFunction("group_1",0.);
+  BOOST_CHECK_EQUAL(result4.first.getSedGroupName(),"group_1");
+  BOOST_CHECK_EQUAL(result4.first.getMinZ(),0.);
+  BOOST_CHECK_EQUAL(result4.first.getMaxZ(),1.);
+  BOOST_CHECK_EQUAL((*result4.second)(0.),1.);
+
+  auto& result5=set.getLuminosityFunction("group_1",1.);
+  BOOST_CHECK_EQUAL(result5.first.getSedGroupName(),"group_1");
+  BOOST_CHECK_EQUAL(result5.first.getMinZ(),0.);
+  BOOST_CHECK_EQUAL(result5.first.getMaxZ(),1.);
+  BOOST_CHECK_EQUAL((*result5.second)(1.),1.);
+
 }
 
 

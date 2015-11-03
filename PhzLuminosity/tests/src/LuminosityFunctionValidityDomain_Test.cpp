@@ -1,8 +1,7 @@
-/*
- * LuminosityFunctionValidityDomain_Test.cpp
- *
- *  Created on: Aug 3, 2015
- *      Author: fdubath
+/**
+ * @file tests/src/lib/LuminosityFunctionValidityDomain_Test.cpp
+ * @date 4 August 2015
+ * @author Florian Dubath
  */
 
 #include <memory>

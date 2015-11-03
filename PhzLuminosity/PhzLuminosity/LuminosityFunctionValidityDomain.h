@@ -1,8 +1,7 @@
-/*
- * LuminosityFunctionValidityDomain.h
- *
- *  Created on: Aug 4, 2015
- *      Author: fdubath
+/**
+ * @file PhzLuminosity/LuminosityFunctionValidityDomain.h
+ * @date 4 August 2015
+ * @author Florian Dubath
  */
 
 #ifndef PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYFUNCTIONVALIDITYDOMAIN_H_
@@ -21,7 +20,7 @@ namespace PhzLuminosity {
  * @brief The domain of validity in the plane (z, SED) for a luminosity function.
  *
  */
-class LuminosityFunctionValidityDomain{
+class LuminosityFunctionValidityDomain {
 public:
 
   /*
@@ -36,29 +35,29 @@ public:
    * @param z_max
    * A double representing the upper bound (included) of the validity domain in z.
    *
+   * @throw Elements::Exception if z_min>=z_max
+   *
    */
-  LuminosityFunctionValidityDomain(const std::string& sed_group_name, double z_min, double z_max);
+  LuminosityFunctionValidityDomain(const std::string& sed_group_name,
+      double z_min, double z_max);
 
   /**
-   * @brief operator< implemented to allow this calss to be used as a map key.
+   * @brief Check if a given coordinate is in this validity domain this is the
+   * case when the sed_group_name is equal to the group name of the domain and
+   * the redshift z is in the interval [z_min;z_max].
+   *
+   * @param sed_group_name
+   * The name of a SED group
+   *
+   * @param z
+   * A redshift value
    */
-  bool operator< (const LuminosityFunctionValidityDomain& other) const;
-
-  /**
-    * @brief Check if a given coordinate is in this validity domain.
-    *
-    * @param sed_group_name
-    * The name of a SED group
-    *
-    * @param z
-    * A redshift value
-    */
   bool doesApply(const std::string& sed_group_name, double z) const;
 
   /**
    * @brief Getter on the SED group name
    */
-  std::string getSedGroupName() const;
+  const std::string& getSedGroupName() const;
 
   /**
    * @brief Getter on the upper limit of the z interval
@@ -78,6 +77,5 @@ private:
 
 }
 }
-
 
 #endif /* PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYFUNCTIONVALIDITYDOMAIN_H_ */

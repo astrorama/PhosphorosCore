@@ -1,8 +1,7 @@
-/*
- * LuminosityFunctionSet.h
- *
- *  Created on: Aug 19, 2015
- *      Author: fdubath
+/**
+ * @file PhzLuminosity/LuminosityFunctionSet.h
+ * @date 19 August 2015
+ * @author Florian Dubath
  */
 
 #ifndef PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYFUNCTIONSET_H_
@@ -25,43 +24,39 @@ namespace PhzLuminosity {
 class LuminosityFunctionSet {
 public:
 
+  /****** TO be removed ***********/
+   LuminosityFunctionSet ( const LuminosityFunctionSet & other);
+
+   LuminosityFunctionSet&  operator= ( const LuminosityFunctionSet & other);
+   /*******************************/
+
   /**
-   * @brief constructor
+   * @brief Constructor
    *
-   * @param regions
-   * a Vector<unique_ptr<ILuminosityFunction>> which are the sub-function.
+   * @details Check that the domains provided in the luminosityFunctions vectors
+   * do not overlap
+   *
+   * @param luminosityFunctions A vector of pair which key is the Validity domain
+   * and the value the luminosity function for this domain.
    */
-  LuminosityFunctionSet(std::map<LuminosityFunctionValidityDomain,std::unique_ptr<MathUtils::Function>> luminosityFunctions);
+  LuminosityFunctionSet(std::vector<std::pair<LuminosityFunctionValidityDomain,
+                        std::unique_ptr<MathUtils::Function>>> luminosityFunctions);
 
   /**
-   * @brief Copy constructor
+   * @brief Search for the validity domain the coordinate sedGroup, redshift
+   * belongs to and return the corresponding pair validity domain/luminosity function.
+   *
+   * @param sedGroup The name of the SED Group the caller want the Luninosity function for.
+   *
+   * @param z The redshift the caller want the Luninosity function for.
    */
-  LuminosityFunctionSet ( const LuminosityFunctionSet & other);
-
-  /**
-   * @brief Copy operator
-   */
-  LuminosityFunctionSet&  operator= ( const LuminosityFunctionSet & other);
-
-  /**
-    * @brief Functional call.
-    *
-    * @param GridCoordinate
-    * The coordinate in the model parameter-space
-    *
-    * @param double
-    * The Absolute Magnitude in the appropriated filter
-    *
-    * @return The density of galaxy for the parameter space coordinate and the
-    * provided luminosity by delegating the computation to one of the sub-functions.
-    */
-  double operator()(const std::string& sedGroup,double z, double luminosity) const ;
-
-
+  const std::pair<LuminosityFunctionValidityDomain, std::unique_ptr<MathUtils::Function>>&
+  getLuminosityFunction(const std::string& sedGroup, double z) const ;
 
 
 private:
-  std::map<LuminosityFunctionValidityDomain,std::unique_ptr<MathUtils::Function>> m_luminosity_functions;
+  std::vector<std::pair<LuminosityFunctionValidityDomain,
+                        std::unique_ptr<MathUtils::Function>>> m_luminosity_functions;
 };
 
 }

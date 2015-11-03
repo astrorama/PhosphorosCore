@@ -62,7 +62,8 @@ po::options_description LuminosityFunctionConfiguration::getProgramOptions() {
 PhzLuminosity::LuminosityFunctionSet LuminosityFunctionConfiguration::getLuminosityFunction(){
   auto function_id_list = findWildcardOptions( { LUMINOSITY_FUNCTION_SED_GROUP }, m_options);
 
-  std::map<PhzLuminosity::LuminosityFunctionValidityDomain,std::unique_ptr<MathUtils::Function>> map{};
+  std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
+                               std::unique_ptr<MathUtils::Function>>> vector{};
 
   for (auto functionId : function_id_list){
     // get the Validity domain
@@ -91,7 +92,7 @@ PhzLuminosity::LuminosityFunctionSet LuminosityFunctionConfiguration::getLuminos
       XYDataset::FileSystemProvider fsp (path.string(), std::move(fp));
       auto dataset_ptr = fsp.getDataset(dataset_identifier);
       auto fct_ptr = MathUtils::interpolate(*(dataset_ptr.get()),MathUtils::InterpolationType::CUBIC_SPLINE);
-      map.emplace(std::make_pair(std::move(domain),std::move(fct_ptr)));
+      vector.push_back(std::make_pair(std::move(domain),std::move(fct_ptr)));
 
     } else {
       //Schechter function
@@ -110,14 +111,14 @@ PhzLuminosity::LuminosityFunctionSet LuminosityFunctionConfiguration::getLuminos
 
       std::unique_ptr<MathUtils::Function> fct_ptr{new PhzLuminosity::SchechterLuminosityFunction{phi,m_l,alpha,inMag}};
 
-      map.emplace(std::make_pair(std::move(domain),std::move(fct_ptr)));
+      vector.push_back(std::make_pair(std::move(domain),std::move(fct_ptr)));
     }
 
 
 
   }
 
-  return PhzLuminosity::LuminosityFunctionSet{std::move(map)};
+  return PhzLuminosity::LuminosityFunctionSet{std::move(vector)};
 }
 
 

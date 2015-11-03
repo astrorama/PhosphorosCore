@@ -57,7 +57,8 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
       while (likelihood_iter != likelihoodGrid.end()) {
         double luminosity = m_luminosity_calculator->operator ()(scal_iter,z,sed);
 
-        double prior = m_luminosity_function_set(sed_group, z, luminosity);
+        auto& pair = m_luminosity_function_set.getLuminosityFunction(sed_group, z);
+        double prior = (*pair.second)(luminosity);
         *likelihood_iter *= prior;
 
         ++likelihood_iter;

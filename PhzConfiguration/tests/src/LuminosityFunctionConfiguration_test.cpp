@@ -104,16 +104,16 @@ BOOST_FIXTURE_TEST_CASE(LuminosityFunction_region_test, LuminosityFunctionConfig
     options_map[LUMINOSITY_FUNCTION_MAX_Z + "-1"].value() = boost::any(double{6.});
     cf::LuminosityFunctionConfiguration config3{options_map};
     BOOST_CHECK_NO_THROW(config3.getLuminosityFunction());
-    BOOST_CHECK_NO_THROW(config3.getLuminosityFunction()(std::string{"Groupe_1"},2.,0.1));
-    BOOST_CHECK_THROW(config3.getLuminosityFunction()("Groupe_2",2.,0.1),Elements::Exception);
-    BOOST_CHECK_THROW(config3.getLuminosityFunction()("Groupe_1",0.5,0.1),Elements::Exception);
-    BOOST_CHECK_THROW(config3.getLuminosityFunction()("Groupe_1",6.5,0.1),Elements::Exception);
+    BOOST_CHECK_NO_THROW(config3.getLuminosityFunction().getLuminosityFunction(std::string{"Groupe_1"},2.));
+    BOOST_CHECK_THROW(config3.getLuminosityFunction().getLuminosityFunction("Groupe_2",2.),Elements::Exception);
+    BOOST_CHECK_THROW(config3.getLuminosityFunction().getLuminosityFunction("Groupe_1",0.5),Elements::Exception);
+    BOOST_CHECK_THROW(config3.getLuminosityFunction().getLuminosityFunction("Groupe_1",6.5),Elements::Exception);
 
 
     options_map[LUMINOSITY_FILTER].value() = boost::any(std::string{"filter-name"});
     options_map[LUMINOSITY_WITH_REDDENING].value() = boost::any(std::string{"TRUE"});
 
-    // No option: default case - magnitute
+    // No option: default case - magnitude
     cf::LuminosityTypeConfiguration config{options_map};
     BOOST_CHECK(config.luminosityInMagnitude());
 
