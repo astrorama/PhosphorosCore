@@ -83,20 +83,30 @@ LuminosityPriorConfiguration::LuminosityPriorConfiguration(const std::map<std::s
      std::shared_ptr<PhzDataModel::PhotometryGrid> ptr_grid{new PhzDataModel::PhotometryGrid{std::move(getLuminosityModelGrid())}};
 
      std::unique_ptr<const PhzLuminosity::LuminosityCalculator> luminosityCalculator=nullptr;
+
      bool inMag = luminosityInMagnitude();
-     if (luminosityReddened()){
-       luminosityCalculator.reset(new PhzLuminosity::ReddenedLuminosityCalculator{getLuminosityFilter(),ptr_grid,inMag});
+
+     std::map<double,double> luminosity_distance_map{};
+     std::map<double,double> distance_modulus_map{};
+
+
+     //TODO We need all the z values from the Model grid (not the luminosity one)
+
+     if (inMag){
+       // if in mag fill the distance_modulus_map for all z values
      } else {
-       luminosityCalculator.reset(new PhzLuminosity::UnreddenedLuminosityCalculator{getLuminosityFilter(),ptr_grid,inMag});
+       // fill the luminosity_distance_map for all z values
      }
 
-
-
+     if (luminosityReddened()){
+       luminosityCalculator.reset(new PhzLuminosity::ReddenedLuminosityCalculator{getLuminosityFilter(),ptr_grid,luminosity_distance_map,distance_modulus_map,inMag});
+     } else {
+       luminosityCalculator.reset(new PhzLuminosity::UnreddenedLuminosityCalculator{getLuminosityFilter(),ptr_grid,luminosity_distance_map,distance_modulus_map,inMag});
+     }
 
      addPrior(PhzLuminosity::LuminosityPrior{ std::move(luminosityCalculator),
                                               std::move(getLuminositySedGroupManager()),
                                               std::move(getLuminosityFunction())});
-
 
   }
 }

@@ -1,8 +1,7 @@
-/*
- * LuminosityCalculator.cpp
- *
- *  Created on: Aug 19, 2015
- *      Author: fdubath
+/**
+ * @file src/lib/LuminosityCalculator.cpp
+ * @date August 19, 2015
+ * @author Florian dubath
  */
 
 #include "ElementsKernel/Logging.h"
@@ -12,41 +11,25 @@
 namespace Euclid {
 namespace PhzLuminosity {
 
-
 static Elements::Logging logger = Elements::Logging::getLogger("LuminosityCalculator");
 
-static thread_local std::map<double,double> m_luminosity_distance_map{};
-static thread_local std::map<double,double> m_distance_modulus_map{};
-
-LuminosityCalculator::LuminosityCalculator(
-    XYDataset::QualifiedName luminosity_filter,
-    std::shared_ptr<PhzDataModel::PhotometryGrid> model_photometry_grid,bool in_mag) :
-    m_luminosity_filter { std::move(luminosity_filter) }, m_model_photometry_grid{model_photometry_grid}, m_in_mag { in_mag } {
+double LuminosityCalculator::operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor,
+       const double& z,
+       const XYDataset::QualifiedName& sed) const{
+  auto model_iter = fixIterator(scale_factor,sed);
+  return getLuminosityFromModel(model_iter,*scale_factor,z);
 }
 
-
-double LuminosityCalculator::getLuminosityDistance(double z) const{
-  auto map_iter = m_luminosity_distance_map.find(z);
-  if (map_iter != m_luminosity_distance_map.end()){
-    return m_luminosity_distance_map[z];
-  }
-
-  PhysicsUtils::CosmologicalDistances distances{};
-  double dist = distances.luminousDistance(z, m_cosmology);
-  m_luminosity_distance_map[z]=dist;
-  return dist;
-}
-
-double LuminosityCalculator::getDistanceModulus(double z) const{
-    auto map_iter = m_distance_modulus_map.find(z);
-    if (map_iter != m_distance_modulus_map.end()){
-      return m_distance_modulus_map[z];
-    }
-
-    PhysicsUtils::CosmologicalDistances distances{};
-    double dist = distances.distanceModulus(z, m_cosmology);
-    m_distance_modulus_map[z]=dist;
-    return dist;
+LuminosityCalculator::LuminosityCalculator(XYDataset::QualifiedName luminosity_filter,
+    std::shared_ptr<PhzDataModel::PhotometryGrid> model_photometry_grid,
+    std::map<double,double> luminosity_distance_map,
+    std::map<double,double> distance_modulus_map,
+    bool in_mag) :
+    m_luminosity_filter { std::move(luminosity_filter) },
+    m_model_photometry_grid{model_photometry_grid},
+    m_luminosity_distance_map{std::move(luminosity_distance_map)},
+    m_distance_modulus_map{std::move(distance_modulus_map)},
+    m_in_mag { in_mag } {
 }
 
 double LuminosityCalculator::getLuminosityFromModel(
@@ -62,14 +45,12 @@ double LuminosityCalculator::getLuminosityFromModel(
   double result{0.};
 
   if (m_in_mag){
-    result= -2.5 * std::log10(flux->flux*scale_factor) - getDistanceModulus(z);
+    result= -2.5 * std::log10(flux->flux*scale_factor) - m_distance_modulus_map.at(z);
 
   } else {
-    double luminous_distance = getLuminosityDistance(z)/10.;
+    double luminous_distance = m_luminosity_distance_map.at(z)/10.;
     result= flux->flux*scale_factor*luminous_distance*luminous_distance;
   }
-
-
 
   return result;
 }

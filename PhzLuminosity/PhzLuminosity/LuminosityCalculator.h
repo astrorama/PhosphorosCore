@@ -1,8 +1,7 @@
-/*
- * LuminosityCalculator.h
- *
- *  Created on: Aug 19, 2015
- *      Author: fdubath
+/**
+ * @file PhzLuminosity/LuminosityCalculator.h
+ * @date August 19, 2015
+ * @author Florian dubath
  */
 
 #ifndef PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYCALCULATOR_H_
@@ -24,6 +23,11 @@ namespace PhzLuminosity {
 class LuminosityCalculator{
 public:
   /**
+    * @brief Clone the calculator.
+    */
+   virtual std::unique_ptr<LuminosityCalculator> clone() const=0;
+
+  /**
    * @brief constructor
    *
    * @param luminosity_filter
@@ -33,22 +37,25 @@ public:
    * The PhotometryGrid containing the Luminosity photometry of
    * the (un-reshifted) models
    *
+   * @param luminosity_distance_map a map between the redshift and the
+   * Luminosity distance
+   *
+   * @param distance_modulus_map a map between the redshift and the
+   * Luminosity distance
+   *
    * @param in_mag
    * Define if the luminosity is requiered in Magnitude (true) or flux
    */
   LuminosityCalculator(XYDataset::QualifiedName luminosity_filter,
       std::shared_ptr<PhzDataModel::PhotometryGrid> model_photometry_grid,
+      std::map<double,double> luminosity_distance_map,
+      std::map<double,double> distance_modulus_map,
       bool in_mag=true);
 
   /**
    * @brief destructor
    */
   virtual ~LuminosityCalculator() = default;
-
-  /**
-   * @brief Clone the calculator.
-   */
-  virtual std::unique_ptr<LuminosityCalculator> clone() const=0;
 
   /**
    * @brief Compute the luminosity for the source assuming it match the model
@@ -66,36 +73,49 @@ public:
    *
    * @param sed
    * SED coordinate of the model. Provided to avoid getting it out of the iterator.
+   *
+   * @return The luminosity.
    */
-  virtual double operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor,
+   double operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor,
         const double& z,
-        const XYDataset::QualifiedName& sed) const=0;
+        const XYDataset::QualifiedName& sed) const;
 
   /**
-   * @brief Methode factorizing the computation of the luminosity once the model
-   * containing the right photometry for the luminosity filter has been selected.
+   * @brief Select the Luminosity Model Grid iterator based on the scale_factor
+   * iterator. For performance purpose the SED is provided so it is not necessary
+   * to get it out of the scale_factor iter.
    *
+   * @param scale_factor
+   * An iterator on the scall factor grid allowing to gain access on the grid
+   * coordinate and to the scalefactor of this specific model (with respect to the source)
+   *
+   * @param sed
+   * SED coordinate of the model. Provided to avoid getting it out of the iterator.
+   *
+   * @return the iterator on the luminosity model the luminosity has to be computed for.
    */
-  double getLuminosityFromModel(
-        const PhzDataModel::PhotometryGrid::const_iterator& model,
-        double scaleFactor,
-        double z) const;
+   virtual const PhzDataModel::PhotometryGrid::const_iterator fixIterator(
+       const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor,
+       const XYDataset::QualifiedName& sed) const =0;
 
 protected:
-  /**
-   * @brief facade over the call to the cosmology allowing to use a cache
-   */
-  double getLuminosityDistance(double z) const;
+   XYDataset::QualifiedName m_luminosity_filter;
+   std::shared_ptr<PhzDataModel::PhotometryGrid> m_model_photometry_grid;
+   std::map<double,double> m_luminosity_distance_map;
+   std::map<double,double> m_distance_modulus_map;
+   bool m_in_mag;
 
+private:
   /**
-   * @brief facade over the call to the cosmology allowing to use a cache
-   */
-  double getDistanceModulus(double z) const;
+    * @brief Methode factorizing the computation of the luminosity once the model
+    * containing the right photometry for the luminosity filter has been selected.
+    *
+    */
+   double getLuminosityFromModel(
+         const PhzDataModel::PhotometryGrid::const_iterator& model,
+         double scaleFactor,
+         double z) const;
 
-  XYDataset::QualifiedName m_luminosity_filter;
-  std::shared_ptr<PhzDataModel::PhotometryGrid> m_model_photometry_grid;
-  bool m_in_mag;
-  PhysicsUtils::CosmologicalParameters m_cosmology{};
 
 };
 

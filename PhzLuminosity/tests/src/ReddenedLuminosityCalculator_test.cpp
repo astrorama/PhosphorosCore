@@ -1,8 +1,7 @@
-/*
- * ReddenedLuminosityCalculator_test.cpp
- *
- *  Created on: Aug 31, 2015
- *      Author: fdubath
+/**
+ * @file tests/src/lib/ReddenedLuminosityCalculator_test.cpp
+ * @date August 31, 2015
+ * @author Florian dubath
  */
 
 #include <memory>
@@ -18,14 +17,15 @@
 
 using namespace Euclid;
 
-struct LuminosityCalculator_Fixture {
+struct ReddenedLuminosityCalculator_Fixture {
 
 
   XYDataset::QualifiedName luminosityFilterName{"group/FilterName"};
 
-  PhysicsUtils::Cosmology cosmology{};
-
   std::vector<double> zs{0.0,0.2,0.6,1.0};
+  std::map<double,double> luminosity_distance_map{};
+  std::map<double,double> distance_modulus_map{};
+
   std::vector<double> ebvs{0.0,0.1,0.2};
   std::vector<Euclid::XYDataset::QualifiedName> reddeing_curves{{"reddeningCurves/Curve1"}};
   std::vector<Euclid::XYDataset::QualifiedName> seds{{"sed/Curve_1"},{"sed/Curve_2"},{"sed/Curve_3"}};
@@ -52,7 +52,7 @@ struct LuminosityCalculator_Fixture {
 
 
 
-  LuminosityCalculator_Fixture(){
+  ReddenedLuminosityCalculator_Fixture(){
 
 
     double value = 1.;
@@ -70,19 +70,6 @@ struct LuminosityCalculator_Fixture {
     }
   }
 
-
-
-  double getLuminosity(
-      PhzLuminosity::ReddenedLuminosityCalculator& calc,
-      const PhzDataModel::PhotometryGrid::const_iterator& model,
-      double scaleFactor,
-      double z){
-
-    return calc.getLuminosityFromModel(model,scaleFactor,z);
-  }
-
-
-
 };
 
 
@@ -92,37 +79,38 @@ BOOST_AUTO_TEST_SUITE (LuminosityCalculator_test)
 
 //---------------------------------------------------------------------------
 /**
- * Check that the operator() select the right model into the luminosity model grid
+ * Check that the fixed iterator point to the right cell
  */
-BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
-  std::shared_ptr<PhzDataModel::PhotometryGrid>  model_grid_ptr{new PhzDataModel::PhotometryGrid{std::move(model_grid)}};
+BOOST_FIXTURE_TEST_CASE(test_mag, ReddenedLuminosityCalculator_Fixture) {
+  std::shared_ptr<PhzDataModel::PhotometryGrid> model_grid_ptr {
+      new PhzDataModel::PhotometryGrid { std::move(model_grid) } };
 
-  PhzLuminosity::ReddenedLuminosityCalculator lum_comp_funct{luminosityFilterName,model_grid_ptr,true};
+  PhzLuminosity::ReddenedLuminosityCalculator lum_comp_funct {
+      luminosityFilterName, model_grid_ptr, luminosity_distance_map,
+      distance_modulus_map, true };
+  auto scale_iter = scale_factor_grid.cbegin();
+  while (scale_iter != scale_factor_grid.cend()) {
 
-    auto scale_iter = scale_factor_grid.cbegin();
-    while (scale_iter != scale_factor_grid.cend()){
-      double alpha = *scale_iter;
-      double z = scale_iter.axisValue<PhzDataModel::ModelParameter::Z>();
-      auto sed  = scale_iter.axisValue<PhzDataModel::ModelParameter::SED>();
-      double ebv  = scale_iter.axisValue<PhzDataModel::ModelParameter::EBV>();
-      auto red  = scale_iter.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>();
+    auto sed = scale_iter.axisValue<PhzDataModel::ModelParameter::SED>();
+    double ebv = scale_iter.axisValue<PhzDataModel::ModelParameter::EBV>();
+    auto red = scale_iter.axisValue<
+        PhzDataModel::ModelParameter::REDDENING_CURVE>();
 
-      double computed = lum_comp_funct(scale_iter,z,sed);
+    auto computed = lum_comp_funct.fixIterator(scale_iter, sed);
 
-      auto model_iter = model_grid_ptr->begin();
-      model_iter.fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
-      model_iter.fixAxisByValue<PhzDataModel::ModelParameter::REDDENING_CURVE>(red);
-      model_iter.fixAxisByValue<PhzDataModel::ModelParameter::EBV>(ebv);
-      model_iter.fixAxisByValue<PhzDataModel::ModelParameter::Z>(0.);
+    double c_z = computed.axisValue<PhzDataModel::ModelParameter::Z>();
+    auto c_sed = computed.axisValue<PhzDataModel::ModelParameter::SED>();
+    double c_ebv = computed.axisValue<PhzDataModel::ModelParameter::EBV>();
+    auto c_red = computed.axisValue<
+        PhzDataModel::ModelParameter::REDDENING_CURVE>();
 
-      double expected = getLuminosity(lum_comp_funct,model_iter,alpha,z);
+    BOOST_CHECK_EQUAL(c_z, 0.);
+    BOOST_CHECK_EQUAL(c_sed.qualifiedName(), sed.qualifiedName());
+    BOOST_CHECK_EQUAL(c_ebv, ebv);
+    BOOST_CHECK_EQUAL(c_red.qualifiedName(), red.qualifiedName());
 
-      BOOST_CHECK(Elements::isEqual(computed,expected));
-
-
-      ++scale_iter;
-    }
-
+    ++scale_iter;
+  }
 }
 
 
