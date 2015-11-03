@@ -16,7 +16,6 @@
 #include "CheckPhotometries.h"
 #include "PhzConfiguration/ProgramOptionsHelper.h"
 #include "CheckLuminosityParameter.h"
-#include "PhzLikelihood/SedAxisCorrection.h"
 #include "ElementsKernel/Logging.h"
 
 namespace po = boost::program_options;
@@ -220,7 +219,9 @@ PhzLikelihood::SourcePhzFunctor::MarginalizationFunction ComputeRedshiftsConfigu
   }
   if (m_options[AXES_COLLAPSE_TYPE].as<std::string>() == "BAYESIAN") {
     if (DoApplyLuminosityPrior()){
-      return PhzLikelihood::BayesianMarginalizationFunctor{std::shared_ptr<PhzLikelihood::SedAxisCorrection>{new PhzLikelihood::SedAxisCorrection(std::move(getLuminositySedGroupManager()))}};
+      using SedAxisCorrection = PhzLikelihood::BayesianMarginalizationFunctor::SedAxisCorrection;
+      return PhzLikelihood::BayesianMarginalizationFunctor{std::shared_ptr<SedAxisCorrection>{
+                              new SedAxisCorrection(std::move(getLuminositySedGroupManager()))}};
     } else {
       return PhzLikelihood::BayesianMarginalizationFunctor{};
     }

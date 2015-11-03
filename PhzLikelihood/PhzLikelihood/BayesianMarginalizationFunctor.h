@@ -9,7 +9,7 @@
 
 #include "PhzDataModel/Pdf1D.h"
 #include "PhzDataModel/LikelihoodGrid.h"
-#include "PhzLikelihood/SedAxisCorrection.h"
+#include "PhzLikelihood/GroupedAxisCorrection.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -17,6 +17,8 @@ namespace PhzLikelihood {
 class BayesianMarginalizationFunctor {
 
 public:
+  
+  using SedAxisCorrection = GroupedAxisCorrection<PhzDataModel::ModelParameter::SED>;
 
   BayesianMarginalizationFunctor(){};
 
@@ -24,7 +26,7 @@ public:
 
   PhzDataModel::Pdf1D operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const;
 private:
-  std::shared_ptr<SedAxisCorrection> m_sed_correction_ptr=nullptr;
+  std::shared_ptr<SedAxisCorrection> m_sed_correction_ptr = nullptr;
 
 };
 
