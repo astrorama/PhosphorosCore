@@ -1,8 +1,7 @@
-/*
- * LuminosityCalculator_test.cpp
- *
- *  Created on: Aug 3, 2015
- *      Author: fdubath
+/**
+ * @file tests/src/lib/LuminosityCalculator_test.cpp
+ * @date August 31, 2015
+ * @author Florian dubath
  */
 
 #include <memory>
@@ -48,12 +47,9 @@ struct LuminosityCalculator_Fixture {
         distance_modulus_map,
         in_mag) { }
   };
-/*
+
 
   XYDataset::QualifiedName luminosityFilterName{"group/FilterName"};
-
-  PhysicsUtils::CosmologicalParameters cosmology{};
-  PhysicsUtils::CosmologicalDistances distances{};
 
   std::vector<double> zs{0.0,0.2,0.6,1.0};
   std::vector<double> ebvs{0.0,0.1,0.2};
@@ -85,7 +81,7 @@ struct LuminosityCalculator_Fixture {
   LuminosityCalculator_Fixture(){
 
 
-    double value = 1.;
+    double value = 1.7;
     for (auto& photometry : model_grid){
       std::vector<SourceCatalog::FluxErrorPair> photometry_vector { SourceCatalog::FluxErrorPair(value,
            0.1), SourceCatalog::FluxErrorPair(0.1, 0.3) };
@@ -100,12 +96,6 @@ struct LuminosityCalculator_Fixture {
     }
   }
 
-
-
-
-*/
-
-
 };
 
 
@@ -115,61 +105,67 @@ BOOST_AUTO_TEST_SUITE (LuminosityCalculator_test)
 
 //---------------------------------------------------------------------------
 /**
- * Check the 'getLuminosity()' in magnitude
+ * Check the Luminosity in flux
  */
-BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
+BOOST_FIXTURE_TEST_CASE(test_flux, LuminosityCalculator_Fixture) {
+  std::shared_ptr<PhzDataModel::PhotometryGrid> model_grid_ptr {
+       new PhzDataModel::PhotometryGrid { std::move(model_grid) } };
 
- /* PhzLuminosity::ReddenedLuminosityCalculator lum_comp_funct{luminosityFilterName,nullptr,true};
+std::map<double,double> distance_correction{{0.0,0.},{0.2,100.},{0.6,1000000.},{1.0,10000000000.}};
+std::map<double,double> flux_values{{0.0,2.21},{0.2,3.91},{0.6,5.61},{1.0,7.31}};
 
-  auto model_iter = model_grid.cbegin();
-  while (model_iter != model_grid.cend()){
-    for(int i=0;i<100;++i){
-      double alpha = 0.1*i;
-      for(int j=0;j<100;++j){
-        double z = 0.1*j;
+TestLuminosityCalculator lum_comp_funct {
+   luminosityFilterName,
+   model_grid_ptr,
+   {{0.0,0.},{0.2,100.},{0.6,10000.},{1.0,1000000.}},
+   {},
+   false };
+auto scale_iter = scale_factor_grid.cbegin();
+int loop=0;
+while (scale_iter != scale_factor_grid.cend() && loop<4) {
 
-        double computed = getLuminosity(lum_comp_funct,model_iter,alpha,z);
+ double z = scale_iter.axisValue<PhzDataModel::ModelParameter::Z>();
+ auto sed = scale_iter.axisValue<PhzDataModel::ModelParameter::SED>();
 
-        double flux = model_iter->find(luminosityFilterName.qualifiedName())->flux;
-        double mag_1 =  2.5 * std::log10(flux*alpha);
-        double dm = distances.distanceModulus(z,cosmology);
+ auto computed = lum_comp_funct(scale_iter, z, sed);
+ auto expected =flux_values.at(z)*distance_correction.at(z);
 
-        double expected = -mag_1-dm;
-        BOOST_CHECK(Elements::isEqual(computed,expected));
-
-     }
-    }
-    ++model_iter;
-  }*/
+ BOOST_CHECK_CLOSE(computed,expected,1E-8);
+ ++scale_iter;
+ ++loop;
+}
 }
 
 /**
- * Check the 'getLuminosity()' in flux
+ * Check the Luminosity in magnitude
  */
-BOOST_FIXTURE_TEST_CASE(test_flux, LuminosityCalculator_Fixture) {
+BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
+  std::shared_ptr<PhzDataModel::PhotometryGrid> model_grid_ptr {
+      new PhzDataModel::PhotometryGrid { std::move(model_grid) } };
 
- /* PhzLuminosity::ReddenedLuminosityCalculator lum_comp_funct{luminosityFilterName,nullptr,false};
+  std::map<double,double> modulus_correction{{0.0,-0.},{0.2,-1.},{0.6,-10.},{1.0,-100.}};
+  std::map<double,double> log_lum{{0.0,-0.8609806842},{0.2,-1.4804419},{0.6,-1.8724072},{1.0,-2.1597934}};
 
-  auto model_iter = model_grid.cbegin();
-  while (model_iter != model_grid.cend()){
-    for(int i=0;i<100;++i){
-      double alpha = 0.1*i;
-      for(int j=0;j<100;++j){
-        double z = 0.1*j;
+  TestLuminosityCalculator lum_comp_funct {
+      luminosityFilterName,
+      model_grid_ptr,
+      {},
+      {{0.0,0.},{0.2,1.},{0.6,10.},{1.0,100.}},
+      true };
+  auto scale_iter = scale_factor_grid.cbegin();
+  int loop=0;
+  while (scale_iter != scale_factor_grid.cend() && loop<4) {
 
-        double computed = getLuminosity(lum_comp_funct,model_iter,alpha,z);
+    double z = scale_iter.axisValue<PhzDataModel::ModelParameter::Z>();
+    auto sed = scale_iter.axisValue<PhzDataModel::ModelParameter::SED>();
 
-        double flux = model_iter->find(luminosityFilterName.qualifiedName())->flux;
+    auto computed = lum_comp_funct(scale_iter, z, sed);
+    auto expected = log_lum.at(z)+modulus_correction.at(z);
 
-        double l_s = distances.luminousDistance(z,cosmology)*distances.luminousDistance(z,cosmology)/100.;
-
-        double expected = flux*alpha*l_s;
-        BOOST_CHECK(Elements::isEqual(computed,expected));
-
-     }
-    }
-    ++model_iter;
-  }*/
+    BOOST_CHECK_CLOSE(computed,expected,1E-6);
+    ++scale_iter;
+    ++loop;
+  }
 }
 
 //-----------------------------------------------------------------------------
