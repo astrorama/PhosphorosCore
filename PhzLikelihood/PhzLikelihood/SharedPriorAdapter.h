@@ -36,18 +36,23 @@ public:
   SharedPriorAdapter(std::shared_ptr<Prior> prior);
 
   /**
+   * @brief destructor
+   */
+  virtual ~SharedPriorAdapter()=default;
+
+  /**
    * @brief copy constructor
    *
    * @param other The SharedPriorAdapter to be copied.
    */
-  SharedPriorAdapter ( const SharedPriorAdapter & other);
+  SharedPriorAdapter ( const SharedPriorAdapter & other)=default;
 
   /**
    * @brief copy assignment operator
    *
    * @param other The SharedPriorAdapter to be assigned.
    */
-  SharedPriorAdapter & operator= ( const SharedPriorAdapter & other);
+  SharedPriorAdapter & operator= ( const SharedPriorAdapter & other)=default;
 
   /**
    * @brief function call operator. Has the signature to be used as a PriorFunction.
