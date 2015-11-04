@@ -21,11 +21,6 @@ namespace PhzLuminosity {
 class UnreddenedLuminosityCalculator: public LuminosityCalculator {
 public:
   /**
-   * @brief Clone the calculator.
-   */
-  std::unique_ptr<LuminosityCalculator> clone() const override;
-
-  /**
    * @brief constructor
    *
    * @param luminosity_filter

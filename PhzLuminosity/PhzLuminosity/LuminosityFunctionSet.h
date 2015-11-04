@@ -23,13 +23,6 @@ namespace PhzLuminosity {
  */
 class LuminosityFunctionSet {
 public:
-
-  /****** TO be removed ***********/
-   LuminosityFunctionSet ( const LuminosityFunctionSet & other);
-
-   LuminosityFunctionSet&  operator= ( const LuminosityFunctionSet & other);
-   /*******************************/
-
   /**
    * @brief Constructor
    *

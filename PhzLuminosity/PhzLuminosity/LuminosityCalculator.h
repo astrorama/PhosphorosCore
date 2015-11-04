@@ -23,11 +23,6 @@ namespace PhzLuminosity {
 class LuminosityCalculator{
 public:
   /**
-    * @brief Clone the calculator.
-    */
-   virtual std::unique_ptr<LuminosityCalculator> clone() const=0;
-
-  /**
    * @brief constructor
    *
    * @param luminosity_filter
@@ -99,15 +94,15 @@ public:
        const XYDataset::QualifiedName& sed) const =0;
 
 protected:
+   std::shared_ptr<PhzDataModel::PhotometryGrid> m_model_photometry_grid;
+
+private:
    XYDataset::QualifiedName m_luminosity_filter;
    mutable std::unique_ptr<std::size_t> m_luminosity_filter_index;
-   std::shared_ptr<PhzDataModel::PhotometryGrid> m_model_photometry_grid;
    std::map<double,double> m_luminosity_distance_map;
    std::map<double,double> m_distance_modulus_map;
    bool m_in_mag;
 
-private:
-  
   /**
     * @brief Methode factorizing the computation of the luminosity once the model
     * containing the right photometry for the luminosity filter has been selected.

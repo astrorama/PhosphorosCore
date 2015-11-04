@@ -14,26 +14,6 @@
 namespace Euclid {
 namespace PhzLuminosity {
 
-
-LuminosityFunctionSet::LuminosityFunctionSet ( const LuminosityFunctionSet & other){
-  for (auto& pair : other.m_luminosity_functions){
-    std::unique_ptr<MathUtils::Function> function{pair.second->clone()};
-    m_luminosity_functions.push_back(std::make_pair(pair.first,std::move(function)));
-  }
-
-}
-
-LuminosityFunctionSet&  LuminosityFunctionSet::operator= ( const LuminosityFunctionSet & other){
-  m_luminosity_functions.clear();
-  for (auto& pair : other.m_luminosity_functions){
-    std::unique_ptr<MathUtils::Function> function{pair.second->clone()};
-    m_luminosity_functions.push_back(std::make_pair(pair.first,std::move(function)));
-  }
-  return *this;
-}
-
-
-
 LuminosityFunctionSet::LuminosityFunctionSet(
     std::vector<std::pair<LuminosityFunctionValidityDomain,
     std::unique_ptr<MathUtils::Function>>> luminosityFunctions)

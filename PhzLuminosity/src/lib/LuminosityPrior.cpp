@@ -24,14 +24,6 @@ m_luminosity_function_set{std::move(luminosityFunctionSet)}{
 
 }
 
-LuminosityPrior::LuminosityPrior(const LuminosityPrior & other):
-    m_luminosity_calculator{other.m_luminosity_calculator->clone()},
-    m_sed_group_manager(other.m_sed_group_manager),
-    m_luminosity_function_set{other.m_luminosity_function_set}{
-
-}
-
-
 void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
     const SourceCatalog::Photometry&, const PhzDataModel::PhotometryGrid&,
     const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const {

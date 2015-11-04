@@ -33,8 +33,6 @@ LuminosityPrior(
     PhzDataModel::QualifiedNameGroupManager sedGroupManager,
     LuminosityFunctionSet luminosityFunctionSet );
 
-LuminosityPrior(const LuminosityPrior & other);
-
 void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
       const SourceCatalog::Photometry& sourcePhotometry,
       const PhzDataModel::PhotometryGrid& modelGrid,

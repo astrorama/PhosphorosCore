@@ -38,16 +38,5 @@ const PhzDataModel::PhotometryGrid::const_iterator ReddenedLuminosityCalculator:
     return model_iter;
 
   }
-
-
-std::unique_ptr<LuminosityCalculator> ReddenedLuminosityCalculator::clone() const{
-    return std::unique_ptr<LuminosityCalculator>{
-      new ReddenedLuminosityCalculator(m_luminosity_filter,
-                                       m_model_photometry_grid,
-                                       m_luminosity_distance_map,
-                                       m_distance_modulus_map,
-                                       m_in_mag)};
-  }
-
 }
 }

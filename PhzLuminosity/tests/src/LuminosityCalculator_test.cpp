@@ -24,9 +24,6 @@ struct LuminosityCalculator_Fixture {
 
   class TestLuminosityCalculator : public PhzLuminosity::LuminosityCalculator{
   public:
-    std::unique_ptr<LuminosityCalculator> clone() const override {
-      return nullptr;
-    }
 
     const PhzDataModel::PhotometryGrid::const_iterator fixIterator(
            const PhzDataModel::ScaleFactordGrid::const_iterator&,

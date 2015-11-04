@@ -12,6 +12,9 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 
+
+#include "PhzLikelihood/SharedPriorAdapter.h"
+
 #include "PhzLuminosity/UnreddenedLuminosityCalculator.h"
 #include "PhzLuminosity/ReddenedLuminosityCalculator.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
@@ -104,9 +107,11 @@ LuminosityPriorConfiguration::LuminosityPriorConfiguration(const std::map<std::s
        luminosityCalculator.reset(new PhzLuminosity::UnreddenedLuminosityCalculator{getLuminosityFilter(),ptr_grid,luminosity_distance_map,distance_modulus_map,inMag});
      }
 
-     addPrior(PhzLuminosity::LuminosityPrior{ std::move(luminosityCalculator),
-                                              std::move(getLuminositySedGroupManager()),
-                                              std::move(getLuminosityFunction())});
+     PhzLikelihood::SharedPriorAdapter<PhzLuminosity::LuminosityPrior> prior{std::shared_ptr<PhzLuminosity::LuminosityPrior>(new PhzLuminosity::LuminosityPrior{ std::move(luminosityCalculator),
+       std::move(getLuminositySedGroupManager()),
+       std::move(getLuminosityFunction())})};
+
+     addPrior(prior);
 
   }
 }
