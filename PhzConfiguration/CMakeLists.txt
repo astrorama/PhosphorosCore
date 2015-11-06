@@ -79,3 +79,6 @@ elements_add_unit_test(CatalogTypeConfig_test tests/src/CatalogTypeConfig_test.c
 elements_add_unit_test(PhosphorosRootDirConfig_test tests/src/PhosphorosRootDirConfig_test.cpp
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(AuxDataDirConfig_test tests/src/AuxDataDirConfig_test.cpp
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
