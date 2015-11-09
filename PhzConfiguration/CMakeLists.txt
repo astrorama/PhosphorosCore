@@ -88,4 +88,7 @@ elements_add_unit_test(IntermediateDirConfig_test tests/src/IntermediateDirConfi
 elements_add_unit_test(ResultsDirConfig_test tests/src/ResultsDirConfig_test.cpp
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(SedProviderConfig_test tests/src/SedProviderConfig_test.cpp
+                     LINK_LIBRARIES XYDataset PhzConfiguration
+                     TYPE Boost)
 
