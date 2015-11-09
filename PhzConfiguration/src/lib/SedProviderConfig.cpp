@@ -49,6 +49,9 @@ void SedProviderConfig::initialize(const UserValues&) {
 }
 
 const std::shared_ptr<XYDataset::XYDatasetProvider> SedProviderConfig::getSedDatasetProvider() {
+  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
+        throw Elements::Exception() << "Call to getAuxDataDir() on a not initialized instance.";
+  }
   return m_sed_provider;
 }
 

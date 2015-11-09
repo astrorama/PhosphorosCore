@@ -74,6 +74,16 @@ BOOST_FIXTURE_TEST_CASE(AuxDataAbsolute_test, ConfigManager_fixture) {
 
 }
 
+BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+  // Given
+  config_manager.registerConfiguration<AuxDataDirConfig>();
+  config_manager.closeRegistration();
+
+  // Then
+  BOOST_CHECK_THROW(config_manager.getConfiguration<AuxDataDirConfig>().getAuxDataDir(), Elements::Exception);
+}
+
+
 //-----------------------------------------------------------------------------
 // Test that if a relative aux-data-dir program option is given it is relative
 // to the current working directory

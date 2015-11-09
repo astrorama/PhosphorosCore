@@ -71,6 +71,9 @@ void IntermediateDirConfig::initialize(const UserValues& args) {
 }
 
 const fs::path& IntermediateDirConfig::getIntermediateDir() {
+  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
+       throw Elements::Exception() << "Call to getAuxDataDir() on a not initialized instance.";
+  }
   return m_intermediate_dir;
 }
 

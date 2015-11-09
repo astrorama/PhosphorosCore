@@ -50,6 +50,15 @@ BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
 
 }
 
+BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+  // Given
+  config_manager.registerConfiguration<IntermediateDirConfig>();
+  config_manager.closeRegistration();
+
+  // Then
+  BOOST_CHECK_THROW(config_manager.getConfiguration<IntermediateDirConfig>().getIntermediateDir(), Elements::Exception);
+}
+
 //-----------------------------------------------------------------------------
 // Test that if an absolute intermediate-products-dir program option is given it is used as is
 //-----------------------------------------------------------------------------

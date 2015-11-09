@@ -88,6 +88,9 @@ void PhosphorosRootDirConfig::initialize(const UserValues& args) {
 }
 
 const fs::path& PhosphorosRootDirConfig::getPhosphorosRootDir() {
+  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
+       throw Elements::Exception() << "Call to getAuxDataDir() on a not initialized instance.";
+  }
   return m_root_dir;
 }
 

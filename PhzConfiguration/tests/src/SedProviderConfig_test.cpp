@@ -38,6 +38,14 @@ namespace fs = boost::filesystem;
 BOOST_AUTO_TEST_SUITE (SedProviderConfig_test)
 
 
+BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+  // Given
+  config_manager.registerConfiguration<SedProviderConfig>();
+  config_manager.closeRegistration();
+
+  // Then
+  BOOST_CHECK_THROW(config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider(), Elements::Exception);
+}
 
 //-----------------------------------------------------------------------------
 // Test the getSedDatasetProvider function

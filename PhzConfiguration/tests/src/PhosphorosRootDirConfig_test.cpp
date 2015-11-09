@@ -70,6 +70,16 @@ BOOST_FIXTURE_TEST_CASE( RelativeRootEnv_test, ConfigManager_fixture ) {
   BOOST_CHECK_THROW(config_manager.initialize(options_map), Elements::Exception);
 }
 
+
+BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+  // Given
+  config_manager.registerConfiguration<PhosphorosRootDirConfig>();
+  config_manager.closeRegistration();
+
+  // Then
+  BOOST_CHECK_THROW(config_manager.getConfiguration<PhosphorosRootDirConfig>().getPhosphorosRootDir(), Elements::Exception);
+}
+
 //-----------------------------------------------------------------------------
 // Test that if the phosphoros-root program option is given as absolute path,
 // it is used as is

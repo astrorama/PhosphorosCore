@@ -74,6 +74,9 @@ void ResultsDirConfig::initialize(const UserValues& args) {
 }
 
 const fs::path& ResultsDirConfig::getResultsDir() {
+  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
+       throw Elements::Exception() << "Call to getAuxDataDir() on a not initialized instance.";
+  }
   return m_results_dir;
 }
 

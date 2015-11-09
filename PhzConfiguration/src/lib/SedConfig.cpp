@@ -129,6 +129,9 @@ void SedConfig::initialize(const UserValues& args) {
 }
 
 const std::map<std::string, std::vector<XYDataset::QualifiedName>>&  SedConfig::getSedList() {
+  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
+       throw Elements::Exception() << "Call to getAuxDataDir() on a not initialized instance.";
+  }
   return m_sed_list;
 }
 

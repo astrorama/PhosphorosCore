@@ -72,6 +72,10 @@ void AuxDataDirConfig::initialize(const UserValues& args) {
 }
 
 const fs::path& AuxDataDirConfig::getAuxDataDir() {
+  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
+      throw Elements::Exception() << "Call to getAuxDataDir() on a not initialized instance.";
+  }
+
   return m_aux_dir;
 }
 
