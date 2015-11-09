@@ -97,5 +97,8 @@ elements_add_unit_test(SedConfig_test tests/src/SedConfig_test.cpp
 elements_add_unit_test(RedshiftConfig_test tests/src/RedshiftConfig_test.cpp
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(IgmConfig_test tests/src/IgmConfig_test.cpp
+                     LINK_LIBRARIES XYDataset PhzModeling PhzConfiguration
+                     TYPE Boost)
 
 
