@@ -17,14 +17,14 @@
  */
 
 /**
- * @file tests/src/AuxDataDirConfig_test.cpp
- * @date 2015/11/06
+ * @file tests/src/IntermediateDirConfig_test.cpp
+ * @date 2015/11/09
  * @author Florian Dubath
  */
 
 #include <boost/test/unit_test.hpp>
 
-#include "PhzConfiguration/AuxDataDirConfig.h"
+#include "PhzConfiguration/IntermediateDirConfig.h"
 #include "ConfigManager_fixture.h"
 
 using namespace Euclid::PhzConfiguration;
@@ -33,40 +33,39 @@ namespace fs = boost::filesystem;
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (AuxDataDirConfig_test)
+BOOST_AUTO_TEST_SUITE (IntermediateDirConfig_test)
 
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
 
   // Given
-  config_manager.registerConfiguration<AuxDataDirConfig>();
+  config_manager.registerConfiguration<IntermediateDirConfig>();
 
   // When
   auto options = config_manager.closeRegistration();
 
   // Then
-  BOOST_CHECK_NO_THROW(options.find("aux-data-dir", false));
+  BOOST_CHECK_NO_THROW(options.find("intermediate-products-dir", false));
 
 }
 
-
 //-----------------------------------------------------------------------------
-// Test that if an absolute aux-data-dir program option is given it is used as is
+// Test that if an absolute intermediate-products-dir program option is given it is used as is
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(AuxDataAbsolute_test, ConfigManager_fixture) {
+BOOST_FIXTURE_TEST_CASE(IntermediateDirAbsolute_test, ConfigManager_fixture) {
+
   // Given
-  config_manager.registerConfiguration<AuxDataDirConfig>();
+  config_manager.registerConfiguration<IntermediateDirConfig>();
   config_manager.closeRegistration();
   std::map<std::string, po::variable_value> options_map {};
-
   fs::path absolute_path {"/an/absolute/path"};
-  options_map["aux-data-dir"].value() = boost::any(absolute_path.string());
+  options_map["intermediate-products-dir"].value() = boost::any(absolute_path.string());
 
   // When
   config_manager.initialize(options_map);
-  auto result = config_manager.getConfiguration<AuxDataDirConfig>().getAuxDataDir();
+  auto result = config_manager.getConfiguration<IntermediateDirConfig>().getIntermediateDir();
 
   // Then
   BOOST_CHECK(result.is_absolute());
@@ -75,21 +74,22 @@ BOOST_FIXTURE_TEST_CASE(AuxDataAbsolute_test, ConfigManager_fixture) {
 }
 
 //-----------------------------------------------------------------------------
-// Test that if a relative aux-data-dir program option is given it is relative
+// Test that if a relative intermediate-products-dir program option is given it is relative
 // to the current working directory
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(AuxDataDirRelative_test, ConfigManager_fixture) {
+BOOST_FIXTURE_TEST_CASE(IntermediateDirRelative_test, ConfigManager_fixture) {
+
   // Given
-  config_manager.registerConfiguration<AuxDataDirConfig>();
+  config_manager.registerConfiguration<IntermediateDirConfig>();
   config_manager.closeRegistration();
   std::map<std::string, po::variable_value> options_map {};
   fs::path relative_path {"a/relative/path"};
-  options_map["aux-data-dir"].value() = boost::any(relative_path.string());
+  options_map["intermediate-products-dir"].value() = boost::any(relative_path.string());
 
   // When
   config_manager.initialize(options_map);
-  auto result = config_manager.getConfiguration<AuxDataDirConfig>().getAuxDataDir();
+  auto result = config_manager.getConfiguration<IntermediateDirConfig>().getIntermediateDir();
 
   // Then
   BOOST_CHECK(result.is_absolute());
@@ -98,13 +98,13 @@ BOOST_FIXTURE_TEST_CASE(AuxDataDirRelative_test, ConfigManager_fixture) {
 }
 
 //-----------------------------------------------------------------------------
-// Test that if the aux-data-dir program option is not given the default is used
+// Test that if the intermediate-products-dir program option is not given the default is used
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(AuxDataDirDefault_test, ConfigManager_fixture) {
+BOOST_FIXTURE_TEST_CASE(IntermediateDirDefault_test, ConfigManager_fixture) {
 
   // Given
-  config_manager.registerConfiguration<AuxDataDirConfig>();
+  config_manager.registerConfiguration<IntermediateDirConfig>();
   config_manager.closeRegistration();
   std::map<std::string, po::variable_value> options_map {};
 
@@ -112,15 +112,14 @@ BOOST_FIXTURE_TEST_CASE(AuxDataDirDefault_test, ConfigManager_fixture) {
   options_map["phosphoros-root"].value() = boost::any(absolute_path.string());
 
   // When
-   config_manager.initialize(options_map);
-   auto result = config_manager.getConfiguration<AuxDataDirConfig>().getAuxDataDir();
+  config_manager.initialize(options_map);
+  auto result = config_manager.getConfiguration<IntermediateDirConfig>().getIntermediateDir();
 
   // Then
   BOOST_CHECK(result.is_absolute());
-  BOOST_CHECK_EQUAL(result, absolute_path / "AuxiliaryData");
+  BOOST_CHECK_EQUAL(result, absolute_path / "IntermediateProducts");
 
 }
-
 
 //-----------------------------------------------------------------------------
 

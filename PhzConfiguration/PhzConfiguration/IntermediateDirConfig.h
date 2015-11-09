@@ -17,13 +17,13 @@
  */
 
 /**
- * @file PhzConfiguration/PhosphorosRootDirConfig.h
- * @date 11/06/15
+ * @file PhzConfiguration/IntermediateDirConfig.h
+ * @date 2015/11/09
  * @author Florian Dubath
  */
 
-#ifndef PHZCONFIGURATION_PHOSPHOROSROOTDIRCONFIG_H
-#define	PHZCONFIGURATION_PHOSPHOROSROOTDIRCONFIG_H
+#ifndef PHZCONFIGURATION_INTERMEDIATEDIRCONFIG_H
+#define	PHZCONFIGURATION_INTERMEDIATEDIRCONFIG_H
 
 #include <cstdlib>
 #include <string>
@@ -35,62 +35,58 @@ namespace fs = boost::filesystem;
 
 namespace Euclid {
 namespace PhzConfiguration {
+
 /**
- * @class PhosphorosRootDirConfig
+ * @class IntermediateDirConfig
  *
  * @brief
  * This class defines the configuration options related with the Phosphros
- * Top Directory
+ * Intermediate Data Directory
  *
  * This class only sets the paths of the directory, according the
  * Phosphoros rules. It does not perform any checks on them (for existance,
  * write permissions, etc).
  */
-class PhosphorosRootDirConfig : public Configuration::Configuration {
+class IntermediateDirConfig : public Configuration::Configuration {
 
 public:
 
-  PhosphorosRootDirConfig(long manager_id);
+  IntermediateDirConfig(long manager_id);
 
   /**
    * @brief Destructor
    */
-  virtual ~PhosphorosRootDirConfig() = default;
+  virtual ~IntermediateDirConfig() = default;
 
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
-
-  void preInitialize(const UserValues& args) override;
 
   void initialize(const UserValues& args) override;
 
   /**
    * @brief
-   * Returns the top level directory of Phosphoros. This is available only
-   * when the PhosphorosRootDirConfig has been initialized.
+   * Returns the directory containing the intermediate products.This is
+   * available only when the IntermediateDirConfig has been initialized.
    *
    * @details
-   * This directory is controlled with the environment variable `PHOSPHOROS_ROOT`
-   * and the program option `phosphoros-root`. The precendance is the following:
-   * - If the `phosphoros-root` option is given, it is used. A relative path is
-   *   relative to the current working directory
-   * - If the `phosphoros-root` option is not given and the `PHOSPHOROS_ROOT`
-   *   environment variable is set, the environment variable is used. It must be
-   *   an absolute path.
-   * - If none of the above is set the default path `~/Phosphoros` is used.
+   * This directory is controlled with the program option `intermediate-products-dir`
+   * as fllowing:
+   * - If an absolute path is given it is used as is
+   * - If a relative path is used, it is relative to the current working directory
+   * - If no path is given, the default path `PHOSPHOROS_ROOT/IntermediateProducts` is used
    *
-   * @returns The Phosphoros root directory
+   * @returns The intermediate products directory
    */
-  const fs::path& getPhosphorosRootDir();
+  const fs::path& getIntermediateDir();
 
 private:
 
-  fs::path m_root_dir;
+  fs::path m_intermediate_dir;
 
-}; /* End of PhosphorosRootDirConfig class */
+}; /* End of IntermediateDirConfig class */
 
 
 } // end of namespace PhzConfiguration
 } // end of namespace Euclid
 
-#endif	/* PHZCONFIGURATION_PHOSPHOROSROOTDIRCONFIG_H */
+#endif	/* PHZCONFIGURATION_INTERMEDIATEDIRCONFIG_H */
 

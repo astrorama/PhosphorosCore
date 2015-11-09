@@ -64,7 +64,8 @@ public:
 
   /**
    * @brief
-   * Returns the directory containing the auxiliary data
+   * Returns the directory containing the auxiliary data. This is available only
+   * when the AuxDataDirConfig has been initialized.
    *
    * @details
    * This directory is controlled with the program option `aux-data-dir` as

@@ -82,3 +82,7 @@ elements_add_unit_test(PhosphorosRootDirConfig_test tests/src/PhosphorosRootDirC
 elements_add_unit_test(AuxDataDirConfig_test tests/src/AuxDataDirConfig_test.cpp
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(IntermediateDirConfig_test tests/src/IntermediateDirConfig_test.cpp
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
+
