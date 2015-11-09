@@ -91,4 +91,8 @@ elements_add_unit_test(ResultsDirConfig_test tests/src/ResultsDirConfig_test.cpp
 elements_add_unit_test(SedProviderConfig_test tests/src/SedProviderConfig_test.cpp
                      LINK_LIBRARIES XYDataset PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(SedConfig_test tests/src/SedConfig_test.cpp
+                     LINK_LIBRARIES XYDataset PhzConfiguration
+                     TYPE Boost)
+
 
