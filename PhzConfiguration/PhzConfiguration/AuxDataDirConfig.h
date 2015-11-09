@@ -36,6 +36,17 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
+/**
+ * @class AuxDataDirConfig
+ *
+ * @brief
+ * This class defines the configuration options related with the Phosphros
+ * Auxiliary Data Directory
+ *
+ * This class only sets the paths of the directory, according the
+ * Phosphoros rules. It does not perform any checks on them (for existance,
+ * write permissions, etc).
+ */
 class AuxDataDirConfig : public Configuration::Configuration {
 
 public:
@@ -51,6 +62,19 @@ public:
 
   void initialize(const UserValues& args) override;
 
+  /**
+   * @brief
+   * Returns the directory containing the auxiliary data
+   *
+   * @details
+   * This directory is controlled with the program option `aux-data-dir` as
+   * fllowing:
+   * - If an absolute path is given it is used as is
+   * - If a relative path is used, it is relative to the current working directory
+   * - If no path is given, the default path `PHOSPHOROS_ROOT/AuxiliaryData` is used
+   *
+   * @returns The auxiliary data directory
+   */
   const fs::path& getAuxDataDir();
 
 private:

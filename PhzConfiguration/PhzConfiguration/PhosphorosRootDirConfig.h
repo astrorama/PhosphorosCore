@@ -35,7 +35,17 @@ namespace fs = boost::filesystem;
 
 namespace Euclid {
 namespace PhzConfiguration {
-
+/**
+ * @class PhosphorosRootDirConfig
+ *
+ * @brief
+ * This class defines the configuration options related with the Phosphros
+ * Top Directory
+ *
+ * This class only sets the paths of the directory, according the
+ * Phosphoros rules. It does not perform any checks on them (for existance,
+ * write permissions, etc).
+ */
 class PhosphorosRootDirConfig : public Configuration::Configuration {
 
 public:
@@ -49,8 +59,26 @@ public:
 
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  void preInitialize(const UserValues& args) override;
+
   void initialize(const UserValues& args) override;
 
+  /**
+   * @brief
+   * Returns the top level directory of Phosphoros
+   *
+   * @details
+   * This directory is controlled with the environment variable `PHOSPHOROS_ROOT`
+   * and the program option `phosphoros-root`. The precendance is the following:
+   * - If the `phosphoros-root` option is given, it is used. A relative path is
+   *   relative to the current working directory
+   * - If the `phosphoros-root` option is not given and the `PHOSPHOROS_ROOT`
+   *   environment variable is set, the environment variable is used. It must be
+   *   an absolute path.
+   * - If none of the above is set the default path `~/Phosphoros` is used.
+   *
+   * @returns The Phosphoros root directory
+   */
   const fs::path& getPhosphorosRootDir();
 
 private:
