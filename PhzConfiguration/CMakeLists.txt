@@ -85,4 +85,7 @@ elements_add_unit_test(AuxDataDirConfig_test tests/src/AuxDataDirConfig_test.cpp
 elements_add_unit_test(IntermediateDirConfig_test tests/src/IntermediateDirConfig_test.cpp
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(ResultsDirConfig_test tests/src/ResultsDirConfig_test.cpp
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
 
