@@ -48,7 +48,7 @@ SedConfig::SedConfig(long manager_id) : Configuration(manager_id) {
 }
 
 auto SedConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Directory options", {
+  return {{"SED templates options", {
     {SED_GROUP.c_str(), po::value<std::vector<std::string>>(),
         "Use all the seds in the given group and subgroups"},
     {(SED_GROUP+"-*").c_str(), po::value<std::vector<std::string>>(),
