@@ -13,6 +13,8 @@
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
 
+#include "FluxErrorPair_boost.h"
+
 using namespace testing;
 
 namespace Euclid {
