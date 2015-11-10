@@ -57,7 +57,6 @@ BOOST_FIXTURE_TEST_CASE(getSedDatasetProvider_function_test, ConfigManager_fixtu
   config_manager.closeRegistration();
   std::map<std::string, po::variable_value> options_map {};
 
-  std::string aux_data_dir {"aux-data-dir"};
   Elements::TempDir temp_dir;
   fs::path base_directory { temp_dir.path() / "euclid" / "" };
   fs::path mer_directory    = base_directory / "SEDs" / "MER";
