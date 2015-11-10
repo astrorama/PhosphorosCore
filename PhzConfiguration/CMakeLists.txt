@@ -109,3 +109,6 @@ elements_add_unit_test(ReddeningProviderConfig_test tests/src/ReddeningProviderC
 elements_add_unit_test(ReddeningConfig_test tests/src/ReddeningConfig_test.cpp
                      LINK_LIBRARIES XYDataset PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(ParameterSpaceConfig_test tests/src/ParameterSpaceConfig_test.cpp
+                     LINK_LIBRARIES XYDataset PhzModeling PhzConfiguration
+                     TYPE Boost)
