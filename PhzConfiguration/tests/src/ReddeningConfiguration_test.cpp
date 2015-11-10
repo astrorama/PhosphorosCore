@@ -27,6 +27,7 @@ namespace fs = boost::filesystem;
 struct ReddeningConfiguration_Fixture {
 
   const std::string AUX_DATA_DIR {"aux-data-dir"};
+
   const std::string REDDENING_CURVE_GROUP {"reddening-curve-group"};
   const std::string REDDENING_CURVE_EXCLUDE {"reddening-curve-exclude"};
   const std::string REDDENING_CURVE_NAME {"reddening-curve-name"};

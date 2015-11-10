@@ -100,10 +100,12 @@ elements_add_unit_test(RedshiftConfig_test tests/src/RedshiftConfig_test.cpp
 elements_add_unit_test(IgmConfig_test tests/src/IgmConfig_test.cpp
                      LINK_LIBRARIES XYDataset PhzModeling PhzConfiguration
                      TYPE Boost)
-elements_add_unit_test(FilterProviderConfig_test tests/src/FilterProviderConfig_test.cpp 
+elements_add_unit_test(FilterProviderConfig_test tests/src/FilterProviderConfig_test.cpp
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
-elements_add_unit_test(ReddeningProviderConfig_test tests/src/ReddeningProviderConfig_test.cpp 
+elements_add_unit_test(ReddeningProviderConfig_test tests/src/ReddeningProviderConfig_test.cpp
                      LINK_LIBRARIES XYDataset PhzConfiguration
                      TYPE Boost)
-
+elements_add_unit_test(ReddeningConfig_test tests/src/ReddeningConfig_test.cpp
+                     LINK_LIBRARIES XYDataset PhzConfiguration
+                     TYPE Boost)
