@@ -53,6 +53,7 @@ namespace PhzConfiguration {
  * output-model-grid option and throws an exception if any.
  * @throw Element::Exception
  * - IO error, can not write any file there
+ * - If there are no filters set
  */
 class ModelGridOutputConfig : public Configuration::Configuration {
 
@@ -78,6 +79,19 @@ public:
    */
   void changeDefaultSubdir(std::string subdir);
 
+  /**
+   * @brief
+   * This function provides a function with a PhzDataModel::PhotometryGrid
+   * object as argument and it stores this object in a binary file
+   *  with the filename provided by the output-model-grid option.
+   * @details
+   * Before writing the object to the disk, the constructor checks that it is
+   * possible to write data at the location specified by the \b
+   * output-model-grid option and throws an exception if any.
+
+   * @return
+   * A function to be used for outputing the PhotometryGrid
+   */
   const OutputFunction & getOutputFunction();
 
 private:

@@ -51,6 +51,7 @@ static Elements::Logging logger = Elements::Logging::getLogger("ModelGridOutputC
 ModelGridOutputConfig::ModelGridOutputConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<CatalogTypeConfig>();
   declareDependency<IntermediateDirConfig>();
+  declareDependency<FilterConfig>();
   declareDependency<IgmConfig>();
 
 }

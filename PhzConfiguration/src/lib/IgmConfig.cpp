@@ -55,6 +55,9 @@ auto IgmConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionLi
 
 void IgmConfig::preInitialize(const UserValues& args){
   std::set<std::string> types {"OFF", "MADAU", "MEIKSIN", "INOUE"};
+  if (args.count(IGM_ABSORPTION_TYPE)==0){
+    throw Elements::Exception() << "Missing " << IGM_ABSORPTION_TYPE << " option ";
+  }
   auto input_type = args.find(IGM_ABSORPTION_TYPE)->second.as<std::string>();
 
   if (types.find(input_type)==types.end()){

@@ -124,3 +124,6 @@ elements_add_unit_test(PhotometricCorrectionConfig_test tests/src/PhotometricCor
 elements_add_unit_test(FilterConfig_test tests/src/FilterConfig_test.cpp
                      LINK_LIBRARIES XYDataset PhzModeling PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(ModelGridOutputConfig_test tests/src/ModelGridOutputConfig_test.cpp
+                     LINK_LIBRARIES XYDataset PhzDataModel PhzModeling PhzUtils PhzConfiguration
+                     TYPE Boost)
