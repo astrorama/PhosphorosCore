@@ -27,10 +27,12 @@
 #include <unordered_set>
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
+#include "Configuration/PhotometryCatalogConfig.h"
+#include "Configuration/PhotometricBandMappingConfig.h"
+
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/PhotometricCorrectionConfig.h"
-#include "Configuration/PhotometryCatalogConfig.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -48,6 +50,7 @@ PhotometricCorrectionConfig::PhotometricCorrectionConfig (long manager_id) :
     Configuration(manager_id) {
   declareDependency<CatalogTypeConfig>();
   declareDependency<PhotometryCatalogConfig>();
+  declareDependency<PhotometricBandMappingConfig>();
   declareDependency<IntermediateDirConfig>();
 }
 
@@ -94,9 +97,9 @@ void PhotometricCorrectionConfig::initialize (const UserValues& args) {
      std::ifstream in{correction_file};
      m_photometric_correction_map = PhzDataModel::readPhotometricCorrectionMap(in);
    } else if (flag == "NO") {
-     auto& filter_names = getDependency<PhotometryCatalogConfig>().getPhotometricBands();
-     for (auto& filter : filter_names) {
-       m_photometric_correction_map[filter] = 1.;
+     auto& filter_mapping_map = getDependency<PhotometricBandMappingConfig>().getPhotometricBandMapping();
+     for (auto& filter : filter_mapping_map) {
+       m_photometric_correction_map[filter.first] = 1.;
      }
 
    } else {
