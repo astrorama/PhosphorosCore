@@ -130,3 +130,6 @@ elements_add_unit_test(ModelGridOutputConfig_test tests/src/ModelGridOutputConfi
 elements_add_unit_test(ComputeModelGridConfig_test tests/src/ComputeModelGridConfig_test.cpp
                      LINK_LIBRARIES XYDataset PhzDataModel PhzModeling PhzUtils PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(PriorConfig_test tests/src/PriorConfig_test.cpp
+                     LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration
+                     TYPE Boost)
