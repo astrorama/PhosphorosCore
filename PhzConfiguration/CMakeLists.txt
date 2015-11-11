@@ -118,6 +118,9 @@ elements_add_unit_test(ParameterSpaceConfig_test tests/src/ParameterSpaceConfig_
 elements_add_unit_test(PhotometryGridConfig_test tests/src/PhotometryGridConfig_test.cpp
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(PhotometricCorrectionConfig_test tests/src/PhotometricCorrectionConfig_test.cpp 
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
 elements_add_unit_test(FilterConfig_test tests/src/FilterConfig_test.cpp
                      LINK_LIBRARIES XYDataset PhzModeling PhzConfiguration
                      TYPE Boost)
