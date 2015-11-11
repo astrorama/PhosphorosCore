@@ -72,9 +72,6 @@ public:
    * - If a relative path is used, it is relative to the current working directory
    * - If no path is given, the default path `PHOSPHOROS_ROOT/Catalogs` is used
    * 
-   * During the initialization, the getBaseDir() of the CatalogConfig is called
-   * with parameter the directory CATALOGS_DIR/CATALOG_TYPE
-   * 
    * @param args
    *    The user parameters
    */

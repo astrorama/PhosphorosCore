@@ -22,7 +22,6 @@
  * @author nikoapos
  */
 
-#include <fstream>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 
@@ -40,34 +39,15 @@ struct CatalogDirConfig_fixture : public ConfigManager_fixture {
   const std::string CATALOGS_DIR {"catalogs-dir"};
   
   Elements::TempDir temp_dir {};
-  std::string catalog_dir {"Catalogs"};
-  fs::path absolute_catalog_dir = temp_dir.path() / "absolute" / catalog_dir;
-  std::string catalog_type {"CatalogType"};
-  std::string catalog_name {"catalog.txt"};
+  std::string default_catalog_dir {"Catalogs"};
+  fs::path relative_catalog_dir = fs::path{"relative"} / default_catalog_dir;
+  fs::path absolute_catalog_dir = temp_dir.path() / "absolute" / default_catalog_dir;
   
   std::map<std::string, po::variable_value> options_map {};
   
   CatalogDirConfig_fixture() {
     
-    {
-      fs::create_directories(temp_dir.path()/catalog_dir/catalog_type);
-      std::ofstream out {(temp_dir.path()/catalog_dir/catalog_type/catalog_name).string()};
-      out << "# ID\n"
-          << "# int64\n"
-          << "  1\n";
-    }
-    {
-      fs::create_directories(absolute_catalog_dir/catalog_type);
-      std::ofstream out {(absolute_catalog_dir/catalog_type/catalog_name).string()};
-      out << "# ID\n"
-          << "# int64\n"
-          << "  1\n";
-    }
-    
     options_map["phosphoros-root"].value() = boost::any(temp_dir.path().string());
-    options_map["catalog-type"].value() = boost::any(catalog_type);
-    options_map["input-catalog-file"].value() = boost::any(catalog_name);
-    options_map["input-catalog-format"].value() = boost::any(std::string{"AUTO"});
     
   }
 
@@ -94,7 +74,7 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, CatalogDirConfig_fixture) {
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(nominal_test, CatalogDirConfig_fixture) {
+BOOST_FIXTURE_TEST_CASE(defaultPath_test, CatalogDirConfig_fixture) {
 
   // Given
   config_manager.registerConfiguration<CatalogDirConfig>();
@@ -105,7 +85,25 @@ BOOST_FIXTURE_TEST_CASE(nominal_test, CatalogDirConfig_fixture) {
   auto& result = config_manager.getConfiguration<CatalogDirConfig>().getCatalogDir();
   
   // Then
-  BOOST_CHECK_EQUAL(result, temp_dir.path()/catalog_dir);
+  BOOST_CHECK_EQUAL(result, temp_dir.path()/default_catalog_dir);
+
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(relativePath_test, CatalogDirConfig_fixture) {
+
+  // Given
+  config_manager.registerConfiguration<CatalogDirConfig>();
+  config_manager.closeRegistration();
+  options_map[CATALOGS_DIR].value() = boost::any(relative_catalog_dir.string());
+  
+  // When
+  config_manager.initialize(options_map);
+  auto& result = config_manager.getConfiguration<CatalogDirConfig>().getCatalogDir();
+  
+  // Then
+  BOOST_CHECK_EQUAL(result, fs::current_path()/relative_catalog_dir);
 
 }
 

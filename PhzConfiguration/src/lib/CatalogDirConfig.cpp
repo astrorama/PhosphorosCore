@@ -42,11 +42,7 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration
 static const std::string CATALOGS_DIR {"catalogs-dir"};
 
 CatalogDirConfig::CatalogDirConfig(long manager_id) : Configuration(manager_id) {
-  auto& manager = ConfigManager::getInstance(manager_id);
-  manager.registerConfiguration<CatalogConfig>();
-  manager.registerDependency<CatalogConfig, CatalogDirConfig>();
   declareDependency<PhosphorosRootDirConfig>();
-  declareDependency<CatalogTypeConfig>();
 }
 
 auto CatalogDirConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -78,9 +74,6 @@ static fs::path getCatalogsDirFromOptions(const std::map<std::string, po::variab
 void CatalogDirConfig::initialize(const UserValues& args) {
   auto& root = getDependency<PhosphorosRootDirConfig>().getPhosphorosRootDir();
   m_catalog_dir = getCatalogsDirFromOptions(args, root);
-  
-  auto& type = getDependency<CatalogTypeConfig>().getCatalogType();
-  getDependency<CatalogConfig>().setBaseDir((m_catalog_dir/type).string());
 }
 
 const fs::path& CatalogDirConfig::getCatalogDir() {
