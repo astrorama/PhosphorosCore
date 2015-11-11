@@ -53,7 +53,7 @@ public:
    * This function provides a XYdatasetProvider object
    * @details
    * @return
-   * A unique pointer of XYDatasetProvider type
+   * A shared pointer of XYDatasetProvider type
    */
   std::shared_ptr<XYDataset::XYDatasetProvider> getFilterDatasetProvider();
 
