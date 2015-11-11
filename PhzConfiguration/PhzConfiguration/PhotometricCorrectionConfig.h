@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License 
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
- */  
+ */
 
 /**
  * @file PhzConfiguration/PhotometricCorrectionConfig.h
@@ -37,34 +37,87 @@ namespace PhzConfiguration {
 /**
  * @class PhotometricCorrectionConfig
  *
- * @brief
+ * @brief Class to provide teh map of photometric corrections
+ *
+ * @details
+ *
+ * If the photometric-correction-file is a relative path, it is relative to the
+ * directory INTERMEDIATE_DIR/CATALOG_TYPE. If it is missing completely it is
+ * set to the default INTERMEDIATE_DIR/CATALOG_TYPE/photometric_corrections.txt.
+ *
+ * It provides a PhotometricCorrectionMap map with all the corrections set to 1 for
+ * all the filters defined as photometry filters of the input catalog with the
+ * filter-mapping-file parameter. Otherwise if the photometric-correction-file
+ * is defined the correction data will be read from this correction file
+ *
+ * When the Photometric Correction is defined, this class will be modified
+ * accordingly.
+ *
+ * @throw
+ * ElementException: Photometric Correction file does not exist
  *
  */
-class PhotometricCorrectionConfig : public Configuration::Configuration {
+class PhotometricCorrectionConfig: public Configuration::Configuration {
 
 public:
 
-  PhotometricCorrectionConfig(long manager_id);
+  PhotometricCorrectionConfig (long manager_id);
 
   /**
    * @brief Destructor
    */
-  virtual ~PhotometricCorrectionConfig() = default;
+  virtual ~PhotometricCorrectionConfig () = default;
 
-  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
+  /**
+   * Two program options are specified through this method
+   *
+   * - photometric-correction-file : filename and path of the correction file
+   * - enable-photometric-correction : Use or not the photometric corrections: YES or NO (default)
+   *
+   */
+  std::map<std::string, OptionDescriptionList> getProgramOptions () override;
 
-  void initialize(const UserValues& args) override;
+  /**
+   * Check that the enable-photometric-correction provided is either YES ot NO and
+   * throws an exception if it is not teh case.
+   *
+   * @param args
+   *  Map of all program options provided
+   *
+   * @throw ElementException if enable-photometric-correction is different than YES/NO
+   */
+  void preInitialize (const UserValues& args) override;
 
-  const PhzDataModel::PhotometricCorrectionMap& getPhotometricCorrectionMap();
+  /**
+   * If enable-photometric-correction is YES: It reads the photometric corrections
+   * from the file and store them in the PhotometricCorrectionMap. It uses default
+   * values for the file name and path is they are not explicitely provided.
+   *
+   * If enable-photometric-correction is NO: It fills a PhotometricCorrectionMap
+   * map with all corrections set to 1 for all the filters defined as photometry
+   * filters of the input catalog with the filter-mapping-file parameter.
+   *
+   * @throw ElementException if the specified file is not found
+   *
+   * @param args
+   *  Map of all program options provided
+   */
+  void initialize (const UserValues& args) override;
+
+  /**
+   *
+   * @return The PhotometricCorrectionMap
+   */
+  const PhzDataModel::PhotometricCorrectionMap& getPhotometricCorrectionMap ();
 
 private:
 
   PhzDataModel::PhotometricCorrectionMap m_photometric_correction_map;
 
-}; /* End of PhotometricCorrectionConfig class */
+};
+/* End of PhotometricCorrectionConfig class */
 
 } /* namespace PhzConfiguration */
 } /* namespace Euclid */
-
 
 #endif

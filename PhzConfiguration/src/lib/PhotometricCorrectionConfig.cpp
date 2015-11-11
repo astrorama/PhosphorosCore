@@ -56,19 +56,19 @@ PhotometricCorrectionConfig::PhotometricCorrectionConfig (long manager_id) :
 
 auto PhotometricCorrectionConfig::getProgramOptions () -> std::map<std::string, OptionDescriptionList> {
   return { {"Photometric Correction options", {
-       { PHOTOMETRIC_CORRECTION_FILE.c_str(), po::value<std::string>(),
+        { PHOTOMETRIC_CORRECTION_FILE.c_str(), po::value<std::string>(),
           "The path of the photometric correction file"},
-       { ENABLE_PHOTOMETRIC_CORRECTION.c_str(), po::value<std::string>()->default_value("NO"),
+        { ENABLE_PHOTOMETRIC_CORRECTION.c_str(), po::value<std::string>()->default_value("NO"),
           "The flag to enable photometric correction usage or not. One of NO (default) or YES"}
-  }}};
+      }}};
 }
 
-static fs::path getFileFromOptions(const Configuration::Configuration::UserValues& args,
-                                   const fs::path& intermediate_dir, const std::string& catalog_type) {
+static fs::path getFileFromOptions (const Configuration::Configuration::UserValues& args,
+    const fs::path& intermediate_dir, const std::string& catalog_type) {
   fs::path result = intermediate_dir / catalog_type / "photometric_corrections.txt";
 
-  if (args.find(PHOTOMETRIC_CORRECTION_FILE) != args.end() ) {
-    fs::path path {args.at(PHOTOMETRIC_CORRECTION_FILE).as<std::string>()};
+  if (args.find(PHOTOMETRIC_CORRECTION_FILE) != args.end()) {
+    fs::path path { args.at(PHOTOMETRIC_CORRECTION_FILE).as<std::string>() };
     if (path.is_absolute()) {
       result = path;
     } else {
@@ -76,6 +76,15 @@ static fs::path getFileFromOptions(const Configuration::Configuration::UserValue
     }
   }
   return result;
+}
+
+void PhotometricCorrectionConfig::preInitialize (const UserValues& args) {
+  // Get the flag controlling the photometric correction application
+  std::string flag = args.at(ENABLE_PHOTOMETRIC_CORRECTION).as<std::string>();
+  if (flag != "YES" && flag != "NO") {
+    throw Elements::Exception() << "Invalid value for option " << ENABLE_PHOTOMETRIC_CORRECTION << " : " << flag
+        << " must be YES or NO";
+  }
 }
 
 void PhotometricCorrectionConfig::initialize (const UserValues& args) {
@@ -86,26 +95,23 @@ void PhotometricCorrectionConfig::initialize (const UserValues& args) {
   // Get the flag controlling the photometric correction application
   std::string flag = args.at(ENABLE_PHOTOMETRIC_CORRECTION).as<std::string>();
 
-   if (flag == "YES") {
-     // Check the file exist
-     auto correction_file = getFileFromOptions(args, intermediate_dir, catalog_type).string();
-     if (!fs::exists(correction_file)) {
-       logger.error() << "File " << correction_file << " not found";
-       throw Elements::Exception() << "Photometric Correction file (photometric-correction-file option) does not exist : " << correction_file;
-     }
-     // Read the correction file(ASCII type)
-     std::ifstream in{correction_file};
-     m_photometric_correction_map = PhzDataModel::readPhotometricCorrectionMap(in);
-   } else if (flag == "NO") {
-     auto& filter_mapping_map = getDependency<PhotometricBandMappingConfig>().getPhotometricBandMapping();
-     for (auto& filter : filter_mapping_map) {
-       m_photometric_correction_map[filter.first] = 1.;
-     }
-
-   } else {
-     throw Elements::Exception() << "Invalid value for option "
-                                 << ENABLE_PHOTOMETRIC_CORRECTION << " : " << flag;
-   }
+  if (flag == "YES") {
+    // Check the file exist
+    auto correction_file = getFileFromOptions(args, intermediate_dir, catalog_type).string();
+    if (!fs::exists(correction_file)) {
+      logger.error() << "File " << correction_file << " not found";
+      throw Elements::Exception()
+          << "Photometric Correction file (photometric-correction-file option) does not exist : " << correction_file;
+    }
+    // Read the correction file(ASCII type)
+    std::ifstream in { correction_file };
+    m_photometric_correction_map = PhzDataModel::readPhotometricCorrectionMap(in);
+  } else if (flag == "NO") {
+    auto& filter_mapping_map = getDependency<PhotometricBandMappingConfig>().getPhotometricBandMapping();
+    for (auto& filter : filter_mapping_map) {
+      m_photometric_correction_map[filter.first] = 1.;
+    }
+  }
 
 }
 
