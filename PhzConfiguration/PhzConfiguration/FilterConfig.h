@@ -39,21 +39,16 @@ namespace PhzConfiguration {
 
 /**
  * @class FilterConfig
+ *
  * @brief
  * This class defines the Filter parameter options
- * @details
- * The parameters available are:
- * filter-group     : string a filter group(only one) e.g. filter/MER
- * filter-name      : string a filter name (only one) e.g. MER/vis
- * filter-exclude   : string a filter name to be excluded (only one)
- * @throw
- * ElementException: Missing or unknown filter dataset provider options
- * ElementException: Empty filter list
  */
 class FilterConfig : public Configuration::Configuration {
 
 public:
-
+  /**
+   * @brief constructor
+   */
   FilterConfig(long manager_id);
 
   /**
@@ -61,16 +56,31 @@ public:
    */
   virtual ~FilterConfig() = default;
 
+  /**
+   * @details
+   * This class define the "filter-group", "filter-name" and "filter-exclude" 
+   * options into the "Filter options" group
+   */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  /**
+   * @details
+   * Compute the Filter list.
+   * The parameters available are:
+   * filter-group     : string a filter group(only one) e.g. filter/MER
+   * filter-name      : string a filter name (only one) e.g. MER/vis
+   * filter-exclude   : string a filter name to be excluded (only one)
+   *
+   * @throw
+   * ElementException: Missing or unknown filter dataset provider options
+   * ElementException: Empty filter list
+   */
   void initialize(const UserValues& args) override;
 
   /**
    * @brief
    * This function provides a filter list
-   * @details
-   * @throw ElementException
-   *  Empty filter list
+   *
    * @return
    * A vector of QualifiedName type
    */
