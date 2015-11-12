@@ -55,14 +55,14 @@ public:
   /**
    * @brief constructor
    */
-  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
+  RedshiftConfig(long manager_id);
 
   /**
-    * @details
-    * This class define the "z-range" and "z-value" options into the
-    * "Redshift options" group
-    */
-   RedshiftConfig(long manager_id);
+   * @details
+   * This class define the "z-range" and "z-value" options into the
+   * "Redshift options" group
+   */
+  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
   /**
    * @details
