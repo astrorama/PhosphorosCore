@@ -50,7 +50,7 @@ FilterConfig::FilterConfig(long manager_id) : Configuration(manager_id) {
 }
 
 auto FilterConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Directory options", {
+  return {{"Filter options", {
     {FILTER_GROUP.c_str(), po::value<std::vector<std::string>>(),
         "Use all the Filters in the given group and subgroups"},
     {FILTER_EXCLUDE.c_str(), po::value<std::vector<std::string>>(),
