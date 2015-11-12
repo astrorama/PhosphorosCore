@@ -25,13 +25,9 @@
 #ifndef PHZCONFIGURATION_REDDENINGPROVIDERCONFIG_H
 #define	PHZCONFIGURATION_REDDENINGPROVIDERCONFIG_H
 
-#include <cstdlib>
-#include <string>
+#include <memory>
 #include "Configuration/Configuration.h"
 #include "XYDataset/XYDatasetProvider.h"
-
-
-namespace fs = boost::filesystem;
 
 namespace Euclid {
 namespace PhzConfiguration {

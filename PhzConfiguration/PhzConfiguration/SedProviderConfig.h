@@ -25,13 +25,9 @@
 #ifndef PHZCONFIGURATION_SEDPROVIDERCONFIG_H
 #define	PHZCONFIGURATION_SEDPROVIDERCONFIG_H
 
-#include <cstdlib>
-#include <string>
+#include <memory>
 #include "Configuration/Configuration.h"
 #include "XYDataset/XYDatasetProvider.h"
-
-
-namespace fs = boost::filesystem;
 
 namespace Euclid {
 namespace PhzConfiguration {
