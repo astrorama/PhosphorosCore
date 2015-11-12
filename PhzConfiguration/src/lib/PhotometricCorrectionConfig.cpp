@@ -49,7 +49,6 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhotometricCorre
 PhotometricCorrectionConfig::PhotometricCorrectionConfig (long manager_id) :
     Configuration(manager_id) {
   declareDependency<CatalogTypeConfig>();
-  declareDependency<PhotometryCatalogConfig>();
   declareDependency<PhotometricBandMappingConfig>();
   declareDependency<IntermediateDirConfig>();
 }

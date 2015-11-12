@@ -37,24 +37,7 @@ namespace PhzConfiguration {
 /**
  * @class PhotometricCorrectionConfig
  *
- * @brief Class to provide teh map of photometric corrections
- *
- * @details
- *
- * If the photometric-correction-file is a relative path, it is relative to the
- * directory INTERMEDIATE_DIR/CATALOG_TYPE. If it is missing completely it is
- * set to the default INTERMEDIATE_DIR/CATALOG_TYPE/photometric_corrections.txt.
- *
- * It provides a PhotometricCorrectionMap map with all the corrections set to 1 for
- * all the filters defined as photometry filters of the input catalog with the
- * filter-mapping-file parameter. Otherwise if the photometric-correction-file
- * is defined the correction data will be read from this correction file
- *
- * When the Photometric Correction is defined, this class will be modified
- * accordingly.
- *
- * @throw
- * ElementException: Photometric Correction file does not exist
+ * @brief Class to provide the map of photometric correction coefficients
  *
  */
 class PhotometricCorrectionConfig: public Configuration::Configuration {
@@ -91,7 +74,7 @@ public:
   /**
    * If enable-photometric-correction is YES: It reads the photometric corrections
    * from the file and store them in the PhotometricCorrectionMap. It uses default
-   * values for the file name and path is they are not explicitely provided.
+   * values for the file name and path if they are not explicitely provided.
    *
    * If enable-photometric-correction is NO: It fills a PhotometricCorrectionMap
    * map with all corrections set to 1 for all the filters defined as photometry
