@@ -41,7 +41,9 @@ namespace PhzConfiguration {
 class IgmConfig : public Configuration::Configuration {
 
 public:
-
+  /**
+   * @brief Constructor
+   */
   IgmConfig(long manager_id);
 
   /**
@@ -49,14 +51,36 @@ public:
    */
   virtual ~IgmConfig() = default;
 
+  /**
+   * @details
+   * This class define the "igm-absorption-type" option into
+   * the "IGM absorption options" group
+   */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  /**
+   * @details
+   * Check that the "igm-absorption-type" is present and match one of the
+   * accepted values ("OFF", "MADAU", "MEIKSIN", "INOUE")
+   */
   void preInitialize(const UserValues& args) override;
 
+  /**
+   * @details
+   * Compute the IGM Absorption type  based on the "igm-absorption-type" option
+   * it should be one of the following: "OFF", "MADAU", "MEIKSIN", "INOUE"
+   * Based on the type instantiate the corresponding IgmAbsorptionFunction
+   */
   void initialize(const UserValues& args) override;
 
+  /**
+   * @brief Return the IgmAbsorptionFunction
+   */
   const PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction & getIgmAbsorptionFunction();
 
+  /**
+   * @brief Return the Igm Absorption type
+   */
   const std::string &  getIgmAbsorptionType();
 
 private:
