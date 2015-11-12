@@ -136,3 +136,6 @@ elements_add_unit_test(ComputeModelGridConfig_test tests/src/ComputeModelGridCon
 elements_add_unit_test(PriorConfig_test tests/src/PriorConfig_test.cpp
                      LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(LikelihoodGridFuncConfig_test tests/src/LikelihoodGridFuncConfig_test.cpp
+                     LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration Configuration
+                     TYPE Boost)
