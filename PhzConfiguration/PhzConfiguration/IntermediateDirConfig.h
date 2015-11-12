@@ -51,6 +51,9 @@ class IntermediateDirConfig : public Configuration::Configuration {
 
 public:
 
+  /**
+   * @brief constructor
+   */
   IntermediateDirConfig(long manager_id);
 
   /**
@@ -58,21 +61,28 @@ public:
    */
   virtual ~IntermediateDirConfig() = default;
 
+  /**
+   * @details
+   * This class define the "intermediate-products-dir" option into the
+   * "Directory options" group
+   */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  /**
+   * @details
+   * Compute the path of the Auxiliary Data Directory. This directory is
+   * controlled with the program option `intermediate-products-dir`
+   * as fllowing:
+   * - If an absolute path is given it is used as is
+   * - If a relative path is used, it is relative to the current working directory
+   * - If no path is given, the default path `PHOSPHOROS_ROOT/IntermediateProducts` is used
+   */
   void initialize(const UserValues& args) override;
 
   /**
    * @brief
    * Returns the directory containing the intermediate products.This is
    * available only when the IntermediateDirConfig has been initialized.
-   *
-   * @details
-   * This directory is controlled with the program option `intermediate-products-dir`
-   * as fllowing:
-   * - If an absolute path is given it is used as is
-   * - If a relative path is used, it is relative to the current working directory
-   * - If no path is given, the default path `PHOSPHOROS_ROOT/IntermediateProducts` is used
    *
    * @returns The intermediate products directory
    */
