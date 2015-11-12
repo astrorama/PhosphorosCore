@@ -44,7 +44,7 @@ std::shared_ptr<XYDataset::XYDatasetProvider> FilterProviderConfig::getFilterDat
   return m_provider;
 }
 
-void FilterProviderConfig::initialize(const UserValues& args) {
+void FilterProviderConfig::initialize(const UserValues&) {
   auto path = getDependency<AuxDataDirConfig>().getAuxDataDir() / "Filters";
   std::unique_ptr<XYDataset::FileParser> file_parser { new XYDataset::AsciiParser{} };
   m_provider.reset( new XYDataset::FileSystemProvider{ path.string(), std::move(file_parser) } );
