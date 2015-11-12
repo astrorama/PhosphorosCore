@@ -18,7 +18,7 @@
 
 /**
  * @file PhzConfiguration/AuxDataDirConfig.h
- * @date 11/06/15
+ * @date 2015/11/06
  * @author Florian Dubath
  */
 
@@ -51,6 +51,9 @@ class AuxDataDirConfig : public Configuration::Configuration {
 
 public:
 
+  /**
+   * @brief constructor
+   */
   AuxDataDirConfig(long manager_id);
 
   /**
@@ -58,21 +61,27 @@ public:
    */
   virtual ~AuxDataDirConfig() = default;
 
+  /**
+   * @details
+   * This class define the "aux-data-dir" option into the "Directory options"
+   * group
+   */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  /**
+   * @details
+   * Compute the path of the Auxiliary Data Directory. This directory is
+   * controlled with the program option `aux-data-dir` as fllowing:
+   * - If an absolute path is given it is used as is
+   * - If a relative path is used, it is relative to the current working directory
+   * - If no path is given, the default path `PHOSPHOROS_ROOT/AuxiliaryData` is used
+   */
   void initialize(const UserValues& args) override;
 
   /**
    * @brief
    * Returns the directory containing the auxiliary data. This is available only
    * when the AuxDataDirConfig has been initialized.
-   *
-   * @details
-   * This directory is controlled with the program option `aux-data-dir` as
-   * fllowing:
-   * - If an absolute path is given it is used as is
-   * - If a relative path is used, it is relative to the current working directory
-   * - If no path is given, the default path `PHOSPHOROS_ROOT/AuxiliaryData` is used
    *
    * @returns The auxiliary data directory
    */
