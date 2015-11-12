@@ -51,6 +51,9 @@ class ResultsDirConfig : public Configuration::Configuration {
 
 public:
 
+  /**
+   * @brief constructor
+   */
   ResultsDirConfig(long manager_id);
 
   /**
@@ -58,20 +61,27 @@ public:
    */
   virtual ~ResultsDirConfig() = default;
 
+  /**
+   * @details
+   * This class define the "results-dir" option into the
+   * "Directory options" group
+   */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  /**
+   * @details
+   * Compute the path of the Results Directory. This directory is
+   * controlled with the program option `results-dir`
+   * as fllowing:
+   * - If an absolute path is given it is used as is
+   * - If a relative path is used, it is relative to the current working directory
+   * - If no path is given, the default path `PHOSPHOROS_ROOT/Results` is used
+   */
   void initialize(const UserValues& args) override;
 
   /**
    * @brief
    * Returns the directory containing the final PHZ results
-   *
-   * @details
-   * This directory is controlled with the program option `results-dir` as
-   * fllowing:
-   * - If an absolute path is given it is used as is
-   * - If a relative path is used, it is relative to the current working directory
-   * - If no path is given, the default path `PHOSPHOROS_ROOT/Results` is used
    *
    * @returns The final PHZ results directory
    */
