@@ -18,7 +18,7 @@
 
 /**
  * @file PhzConfiguration/PhosphorosRootDirConfig.h
- * @date 11/06/15
+ * @date 2015/11/06
  * @author Florian Dubath
  */
 
@@ -50,6 +50,9 @@ class PhosphorosRootDirConfig : public Configuration::Configuration {
 
 public:
 
+  /*
+   * @brief constructor
+   */
   PhosphorosRootDirConfig(long manager_id);
 
   /**
@@ -57,26 +60,37 @@ public:
    */
   virtual ~PhosphorosRootDirConfig() = default;
 
+  /**
+   * @brief the "phosphoros-root" option is defined by this class into
+   * the "Directory options" option group.
+   */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  /**
+   * @brief Check that if no "phosphoros-root" option is provided the
+   * "PHOSPHOROS_ROOT" environment variable is an absolute path
+   */
   void preInitialize(const UserValues& args) override;
 
-  void initialize(const UserValues& args) override;
-
   /**
-   * @brief
-   * Returns the top level directory of Phosphoros. This is available only
-   * when the PhosphorosRootDirConfig has been initialized.
-   *
    * @details
-   * This directory is controlled with the environment variable `PHOSPHOROS_ROOT`
-   * and the program option `phosphoros-root`. The precendance is the following:
+   * Compute the top level directory of Phosphoros. This directory is controlled
+   * with the environment  variable `PHOSPHOROS_ROOT` and the program
+   * option `phosphoros-root`.
+   * The precendance is the following:
    * - If the `phosphoros-root` option is given, it is used. A relative path is
    *   relative to the current working directory
    * - If the `phosphoros-root` option is not given and the `PHOSPHOROS_ROOT`
    *   environment variable is set, the environment variable is used. It must be
    *   an absolute path.
    * - If none of the above is set the default path `~/Phosphoros` is used.
+   */
+  void initialize(const UserValues& args) override;
+
+  /**
+   * @brief
+   * Returns the top level directory of Phosphoros. This is available only
+   * when the PhosphorosRootDirConfig has been initialized.
    *
    * @returns The Phosphoros root directory
    */
