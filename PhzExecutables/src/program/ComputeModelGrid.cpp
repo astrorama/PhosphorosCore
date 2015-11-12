@@ -10,16 +10,27 @@
 #include <sstream>
 #include <boost/program_options.hpp>
 #include "ElementsKernel/ProgramHeaders.h"
-#include "PhzConfiguration/ComputeModelGridConfiguration.h"
-//#include "PhzModeling/PhotometryGridCreator.h"
+#include "PhzConfiguration/ComputeModelGridConfig.h"
+#include "PhzConfiguration/FilterConfig.h"
+#include "PhzConfiguration/SedProviderConfig.h"
+#include "PhzConfiguration/ReddeningProviderConfig.h"
+#include "PhzConfiguration/FilterProviderConfig.h"
+#include "PhzConfiguration/IgmConfig.h"
+#include "PhzConfiguration/ParameterSpaceConfig.h"
+#include "PhzConfiguration/ModelGridOutputConfig.h"
 #include "PhzModeling/SparseGridCreator.h"
 #include "PhzModeling/MadauIgmFunctor.h"
 
 using namespace std;
 using namespace Euclid;
+using namespace Euclid::Configuration;
+using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhosphorosComputeModelGrid");
+
+static long config_manager_id = std::chrono::duration_cast<std::chrono::microseconds>(
+                                    std::chrono::system_clock::now().time_since_epoch()).count();
 
 class ProgressReporter {
   
@@ -47,24 +58,29 @@ class ComputeModelGrid : public Elements::Program {
 public:
   
   po::options_description defineSpecificProgramOptions() override {
-    return PhzConfiguration::ComputeModelGridConfiguration::getProgramOptions();
+    auto& config_manager = ConfigManager::getInstance(config_manager_id);
+    config_manager.registerConfiguration<ComputeModelGridConfig>();
+    return config_manager.closeRegistration();
   }
   
   Elements::ExitCode mainMethod(map<string, po::variable_value>& args) override {
 
-    PhzConfiguration::ComputeModelGridConfiguration conf {args};
+    auto& config_manager = ConfigManager::getInstance(config_manager_id);
+    config_manager.initialize(args);
     
-    auto filter_list = conf.getFilterList();
-    PhzModeling::SparseGridCreator creator {conf.getSedDatasetProvider(),
-                                                conf.getReddeningDatasetProvider(),
-                                                conf.getFilterDatasetProvider(),
-                                                conf.getIgmAbsorptionFunction()};
+    auto& filter_list = config_manager.getConfiguration<FilterConfig>().getFilterList();
+    auto& sed_provider = config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider();
+    auto& reddening_provider = config_manager.getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider();
+    const auto& filter_provider = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
+    auto& igm_abs_func = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
+    
+    PhzModeling::SparseGridCreator creator {sed_provider, reddening_provider, filter_provider, igm_abs_func};
                                                 
-    auto param_space_map = conf.getParameterSpaceRegions();
+    auto param_space_map = config_manager.getConfiguration<ParameterSpaceConfig>().getParameterSpaceRegions();
     auto results = creator.createGrid(param_space_map, filter_list, ProgressReporter{});
                                                      
     logger.info() << "Creating the output";
-    auto output = conf.getOutputFunction();
+    auto output = config_manager.getConfiguration<ModelGridOutputConfig>().getOutputFunction();
     output(results);
     
     return Elements::ExitCode::OK;

@@ -57,14 +57,12 @@ std::map<XYDataset::QualifiedName, std::unique_ptr<Euclid::MathUtils::Function>>
 }
 
 PhotometryGridCreator::PhotometryGridCreator(
-              std::unique_ptr<XYDataset::XYDatasetProvider> sed_provider,
-              std::unique_ptr<XYDataset::XYDatasetProvider> reddening_curve_provider,
-              std::unique_ptr<XYDataset::XYDatasetProvider> filter_provider,
+              std::shared_ptr<XYDataset::XYDatasetProvider> sed_provider,
+              std::shared_ptr<XYDataset::XYDatasetProvider> reddening_curve_provider,
+              std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider,
               IgmAbsorptionFunction igm_absorption_function)
-      : m_sed_provider{std::move(sed_provider)},
-        m_reddening_curve_provider{std::move(reddening_curve_provider)},
-        m_filter_provider(std::move(filter_provider)),
-        m_igm_absorption_function{std::move(igm_absorption_function)} {
+      : m_sed_provider {sed_provider}, m_reddening_curve_provider {reddening_curve_provider},
+        m_filter_provider(filter_provider), m_igm_absorption_function {igm_absorption_function} {
 }
         
 class ParallelJob {

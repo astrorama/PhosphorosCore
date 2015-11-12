@@ -43,7 +43,7 @@ ComputeModelGridConfig::ComputeModelGridConfig(long manager_id) : Configuration(
   declareDependency<ParameterSpaceConfig>();
 }
 
-void ComputeModelGridConfig::preInitialize(const UserValues& args){
+void ComputeModelGridConfig::preInitialize(const UserValues&){
   getDependency<ModelGridOutputConfig>().changeDefaultSubdir("ModelGrids");
 }
 
