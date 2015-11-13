@@ -41,21 +41,13 @@ namespace PhzConfiguration {
  *
  * @brief This class defines the Sed parameter options
  *
- * @details
- * The parameters available are:
- * - \b sed-group     : string a sed group(only one) e.g. sed/MER
- * - \b sed-name      : string a sed name (only one) e.g. MER/vis
- * - \b sed-exclude   : string a sed name to be excluded (only one)
- * They all can be used multiple times
- *
- * @throw Element::Exception
- * - Missing or unknown sed dataset provider options
- * - Empty sed list
  */
 class SedConfig : public Configuration::Configuration {
 
 public:
-
+  /**
+   * @brief Constructor
+   */
   SedConfig(long manager_id);
 
   /**
@@ -63,8 +55,26 @@ public:
    */
   virtual ~SedConfig() = default;
 
+  /**
+   * @details
+   * Add the options "sed-group","sed-exclude","sed-name" and "sed-group-*",
+   * "sed-exclude-*","sed-name-*" to the "SED templates options" group
+   */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  /**
+   * @details
+   * Build a set of SED based on the parameters.
+   * The parameters available are:
+   * - \b sed-group     : string a sed group(only one) e.g. sed/MER
+   * - \b sed-name      : string a sed name (only one) e.g. MER/vis
+   * - \b sed-exclude   : string a sed name to be excluded (only one)
+   * They all can be used multiple times
+   *
+   * @throw Element::Exception
+   * - Missing or unknown sed dataset provider options
+   * - Empty sed list
+   */
   void initialize(const UserValues& args) override;
 
   /**
