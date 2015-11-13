@@ -44,16 +44,6 @@ namespace PhzConfiguration {
  * @brief
  * This class defines the model grid parameter option used by the ComputeModelGrid
  * executable
- * @details
- * This class defines the Model Grid parameter option, \b output-model-grid
- * The parameter available is :
- * - \b output-model-grid : string, output filename and path for storing the model grid data
- * Before writing data to the disk, the constructor checks that it is
- * possible to write on the disk at the location specified by the
- * output-model-grid option and throws an exception if any.
- * @throw Element::Exception
- * - IO error, can not write any file there
- * - If there are no filters set
  */
 class ModelGridOutputConfig : public Configuration::Configuration {
 
@@ -61,7 +51,9 @@ public:
 
  typedef std::function<void(const std::map<std::string, PhzDataModel::PhotometryGrid>&)> OutputFunction;
 
-
+  /**
+   * @brief Constructor
+   */
   ModelGridOutputConfig(long manager_id);
 
   /**
@@ -69,8 +61,25 @@ public:
    */
   virtual ~ModelGridOutputConfig() = default;
 
+  /**
+   * @details
+   * Add the "output-model-grid" option to the "Compute Model Grid options" group
+   */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  /**
+   * @details
+   * Compute the OutputFunction based on the provided parameter
+   * The parameter available is :
+   * - \b output-model-grid : string, output filename and path for storing the model grid data
+   * Before writing data to the disk, the constructor checks that it is
+   * possible to write on the disk at the location specified by the
+   * output-model-grid option and throws an exception if any.
+   *
+   * @throw Element::Exception
+   * - IO error, can not write any file there
+   * - If there are no filters set
+   */
   void initialize(const UserValues& args) override;
 
   /**
