@@ -32,7 +32,6 @@
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
-#include "PhzConfiguration/FilterConfig.h"
 #include "PhzUtils/FileUtils.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
@@ -51,7 +50,6 @@ static Elements::Logging logger = Elements::Logging::getLogger("ModelGridOutputC
 ModelGridOutputConfig::ModelGridOutputConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<CatalogTypeConfig>();
   declareDependency<IntermediateDirConfig>();
-  declareDependency<FilterConfig>();
   declareDependency<IgmConfig>();
 
 }
@@ -96,12 +94,17 @@ void ModelGridOutputConfig::initialize(const UserValues& args) {
     m_output_function = [this,filename](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
       auto logger = Elements::Logging::getLogger("PhzOutput");
       std::ofstream out {filename};
+      std::vector<XYDataset::QualifiedName> filter_list {};
+      auto& first_phot = *(grid_map.begin()->second.begin());
+      for (auto iter = first_phot.begin(); iter != first_phot.end(); ++iter) {
+        filter_list.emplace_back(iter.filterName());
+      }
       boost::archive::binary_oarchive boa {out};
       // Store the info object describing the grids
       PhzDataModel::PhotometryGridInfo info {
           grid_map,
           getDependency<IgmConfig>().getIgmAbsorptionType(),
-          getDependency<FilterConfig>().getFilterList()};
+          filter_list};
       boa << info;
       // Store the grids themselves
       for (auto& pair : grid_map) {

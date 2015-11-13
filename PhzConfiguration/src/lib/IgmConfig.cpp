@@ -48,7 +48,7 @@ IgmConfig::IgmConfig(long manager_id) : Configuration(manager_id) {}
 
 auto IgmConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"IGM absorption options", {
-    {IGM_ABSORPTION_TYPE.c_str(), po::value<std::string>()->required(),
+    {IGM_ABSORPTION_TYPE.c_str(), po::value<std::string>()->default_value("OFF"),
         "The type of IGM absorption to apply (one of OFF, MADAU, MEIKSIN, INOUE)"}
   }}};
 }

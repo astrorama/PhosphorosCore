@@ -142,3 +142,6 @@ elements_add_unit_test(LikelihoodGridFuncConfig_test tests/src/LikelihoodGridFun
 elements_add_unit_test(LuminosityBandConfig_test tests/src/LuminosityBandConfig_test.cpp 
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(ComputeLuminosityModelGridConfig_test tests/src/ComputeLuminosityModelGridConfig_test.cpp 
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)

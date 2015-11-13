@@ -28,6 +28,7 @@
 #include "PhzConfiguration/ComputeModelGridConfig.h"
 #include "PhzConfiguration/ModelGridOutputConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
+#include "PhzConfiguration/FilterConfig.h"
 #include "PhzConfiguration/ParameterSpaceConfig.h"
 
 
@@ -41,6 +42,7 @@ ComputeModelGridConfig::ComputeModelGridConfig(long manager_id) : Configuration(
   declareDependency<ModelGridOutputConfig>();
   declareDependency<IgmConfig>();
   declareDependency<ParameterSpaceConfig>();
+  declareDependency<FilterConfig>();
 }
 
 void ComputeModelGridConfig::preInitialize(const UserValues&){

@@ -26,14 +26,12 @@
 #include "XYDataset/AsciiParser.h"
 
 #include "PhzConfiguration/FilterProviderConfig.h"
-#include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/AuxDataDirConfig.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
 
 FilterProviderConfig::FilterProviderConfig(long manager_id) : Configuration::Configuration(manager_id) {
-  declareDependency<CatalogTypeConfig>();
   declareDependency<AuxDataDirConfig>();
 }
 
