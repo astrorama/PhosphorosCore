@@ -82,10 +82,8 @@ void LuminositySedGroupConfig::initialize (const UserValues& args) {
     std::set<XYDataset::QualifiedName> seds {sed_names.begin(), sed_names.end()};
 
     groups[group_name] = seds;
-
-    m_luminosity_sed_group_manager_ptr.reset( new PhzDataModel::QualifiedNameGroupManager(groups) );
   }
-
+  m_luminosity_sed_group_manager_ptr.reset( new PhzDataModel::QualifiedNameGroupManager(groups) );
 }
 
 
