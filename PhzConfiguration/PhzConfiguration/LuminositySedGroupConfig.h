@@ -54,32 +54,27 @@ public:
   /**
    * One program option is specified through this method
    *
-   * - luminosity-sed-group : filename and path of the correction file
+   * - luminosity-sed-group : this is an option used to define the SED groups,
    *
+   * The first part of the option is the group name and then it is followed by the
+   * names of all SEDs belonging to that group. This  option can be provided more than
+   * one to define many groups
    */
   std::map<std::string, OptionDescriptionList> getProgramOptions () override;
 
   /**
-   * Check that the enable-photometric-correction provided is either YES ot NO and
-   * throws an exception if it is not teh case.
+   * Check teh input option
    *
    * @param args
    *  Map of all program options provided
-   *group_list_type = std::map<std::string, std::set<XYDataset::QualifiedName>>;
-   * @throw ElementException if enable-photometric-correction is different than YES/NO
+   *
+   * @throw ElementException if no luminosity-sed-group options are provided
    */
   void preInitialize (const UserValues& args) override;
 
   /**
-   * If enable-photometric-correction is YES: It reads the photometric corrections
-   * from the file and store them in the PhotometricCorrectionMap. It uses default
-   * values for the file name and path if they are not explicitely provided.
-   *
-   * If enable-photometric-correction is NO: It fills a PhotometricCorrectionMap
-   * map with all corrections set to 1 for all the filters defined as photometry
-   * filters of the input catalog with the filter-mapping-file parameter.
-   *
-   * @throw ElementException if the specified file is not found
+   * Initialized a LuminositySedGroupManager with the information provided
+   * though the options
    *
    * @param args
    *  Map of all program options provided
