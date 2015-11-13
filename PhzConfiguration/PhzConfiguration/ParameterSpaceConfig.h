@@ -47,7 +47,9 @@ namespace PhzConfiguration {
 class ParameterSpaceConfig : public Configuration::Configuration {
 
 public:
-
+  /**
+   * @brief Constructor
+   */
   ParameterSpaceConfig(long manager_id);
 
   /**
@@ -55,8 +57,14 @@ public:
    */
   virtual ~ParameterSpaceConfig() = default;
 
+  /**
+   * @brief Compute the Parameter Space Regions map
+   */
   void initialize(const UserValues&) override;
 
+  /**
+   * @brief Return the Parameter Space Regions map
+   */
   const std::map<std::string, PhzDataModel::ModelAxesTuple> & getParameterSpaceRegions();
 
 private:
