@@ -39,6 +39,9 @@ class SedProviderConfig : public Configuration::Configuration {
 
 public:
 
+  /**
+   * @brief Constructor
+   */
   SedProviderConfig(long manager_id);
 
   /**
@@ -46,6 +49,10 @@ public:
    */
   virtual ~SedProviderConfig() = default;
 
+  /**
+   * @details
+   * Build a File provider which root path is provided by <AuxDataDir>/"SEDs"
+   */
   void initialize(const UserValues&) override;
 
   /**
