@@ -40,28 +40,13 @@ namespace PhzConfiguration {
  * @brief
  * The reddening configuration class defines parameters allowed for
  * the reddening parameter options
- *
- * @details
- * The reddening options are provided through a STL map which contains the
- * following informations:
- * - \b reddening-group     : vector of strings, goup name
- * - \b reddening-name      : vector of strings, reddening name
- * - \b reddening-exclude   : vector of strings, reddening name to be excluded
- * - \b ebv-range           : vector of strings, range as: min max step
- * - \b ebv-value           : vector of strings, only one E(B-V) value per string
- * @param options
- * A map containing the options and their values.
- * @throw Elements::Exception
- * - Empty reddening list
- * @throw Elements::Exception
- * - Invalid range(s) for the ebv-range option!
- * - Invalid character(s) for the ebv-range option!
- * - Invalid character(s) for the ebv-value option!
  */
 class ReddeningConfig : public Configuration::Configuration {
 
 public:
-
+  /**
+   * @brief Constructor
+   */
   ReddeningConfig(long manager_id);
 
   /**
@@ -69,8 +54,33 @@ public:
    */
   virtual ~ReddeningConfig() = default;
 
+  /**
+   * @details
+   * Add the options "reddening-curve-group","reddening-curve-exclude"
+   * "reddening-curve-name", "ebv-range", "ebv-value" to the
+   * "Extinction options" group.
+   */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  /**
+   * @details
+   * Compute the EbvList and the eddeningCurveList
+   * The reddening options are provided through a STL map which contains the
+   * following informations:
+   * - \b reddening-group     : vector of strings, goup name
+   * - \b reddening-name      : vector of strings, reddening name
+   * - \b reddening-exclude   : vector of strings, reddening name to be excluded
+   * - \b ebv-range           : vector of strings, range as: min max step
+   * - \b ebv-value           : vector of strings, only one E(B-V) value per string
+   * @param options
+   * A map containing the options and their values.
+   * @throw Elements::Exception
+   * - Empty reddening list
+   * @throw Elements::Exception
+   * - Invalid range(s) for the ebv-range option!
+   * - Invalid character(s) for the ebv-range option!
+   * - Invalid character(s) for the ebv-value option!
+   */
   void initialize(const UserValues& args) override;
 
   /**
