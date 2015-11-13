@@ -38,7 +38,9 @@ namespace PhzConfiguration {
 class ReddeningProviderConfig : public Configuration::Configuration {
 
 public:
-
+  /**
+   * @brief Constructor
+   */
   ReddeningProviderConfig(long manager_id);
 
   /**
@@ -46,6 +48,10 @@ public:
    */
   virtual ~ReddeningProviderConfig() = default;
 
+  /**
+   * @details
+   * Build a File provider which root path is provided by <AuxDataDir>/"ReddeningCurves"
+   */
   void initialize(const UserValues&) override;
 
   /**
@@ -60,7 +66,7 @@ private:
 
   std::shared_ptr<XYDataset::XYDatasetProvider> m_reddening_provider = nullptr;
 
-}; /* End of AuxDataDirConfig class */
+}; /* End of ReddeningProviderConfig class */
 
 
 } // end of namespace PhzConfiguration
