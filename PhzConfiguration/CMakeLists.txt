@@ -149,3 +149,6 @@ elements_add_unit_test(ComputeLuminosityModelGridConfig_test tests/src/ComputeLu
 elements_add_unit_test(LuminosityFunctionConfig_test tests/src/LuminosityFunctionConfig_test.cpp
                      LINK_LIBRARIES XYDataset MathUtils PhzDataModel PhzLuminosity PhzConfiguration Configuration
                      TYPE Boost)
+elements_add_unit_test(LuminositySedGroupConfig_test tests/src/LuminositySedGroupConfig_test.cpp 
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
