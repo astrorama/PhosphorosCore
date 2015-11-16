@@ -64,12 +64,22 @@ public:
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
   /**
-   * @details
+   * @details Instantiate the Luminosity prior and add it to the list of priors
+   * to be applied.
+   * If the "luminosity-prior" is present and set to "YES" the prior is instantiated
+   * otherwise it is skipped.
+   * The luminosity Model Grid location is controlled by the
+   * "luminosity-model-grid-file" option as follow:
+   * - If absent the value is defaulted to
+   * <IntermediateProduct>/<CatalogType>/LuminosityModelGrids/luminosity_model_grid.dat
+   * - if the provide path is a relative path it is added to
+   * <IntermediateProduct>/<CatalogType>/LuminosityModelGrids/
+   * - if the provided path is absolute it override the default one.
    */
   void initialize(const UserValues& args) override;
 
   /**
-   * @brief
+   * @brief Return the Luminosity Model Grid.
    */
   const PhzDataModel::PhotometryGrid & getLuminosityModelGrid();
 
