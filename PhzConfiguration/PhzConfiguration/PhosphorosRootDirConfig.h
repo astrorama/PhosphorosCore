@@ -30,9 +30,6 @@
 #include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 
-
-namespace fs = boost::filesystem;
-
 namespace Euclid {
 namespace PhzConfiguration {
 /**
@@ -94,11 +91,11 @@ public:
    *
    * @returns The Phosphoros root directory
    */
-  const fs::path& getPhosphorosRootDir();
+  const boost::filesystem::path& getPhosphorosRootDir();
 
 private:
 
-  fs::path m_root_dir;
+  boost::filesystem::path m_root_dir;
 
 }; /* End of PhosphorosRootDirConfig class */
 

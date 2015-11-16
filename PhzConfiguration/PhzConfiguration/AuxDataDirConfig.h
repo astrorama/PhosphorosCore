@@ -31,8 +31,6 @@
 #include "Configuration/Configuration.h"
 
 
-namespace fs = boost::filesystem;
-
 namespace Euclid {
 namespace PhzConfiguration {
 
@@ -85,11 +83,11 @@ public:
    *
    * @returns The auxiliary data directory
    */
-  const fs::path& getAuxDataDir();
+  const boost::filesystem::path& getAuxDataDir();
 
 private:
 
-  fs::path m_aux_dir;
+  boost::filesystem::path m_aux_dir;
 
 }; /* End of AuxDataDirConfig class */
 

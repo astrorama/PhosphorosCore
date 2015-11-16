@@ -31,9 +31,6 @@
 #include "Configuration/Configuration.h"
 #include "PhzDataModel/PhotometryGrid.h"
 
-
-namespace fs = boost::filesystem;
-
 namespace Euclid {
 namespace PhzConfiguration {
 
@@ -82,6 +79,8 @@ public:
    * @brief Return the Luminosity Model Grid.
    */
   const PhzDataModel::PhotometryGrid & getLuminosityModelGrid();
+
+  bool getIsLuminosityPriorEnabled();
 
 private:
 

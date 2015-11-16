@@ -182,6 +182,14 @@ const PhzDataModel::PhotometryGrid & LuminosityPriorConfig::getLuminosityModelGr
   return *m_luminosity_model_grid;
 }
 
+bool LuminosityPriorConfig::getIsLuminosityPriorEnabled(){
+  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
+        throw Elements::Exception() << "Call to getIsLuminosityPriorEnabled() on a not initialized instance.";
+    }
+
+  return m_is_configured;
+}
+
 } // PhzConfiguration namespace
 } // Euclid namespace
 

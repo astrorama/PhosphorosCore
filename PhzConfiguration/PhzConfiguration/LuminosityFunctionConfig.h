@@ -31,18 +31,8 @@
 #include "Configuration/Configuration.h"
 #include "PhzLuminosity/LuminosityFunctionSet.h"
 
-
-namespace fs = boost::filesystem;
-
 namespace Euclid {
 namespace PhzConfiguration {
-
-
-
-
-
-
-
 
 /**
  * @class LuminosityFunctionConfig

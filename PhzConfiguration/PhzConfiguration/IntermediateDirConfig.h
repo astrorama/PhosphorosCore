@@ -30,9 +30,6 @@
 #include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 
-
-namespace fs = boost::filesystem;
-
 namespace Euclid {
 namespace PhzConfiguration {
 
@@ -86,11 +83,11 @@ public:
    *
    * @returns The intermediate products directory
    */
-  const fs::path& getIntermediateDir();
+  const boost::filesystem::path& getIntermediateDir();
 
 private:
 
-  fs::path m_intermediate_dir;
+  boost::filesystem::path m_intermediate_dir;
 
 }; /* End of IntermediateDirConfig class */
 

@@ -32,9 +32,6 @@
 #include "Configuration/Configuration.h"
 #include "PhzDataModel/PhzModel.h"
 
-
-namespace fs = boost::filesystem;
-
 namespace Euclid {
 namespace PhzConfiguration {
 

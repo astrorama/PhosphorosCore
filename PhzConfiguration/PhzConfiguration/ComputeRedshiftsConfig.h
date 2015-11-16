@@ -17,61 +17,71 @@
  */
 
 /**
- * @file PhzConfiguration/LikelihoodGridFuncConfig.h
- * @date 2015/11/12
+ * @file PhzConfiguration/ComputeRedshiftsConfig.h
+ * @date 2015/11/16
  * @author Florian Dubath
  */
 
-#ifndef PHZCONFIGURATION_LIKELIHOODGRIDFUNCTIONCONFIG_H
-#define	PHZCONFIGURATION_LIKELIHOODGRIDFUNCTIONCONFIG_H
+#ifndef PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIG_H
+#define	PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIG_H
 
 #include <cstdlib>
 #include <string>
 #include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
-#include "PhzLikelihood/SourcePhzFunctor.h"
+#include "PhzOutput/OutputHandler.h"
+#include "PhzLikelihood/CatalogHandler.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
 
 /**
- * @class LikelihoodGridFuncConfig
-
+ * @class ComputeRedshiftsConfig
+ *
  */
-class LikelihoodGridFuncConfig : public Configuration::Configuration {
+class ComputeRedshiftsConfig : public Configuration::Configuration {
 
 public:
 
-  LikelihoodGridFuncConfig(long manager_id);
+  /**
+   * @brief constructor
+   */
+  ComputeRedshiftsConfig(long manager_id);
 
   /**
    * @brief Destructor
    */
-  virtual ~LikelihoodGridFuncConfig() = default;
+  virtual ~ComputeRedshiftsConfig() = default;
 
+  /**
+   * @details
+   * Add the "input-catalog-file","axes-collapse-type","output-catalog-format",
+   * "phz-output-dir","input-catalog-file","create-output-catalog",
+   * "create-output-pdf","create-output-likelihoods" and
+   * "create-output-posteriors" options into the
+   * "Compute Redshifts options" group
+   */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
-  void preInitialize(const UserValues& args) override;
-
+  /**
+   * @details
+   */
   void initialize(const UserValues& args) override;
 
+  std::shared_ptr<PhzOutput::OutputHandler> getOutputHandler() const;
 
-  const PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction & getLikelihoodGridFunction();
-
+  const PhzLikelihood::CatalogHandler::MarginalizationFunction & getMarginalizationFunc() const;
 
 private:
+  std::shared_ptr<PhzOutput::OutputHandler> m_output_handler = nullptr;
+  PhzLikelihood::CatalogHandler::MarginalizationFunction m_marginalization_function;
 
-  PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction m_grid_function;
 
-  bool m_fast_upper_limit = false;
-  bool m_missing_data_flag = true;
-  bool m_upper_limit_flag = true;
-
-}; /* End of LikelihoodGridFuncConfig class */
+}; /* End of ComputeRedshiftsConfig class */
 
 
 } // end of namespace PhzConfiguration
 } // end of namespace Euclid
 
-#endif	/* PHZCONFIGURATION_LIKELIHOODGRIDFUNCTIONCONFIG_H */
+#endif	/* PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIG_H */
 

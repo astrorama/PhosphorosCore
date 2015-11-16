@@ -31,8 +31,6 @@
 #include "Configuration/Configuration.h"
 
 
-namespace fs = boost::filesystem;
-
 namespace Euclid {
 namespace PhzConfiguration {
 

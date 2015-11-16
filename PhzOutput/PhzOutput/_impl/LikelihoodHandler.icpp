@@ -30,7 +30,7 @@ LikelihoodHandler<TupleIndex>::LikelihoodHandler(boost::filesystem::path out_dir
 }
           
 template <typename AxisType>
-std::string convertAxisValueToString(const AxisType& value) {
+static std::string convertAxisValueToString(const AxisType& value) {
   return std::to_string(value);
 }
 

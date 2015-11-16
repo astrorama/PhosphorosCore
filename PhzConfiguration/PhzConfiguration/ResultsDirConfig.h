@@ -30,9 +30,6 @@
 #include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 
-
-namespace fs = boost::filesystem;
-
 namespace Euclid {
 namespace PhzConfiguration {
 
@@ -85,11 +82,11 @@ public:
    *
    * @returns The final PHZ results directory
    */
-  const fs::path& getResultsDir();
+  const boost::filesystem::path& getResultsDir();
 
 private:
 
-  fs::path m_results_dir;
+  boost::filesystem::path m_results_dir;
 
 }; /* End of ResultsDirConfig class */
 

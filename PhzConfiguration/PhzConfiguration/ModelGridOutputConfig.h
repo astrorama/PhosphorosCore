@@ -32,9 +32,6 @@
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzModeling/PhotometryGridCreator.h"
 
-
-namespace fs = boost::filesystem;
-
 namespace Euclid {
 namespace PhzConfiguration {
 
