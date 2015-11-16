@@ -38,9 +38,6 @@ elements_add_unit_test(ReddeningConfiguration_test tests/src/ReddeningConfigurat
 elements_add_unit_test(ParameterSpaceConfiguration_test tests/src/ParameterSpaceConfiguration_test.cpp
                      LINK_LIBRARIES XYDataset PhzConfiguration
                      TYPE Boost)
-elements_add_unit_test(ComputeModelGridConfiguration_test tests/src/ComputeModelGridConfiguration_test.cpp
-                     LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration PhzUtils
-                     TYPE Boost)
 elements_add_unit_test(ComputeRedshiftsConfiguration_test tests/src/ComputeRedshiftsConfiguration_test.cpp
                      LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration PhzUtils
                      TYPE Boost)
