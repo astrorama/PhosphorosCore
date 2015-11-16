@@ -17,18 +17,19 @@
  */
 
 /**
- * @file PhzConfiguration/ComputeModelGridConfig.h
- * @date 2015/11/11
+ * @file PhzConfiguration/LuminosityPriorConfig.h
+ * @date 2015/11/16
  * @author Florian Dubath
  */
 
-#ifndef PHZCONFIGURATION_COMPUTEMODELGRIDCONFIG_H
-#define	PHZCONFIGURATION_COMPUTEMODELGRIDCONFIG_H
+#ifndef PHZCONFIGURATION_LUMINOSITYPRIORCONFIG_H
+#define	PHZCONFIGURATION_LUMINOSITYPRIORCONFIG_H
 
 #include <cstdlib>
 #include <string>
 #include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
+#include "PhzDataModel/PhotometryGrid.h"
 
 
 namespace fs = boost::filesystem;
@@ -37,38 +38,51 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 /**
- * @class ComputeModelGridConfig
+ * @class LuminosityPriorConfig
+ *
  * @brief
- * This class defines the model grid parameter option used by the ComputeModelGrid
- * executable. It is an umbrella class which mainly define dependencies to other
- * configurations.
  */
-class ComputeModelGridConfig : public Configuration::Configuration {
+class LuminosityPriorConfig : public Configuration::Configuration {
 
 public:
 
   /**
-   * @brief Constructor
+   * @brief constructor
    */
-  ComputeModelGridConfig(long manager_id);
+  LuminosityPriorConfig(long manager_id);
 
   /**
    * @brief Destructor
    */
-  virtual ~ComputeModelGridConfig() = default;
+  virtual ~LuminosityPriorConfig() = default;
 
   /**
-   * @brief ensure that the ModelGridOutputConfig default sub-dir is set to
-   * "ModelGrids"
+   * @details
+   * This class define the "luminosity-prior" and "luminosity-model-grid-file"
+   * in the "Luminosity Prior options" group
    */
-  void preInitialize(const UserValues& args) override;
+  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  /**
+   * @details
+   */
+  void initialize(const UserValues& args) override;
 
-}; /* End of ComputeModelGridConfig class */
+  /**
+   * @brief
+   */
+  const PhzDataModel::PhotometryGrid & getLuminosityModelGrid();
+
+private:
+
+  bool m_is_configured=false;
+  std::shared_ptr<PhzDataModel::PhotometryGrid> m_luminosity_model_grid=nullptr;
+
+}; /* End of LuminosityPriorConfig class */
 
 
 } // end of namespace PhzConfiguration
 } // end of namespace Euclid
 
-#endif	/* PHZCONFIGURATION_COMPUTEMODELGRIDCONFIG_H */
+#endif	/* PHZCONFIGURATION_LUMINOSITYPRIORCONFIG_H */
 

@@ -70,5 +70,10 @@ LuminosityFunctionSet::getLuminosityFunction(const std::string& sedGroup,double 
       <<"' at redshift "<<z<<". Please check your configuration.";
 }
 
+const std::vector<std::pair<LuminosityFunctionValidityDomain,
+  std::unique_ptr<MathUtils::Function>>> & LuminosityFunctionSet::getFunctions() const{
+  return m_luminosity_functions;
+}
+
 }
 }

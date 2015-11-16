@@ -46,6 +46,12 @@ public:
   const std::pair<LuminosityFunctionValidityDomain, std::unique_ptr<MathUtils::Function>>&
   getLuminosityFunction(const std::string& sedGroup, double z) const ;
 
+  /**
+   * @brief Expose the content of the LuminosityFunctionSet.
+   */
+  const std::vector<std::pair<LuminosityFunctionValidityDomain,
+  std::unique_ptr<MathUtils::Function>>> & getFunctions() const;
+
 
 private:
   std::vector<std::pair<LuminosityFunctionValidityDomain,
