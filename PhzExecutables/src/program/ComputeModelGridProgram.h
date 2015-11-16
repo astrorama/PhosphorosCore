@@ -70,7 +70,7 @@ public:
   
   boost::program_options::options_description defineSpecificProgramOptions() override {
     auto& config_manager = Euclid::Configuration::ConfigManager::getInstance(config_manager_id);
-    config_manager.registerConfiguration<typename ComputeModelGridTraits::ConfigType>();
+    config_manager.template registerConfiguration<typename ComputeModelGridTraits::ConfigType>();
     return config_manager.closeRegistration();
   }
   
@@ -82,10 +82,10 @@ public:
     config_manager.initialize(args);
     
     auto filter_list = ComputeModelGridTraits::getFilterList(config_manager);
-    auto& sed_provider = config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider();
-    auto& reddening_provider = config_manager.getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider();
-    const auto& filter_provider = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
-    auto& igm_abs_func = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
+    auto& sed_provider = config_manager.template getConfiguration<SedProviderConfig>().getSedDatasetProvider();
+    auto& reddening_provider = config_manager.template getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider();
+    const auto& filter_provider = config_manager.template getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
+    auto& igm_abs_func = config_manager.template getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
     
     Euclid::PhzModeling::SparseGridCreator creator {
                 sed_provider, reddening_provider, filter_provider, igm_abs_func};
@@ -94,7 +94,7 @@ public:
     auto results = creator.createGrid(param_space_map, filter_list, ProgressReporter{logger});
 //                                                     
     logger.info() << "Creating the output";
-    auto output = config_manager.getConfiguration<ModelGridOutputConfig>().getOutputFunction();
+    auto output = config_manager.template getConfiguration<ModelGridOutputConfig>().getOutputFunction();
     output(results);
     
     return Elements::ExitCode::OK;
