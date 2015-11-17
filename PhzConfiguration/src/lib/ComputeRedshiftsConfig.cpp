@@ -90,7 +90,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Compute Redshifts options", {
-    {OUTPUT_CATALOG_FORMAT.c_str(), po::value<std::string>(),
+    {OUTPUT_CATALOG_FORMAT.c_str(), po::value<std::string>()->default_value("ASCII"),
         "The format of the PHZ catalog file (one of ASCII (default), FITS)"},
     {PHZ_OUTPUT_DIR.c_str(), po::value<std::string>(),
         "The output directory of the PHZ results"},
@@ -137,7 +137,42 @@ private:
   std::vector<std::unique_ptr<PhzOutput::OutputHandler>> m_handlers;
 };
 
-
+void ComputeRedshiftsConfig::preInitialize(const UserValues& args) {
+  if (args.at(CREATE_OUTPUT_CATALOG_FLAG).as<std::string>() != "YES" &&
+      args.at(CREATE_OUTPUT_CATALOG_FLAG).as<std::string>() != "NO") {
+    throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_CATALOG_FLAG
+        << ": " << args.at(CREATE_OUTPUT_CATALOG_FLAG).as<std::string>();
+  }
+  if (args.at(OUTPUT_CATALOG_FORMAT).as<std::string>() != "ASCII" &&
+      args.at(OUTPUT_CATALOG_FORMAT).as<std::string>() != "FITS") {
+    throw Elements::Exception() << "Invalid value for option " << OUTPUT_CATALOG_FORMAT
+        << ": " << args.at(OUTPUT_CATALOG_FORMAT).as<std::string>();
+  }
+  if (args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() != "YES" &&
+      args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() != "NO") {
+    throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_PDF_FLAG
+        << ": " << args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>();
+  }
+  if (args.at(CREATE_OUTPUT_LIKELIHOODS_FLAG).as<std::string>() != "YES" &&
+      args.at(CREATE_OUTPUT_LIKELIHOODS_FLAG).as<std::string>() != "NO") {
+    throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_LIKELIHOODS_FLAG
+        << ": " << args.at(CREATE_OUTPUT_LIKELIHOODS_FLAG).as<std::string>();
+  }
+  if (args.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>() != "YES" &&
+      args.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>() != "NO") {
+    throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_POSTERIORS_FLAG
+        << ": " << args.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>();
+  }
+  if (args.at(CREATE_OUTPUT_CATALOG_FLAG).as<std::string>() == "NO" &&
+      args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() == "NO" &&
+      args.at(CREATE_OUTPUT_LIKELIHOODS_FLAG).as<std::string>() == "NO" &&
+      args.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>() == "NO") {
+    throw Elements::Exception() << "At least one of the options "
+        << CREATE_OUTPUT_CATALOG_FLAG << ", " << CREATE_OUTPUT_PDF_FLAG << ", "
+        << CREATE_OUTPUT_LIKELIHOODS_FLAG << ", "
+        << CREATE_OUTPUT_POSTERIORS_FLAG << " must be set to YES";
+  }
+}
 
 
 void ComputeRedshiftsConfig::initialize(const UserValues& args) {
@@ -148,7 +183,6 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
       getDependency<CatalogTypeConfig>().getCatalogType(),
       getDependency<Euclid::Configuration::CatalogConfig>().getFilename());
 
-  logger.info()<<"Starting configuration checks.";
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryOnly(output_dir.string());
 
@@ -193,96 +227,61 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
     }
   }
 
-  logger.info() << "End of configuration checks.";
-
-  logger.info() << "Starting output handler configuration.";
-
-  std::unique_ptr<MultiOutputHandler> result { new MultiOutputHandler { } };
-
-  std::string cat_flag =
-      args.count(CREATE_OUTPUT_CATALOG_FLAG) > 0 ?
-          args.find(CREATE_OUTPUT_CATALOG_FLAG)->second.as<std::string>() : "NO";
-  if (cat_flag == "YES") {
-    auto format = PhzOutput::BestModelCatalog::Format::ASCII;
-    auto out_catalog_file = output_dir / "phz_cat.txt";
-    if (!args.count(OUTPUT_CATALOG_FORMAT)==0) {
-      auto format_str = args.find(OUTPUT_CATALOG_FORMAT)->second.as<std::string>();
-      if (format_str == "ASCII") {
-        format = PhzOutput::BestModelCatalog::Format::ASCII;
-      } else if (format_str == "FITS") {
-        format = PhzOutput::BestModelCatalog::Format::FITS;
-        out_catalog_file = output_dir / "phz_cat.fits";
-      } else {
-        throw Elements::Exception() << "Unknown output catalog format "
-            << format_str;
-      }
+  m_cat_flag = (args.at(CREATE_OUTPUT_CATALOG_FLAG).as<std::string>() == "YES");
+  if (m_cat_flag) {
+    if (args.at(OUTPUT_CATALOG_FORMAT).as<std::string>() == "ASCII") {
+      m_format = PhzOutput::BestModelCatalog::Format::ASCII;
+      m_out_catalog_file = output_dir / "phz_cat.txt";
+    } else {
+      m_format = PhzOutput::BestModelCatalog::Format::FITS;
+      m_out_catalog_file = output_dir / "phz_cat.fits";
     }
-    result->addHandler(
-        std::unique_ptr<PhzOutput::OutputHandler> {
-            new PhzOutput::BestModelCatalog { out_catalog_file.string(), format } });
-  } else if (cat_flag != "NO") {
-    throw Elements::Exception() << "Invalid value for option "
-        << CREATE_OUTPUT_CATALOG_FLAG << " : " << cat_flag;
   }
 
-  std::string pdf_flag =
-      args.count(CREATE_OUTPUT_PDF_FLAG) > 0 ?
-          args.find(CREATE_OUTPUT_PDF_FLAG)->second.as<std::string>() : "NO";
-  if (pdf_flag == "YES") {
-    auto out_pdf_file = output_dir / "pdf.fits";
-    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput { out_pdf_file.string() } });
-  } else if (pdf_flag != "NO") {
-    throw Elements::Exception() << "Invalid value for option "
-        << CREATE_OUTPUT_PDF_FLAG << " : " << pdf_flag;
+  m_pdf_flag = (args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() == "YES");
+  if (m_pdf_flag) {
+    m_out_pdf_file = output_dir / "pdf.fits";
   }
 
-  std::string like_flag =
-      args.count(CREATE_OUTPUT_LIKELIHOODS_FLAG) > 0 ?
-          args.find(CREATE_OUTPUT_LIKELIHOODS_FLAG)->second.as<std::string>() : "NO";
-  if (like_flag == "YES") {
-    auto out_like_file = output_dir / "likelihoods";
-    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::LikelihoodHandler<2> { out_like_file.string() } });
-  } else if (like_flag != "NO") {
-    throw Elements::Exception() << "Invalid value for option "
-        << CREATE_OUTPUT_LIKELIHOODS_FLAG << " : " << like_flag;
+  m_likelihood_flag = (args.at(CREATE_OUTPUT_LIKELIHOODS_FLAG).as<std::string>() == "YES");
+  if (m_likelihood_flag) {
+    m_out_likelihood_dir = output_dir / "likelihoods";
   }
 
-  std::string post_flag =
-      args.count(CREATE_OUTPUT_POSTERIORS_FLAG) > 0 ?
-          args.find(CREATE_OUTPUT_POSTERIORS_FLAG)->second.as<std::string>() : "NO";
-  if (post_flag == "YES") {
-    auto out_post_file = output_dir / "posteriors";
-    result->addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::LikelihoodHandler<3> { out_post_file.string() } });
-  } else if (post_flag != "NO") {
-    throw Elements::Exception() << "Invalid value for option "
-        << CREATE_OUTPUT_POSTERIORS_FLAG << " : " << post_flag;
+  m_posterior_flag = (args.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>() == "YES");
+  if (m_posterior_flag) {
+    m_out_posterior_dir = output_dir / "posteriors";
   }
-
-  if (cat_flag == "NO" && pdf_flag == "NO" && like_flag == "NO"
-      && post_flag == "NO") {
-    throw Elements::Exception() << "At least one of the options "
-        << CREATE_OUTPUT_CATALOG_FLAG << ", " << CREATE_OUTPUT_PDF_FLAG << ", "
-        << CREATE_OUTPUT_LIKELIHOODS_FLAG << ", "
-        << CREATE_OUTPUT_POSTERIORS_FLAG << " must be set to YES";
-  }
-
-  m_output_handler =  std::shared_ptr<PhzOutput::OutputHandler> { result.release() };
-
-
-  logger.info() << "End of output handler configuration.";
 }
 
 
-std::shared_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandler() const{
+std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandler() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
     throw Elements::Exception()
         << "Call to getOutputHandler() on a not initialized instance.";
   }
 
-  return m_output_handler;
+  std::unique_ptr<PhzOutput::OutputHandler> output_handler {new MultiOutputHandler{}};
+  MultiOutputHandler& result = static_cast<MultiOutputHandler&>(*output_handler);
+
+  if (m_cat_flag) {
+    result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
+            new PhzOutput::BestModelCatalog {m_out_catalog_file.string(), m_format}});
+  }
+  if (m_pdf_flag) {
+    result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
+            new PhzOutput::PdfOutput {m_out_pdf_file}});
+  }
+  if (m_likelihood_flag) {
+    result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
+        new PhzOutput::LikelihoodHandler<2> {m_out_likelihood_dir.string()}});
+  }
+  if (m_posterior_flag) {
+    result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
+        new PhzOutput::LikelihoodHandler<3> {m_out_posterior_dir}});
+  }
+            
+  return output_handler;
 }
 
 
