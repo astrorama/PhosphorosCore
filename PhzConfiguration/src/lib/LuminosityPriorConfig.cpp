@@ -35,6 +35,7 @@
 #include "PhzConfiguration/LuminositySedGroupConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
 
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzLuminosity/UnreddenedLuminosityCalculator.h"
@@ -69,6 +70,7 @@ LuminosityPriorConfig::LuminosityPriorConfig(long manager_id) : Configuration(ma
   declareDependency<LuminosityFunctionConfig>();
   declareDependency<LuminosityBandConfig>();
   declareDependency<LuminositySedGroupConfig>();
+  declareDependency<PhotometryGridConfig>();
 }
 
 auto LuminosityPriorConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -103,7 +105,7 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
 
      auto& intermediate_dir = getDependency<IntermediateDirConfig>().getIntermediateDir();
      auto& catalog_dir = getDependency<CatalogTypeConfig>().getCatalogType();
-     fs::path filename = intermediate_dir / catalog_dir / "LuminosityModelGrids" / "luminosity_model_grid.dat";
+     fs::path filename = intermediate_dir / catalog_dir / "LuminosityModelGrids" / "model_grid.dat";
      if (args.count(LUMINOSITY_MODEL_GRID_FILE) > 0) {
        fs::path path = args.find(LUMINOSITY_MODEL_GRID_FILE)->second.as<std::string>();
        if (path.is_absolute()) {
@@ -140,16 +142,17 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
      std::map<double,double> luminosity_distance_map{};
      std::map<double,double> distance_modulus_map{};
 
-     auto& z_axis = m_luminosity_model_grid->getAxis<PhzDataModel::ModelParameter::Z>();
      PhysicsUtils::CosmologicalParameters cosmological_param {};
      PhysicsUtils::CosmologicalDistances cosmological_distances {};
-     for (auto& z_value:z_axis){
-       if (inMag){
-         distance_modulus_map[z_value] =
-             cosmological_distances.distanceModulus(z_value,cosmological_param);
-       } else {
-         luminosity_distance_map[z_value] =
-             cosmological_distances.luminousDistance(z_value,cosmological_param);
+     for (auto& pair : getDependency<PhotometryGridConfig>().getPhotometryGridInfo().region_axes_map) {
+       for (auto& z_value : std::get<PhzDataModel::ModelParameter::Z>(pair.second)) {
+        if (inMag){
+          distance_modulus_map[z_value] =
+              cosmological_distances.distanceModulus(z_value,cosmological_param);
+        } else {
+          luminosity_distance_map[z_value] =
+              cosmological_distances.luminousDistance(z_value,cosmological_param);
+        }
        }
      }
 
