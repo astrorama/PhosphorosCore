@@ -68,9 +68,13 @@ public:
 
   /// Returns the band of the luminosity function
   const XYDataset::QualifiedName& getLuminosityFilter();
+  
+  /// Sets if the luminosity prior functionality is enabled or not
+  void setEnabled(bool flag);
 
 private:
   
+  bool m_is_enabled = true;
   XYDataset::QualifiedName m_band {"uninitialized"};
 
 }; /* End of LuminosityBandConfig class */

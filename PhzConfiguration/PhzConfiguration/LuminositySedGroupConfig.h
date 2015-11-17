@@ -63,16 +63,6 @@ public:
   std::map<std::string, OptionDescriptionList> getProgramOptions () override;
 
   /**
-   * Check teh input option
-   *
-   * @param args
-   *  Map of all program options provided
-   *
-   * @throw ElementException if no luminosity-sed-group options are provided
-   */
-  void preInitialize (const UserValues& args) override;
-
-  /**
    * Initialized a LuminositySedGroupManager with the information provided
    * though the options
    *
@@ -86,10 +76,13 @@ public:
    * @return The LuminositySedGroupManager
    */
   const PhzDataModel::QualifiedNameGroupManager& getLuminositySedGroupManager();
+  
+  /// Sets if the luminosity prior functionality is enabled or not
+  void setEnabled(bool flag);
 
 private:
-  //group_list_type = std::map<std::string, std::set<XYDataset::QualifiedName>>;
 
+  bool m_is_enabled = true;
   std::unique_ptr<PhzDataModel::QualifiedNameGroupManager> m_luminosity_sed_group_manager_ptr {};
 
 };

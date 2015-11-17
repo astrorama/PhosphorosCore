@@ -54,7 +54,11 @@ auto LuminositySedGroupConfig::getProgramOptions () -> std::map<std::string, Opt
       }}};
 }
 
-void LuminositySedGroupConfig::preInitialize (const UserValues& args) {
+void LuminositySedGroupConfig::initialize (const UserValues& args) {
+  
+  if (!m_is_enabled) {
+    return;
+  }
 
   auto group_name_list = findWildcardOptions( { LUMINOSITY_SED_GROUP }, args);
 
@@ -62,13 +66,8 @@ void LuminositySedGroupConfig::preInitialize (const UserValues& args) {
      throw Elements::Exception()
          << "Missing mandatory configuration: no SED group has been defined for the Luminosity Function.";
    }
-}
-
-void LuminositySedGroupConfig::initialize (const UserValues& args) {
 
   PhzDataModel::QualifiedNameGroupManager::group_list_type groups {};
-
-  auto group_name_list = findWildcardOptions( { LUMINOSITY_SED_GROUP }, args);
 
   for (auto& group_name : group_name_list) {
     std::string sed_list = args.find(LUMINOSITY_SED_GROUP  +"-"+  group_name)->second.as<std::string>();
@@ -91,7 +90,17 @@ const PhzDataModel::QualifiedNameGroupManager& LuminositySedGroupConfig::getLumi
   if (getCurrentState() < State::INITIALIZED) {
     throw Elements::Exception() << "getPhotometricCorrectionMap() call on uninitialized PhotometricCorrectionConfig";
   }
+  if (!m_is_enabled) {
+    throw Elements::Exception() << "getLuminositySedGroupManager() call when Luminosity prior functionality is disabled";
+  }
   return *m_luminosity_sed_group_manager_ptr;
+}
+
+void LuminositySedGroupConfig::setEnabled(bool flag) {
+  if (getCurrentState() >= State::INITIALIZED) {
+    throw Elements::Exception() << "setEnabled() call on already initialized LuminositySedGroupConfig";
+  }
+  m_is_enabled = flag;
 }
 
 } // PhzConfiguration namespace

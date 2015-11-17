@@ -73,11 +73,26 @@ LuminosityPriorConfig::LuminosityPriorConfig(long manager_id) : Configuration(ma
 
 auto LuminosityPriorConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Luminosity Prior options", {
-      {LUMINOSITY_PRIOR.c_str(), po::value<std::string>(),
+      {LUMINOSITY_PRIOR.c_str(), po::value<std::string>()->default_value("NO"),
           "If added, turn Luminosity Prior on  (YES/NO, default: NO)"},
-              {LUMINOSITY_MODEL_GRID_FILE.c_str(), po::value<std::string>(),
+      {LUMINOSITY_MODEL_GRID_FILE.c_str(), po::value<std::string>(),
           "The grid containing the model photometry for the Luminosity computation."}
     }}};
+}
+
+void LuminosityPriorConfig::preInitialize(const UserValues& args) {
+  if (args.at(LUMINOSITY_PRIOR).as<std::string>() != "NO" 
+      && args.at(LUMINOSITY_PRIOR).as<std::string>() != "YES") {
+    throw Elements::Exception() << "Invalid " + LUMINOSITY_PRIOR + " value: "
+        << args.at(LUMINOSITY_PRIOR).as<std::string>() << " (allowed values: YES, NO)"; 
+  }
+  if (args.at(LUMINOSITY_PRIOR).as<std::string>() == "YES") {
+    getDependency<LuminosityBandConfig>().setEnabled(true);
+    getDependency<LuminositySedGroupConfig>().setEnabled(true);
+  } else {
+    getDependency<LuminosityBandConfig>().setEnabled(false);
+    getDependency<LuminositySedGroupConfig>().setEnabled(false);
+  }
 }
 
 void LuminosityPriorConfig::initialize(const UserValues& args) {

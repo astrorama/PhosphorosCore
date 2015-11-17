@@ -30,6 +30,8 @@
 #include "PhzConfiguration/ComputeRedshiftsConfig.h"
 #include "PhzConfiguration/ResultsDirConfig.h"
 #include "Configuration/PhotometryCatalogConfig.h"
+#include "Configuration/CatalogConfig.h"
+#include "PhzConfiguration/PhosphorosCatalogConfig.h"
 #include "PhzConfiguration/LikelihoodGridFuncConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/LuminosityPriorConfig.h"
@@ -61,7 +63,6 @@ namespace PhzConfiguration {
 static const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
 static const std::string OUTPUT_CATALOG_FORMAT {"output-catalog-format"};
 static const std::string PHZ_OUTPUT_DIR {"phz-output-dir"};
-static const std::string INPUT_CATALOG_FILE {"input-catalog-file"};
 static const std::string CREATE_OUTPUT_CATALOG_FLAG {"create-output-catalog"};
 static const std::string CREATE_OUTPUT_PDF_FLAG {"create-output-pdf"};
 static const std::string CREATE_OUTPUT_LIKELIHOODS_FLAG {"create-output-likelihoods"};
@@ -71,6 +72,8 @@ static Elements::Logging logger = Elements::Logging::getLogger("ComputeRedshifts
 
 ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<ResultsDirConfig>();
+  declareDependency<PhosphorosCatalogConfig>();
+  declareDependency<Euclid::Configuration::CatalogConfig>();
   declareDependency<Euclid::Configuration::PhotometryCatalogConfig>();
   declareDependency<Euclid::Configuration::PhotometricBandMappingConfig>();
   declareDependency<LikelihoodGridFuncConfig>();
@@ -86,8 +89,6 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Compute Redshifts options", {
-    {INPUT_CATALOG_FILE.c_str(), po::value<std::string>(),
-      "The Input catalog file path"},
     {OUTPUT_CATALOG_FORMAT.c_str(), po::value<std::string>(),
         "The format of the PHZ catalog file (one of ASCII (default), FITS)"},
     {PHZ_OUTPUT_DIR.c_str(), po::value<std::string>(),
@@ -106,8 +107,8 @@ auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, Option
 }
 
 static fs::path getOutputPathFromOptions(const std::map<std::string, po::variable_value>& options,
-                                         const fs::path& result_dir, const std::string& catalog_type) {
-  fs::path input_catalog_name{options.find(INPUT_CATALOG_FILE)->second.as<std::string>()};
+                                         const fs::path& result_dir, const std::string& catalog_type,
+                                         const fs::path& input_catalog_name) {
   auto input_filename = input_catalog_name.filename().stem();
   fs::path result = result_dir / catalog_type / input_filename;
   if (options.count(PHZ_OUTPUT_DIR) > 0) {
@@ -145,7 +146,8 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
 
   auto output_dir = getOutputPathFromOptions(args,
       getDependency<ResultsDirConfig>().getResultsDir(),
-      getDependency<CatalogTypeConfig>().getCatalogType());
+      getDependency<CatalogTypeConfig>().getCatalogType(),
+      getDependency<Euclid::Configuration::CatalogConfig>().getFilename());
 
   logger.info()<<"Starting configuration checks.";
   // Check directory and write permissions
@@ -207,7 +209,7 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
     m_marginalization_function = PhzLikelihood::MaxMarginalizationFunctor<
         PhzDataModel::ModelParameter::Z> { };
   } else if (collapse_type == "BAYESIAN") {
-    if (!getDependency<LuminosityFunctionConfig>().isCorrectedForExtinction()) {
+    if (getDependency<LuminosityPriorConfig>().getIsLuminosityPriorEnabled()) {
       using SedAxisCorrection = PhzLikelihood::BayesianMarginalizationFunctor::SedAxisCorrection;
       m_marginalization_function =
           PhzLikelihood::BayesianMarginalizationFunctor {

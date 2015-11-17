@@ -60,6 +60,8 @@ public:
    */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  void preInitialize(const UserValues& args) override;
+
   /**
    * @details Instantiate the Luminosity prior and add it to the list of priors
    * to be applied.
@@ -85,7 +87,7 @@ public:
 private:
 
   bool m_is_configured=false;
-  std::shared_ptr<PhzDataModel::PhotometryGrid> m_luminosity_model_grid=nullptr;
+  std::shared_ptr<PhzDataModel::PhotometryGrid> m_luminosity_model_grid = nullptr;
 
 }; /* End of LuminosityPriorConfig class */
 
