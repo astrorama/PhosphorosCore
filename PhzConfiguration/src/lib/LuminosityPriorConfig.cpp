@@ -146,15 +146,12 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
      PhysicsUtils::CosmologicalDistances cosmological_distances {};
      for (auto& pair : getDependency<PhotometryGridConfig>().getPhotometryGridInfo().region_axes_map) {
        for (auto& z_value : std::get<PhzDataModel::ModelParameter::Z>(pair.second)) {
-        if (inMag){
-          distance_modulus_map[z_value] =
-              cosmological_distances.distanceModulus(z_value,cosmological_param);
-        } else {
-          luminosity_distance_map[z_value] =
-              cosmological_distances.luminousDistance(z_value,cosmological_param);
-        }
+        distance_modulus_map[z_value] = cosmological_distances.distanceModulus(z_value, cosmological_param);
+        luminosity_distance_map[z_value] = cosmological_distances.luminousDistance(z_value, cosmological_param);
        }
      }
+     distance_modulus_map[0] = cosmological_distances.distanceModulus(0, cosmological_param);
+     luminosity_distance_map[0] = cosmological_distances.luminousDistance(0, cosmological_param);
 
      // Get a copy of the filter
      auto filter = getDependency<LuminosityBandConfig>().getLuminosityFilter();
