@@ -70,11 +70,9 @@ public:
 
   std::shared_ptr<PhzOutput::OutputHandler> getOutputHandler() const;
 
-  const PhzLikelihood::CatalogHandler::MarginalizationFunction & getMarginalizationFunc() const;
-
 private:
+  
   std::shared_ptr<PhzOutput::OutputHandler> m_output_handler = nullptr;
-  PhzLikelihood::CatalogHandler::MarginalizationFunction m_marginalization_function;
 
 
 }; /* End of ComputeRedshiftsConfig class */

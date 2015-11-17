@@ -35,7 +35,25 @@ PhzDataModel::Pdf1D BayesianMarginalizationFunctor::operator()(
   return sum_marg(likelihood_copy);
 }
 
+PhzDataModel::Pdf1D BayesianMarginalizationFunctor_::operator()(
+                    const PhzDataModel::LikelihoodGrid& likelihood_grid) const {
+  
+  // Make a copy of the likelihood grid, so we can modify it
+  PhzDataModel::LikelihoodGrid likelihood_copy {likelihood_grid.getAxesTuple()};
+  std::copy(likelihood_grid.begin(), likelihood_grid.end(), likelihood_copy.begin());
+  
+  for (auto& pair : m_numerical_axes_corr) {
+    pair.second(likelihood_copy);
+  }
+  
+  for (auto& corr : m_other_axes_corr) {
+    corr(likelihood_copy);
+  }
 
+  // Calcualate the 1D PDF as a simple SUM
+  SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z> sum_marg {};
+  return sum_marg(likelihood_copy);
+}
 
 
 } // end of namespace PhzLikelihood

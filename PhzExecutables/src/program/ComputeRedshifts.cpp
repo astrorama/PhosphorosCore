@@ -20,6 +20,7 @@
 #include <fstream>
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/Pdf1D.h"
+#include "PhzConfiguration/MarginalizationConfig.h"
 
 using namespace std;
 using namespace Euclid;
@@ -68,7 +69,7 @@ class ComputeRedshifts : public Elements::Program {
     config_manager.initialize(args);
 
     auto& model_phot_grid = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
-    auto& marginalization_func = config_manager.getConfiguration<ComputeRedshiftsConfig>().getMarginalizationFunc();
+    auto& marginalization_func = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFunc();
     auto& likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
     auto& phot_corr_map = config_manager.getConfiguration<PhotometricCorrectionConfig>().getPhotometricCorrectionMap();
     auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();

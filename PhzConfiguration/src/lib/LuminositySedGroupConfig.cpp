@@ -30,6 +30,8 @@
 
 #include "ElementsKernel/Exception.h"
 #include "PhzDataModel/QualifiedNameGroupManager.h"
+#include "PhzLikelihood/GroupedAxisCorrection.h"
+#include "PhzConfiguration/MarginalizationConfig.h"
 #include "PhzConfiguration/LuminositySedGroupConfig.h"
 
 namespace po = boost::program_options;
@@ -39,8 +41,10 @@ using namespace Euclid::Configuration;
 namespace Euclid {
 namespace PhzConfiguration {
 
-LuminositySedGroupConfig::LuminositySedGroupConfig (long manager_id) :
-    Configuration(manager_id) {
+LuminositySedGroupConfig::LuminositySedGroupConfig (long manager_id) : Configuration(manager_id) {
+  auto& manager = ConfigManager::getInstance(manager_id);
+  manager.registerConfiguration<MarginalizationConfig>();
+  manager.registerDependency<MarginalizationConfig, LuminositySedGroupConfig>();
 }
 
 
@@ -71,7 +75,6 @@ void LuminositySedGroupConfig::initialize (const UserValues& args) {
 
   for (auto& group_name : group_name_list) {
     std::string sed_list = args.find(LUMINOSITY_SED_GROUP  +"-"+  group_name)->second.as<std::string>();
-    //std::string sed_list = m_options[LUMINOSITY_SED_GROUP  +"-"+  group_name].as<std::string>();
 
     std::vector<std::string> sed_names;
 
@@ -83,6 +86,11 @@ void LuminositySedGroupConfig::initialize (const UserValues& args) {
     groups[group_name] = seds;
   }
   m_luminosity_sed_group_manager_ptr.reset( new PhzDataModel::QualifiedNameGroupManager(groups) );
+  
+  getDependency<MarginalizationConfig>().addMarginalizationCorrection(
+    PhzLikelihood::GroupedAxisCorrection<PhzDataModel::ModelParameter::SED>{
+                                PhzDataModel::QualifiedNameGroupManager{groups}}
+  );
 }
 
 

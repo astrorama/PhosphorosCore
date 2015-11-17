@@ -41,6 +41,7 @@
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/ResultsDirConfig.h"
+#include "PhzConfiguration/MarginalizationConfig.h"
 #include "PhzOutput/BestModelCatalog.h"
 
 #include "PhzOutput/BestModelCatalog.h"
@@ -60,7 +61,6 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
 static const std::string OUTPUT_CATALOG_FORMAT {"output-catalog-format"};
 static const std::string PHZ_OUTPUT_DIR {"phz-output-dir"};
 static const std::string CREATE_OUTPUT_CATALOG_FLAG {"create-output-catalog"};
@@ -85,6 +85,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<PhotometricCorrectionConfig>();
   declareDependency<CatalogTypeConfig>();
   declareDependency<ResultsDirConfig>();
+  declareDependency<MarginalizationConfig>();
 }
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -100,9 +101,7 @@ auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, Option
     {CREATE_OUTPUT_LIKELIHOODS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
         "The output likelihoods flag for creating the file (YES/NO, default: NO)"},
     {CREATE_OUTPUT_POSTERIORS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
-        "The output posteriors flag for creating the file (YES/NO, default: NO)"},
-    {AXES_COLLAPSE_TYPE.c_str(), po::value<std::string>()->required(),
-        "The method used for collapsing the axes when producing the 1D PDF (one of SUM, MAX, BAYESIAN)"}
+        "The output posteriors flag for creating the file (YES/NO, default: NO)"}
   }}};
 }
 
@@ -196,39 +195,6 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
 
   logger.info() << "End of configuration checks.";
 
-
-
-  logger.info() << "Starting marginalization configuration.";
-
-
-  auto collapse_type = args.find(AXES_COLLAPSE_TYPE)->second.as<std::string>();
-  if (collapse_type == "SUM") {
-    m_marginalization_function = PhzLikelihood::SumMarginalizationFunctor<
-        PhzDataModel::ModelParameter::Z> { };
-  } else if (collapse_type == "MAX") {
-    m_marginalization_function = PhzLikelihood::MaxMarginalizationFunctor<
-        PhzDataModel::ModelParameter::Z> { };
-  } else if (collapse_type == "BAYESIAN") {
-    if (getDependency<LuminosityPriorConfig>().getIsLuminosityPriorEnabled()) {
-      using SedAxisCorrection = PhzLikelihood::BayesianMarginalizationFunctor::SedAxisCorrection;
-      m_marginalization_function =
-          PhzLikelihood::BayesianMarginalizationFunctor {
-              std::shared_ptr<SedAxisCorrection> {
-                  new SedAxisCorrection(
-                      getDependency<LuminositySedGroupConfig>().getLuminositySedGroupManager()) } };
-    } else {
-      m_marginalization_function =
-          PhzLikelihood::BayesianMarginalizationFunctor { };
-    }
-  } else {
-    throw Elements::Exception() << "Unknown " << AXES_COLLAPSE_TYPE << " \""
-        << collapse_type << "\"";
-  }
-
-  logger.info() << "end of marginalization configuration.";
-
-
-
   logger.info() << "Starting output handler configuration.";
 
   std::unique_ptr<MultiOutputHandler> result { new MultiOutputHandler { } };
@@ -317,15 +283,6 @@ std::shared_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
   }
 
   return m_output_handler;
-}
-
-  const PhzLikelihood::CatalogHandler::MarginalizationFunction & ComputeRedshiftsConfig::getMarginalizationFunc() const{
-  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
-    throw Elements::Exception()
-        << "Call to getMarginalizationFunc() on a not initialized instance.";
-  }
-
-  return m_marginalization_function;
 }
 
 
