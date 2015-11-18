@@ -66,8 +66,7 @@ public:
    * @return the iterator on the luminosity model the luminosity has to be computed for.
    */
    const PhzDataModel::PhotometryGrid::const_iterator fixIterator(
-          const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor,
-          const XYDataset::QualifiedName& sed) const override;
+          const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor) const override;
 
 };
 

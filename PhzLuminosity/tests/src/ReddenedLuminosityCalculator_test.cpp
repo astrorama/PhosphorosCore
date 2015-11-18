@@ -96,7 +96,7 @@ BOOST_FIXTURE_TEST_CASE(test_mag, ReddenedLuminosityCalculator_Fixture) {
     auto red = scale_iter.axisValue<
         PhzDataModel::ModelParameter::REDDENING_CURVE>();
 
-    auto computed = lum_comp_funct.fixIterator(scale_iter, sed);
+    auto computed = lum_comp_funct.fixIterator(scale_iter);
 
     double c_z = computed.axisValue<PhzDataModel::ModelParameter::Z>();
     auto c_sed = computed.axisValue<PhzDataModel::ModelParameter::SED>();

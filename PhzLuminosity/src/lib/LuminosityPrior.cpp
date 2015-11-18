@@ -37,7 +37,7 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
   double current_min_z {};
   double current_max_z {};
   for (size_t sed_index = 0; sed_index < sed_axis.size(); ++sed_index) {
-    auto sed = sed_axis[sed_index];
+    auto& sed = sed_axis[sed_index];
     
     if (current_sed_group != m_sed_group_manager.findGroupContaining(sed).first) {
       current_sed_group = m_sed_group_manager.findGroupContaining(sed).first;
@@ -66,7 +66,7 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
       scal_iter.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(z_index);
 
       while (likelihood_iter != likelihoodGrid.end()) {
-        double luminosity = m_luminosity_calculator->operator ()(scal_iter,z,sed);
+        double luminosity = (*m_luminosity_calculator)(scal_iter);
 
         double prior = luminosity_function(luminosity);
         *likelihood_iter *= prior;

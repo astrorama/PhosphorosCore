@@ -26,8 +26,7 @@ struct LuminosityCalculator_Fixture {
   public:
 
     const PhzDataModel::PhotometryGrid::const_iterator fixIterator(
-           const PhzDataModel::ScaleFactordGrid::const_iterator&,
-           const XYDataset::QualifiedName&) const override{
+           const PhzDataModel::ScaleFactordGrid::const_iterator&) const override{
       return m_model_photometry_grid->cbegin();
     }
 
@@ -122,9 +121,8 @@ int loop=0;
 while (scale_iter != scale_factor_grid.cend() && loop<4) {
 
  double z = scale_iter.axisValue<PhzDataModel::ModelParameter::Z>();
- auto sed = scale_iter.axisValue<PhzDataModel::ModelParameter::SED>();
 
- auto computed = lum_comp_funct(scale_iter, z, sed);
+ auto computed = lum_comp_funct(scale_iter);
  auto expected =flux_values.at(z)*distance_correction.at(z);
 
  BOOST_CHECK_CLOSE(computed,expected,1E-8);
@@ -154,9 +152,8 @@ BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
   while (scale_iter != scale_factor_grid.cend() && loop<4) {
 
     double z = scale_iter.axisValue<PhzDataModel::ModelParameter::Z>();
-    auto sed = scale_iter.axisValue<PhzDataModel::ModelParameter::SED>();
 
-    auto computed = lum_comp_funct(scale_iter, z, sed);
+    auto computed = lum_comp_funct(scale_iter);
     auto expected = log_lum.at(z)+modulus_correction.at(z);
 
     BOOST_CHECK_CLOSE(computed,expected,1E-6);

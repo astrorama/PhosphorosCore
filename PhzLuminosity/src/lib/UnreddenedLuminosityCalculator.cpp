@@ -22,15 +22,13 @@ UnreddenedLuminosityCalculator::UnreddenedLuminosityCalculator(
                          in_mag) {}
 
 const PhzDataModel::PhotometryGrid::const_iterator UnreddenedLuminosityCalculator::fixIterator(
-    const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor,
-    const XYDataset::QualifiedName& sed) const {
+    const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor) const {
 
   auto model_iter = m_model_photometry_grid->cbegin();
-  model_iter.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(0);
-  model_iter.fixAxisByIndex<PhzDataModel::ModelParameter::EBV>(0);
-  model_iter.fixAxisByValue<PhzDataModel::ModelParameter::REDDENING_CURVE>(
-      scale_factor.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>());
-  model_iter.fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
+    model_iter.fixAxisByIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>(
+        m_red_curve_index_map.at(scale_factor.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>()));
+    model_iter.fixAxisByIndex<PhzDataModel::ModelParameter::SED>(
+        m_sed_index_map.at(scale_factor.axisValue<PhzDataModel::ModelParameter::SED>()));
 
   return model_iter;
 }

@@ -7,6 +7,7 @@
 #ifndef PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYCALCULATOR_H_
 #define PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYCALCULATOR_H_
 #include <memory>
+#include <unordered_map>
 #include "XYDataset/QualifiedName.h"
 #include "PhysicsUtils/CosmologicalParameters.h"
 #include "PhzDataModel/PhotometryGrid.h"
@@ -63,17 +64,9 @@ public:
    * An iterator on the scall factor grid allowing to gain access on the grid
    * coordinate and to the scalefactor of this specific model (with respect to the source)
    *
-   * @param z
-   * Redshift coordinate of the model. Provided to avoid getting it out of the iterator.
-   *
-   * @param sed
-   * SED coordinate of the model. Provided to avoid getting it out of the iterator.
-   *
    * @return The luminosity.
    */
-   double operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor,
-        const double& z,
-        const XYDataset::QualifiedName& sed) const;
+   double operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor) const;
 
   /**
    * @brief Select the Luminosity Model Grid iterator based on the scale_factor
@@ -84,17 +77,18 @@ public:
    * An iterator on the scall factor grid allowing to gain access on the grid
    * coordinate and to the scalefactor of this specific model (with respect to the source)
    *
-   * @param sed
-   * SED coordinate of the model. Provided to avoid getting it out of the iterator.
-   *
    * @return the iterator on the luminosity model the luminosity has to be computed for.
    */
    virtual const PhzDataModel::PhotometryGrid::const_iterator fixIterator(
-       const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor,
-       const XYDataset::QualifiedName& sed) const =0;
+       const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor) const = 0;
 
 protected:
    std::shared_ptr<PhzDataModel::PhotometryGrid> m_model_photometry_grid;
+   // The following maps are used to find the axes indices in O(logn) time instead
+   // of O(n) that would be the case if using the fixAxisByValue() on the grid iterator
+   std::unordered_map<double, std::size_t> m_ebv_index_map;
+   std::unordered_map<XYDataset::QualifiedName, std::size_t> m_red_curve_index_map;
+   std::unordered_map<XYDataset::QualifiedName, std::size_t> m_sed_index_map;
 
 private:
    XYDataset::QualifiedName m_luminosity_filter;

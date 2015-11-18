@@ -14,23 +14,34 @@ namespace PhzLuminosity {
 
 static Elements::Logging logger = Elements::Logging::getLogger("LuminosityCalculator");
 
-double LuminosityCalculator::operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor,
-       const double& z,
-       const XYDataset::QualifiedName& sed) const{
-  auto model_iter = fixIterator(scale_factor,sed);
-  return getLuminosityFromModel(model_iter,*scale_factor,z);
+double LuminosityCalculator::operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor) const {
+  auto model_iter = fixIterator(scale_factor);
+  double z = scale_factor.axisValue<PhzDataModel::ModelParameter::Z>();
+  return getLuminosityFromModel(model_iter, *scale_factor, z);
 }
 
 LuminosityCalculator::LuminosityCalculator(XYDataset::QualifiedName luminosity_filter,
-    std::shared_ptr<PhzDataModel::PhotometryGrid> model_photometry_grid,
-    std::map<double,double> luminosity_distance_map,
-    std::map<double,double> distance_modulus_map,
-    bool in_mag) :
-    m_luminosity_filter { std::move(luminosity_filter) },
-    m_model_photometry_grid{model_photometry_grid},
-    m_luminosity_distance_map{std::move(luminosity_distance_map)},
-    m_distance_modulus_map{std::move(distance_modulus_map)},
-    m_in_mag { in_mag } {
+                                      std::shared_ptr<PhzDataModel::PhotometryGrid> model_photometry_grid,
+                                      std::map<double,double> luminosity_distance_map,
+                                      std::map<double,double> distance_modulus_map,
+                                      bool in_mag) :
+                  m_model_photometry_grid{model_photometry_grid},
+                  m_luminosity_filter { std::move(luminosity_filter) },
+                  m_luminosity_distance_map{std::move(luminosity_distance_map)},
+                  m_distance_modulus_map{std::move(distance_modulus_map)},
+                  m_in_mag { in_mag } {
+  auto& ebv_axis = model_photometry_grid->getAxis<PhzDataModel::ModelParameter::EBV>();
+  for (std::size_t i = 0; i < ebv_axis.size(); ++i) {
+    m_ebv_index_map.emplace(std::make_pair(ebv_axis[i], i));
+  }
+  auto& red_curve_axis = model_photometry_grid->getAxis<PhzDataModel::ModelParameter::REDDENING_CURVE>();
+  for (std::size_t i = 0; i < red_curve_axis.size(); ++i) {
+    m_red_curve_index_map.emplace(std::make_pair(red_curve_axis[i], i));
+  }
+  auto& sed_axis = model_photometry_grid->getAxis<PhzDataModel::ModelParameter::SED>();
+  for (std::size_t i = 0; i < sed_axis.size(); ++i) {
+    m_sed_index_map.emplace(std::make_pair(sed_axis[i], i));
+  }
 }
 
 static std::size_t findFilterIndex(const SourceCatalog::Photometry& photometry,
