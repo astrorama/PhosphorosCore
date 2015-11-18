@@ -36,13 +36,14 @@
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
+
 
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzLuminosity/UnreddenedLuminosityCalculator.h"
 #include "PhzLuminosity/ReddenedLuminosityCalculator.h"
 #include "PhzLikelihood/SharedPriorAdapter.h"
 #include "PhzLuminosity/LuminosityPrior.h"
-
 #include "PhzLuminosity/LuminosityFunctionValidityDomain.h"
 #include "PhzLuminosity/LuminosityFunctionSet.h"
 
@@ -71,6 +72,8 @@ LuminosityPriorConfig::LuminosityPriorConfig(long manager_id) : Configuration(ma
   declareDependency<LuminosityBandConfig>();
   declareDependency<LuminositySedGroupConfig>();
   declareDependency<PhotometryGridConfig>();
+  declareDependency<CosmologicalParameterConfig>();
+
 }
 
 auto LuminosityPriorConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -142,7 +145,7 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
      std::map<double,double> luminosity_distance_map{};
      std::map<double,double> distance_modulus_map{};
 
-     PhysicsUtils::CosmologicalParameters cosmological_param {};
+     auto& cosmological_param = getDependency<CosmologicalParameterConfig>().getCosmologicalParam() ;
      PhysicsUtils::CosmologicalDistances cosmological_distances {};
      for (auto& pair : getDependency<PhotometryGridConfig>().getPhotometryGridInfo().region_axes_map) {
        for (auto& z_value : std::get<PhzDataModel::ModelParameter::Z>(pair.second)) {
