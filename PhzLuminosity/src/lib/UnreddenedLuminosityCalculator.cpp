@@ -26,9 +26,9 @@ const PhzDataModel::PhotometryGrid::const_iterator UnreddenedLuminosityCalculato
 
   auto model_iter = m_model_photometry_grid->cbegin();
     model_iter.fixAxisByIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>(
-        m_red_curve_index_map.at(scale_factor.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>()));
+        getRedCurveIndex(scale_factor.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>()));
     model_iter.fixAxisByIndex<PhzDataModel::ModelParameter::SED>(
-        m_sed_index_map.at(scale_factor.axisValue<PhzDataModel::ModelParameter::SED>()));
+        getSedIndex(scale_factor.axisValue<PhzDataModel::ModelParameter::SED>()));
 
   return model_iter;
 }

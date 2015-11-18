@@ -83,19 +83,34 @@ public:
        const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor) const = 0;
 
 protected:
+  
    std::shared_ptr<PhzDataModel::PhotometryGrid> m_model_photometry_grid;
+   
+   std::size_t getEbvIndex(double ebv) const {
+     return m_ebv_index_map.at(ebv);
+   }
+   
+   std::size_t getRedCurveIndex(const XYDataset::QualifiedName& red_curve) const {
+     return m_red_curve_index_map.at(red_curve);
+   }
+   
+   std::size_t getSedIndex(const XYDataset::QualifiedName& sed) const {
+     return m_sed_index_map.at(sed);
+   }
+   
+private:
+  
+   XYDataset::QualifiedName m_luminosity_filter;
+   mutable std::unique_ptr<std::size_t> m_luminosity_filter_index;
+   std::map<double,double> m_luminosity_distance_map;
+   std::map<double,double> m_distance_modulus_map;
+   bool m_in_mag;
    // The following maps are used to find the axes indices in O(logn) time instead
    // of O(n) that would be the case if using the fixAxisByValue() on the grid iterator
    std::unordered_map<double, std::size_t> m_ebv_index_map;
    std::unordered_map<XYDataset::QualifiedName, std::size_t> m_red_curve_index_map;
    std::unordered_map<XYDataset::QualifiedName, std::size_t> m_sed_index_map;
 
-private:
-   XYDataset::QualifiedName m_luminosity_filter;
-   mutable std::unique_ptr<std::size_t> m_luminosity_filter_index;
-   std::map<double,double> m_luminosity_distance_map;
-   std::map<double,double> m_distance_modulus_map;
-   bool m_in_mag;
 
   /**
     * @brief Methode factorizing the computation of the luminosity once the model
