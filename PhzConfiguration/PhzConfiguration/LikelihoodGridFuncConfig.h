@@ -36,12 +36,18 @@ namespace PhzConfiguration {
 
 /**
  * @class LikelihoodGridFuncConfig
-
+ *
+ * @details
+ * This class define the configuration of the function which is in charge of
+ * computing the Likelihood grid.
  */
 class LikelihoodGridFuncConfig : public Configuration::Configuration {
 
 public:
 
+  /**
+   * @brief Constructor
+   */
   LikelihoodGridFuncConfig(long manager_id);
 
   /**
@@ -49,13 +55,39 @@ public:
    */
   virtual ~LikelihoodGridFuncConfig() = default;
 
+  /**
+   * @details
+   * Add the "enable-missing-data" and "enable-upper-limit" options to
+   * the "Likelihood Grid Function options" group.
+   *
+   * The action is as follow:
+   * - "enable-missing-data" If set to "ON"(default) photometries with value
+   *    matching the missing data flag will be excluded of the likelihood
+   *    computation.
+   * - "enable-upper-limit" If set to "ON" or "FAST" photometries identified as
+   * upper limit enter in a different way in the computation of the likelihood.
+   */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
+  /**
+   * @details
+   * Check that the "enable-missing-data" and "enable-upper-limit" options,
+   * if present, match the values "ON" or "OFF" (and "FAST" for the upper limit).
+   */
   void preInitialize(const UserValues& args) override;
 
+  /**
+   * @details
+   * Set flags for the computations of the Likelihood Grid Function.
+   */
   void initialize(const UserValues& args) override;
 
 
+  /**
+   * @details
+   * Computes and returns the Likelihood Grid Function based on the provided
+   * parameters.
+   */
   const PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction & getLikelihoodGridFunction();
 
 

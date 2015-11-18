@@ -54,7 +54,7 @@ LikelihoodGridFuncConfig::LikelihoodGridFuncConfig(long manager_id) : Configurat
 }
 
 auto LikelihoodGridFuncConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Directory options", {
+  return {{"Likelihood Grid Function options", {
     {ENABLE_MISSING_DATA.c_str(), po::value<std::string>(),
         "Enables or disables the check for missing data. One of OFF, ON(default)"},
     {ENABLE_UPPER_LIMIT.c_str(), po::value<std::string>(),
