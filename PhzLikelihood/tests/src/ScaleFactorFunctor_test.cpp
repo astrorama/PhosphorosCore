@@ -40,7 +40,7 @@ public:
     if (mock_adder_singleton == nullptr) {
       BOOST_FAIL("TestAdder was called when the MockAdder was not set");
     }
-    return mock_adder_singleton->FunctorCall(source, model, numerator, denominator);
+    mock_adder_singleton->FunctorCall(source, model, numerator, denominator);
   }
 };
 
