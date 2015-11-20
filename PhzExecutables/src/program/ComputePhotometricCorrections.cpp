@@ -18,6 +18,7 @@
 #include "PhzPhotometricCorrection/FindBestFitModels.h"
 #include "PhzPhotometricCorrection/CalculateScaleFactorMap.h"
 #include "PhzPhotometricCorrection/PhotometricCorrectionAlgorithm.h"
+#include "Configuration/Utils.h"
 
 using namespace std;
 using namespace Euclid;
@@ -28,8 +29,7 @@ namespace po = boost::program_options;
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhosphorosComputePhotometricCorrections");
 
-static long config_manager_id = std::chrono::duration_cast<std::chrono::microseconds>(
-                                    std::chrono::system_clock::now().time_since_epoch()).count();
+static long config_manager_id = getUniqueManagerId();
 
 class ComputePhotometricCorrections : public Elements::Program {
 

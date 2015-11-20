@@ -10,6 +10,7 @@
 #include "ElementsKernel/ProgramHeaders.h"
 #include "Configuration/ConfigManager.h"
 #include "Configuration/CatalogConfig.h"
+#include "Configuration/Utils.h"
 #include "PhzLikelihood/ParallelCatalogHandler.h"
 #include "PhzConfiguration/ComputeRedshiftsConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
@@ -30,8 +31,7 @@ namespace po = boost::program_options;
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhosphorosComputeRedshifts");
 
-static long config_manager_id = std::chrono::duration_cast<std::chrono::microseconds>(
-                                    std::chrono::system_clock::now().time_since_epoch()).count();
+static long config_manager_id = getUniqueManagerId();
 
 class ProgressReporter {
 

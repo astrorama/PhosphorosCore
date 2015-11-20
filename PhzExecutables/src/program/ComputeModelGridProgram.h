@@ -36,6 +36,7 @@
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/ModelGridOutputConfig.h"
+#include "Configuration/Utils.h"
 
 class ProgressReporter {
   
@@ -103,8 +104,7 @@ public:
 private:
   
   Elements::Logging logger = Elements::Logging::getLogger(ComputeModelGridTraits{}.logger_name);
-  long config_manager_id = std::chrono::duration_cast<std::chrono::microseconds>(
-                                    std::chrono::system_clock::now().time_since_epoch()).count();
+  long config_manager_id = Euclid::Configuration::getUniqueManagerId();
   
 };
 
