@@ -24,6 +24,7 @@
 #include "PhzModeling/PhotometryAlgorithm.h"
 
 #include "PhzModeling/PhotometryGridCreator.h"
+#include "PhzUtils/Multithreading.h"
 
 
 namespace Euclid {
@@ -64,7 +65,12 @@ PhotometryGridCreator::PhotometryGridCreator(
       : m_sed_provider {sed_provider}, m_reddening_curve_provider {reddening_curve_provider},
         m_filter_provider(filter_provider), m_igm_absorption_function {igm_absorption_function} {
 }
-        
+
+PhotometryGridCreator::~PhotometryGridCreator() {
+  // The multithreaded job is done, so reset the stop threads flag
+  PhzUtils::getStopThreadsFlag() = false;
+}
+   
 class ParallelJob {
   
 public:

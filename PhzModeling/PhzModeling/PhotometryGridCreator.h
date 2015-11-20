@@ -65,7 +65,7 @@ public:
   /**
    * @brief destructor.
    */
-  virtual ~PhotometryGridCreator()=default;
+  virtual ~PhotometryGridCreator();
 
   /**
    * @brief Creates a photometry grid

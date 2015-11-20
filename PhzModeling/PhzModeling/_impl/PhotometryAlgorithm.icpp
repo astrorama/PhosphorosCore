@@ -6,6 +6,8 @@
 
 #ifdef PHOTOMETRYALGO_IMPL
 
+#include "PhzUtils/Multithreading.h"
+
 namespace Euclid {
 namespace PhzModeling {
 
@@ -55,8 +57,11 @@ void PhotometryAlgorithm<ModelFluxAlgo>::operator()(
                             PhotometryIterator photometry_begin, Monitor& monitor) const{
 
   while (model_begin!=model_end){
+    if (PhzUtils::getStopThreadsFlag()) {
+      throw Elements::Exception() << "Stopped by the user";
+    }
 
-  std::vector<SourceCatalog::FluxErrorPair> fluxes {m_filter_name_shared_vector->size(), {0., 0.}};
+    std::vector<SourceCatalog::FluxErrorPair> fluxes {m_filter_name_shared_vector->size(), {0., 0.}};
 
     m_model_flux_agorithm(*model_begin,m_filter_info_vector.begin(),m_filter_info_vector.end(),fluxes.begin());
 
