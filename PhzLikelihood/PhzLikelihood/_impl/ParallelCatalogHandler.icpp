@@ -11,6 +11,7 @@
 #include <chrono>
 #include <algorithm>
 #include "ElementsKernel/Logging.h"
+#include "PhzUtils/Multithreading.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -50,6 +51,9 @@ private:
     Output(std::vector<ResultType>& result_vector, std::atomic<size_t>& progress) : m_result_vector(result_vector), m_progress(progress) {}
     void handleSourceOutput(const SourceCatalog::Source& source,
                             const PhzOutput::OutputHandler::result_type& results) override {
+      if (PhzUtils::getStopThreadsFlag()) {
+        throw Elements::Exception() << "Stopped by the user";
+      }
       // We need to make a copy of the results, because they will be handled
       // by a different thread when the refered object will be already deleted
       auto& pdf = std::get<1>(results);

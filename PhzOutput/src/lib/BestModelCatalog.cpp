@@ -21,17 +21,19 @@ namespace PhzOutput {
 static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
 BestModelCatalog::~BestModelCatalog() {
-  Table::Table out_table {std::move(m_row_list)};
-  // Check directory and write permissions
-  Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
-  if (m_format == Format::ASCII) {
-    std::ofstream out {m_out_file.string()};
-    Table::AsciiWriter().write(out, out_table, false);
-  } else {
-    CCfits::FITS fits {"!"+m_out_file.string(), CCfits::RWmode::Write};
-    Table::FitsWriter().write(fits, "Best Model Catalog", out_table);
+  if (!m_row_list.empty()) {
+    Table::Table out_table {std::move(m_row_list)};
+    // Check directory and write permissions
+    Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
+    if (m_format == Format::ASCII) {
+      std::ofstream out {m_out_file.string()};
+      Table::AsciiWriter().write(out, out_table, false);
+    } else {
+      CCfits::FITS fits {"!"+m_out_file.string(), CCfits::RWmode::Write};
+      Table::FitsWriter().write(fits, "Best Model Catalog", out_table);
+    }
+    logger.info() << "Created best fit model catalog in file " << m_out_file.string();
   }
-  logger.info() << "Created best fit model catalog in file " << m_out_file.string();
 }
 
 void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
