@@ -71,21 +71,32 @@ public:
 
   ParallelJob(PhotometryAlgorithm<ModelFluxAlgorithm>& m_photometry_algo,
               ModelDatasetGrid::iterator model_begin, ModelDatasetGrid::iterator model_end, 
-              PhzDataModel::PhotometryGrid::iterator photometry_begin, std::atomic<size_t>& m_progress)
+              PhzDataModel::PhotometryGrid::iterator photometry_begin, std::atomic<size_t>& m_progress,
+              std::atomic<uint>& done_counter)
         : m_photometry_algo(m_photometry_algo), m_model_begin(model_begin), m_model_end(model_end),
-          m_photometry_begin(photometry_begin), m_progress(m_progress) { }
+          m_photometry_begin(photometry_begin), m_progress(m_progress), m_done_counter(done_counter) { }
         
   void operator()() {
+    DoneUpdater done_updater {m_done_counter};
     m_photometry_algo(m_model_begin, m_model_end, m_photometry_begin, m_progress);
   }
 
 private:
+  
+  class DoneUpdater {
+  public:
+    DoneUpdater(std::atomic<uint>& m_done_counter) : m_done_counter(m_done_counter) { }
+    virtual ~DoneUpdater() {++m_done_counter;}
+  private:
+    std::atomic<uint>& m_done_counter;
+  };
   
   PhotometryAlgorithm<ModelFluxAlgorithm>& m_photometry_algo;
   ModelDatasetGrid::iterator m_model_begin;
   ModelDatasetGrid::iterator m_model_end;
   PhzDataModel::PhotometryGrid::iterator m_photometry_begin;
   std::atomic<size_t>& m_progress;
+  std::atomic<uint>& m_done_counter;
   
 };
 
@@ -122,21 +133,26 @@ PhzDataModel::PhotometryGrid PhotometryGridCreator::createGrid(
   // Here we keep the futures for the threads we start so we can wait for them
   std::vector<std::future<void>> futures;
   std::atomic<size_t> progress {0};
+  std::atomic<uint> done_counter {0};
+  uint threads = 0;
   size_t total_models = model_grid.size();
   logger.info() << "Creating photometries for " << total_models << " models";
   for (auto& sed : std::get<PhzDataModel::ModelParameter::SED>(parameter_space)) {
+    ++threads;
     // We start a new thread to handle this SED
     auto model_iter = model_grid.begin();
     model_iter.fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
     auto photometry_iter = photometry_grid.begin();
     photometry_iter.fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
 
-    futures.push_back(std::async(std::launch::async, ParallelJob{photometry_algo, model_iter, model_grid.end(), photometry_iter, progress}));
+    futures.push_back(std::async(std::launch::async, ParallelJob{
+      photometry_algo, model_iter, model_grid.end(), photometry_iter, progress, done_counter
+    }));
   }
   // If we have a progress listener we create a thread to update it every .1 sec
   if (progress_listener) {
     progress_listener(0, total_models);
-    while (progress < total_models) {
+    while (done_counter < threads) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       progress_listener(progress, total_models);
     }
