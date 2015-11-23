@@ -26,6 +26,7 @@
 #include "PhzDataModel/Pdf1D.h"
 #include "PhzDataModel/LikelihoodGrid.h"
 #include "PhzOutput/MultithreadHandler.h"
+#include "PhzUtils/Multithreading.h"
 
 namespace Euclid {
 namespace PhzOutput {
@@ -75,6 +76,9 @@ static OutputHandler::result_type createResultCopy(const OutputHandler::result_t
 }
 
 void MultithreadHandler::handleSourceOutput(const SourceCatalog::Source& source, const result_type& results) {
+  if (PhzUtils::getStopThreadsFlag()) {
+    throw Elements::Exception() << "Stopped by the user";
+  }
   // We need to make a copy of the results, because they will be handled
   // by a different thread when the refered object will be already deleted
   auto results_copy = createResultCopy(results);
