@@ -34,10 +34,18 @@
 namespace Euclid {
 namespace PhzConfiguration {
 
+/**
+ * @class PriorConfig
+ * @brief This class allows to register and store the priors to be applied
+ * to the likelihood.
+ */
 class PriorConfig : public Configuration::Configuration {
 
 public:
 
+  /**
+   * @brief Constructor
+   */
   PriorConfig(long manager_id);
 
   /**
@@ -45,8 +53,20 @@ public:
    */
   virtual ~PriorConfig() = default;
 
+  /**
+   * @brief Get the lists of priors to be applied to the likelihood
+   *
+   * @return
+   * A vector of PriorFunction, one for each registered prior.
+   */
   const std::vector<PhzLikelihood::CatalogHandler::PriorFunction> & getPriors();
 
+  /**
+   * @brief Add a prior to the list of priors to be applied to the likelihood.
+   *
+   * @param prior
+   * The PriorFunction representing the prior.
+   */
   void addPrior(PhzLikelihood::CatalogHandler::PriorFunction prior);
 
 private:
