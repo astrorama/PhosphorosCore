@@ -10,21 +10,13 @@
 #include <thread>
 #include <chrono>
 #include <algorithm>
+#include <iterator>
 #include "ElementsKernel/Logging.h"
+#include "PhzOutput/MultithreadHandler.h"
 #include "PhzUtils/Multithreading.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
-
-// This is a helper class which is keeping the results for a single source
-struct ResultType {
-  ResultType(const SourceCatalog::Source& source,
-             SourcePhzFunctor::result_type results)
-        : source(source), results(std::move(results)) { }
-  ResultType(ResultType&&) = default;
-  const SourceCatalog::Source& source;
-  SourcePhzFunctor::result_type results;
-};
 
 // This is a helper class which handles the execution of a part of the catalog.
 template <typename SourceIter>
@@ -32,69 +24,17 @@ class ParallelJob {
 
 public:
 
-  ParallelJob(const CatalogHandler& handler, SourceIter begin,SourceIter end,
-              std::atomic<size_t>& progress, std::atomic<uint>& done_counter)
-        : handler(handler), begin(begin), end(end), m_progress(progress), m_done_counter(done_counter) { }
+  ParallelJob(const CatalogHandler& handler, SourceIter begin, SourceIter end,
+              PhzOutput::OutputHandler& output_handler, std::atomic<uint>& done_counter)
+        : handler(handler), begin(begin), end(end),
+          m_output_handler(output_handler), m_done_counter(done_counter) { }
 
-  std::vector<ResultType> operator()() {
+  void operator()() {
     DoneUpdater done_updater {m_done_counter};
-    std::vector<ResultType> result;
-    Output output {result, m_progress};
-    handler.handleSources(begin, end, output);
-    return result;
+    handler.handleSources(begin, end, m_output_handler);
   }
 
 private:
-
-  class Output : public PhzOutput::OutputHandler {
-  public :
-    Output(std::vector<ResultType>& result_vector, std::atomic<size_t>& progress) : m_result_vector(result_vector), m_progress(progress) {}
-    void handleSourceOutput(const SourceCatalog::Source& source,
-                            const PhzOutput::OutputHandler::result_type& results) override {
-      if (PhzUtils::getStopThreadsFlag()) {
-        throw Elements::Exception() << "Stopped by the user";
-      }
-      // We need to make a copy of the results, because they will be handled
-      // by a different thread when the refered object will be already deleted
-      auto& pdf = std::get<1>(results);
-      PhzDataModel::Pdf1D pdf_copy {pdf.getAxis<0>()};
-      for (size_t i=0; i<pdf.size(); ++i) {
-        pdf_copy(i) = pdf(i);
-      }
-
-      auto& likelihood_map = std::get<2>(results);
-      std::map<std::string, PhzDataModel::LikelihoodGrid> likelihood_map_copy {};
-      for (auto& pair : likelihood_map) {
-        PhzDataModel::LikelihoodGrid likelihood_copy {pair.second.getAxesTuple()};
-        std::copy(pair.second.begin(), pair.second.end(), likelihood_copy.begin());
-        likelihood_map_copy.emplace(std::make_pair(pair.first, std::move(likelihood_copy)));
-      }
-
-      auto& posteriors_map = std::get<3>(results);
-      std::map<std::string, PhzDataModel::LikelihoodGrid> posteriors_map_copy { };
-      for (auto& pair : posteriors_map) {
-        PhzDataModel::LikelihoodGrid posterior_copy { pair.second.getAxesTuple() };
-        std::copy(pair.second.begin(), pair.second.end(), posterior_copy.begin());
-        posteriors_map_copy.emplace(
-            std::make_pair(pair.first, std::move(posterior_copy)));
-      }
-
-      PhzOutput::OutputHandler::result_type results_copy {
-        std::get<0>(results),
-        std::move(pdf_copy),
-        std::move(likelihood_map_copy),
-        std::move(posteriors_map_copy),
-        std::get<4>(results),
-        std::get<5>(results),
-        std::get<6>(results)
-      };
-      m_result_vector.push_back(ResultType{source, std::move(results_copy)});
-      ++m_progress;
-    }
-  private:
-    std::vector<ResultType>& m_result_vector;
-    std::atomic<size_t>& m_progress;
-  };
   
   class DoneUpdater {
   public:
@@ -107,9 +47,38 @@ private:
   const PhzLikelihood::CatalogHandler& handler;
   SourceIter begin;
   SourceIter end;
-  std::atomic<size_t>& m_progress;
+  PhzOutput::OutputHandler& m_output_handler;
   std::atomic<uint>& m_done_counter;
 
+};
+
+template<typename Iter>
+class StepIterator {
+public:
+  StepIterator(Iter iter, Iter end, uint step) : m_iter{iter}, m_end{end}, m_step{step} {}
+  StepIterator& operator++() {
+    std::advance(m_iter, m_step);
+    if (m_iter > m_end) {
+      m_iter = m_end;
+    }
+    return *this;
+  }
+  typename std::add_const<typename Iter::value_type>::type& operator*() const {
+    return *m_iter;
+  }
+  typename std::add_const<typename Iter::value_type>::type* operator->() const {
+    return &(*m_iter);
+  }
+  bool operator==(const StepIterator& other) const {
+    return m_iter == other.m_iter;
+  }
+  bool operator!=(const StepIterator& other) const {
+    return m_iter != other.m_iter;
+  }
+private:
+  Iter m_iter;
+  Iter m_end;
+  uint m_step;
 };
 
 template<typename SourceIter>
@@ -117,23 +86,32 @@ void ParallelCatalogHandler::handleSources(SourceIter source_begin, SourceIter s
                                            PhzOutput::OutputHandler& out_handler,
                                            ProgressListener progress_listener) const {
   auto logger = Elements::Logging::getLogger("ParallelCatalogHandler");
-  std::vector<std::future<std::vector<ResultType>>> futures;
+  std::vector<std::future<void>> futures;
 
   std::atomic<size_t> progress {0};
   std::atomic<uint> done_counter {0};
-  size_t total_sources = source_end - source_begin;
+  
+  std::vector<decltype(std::declval<SourceCatalog::Source>().getId())> source_id_order {};
+  for (auto it = source_begin; it != source_end; ++it) {
+    source_id_order.emplace_back(it->getId());
+  }
+  auto total_sources = source_id_order.size();
   logger.info() << "Processing " << total_sources << " sources";
+  
   uint threads = std::thread::hardware_concurrency();
+  if (source_end - source_begin < threads) {
+    threads = source_end - source_begin;
+  }
   logger.info() << "Using " << threads << " threads";
-  uint step = total_sources / threads;
+  
+  PhzOutput::MultithreadHandler multithread_handler {out_handler, progress, source_id_order};
 
   for (uint i=0; i< threads; ++i) {
-    auto begin = source_begin + i*step;
-    auto end = ((i+1) == threads) ? source_end : source_begin + (i+1)*step;
-    logger.info() << "Starting thread " << (i+1) << " for sources ["
-                  << begin->getId() << ',' << (end-1)->getId() << ']';
-    futures.push_back(std::async(std::launch::async, ParallelJob<SourceIter>{
-      m_catalog_handler, begin, end, progress, done_counter
+    StepIterator<SourceIter> begin {source_begin, source_end, threads};
+    ++source_begin;
+    StepIterator<SourceIter> end {source_end, source_end, threads};
+    futures.push_back(std::async(std::launch::async, ParallelJob<decltype(begin)> {
+      m_catalog_handler, begin, end, multithread_handler, done_counter
     }));
   }
 
@@ -145,12 +123,10 @@ void ParallelCatalogHandler::handleSources(SourceIter source_begin, SourceIter s
     }
     progress_listener(total_sources, total_sources);
   }
-
-  logger.info() << "Thread jobs finished. Handling output...";
+  
+  // Wait for all threads to finish
   for (auto& f : futures) {
-    for (auto& result : f.get()) {
-      out_handler.handleSourceOutput(result.source, result.results);
-    }
+    f.get();
   }
 }
 
