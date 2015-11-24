@@ -46,7 +46,9 @@ void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
   auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
   auto scale = std::get<4>(results);
   auto likelihood = std::get<5>(results);
-  m_row_list.push_back(Table::Row{{source.getId(), sed, sed_index, reddening_curve, ebv, z, scale, likelihood}, m_column_info});
+  auto& pdf_1d = std::get<1>(results);
+  auto pdf_1d_peak_z = std::max_element(pdf_1d.begin(), pdf_1d.end()).axisValue<0>();
+  m_row_list.push_back(Table::Row{{source.getId(), sed, sed_index, reddening_curve, ebv, z, scale, likelihood, pdf_1d_peak_z}, m_column_info});
 }
 
 } // end of namespace PhzOutput
