@@ -101,7 +101,7 @@ protected:
 private:
   
    XYDataset::QualifiedName m_luminosity_filter;
-   mutable std::unique_ptr<std::size_t> m_luminosity_filter_index;
+   std::size_t m_luminosity_filter_index;
    std::map<double,double> m_luminosity_distance_map;
    std::map<double,double> m_distance_modulus_map;
    bool m_in_mag;

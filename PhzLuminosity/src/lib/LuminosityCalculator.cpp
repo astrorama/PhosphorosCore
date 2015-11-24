@@ -20,6 +20,21 @@ double LuminosityCalculator::operator()(const PhzDataModel::ScaleFactordGrid::co
   return getLuminosityFromModel(model_iter, *scale_factor, z);
 }
 
+static std::size_t findFilterIndex(const SourceCatalog::Photometry& photometry,
+                           const std::string& filter) {
+  std::size_t i = 0;
+  for (auto it = photometry.begin(); it != photometry.end(); ++it, ++i) {
+    if (it.filterName() == filter) {
+      break;
+    }
+  }
+  if (i == photometry.size()) {
+    logger.error() << "The luminosity filter '" << filter << "' is not defined for the model";
+    throw Elements::Exception() << "The luminosity filter '" << filter << "' is not defined for the model";
+  }
+  return i;
+}
+
 LuminosityCalculator::LuminosityCalculator(XYDataset::QualifiedName luminosity_filter,
                                       std::shared_ptr<PhzDataModel::PhotometryGrid> model_photometry_grid,
                                       std::map<double,double> luminosity_distance_map,
@@ -42,32 +57,15 @@ LuminosityCalculator::LuminosityCalculator(XYDataset::QualifiedName luminosity_f
   for (std::size_t i = 0; i < sed_axis.size(); ++i) {
     m_sed_index_map.emplace(std::make_pair(sed_axis[i], i));
   }
-}
-
-static std::size_t findFilterIndex(const SourceCatalog::Photometry& photometry,
-                           const std::string& filter) {
-  std::size_t i = 0;
-  for (auto it = photometry.begin(); it != photometry.end(); ++it, ++i) {
-    if (it.filterName() == filter) {
-      break;
-    }
-  }
-  if (i == photometry.size()) {
-    logger.error() << "The luminosity filter '" << filter << "' is not defined for the model";
-    throw Elements::Exception() << "The luminosity filter '" << filter << "' is not defined for the model";
-  }
-  return i;
+  m_luminosity_filter_index = findFilterIndex(*(m_model_photometry_grid->begin()), m_luminosity_filter.qualifiedName());
 }
 
 double LuminosityCalculator::getLuminosityFromModel(
                       const PhzDataModel::PhotometryGrid::const_iterator& model,
                       double scale_factor, double z) const {
-  if (m_luminosity_filter_index == nullptr) {
-    m_luminosity_filter_index.reset(new std::size_t {findFilterIndex(*model, m_luminosity_filter.qualifiedName())});
-  }
   
   auto band = model->begin();
-  std::advance(band, *m_luminosity_filter_index);
+  std::advance(band, m_luminosity_filter_index);
 
   double result{0.};
 
