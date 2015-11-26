@@ -62,6 +62,9 @@ public:
                          std::vector<StaticPriorFunction> static_priors,
                          MarginalizationFunction marginalization_func);
   
+  virtual ~ParallelCatalogHandler();
+
+  
   /**
    * Iterates through a set of sources and calculates the PHZ parameters for
    * each of them, using all the available threads in parallel. The assumption

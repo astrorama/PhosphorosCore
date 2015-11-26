@@ -14,7 +14,7 @@ namespace PhzLikelihood {
 LikelihoodGridFunctor::LikelihoodGridFunctor(LikelihoodLogarithmFunction likelihood_log_func)
           : m_likelihood_log_func {std::move(likelihood_log_func)} { }
 
-          
+
 auto LikelihoodGridFunctor::operator()(const SourceCatalog::Photometry& source_phot,
                          const PhzDataModel::PhotometryGrid& phot_grid) -> result_type {
   // Create new likelihood and scale factor grids, with all cells set to 0

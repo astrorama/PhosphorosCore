@@ -43,6 +43,9 @@ public:
   }
 
   void expectFunctorCall() {
+    std::map<std::string, PhzDataModel::LikelihoodGrid> likelihood_map {};
+    likelihood_map.emplace(std::make_pair(std::string(""),
+              PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{}))));
     std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
     posterior_map.emplace(std::make_pair(std::string(""),
               PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{}))));
@@ -50,7 +53,9 @@ public:
         new PhzLikelihood::SourcePhzFunctor::result_type{
           m_phot_grid.begin(),
           PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}},
-          std::move(posterior_map), 0, 0, std::map<std::string, double>{}
+          std::move(likelihood_map), std::move(posterior_map),
+          0, 0, std::map<std::string, double>{}
+
         }
     ));
   };

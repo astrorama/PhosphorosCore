@@ -74,7 +74,11 @@ public:
                   const SourceCatalog::FluxErrorPair& model,
                   double& numerator, double& denominator) {
     double error_square = source.error * source.error;
-    numerator += (model.flux * source.flux) / error_square;
+    // If the source flux is negative, which prevents the scale factor getting
+    // negative values (flipping the template). Physically this means that we do
+    // not allow for unrealistic negative fluxes in the models (which would mean
+    // models absorpting light).
+    numerator += (source.flux > 0) ? ((model.flux * source.flux) / error_square) : 0;
     denominator += (model.flux * model.flux) / error_square;
   }
   

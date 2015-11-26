@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 #include "XYDataset/QualifiedName.h"
+#include "PhzDataModel/PhotometricCorrectionMap.h"
 
 namespace Euclid {
 namespace PhzConfiguration {

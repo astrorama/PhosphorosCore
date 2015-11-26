@@ -1,0 +1,40 @@
+/**
+ * @file PhzLikelihood/_impl/GroupedAxisCorrection.icpp
+ * @date 11/03/15
+ * @author nikoapos
+ */
+
+#include <type_traits>
+
+namespace Euclid {
+namespace PhzLikelihood {
+
+template<int I>
+GroupedAxisCorrection<I>::GroupedAxisCorrection(PhzDataModel::QualifiedNameGroupManager group_manager)
+        : m_group_manager{std::move(group_manager)} {
+}
+
+template<int I>
+void GroupedAxisCorrection<I>::operator()(PhzDataModel::LikelihoodGrid& likelihood_grid) {
+  // The following lines guarantee that the template cannot be instantiated for
+  // axes which are not of type QualifiedName
+  using axis_type = decltype(likelihood_grid.getAxis<I>().operator[](0));
+  using striped_axis_type = typename std::remove_const<typename std::remove_reference<axis_type>::type>::type;
+  static_assert(std::is_same<striped_axis_type, XYDataset::QualifiedName>::value,
+                "GroupedAxisCorrection can only be used with axes of QualifiedNames");
+  
+  auto axis = likelihood_grid.getAxis<I>();
+  
+  for (std::size_t i = 0; i < axis.size(); ++i) {
+    // We use as weight the inverse of the number of QualifiedNames in the group
+    double weight = 1. / m_group_manager.findGroupContaining(axis[i]).second.size();
+    for (auto iter = likelihood_grid.begin().fixAxisByIndex<I>(i); iter != likelihood_grid.end(); ++iter) {
+      *iter *= weight;
+    }
+  }
+}
+
+} // PhzLikelihood namespace
+} // namespace Euclid
+
+
