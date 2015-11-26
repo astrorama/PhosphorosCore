@@ -37,5 +37,3 @@ elements_add_unit_test(QualifiedNameGroupManager_test tests/src/QualifiedNameGro
                      LINK_LIBRARIES PhzDataModel
                      TYPE Boost)
 
-
-
