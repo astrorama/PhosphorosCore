@@ -5,7 +5,7 @@
  */
 
 #ifndef FLUXERRORPAIR_BOOST_H
-#define	 FLUXERRORPAIR_BOOST_H
+#define	FLUXERRORPAIR_BOOST_H
 
 namespace std {
 

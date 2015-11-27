@@ -22,7 +22,7 @@ auto LikelihoodGridFunctor::operator()(const SourceCatalog::Photometry& source_p
   PhzDataModel::ScaleFactordGrid scale_factor_grid {phot_grid.getAxesTuple()};
 
   // Calculate the natural logarithm of the likelihood over the grid
-    m_likelihood_log_func(source_phot, phot_grid.begin(), phot_grid.end(),
+  m_likelihood_log_func(source_phot, phot_grid.begin(), phot_grid.end(),
                         likelihood_grid.begin(), scale_factor_grid.begin());
 
   // Shift the logarithm of the likelihood to have maximum zero, so the maximum

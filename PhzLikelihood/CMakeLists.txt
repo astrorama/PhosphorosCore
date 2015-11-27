@@ -46,4 +46,10 @@ elements_add_unit_test(MaxMarginalizationFunctor_test tests/src/MaxMarginalizati
 elements_add_unit_test(GroupedAxisCorrection_test tests/src/GroupedAxisCorrection_test.cpp
                      LINK_LIBRARIES PhzLikelihood
                      TYPE Boost)
+elements_add_unit_test(SharedPriorAdapter_test tests/src/SharedPriorAdapter_test.cpp
+                     LINK_LIBRARIES SourceCatalog PhzDataModel PhzLikelihood XYDataset GMock
+                     INCLUDE_DIRS GMock
+                     TYPE Boost)
+
+
 endif(GMOCK_FOUND)
