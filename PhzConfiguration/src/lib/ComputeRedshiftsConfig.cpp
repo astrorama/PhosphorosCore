@@ -42,6 +42,7 @@
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/ResultsDirConfig.h"
 #include "PhzConfiguration/MarginalizationConfig.h"
+#include "PhzConfiguration/VolumePriorConfig.h"
 #include "PhzOutput/BestModelCatalog.h"
 
 #include "PhzOutput/BestModelCatalog.h"
@@ -86,6 +87,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<CatalogTypeConfig>();
   declareDependency<ResultsDirConfig>();
   declareDependency<MarginalizationConfig>();
+  declareDependency<VolumePriorConfig>();
 }
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
