@@ -32,7 +32,7 @@ namespace PhzUtils {
 
 std::atomic<bool>& getStopThreadsFlag();
 
-std::atomic<uint>& getThreadNumber();
+std::atomic<unsigned int>& getThreadNumber();
 
 } /* namespace PhzUtils */
 } /* namespace Euclid */

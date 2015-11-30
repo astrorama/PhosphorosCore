@@ -34,9 +34,9 @@ std::atomic<bool>& getStopThreadsFlag() {
   return stop_threads_flag;
 }
 
-static std::atomic<uint> thread_no {std::thread::hardware_concurrency()};
+static std::atomic<unsigned int> thread_no {std::thread::hardware_concurrency()};
 
-std::atomic<uint>& getThreadNumber() {
+std::atomic<unsigned int>& getThreadNumber() {
   return thread_no;
 }
 
