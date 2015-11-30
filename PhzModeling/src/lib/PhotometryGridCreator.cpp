@@ -9,6 +9,7 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <iterator>
 #include "ElementsKernel/Logging.h"
 #include "MathUtils/interpolation/interpolation.h"
 
@@ -140,25 +141,34 @@ PhzDataModel::PhotometryGrid PhotometryGridCreator::createGrid(
   std::vector<std::future<void>> futures;
   std::atomic<size_t> progress {0};
   std::atomic<uint> done_counter {0};
-  uint threads = 0;
+  uint threads = PhzUtils::getThreadNumber();
   size_t total_models = model_grid.size();
   logger.info() << "Creating photometries for " << total_models << " models";
-  for (auto& sed : std::get<PhzDataModel::ModelParameter::SED>(parameter_space)) {
-    ++threads;
-    // We start a new thread to handle this SED
-    auto model_iter = model_grid.begin();
-    model_iter.fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
-    auto photometry_iter = photometry_grid.begin();
-    photometry_iter.fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
-
-    futures.push_back(std::async(std::launch::async, ParallelJob{
-      photometry_algo, model_iter, model_grid.end(), photometry_iter, progress, done_counter
-    }));
+  if (total_models < threads) {
+    threads = total_models;
   }
+  logger.info() << "Using " << threads << " threads";
+  
+  auto model_iter = model_grid.begin();
+  auto end_model_iter = model_grid.begin();
+  auto photometry_iter = photometry_grid.begin();
+  std::size_t step = total_models / threads;
+  for (uint i = 0; i < threads; ++i) {
+    std::advance(end_model_iter, step);
+    futures.push_back(std::async(std::launch::async, ParallelJob {
+      photometry_algo, model_iter, end_model_iter, photometry_iter, progress, done_counter
+    }));
+    model_iter = end_model_iter;
+    std::advance(photometry_iter, step);
+  }
+  futures.push_back(std::async(std::launch::async, ParallelJob {
+    photometry_algo, model_iter, model_grid.end(), photometry_iter, progress, done_counter
+  }));
+  
   // If we have a progress listener we create a thread to update it every .1 sec
   if (progress_listener) {
     progress_listener(0, total_models);
-    while (done_counter < threads) {
+    while (done_counter < threads+1) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       progress_listener(progress, total_models);
     }

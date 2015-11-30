@@ -31,6 +31,7 @@
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/ModelGridOutputConfig.h"
 #include "PhzConfiguration/LuminosityBandConfig.h"
+#include "PhzConfiguration/MultithreadConfig.h"
 #include "PhzConfiguration/ComputeLuminosityModelGridConfig.h"
 
 using namespace Euclid::XYDataset;
@@ -46,6 +47,7 @@ ComputeLuminosityModelGridConfig::ComputeLuminosityModelGridConfig(long manager_
   declareDependency<ReddeningProviderConfig>();
   declareDependency<LuminosityBandConfig>();
   declareDependency<ModelGridOutputConfig>();
+  declareDependency<MultithreadConfig>();
 }
 
 void ComputeLuminosityModelGridConfig::preInitialize(const UserValues&) {

@@ -30,6 +30,7 @@
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/FilterConfig.h"
 #include "PhzConfiguration/ParameterSpaceConfig.h"
+#include "PhzConfiguration/MultithreadConfig.h"
 
 
 namespace po = boost::program_options;
@@ -43,6 +44,7 @@ ComputeModelGridConfig::ComputeModelGridConfig(long manager_id) : Configuration(
   declareDependency<IgmConfig>();
   declareDependency<ParameterSpaceConfig>();
   declareDependency<FilterConfig>();
+  declareDependency<MultithreadConfig>();
 }
 
 void ComputeModelGridConfig::preInitialize(const UserValues&){
