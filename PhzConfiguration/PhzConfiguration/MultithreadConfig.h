@@ -17,24 +17,44 @@
  */  
 
 /**
- * @file PhzUtils/Multithreading.h
- * @date 11/20/15
+ * @file PhzConfiguration/MultithreadConfig.h
+ * @date 11/30/15
  * @author nikoapos
  */
 
-#ifndef _PHZUTILS_MULTITHREADING_H
-#define _PHZUTILS_MULTITHREADING_H
+#ifndef _PHZCONFIGURATION_MULTITHREADCONFIG_H
+#define _PHZCONFIGURATION_MULTITHREADCONFIG_H
 
-#include <atomic>
+#include "Configuration/Configuration.h"
 
 namespace Euclid {
-namespace PhzUtils {
+namespace PhzConfiguration {
 
-std::atomic<bool>& getStopThreadsFlag();
+/**
+ * @class MultithreadConfig
+ * @brief
+ *
+ */
+class MultithreadConfig : public Configuration::Configuration {
 
-std::atomic<uint>& getThreadNumber();
+public:
 
-} /* namespace PhzUtils */
+  MultithreadConfig(long manager_id);
+  
+  /**
+   * @brief Destructor
+   */
+  virtual ~MultithreadConfig() = default;
+
+  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
+
+  void preInitialize(const UserValues& args) override;
+
+  void initialize(const UserValues& args) override;
+
+}; /* End of MultithreadConfig class */
+
+} /* namespace PhzConfiguration */
 } /* namespace Euclid */
 
 

@@ -17,25 +17,31 @@
  */  
 
 /**
- * @file PhzUtils/Multithreading.h
- * @date 11/20/15
+ * @file tests/src/MultithreadConfig_test.cpp
+ * @date 11/30/15
  * @author nikoapos
  */
 
-#ifndef _PHZUTILS_MULTITHREADING_H
-#define _PHZUTILS_MULTITHREADING_H
+#include <boost/test/unit_test.hpp>
 
-#include <atomic>
+#include "PhzConfiguration/MultithreadConfig.h"
 
-namespace Euclid {
-namespace PhzUtils {
+using namespace Euclid::PhzConfiguration;
 
-std::atomic<bool>& getStopThreadsFlag();
+//-----------------------------------------------------------------------------
 
-std::atomic<uint>& getThreadNumber();
+BOOST_AUTO_TEST_SUITE (MultithreadConfig_test)
 
-} /* namespace PhzUtils */
-} /* namespace Euclid */
+//-----------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE( example_test ) {
+
+  BOOST_FAIL("!!!! Please implement your tests !!!!");
+
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_SUITE_END ()
 
 
-#endif

@@ -98,7 +98,7 @@ void ParallelCatalogHandler::handleSources(SourceIter source_begin, SourceIter s
   auto total_sources = source_id_order.size();
   logger.info() << "Processing " << total_sources << " sources";
   
-  uint threads = std::thread::hardware_concurrency();
+  uint threads = PhzUtils::getThreadNumber();
   if (source_end - source_begin < threads) {
     threads = source_end - source_begin;
   }

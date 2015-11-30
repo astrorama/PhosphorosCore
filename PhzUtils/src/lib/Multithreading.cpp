@@ -22,6 +22,7 @@
  * @author nikoapos
  */
 
+#include <thread>
 #include "PhzUtils/Multithreading.h"
 
 namespace Euclid {
@@ -31,6 +32,12 @@ static std::atomic<bool> stop_threads_flag {false};
 
 std::atomic<bool>& getStopThreadsFlag() {
   return stop_threads_flag;
+}
+
+static std::atomic<uint> thread_no {std::thread::hardware_concurrency()};
+
+std::atomic<uint>& getThreadNumber() {
+  return thread_no;
 }
 
 } // PhzUtils namespace
