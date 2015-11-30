@@ -93,7 +93,7 @@ public:
                                                 
     auto param_space_map = ComputeModelGridTraits::getParameterSpaceRegions(config_manager);
     auto results = creator.createGrid(param_space_map, filter_list, ProgressReporter{logger});
-//                                                     
+
     logger.info() << "Creating the output";
     auto output = config_manager.template getConfiguration<ModelGridOutputConfig>().getOutputFunction();
     output(results);
