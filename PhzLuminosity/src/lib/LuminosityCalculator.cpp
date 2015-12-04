@@ -71,7 +71,9 @@ double LuminosityCalculator::getLuminosityFromModel(
 
   // The flux of the model is scaled according the scale factor and scaled according
   // the zero-point of 3631 Jansky (our flux is in microJansky)
-  double flux = (*band).flux * scale_factor / 3631E6;
+  // The division with (1+z) is done to correct the fact that the flux is expressed
+  // in energy
+  double flux = (*band).flux * scale_factor / 3631E6 / (1+z);
   if (m_in_mag){
     result= -2.5 * std::log10(flux) - m_distance_modulus_map.at(z);
 
