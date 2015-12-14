@@ -159,7 +159,7 @@ void LuminosityFunctionConfig::initialize(const UserValues& args){
     double z_min=getOptionWithCheck<double>(args,LUMINOSITY_FUNCTION_MIN_Z+"-"+functionId);
     double z_max=getOptionWithCheck<double>(args,LUMINOSITY_FUNCTION_MAX_Z+"-"+functionId);
 
-    if (z_max<=z_min){
+    if (z_max<z_min){
       throw Elements::Exception() << "Conflicting options " << LUMINOSITY_FUNCTION_MIN_Z<< "-"<< functionId
           << " must be smaller than " << LUMINOSITY_FUNCTION_MAX_Z<< "-"<< functionId;
     }
