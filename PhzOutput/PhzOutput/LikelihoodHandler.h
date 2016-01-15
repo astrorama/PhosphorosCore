@@ -24,7 +24,7 @@ public:
   virtual ~LikelihoodHandler() = default;
 
   void handleSourceOutput(const SourceCatalog::Source& source,
-                          const result_type& results) override;
+                          const PhzDataModel::SourceResults& results) override;
 
 
 private:

@@ -35,7 +35,7 @@ PdfOutput::~PdfOutput() {
 }
 
 void PdfOutput::handleSourceOutput(const SourceCatalog::Source& source,
-                                   const result_type& results) {
+                                   const PhzDataModel::SourceResults& results) {
   // Count the number of sources saved
   ++m_counter;
 

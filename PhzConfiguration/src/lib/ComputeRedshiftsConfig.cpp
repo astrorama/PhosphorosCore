@@ -132,7 +132,7 @@ public:
     m_handlers.emplace_back(std::move(handler));
   }
   void handleSourceOutput(const SourceCatalog::Source& source,
-                                    const result_type& results) override {
+                          const PhzDataModel::SourceResults& results) override {
     for (auto& handler : m_handlers) {
       handler->handleSourceOutput(source, results);
     }

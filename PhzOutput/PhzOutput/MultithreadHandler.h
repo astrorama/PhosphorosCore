@@ -53,17 +53,18 @@ public:
    */
   virtual ~MultithreadHandler() = default;
 
-  void handleSourceOutput(const SourceCatalog::Source& source, const result_type& results) override;
+  void handleSourceOutput(const SourceCatalog::Source& source, 
+                          const PhzDataModel::SourceResults& results) override;
 
 private:
   
   // This is a helper class which is keeping the results for a single source
   struct ResultType {
-    ResultType(const SourceCatalog::Source& source, result_type results)
+    ResultType(const SourceCatalog::Source& source, PhzDataModel::SourceResults results)
           : source(source), results(std::move(results)) { }
     ResultType(ResultType&&) = default;
     const SourceCatalog::Source& source;
-    result_type results;
+    PhzDataModel::SourceResults results;
   };
   
   PhzOutput::OutputHandler& m_handler;

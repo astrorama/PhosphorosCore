@@ -58,7 +58,7 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
   return SourceCatalog::Photometry{filter_names_ptr, std::move(fluxes)};
 }
 
-static PhzDataModel::Pdf1D combine1DPdfs(const std::map<std::string, SourcePhzFunctor::result_type>& result_map) {
+static PhzDataModel::Pdf1D combine1DPdfs(const std::map<std::string, PhzDataModel::SourceResults>& result_map) {
   
   // All the likelihoods were shifted so the peak has value 1. This means that
   // the 1D PDFs are also shifted with the same constant. We get the constants
@@ -131,20 +131,20 @@ static PhzDataModel::LikelihoodGrid copyLikelihoodGrid(const PhzDataModel::Likel
   return copy;
 }
 
-auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) const -> result_type {
+PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) const {
   // Apply the photometric correction to the given source photometry
   auto cor_source_phot = applyPhotCorr(m_phot_corr_map, source_phot);
   
   // Calculate the results for all the regions
-  std::map<std::string, result_type> result_map {};
+  std::map<std::string, PhzDataModel::SourceResults> result_map {};
   for (auto& pair : m_single_grid_functor_map) {
     result_map.emplace(std::make_pair(pair.first, pair.second(cor_source_phot)));
   }
   
   // Find the result with the best chi square (smaller values are better matches)
   auto best_result_pair = std::min_element(result_map.begin(), result_map.end(),
-          [](const std::pair<const std::string, result_type>& first,
-             const std::pair<const std::string, result_type>& second) {
+          [](const std::pair<const std::string, PhzDataModel::SourceResults>& first,
+             const std::pair<const std::string, PhzDataModel::SourceResults>& second) {
                  return first.second.getResult<PhzDataModel::SourceResultType::BEST_MODEL_CHI_SQUARE>()
                         < second.second.getResult<PhzDataModel::SourceResultType::BEST_MODEL_CHI_SQUARE>();
           });
@@ -177,7 +177,7 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
   auto scale_factor = best_result_pair->second.getResult<PhzDataModel::SourceResultType::SCALE_FACTOR>();
   auto best_model_chi_quare = best_result_pair->second.getResult<PhzDataModel::SourceResultType::BEST_MODEL_CHI_SQUARE>();
   
-  result_type result {};
+  PhzDataModel::SourceResults result {};
   result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(best_model_iter);
   result.setResult<PhzDataModel::SourceResultType::Z_1D_PDF>(std::move(final_1D_pdf));
   result.setResult<PhzDataModel::SourceResultType::LIKELIHOOD>(std::move(likelihood_map));

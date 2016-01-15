@@ -21,7 +21,7 @@ SingleGridPhzFunctor::SingleGridPhzFunctor(const PhzDataModel::PhotometryGrid& p
           m_best_fit_search_func{std::move(best_fit_search_func)} {
 }
 
-auto SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) const -> result_type {
+PhzDataModel::SourceResults SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) const {
   
   // Calculate the likelihood over all the models
   auto likelihood_res = m_likelihood_func(source_phot, m_phot_grid);
@@ -64,7 +64,7 @@ auto SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
   };
   
   // Return the result
-  result_type result {};
+  PhzDataModel::SourceResults result {};
   result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(best_fit_result);
   result.setResult<PhzDataModel::SourceResultType::Z_1D_PDF>(std::move(pdf_1D));
   result.setResult<PhzDataModel::SourceResultType::LIKELIHOOD>(std::move(likelihood_map));

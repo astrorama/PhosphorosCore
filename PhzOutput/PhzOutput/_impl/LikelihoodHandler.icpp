@@ -63,7 +63,7 @@ void addAxis(const string& filename, const string& region_name,
 
 template<PhzDataModel::SourceResultType T>
 void LikelihoodHandler<T>::handleSourceOutput(const SourceCatalog::Source& source,
-                                              const result_type& results) {
+                                              const PhzDataModel::SourceResults& results) {
   std::string id = std::to_string(source.getId());
   std::string filename = (m_out_dir/(id+".fits")).string();
   fs::remove(filename);

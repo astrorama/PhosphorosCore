@@ -37,7 +37,6 @@ class SourcePhzFunctor {
 
 public:
 
-  using result_type = PhzOutput::OutputHandler::result_type;
   using LikelihoodGridFunction = SingleGridPhzFunctor::LikelihoodGridFunction;
   using BestFitSearchFunction = SingleGridPhzFunctor::BestFitSearchFunction;
   using MarginalizationFunction = SingleGridPhzFunctor::MarginalizationFunction;
@@ -85,7 +84,7 @@ public:
    * @return
    *    The PHZ results for the given source
    */
-  result_type operator()(const SourceCatalog::Photometry& source_phot) const;
+  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot) const;
 
 private:
 

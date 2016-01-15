@@ -29,8 +29,6 @@ namespace PhzLikelihood {
 class SingleGridPhzFunctor {
   
 public:
-
-  typedef PhzOutput::OutputHandler::result_type result_type;
   
   /**
    * Definition of the functor for calculating the likelihood grid. It is a
@@ -105,7 +103,7 @@ public:
    * @return
    *    The PHZ results for the given source
    */
-  result_type operator()(const SourceCatalog::Photometry& source_phot) const;
+  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot) const;
   
 private:
   

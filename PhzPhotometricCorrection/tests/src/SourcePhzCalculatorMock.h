@@ -35,10 +35,10 @@ public:
       }
 
   MOCK_METHOD1(FunctorCall,
-      PhzLikelihood::SourcePhzFunctor::result_type*(const SourceCatalog::Photometry& source_phot));
+      PhzDataModel::SourceResults*(const SourceCatalog::Photometry& source_phot));
 
-  PhzLikelihood::SourcePhzFunctor::result_type operator()(const SourceCatalog::Photometry& source_phot){
-    std::unique_ptr< PhzLikelihood::SourcePhzFunctor::result_type> res(FunctorCall(source_phot));
+  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot){
+    std::unique_ptr< PhzDataModel::SourceResults> res(FunctorCall(source_phot));
     return std::move(*res);
   }
 
@@ -49,7 +49,7 @@ public:
     std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
     posterior_map.emplace(std::make_pair(std::string(""),
               PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{}))));
-    PhzLikelihood::SourcePhzFunctor::result_type result {};
+    PhzDataModel::SourceResults result {};
     result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(m_phot_grid.begin());
     result.setResult<PhzDataModel::SourceResultType::Z_1D_PDF>(PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}});
     result.setResult<PhzDataModel::SourceResultType::LIKELIHOOD>(std::move(likelihood_map));
@@ -58,7 +58,7 @@ public:
     result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_CHI_SQUARE>(0);
     result.setResult<PhzDataModel::SourceResultType::BEST_CHI_SQUARE_MAP>(std::map<std::string, double>{});
     EXPECT_CALL(*this, FunctorCall(_)).WillOnce(Return(
-        new PhzLikelihood::SourcePhzFunctor::result_type {result}
+        new PhzDataModel::SourceResults {result}
     ));
   };
 

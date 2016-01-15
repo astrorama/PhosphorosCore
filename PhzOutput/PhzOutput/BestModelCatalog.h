@@ -29,7 +29,7 @@ public:
   virtual ~BestModelCatalog();
   
   void handleSourceOutput(const SourceCatalog::Source& source,
-                          const result_type& results);
+                          const PhzDataModel::SourceResults& results);
   
 private:
   

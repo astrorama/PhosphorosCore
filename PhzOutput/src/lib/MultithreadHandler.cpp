@@ -40,7 +40,8 @@ MultithreadHandler::MultithreadHandler(PhzOutput::OutputHandler& handler, std::a
   }
 }
 
-void MultithreadHandler::handleSourceOutput(const SourceCatalog::Source& source, const result_type& results) {
+void MultithreadHandler::handleSourceOutput(const SourceCatalog::Source& source,
+                                            const PhzDataModel::SourceResults& results) {
   if (PhzUtils::getStopThreadsFlag()) {
     throw Elements::Exception() << "Stopped by the user";
   }

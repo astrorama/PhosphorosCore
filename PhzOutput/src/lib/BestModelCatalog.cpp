@@ -37,7 +37,7 @@ BestModelCatalog::~BestModelCatalog() {
 }
 
 void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
-                                          const result_type& results) {
+                                          const PhzDataModel::SourceResults& results) {
   auto& best_model = results.getResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
   auto sed = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
   int64_t sed_index = best_model.axisIndex<PhzDataModel::ModelParameter::SED>() + 1;
