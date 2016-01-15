@@ -47,7 +47,7 @@ void PdfOutput::handleSourceOutput(const SourceCatalog::Source& source,
 
   // Transfer pdf data to rows
   std::vector<Table::Row> row_list {};
-  auto& pdf = std::get<1>(results);
+  auto& pdf = results.getResult<PhzDataModel::SourceResultType::Z_1D_PDF>();
   for (auto iter=pdf.begin(); iter!=pdf.end(); ++iter) {
 	  row_list.push_back(Table::Row{{iter.axisValue<0>(), *iter}, column_info});
   }

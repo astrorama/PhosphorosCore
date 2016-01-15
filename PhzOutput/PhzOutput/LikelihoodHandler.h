@@ -8,12 +8,13 @@
 #define	PHZOUTPUT_LIKELIHOODHANDLER_H
 
 #include <boost/filesystem.hpp>
+#include "PhzDataModel/SourceResults.h"
 #include "PhzOutput/OutputHandler.h"
 
 namespace Euclid {
 namespace PhzOutput {
 
-template<int TupleIndex>
+template<PhzDataModel::SourceResultType T>
 class LikelihoodHandler : public OutputHandler {
 
 public:

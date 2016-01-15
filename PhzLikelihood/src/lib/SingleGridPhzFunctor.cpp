@@ -64,13 +64,15 @@ auto SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
   };
   
   // Return the result
-  return result_type{best_fit_result,
-                     std::move(pdf_1D),
-                     std::move(likelihood_map),
-                     std::move(posterior_map),
-                     *scale_factor_result,
-                     best_chi_square,
-                     std::move(best_chi2_map)};
+  result_type result {};
+  result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(best_fit_result);
+  result.setResult<PhzDataModel::SourceResultType::Z_1D_PDF>(std::move(pdf_1D));
+  result.setResult<PhzDataModel::SourceResultType::LIKELIHOOD>(std::move(likelihood_map));
+  result.setResult<PhzDataModel::SourceResultType::POSTERIOR>(std::move(posterior_map));
+  result.setResult<PhzDataModel::SourceResultType::SCALE_FACTOR>(*scale_factor_result);
+  result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_CHI_SQUARE>(best_chi_square);
+  result.setResult<PhzDataModel::SourceResultType::BEST_CHI_SQUARE_MAP>(std::move(best_chi2_map));
+  return result;
 }
 
 } // end of namespace PhzLikelihood

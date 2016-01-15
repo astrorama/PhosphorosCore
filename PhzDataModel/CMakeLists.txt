@@ -36,4 +36,7 @@ elements_add_unit_test(QualifiedNameSerialization_test tests/src/serialization/Q
 elements_add_unit_test(QualifiedNameGroupManager_test tests/src/QualifiedNameGroupManager_test.cpp 
                      LINK_LIBRARIES PhzDataModel
                      TYPE Boost)
+elements_add_unit_test(SourceResults_test tests/src/SourceResults_test.cpp 
+                     LINK_LIBRARIES PhzDataModel
+                     TYPE Boost)
 

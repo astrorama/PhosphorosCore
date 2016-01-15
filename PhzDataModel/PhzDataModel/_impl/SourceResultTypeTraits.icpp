@@ -1,0 +1,91 @@
+/*
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment    
+ *  
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free 
+ * Software Foundation; either version 3.0 of the License, or (at your option)  
+ * any later version.  
+ *  
+ * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
+ * details.  
+ *  
+ * You should have received a copy of the GNU Lesser General Public License 
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
+ */
+
+/* 
+ * @file SourceResultTypeTraits.icpp
+ * @author nikoapos
+ */
+
+#include <type_traits>
+#include <map>
+#include <string>
+#include "PhzDataModel/PhotometryGrid.h"
+#include "PhzDataModel/Pdf1D.h"
+#include "PhzDataModel/LikelihoodGrid.h"
+
+namespace Euclid {
+namespace PhzDataModel {
+
+
+template <SourceResultType T, typename>
+struct SourceResultTypeTraits {
+  // The T != T is used because the static assert must use a template parameter,
+  // otherwise it will be executed even without template instantiation.
+  static_assert(T != T,
+      "READ THE MESSAGE BELLOW!!!\n\n"
+      "If you get this message you added a new entry to the SourceResultType\n"
+      "enumeration without specifying the SourceResultTypeTraits which handles\n"
+      "it. Read the documentation in PhzDataModel/_impl/SourceResultTypeTraits.icpp\n"
+      "file to understand the steps for fixing your problem.\n");
+};
+
+
+template <SourceResultType T>
+struct SourceResultTypeTraits<T, typename std::enable_if<
+                                    T == SourceResultType::SCALE_FACTOR ||
+                                    T == SourceResultType::BEST_MODEL_CHI_SQUARE
+                             >::type> {
+  using type = double;
+};
+
+
+template <SourceResultType T>
+struct SourceResultTypeTraits<T, typename std::enable_if<
+                                    T == SourceResultType::BEST_MODEL_ITERATOR
+                             >::type> {
+  using type = PhotometryGrid::const_iterator;
+};
+
+
+template <SourceResultType T>
+struct SourceResultTypeTraits<T, typename std::enable_if<
+                                    T == SourceResultType::BEST_CHI_SQUARE_MAP
+                             >::type> {
+  using type = std::map<std::string, double>;
+};
+
+
+template <SourceResultType T>
+struct SourceResultTypeTraits<T, typename std::enable_if<
+                                    T == SourceResultType::Z_1D_PDF
+                             >::type> {
+  using type = PhzDataModel::Pdf1D;
+};
+
+
+template <SourceResultType T>
+struct SourceResultTypeTraits<T, typename std::enable_if<
+                                    T == SourceResultType::LIKELIHOOD ||
+                                    T == SourceResultType::POSTERIOR
+                             >::type> {
+  using type = std::map<std::string, LikelihoodGrid>;
+};
+
+
+} /* namespace PhzDataModel */
+} /* namespace Euclid */

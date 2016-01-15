@@ -49,14 +49,16 @@ public:
     std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
     posterior_map.emplace(std::make_pair(std::string(""),
               PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{}))));
+    PhzLikelihood::SourcePhzFunctor::result_type result {};
+    result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(m_phot_grid.begin());
+    result.setResult<PhzDataModel::SourceResultType::Z_1D_PDF>(PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}});
+    result.setResult<PhzDataModel::SourceResultType::LIKELIHOOD>(std::move(likelihood_map));
+    result.setResult<PhzDataModel::SourceResultType::POSTERIOR>(std::move(posterior_map));
+    result.setResult<PhzDataModel::SourceResultType::SCALE_FACTOR>(0);
+    result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_CHI_SQUARE>(0);
+    result.setResult<PhzDataModel::SourceResultType::BEST_CHI_SQUARE_MAP>(std::map<std::string, double>{});
     EXPECT_CALL(*this, FunctorCall(_)).WillOnce(Return(
-        new PhzLikelihood::SourcePhzFunctor::result_type{
-          m_phot_grid.begin(),
-          PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}},
-          std::move(likelihood_map), std::move(posterior_map),
-          0, 0, std::map<std::string, double>{}
-
-        }
+        new PhzLikelihood::SourcePhzFunctor::result_type {result}
     ));
   };
 
