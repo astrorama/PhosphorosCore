@@ -10,18 +10,20 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
-SingleGridPhzFunctor::SingleGridPhzFunctor(const PhzDataModel::PhotometryGrid& phot_grid,
+SingleGridPhzFunctor::SingleGridPhzFunctor(const std::string& region_name,
+                                           const PhzDataModel::PhotometryGrid& phot_grid,
                                            std::vector<PriorFunction> priors,
                                            MarginalizationFunction marginalization_func,
                                            LikelihoodGridFunction likelihood_func,
                                            BestFitSearchFunction best_fit_search_func)
-        : m_phot_grid(phot_grid), m_priors{std::move(priors)},
+        : m_region_name{region_name}, m_phot_grid(phot_grid), m_priors{std::move(priors)},
           m_marginalization_func{std::move(marginalization_func)},
           m_likelihood_func{std::move(likelihood_func)},
           m_best_fit_search_func{std::move(best_fit_search_func)} {
 }
 
-PhzDataModel::SourceResults SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) const {
+void SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_phot,
+                                      PhzDataModel::SourceResults& results) const {
   
   // Calculate the likelihood over all the models
   auto likelihood_res = m_likelihood_func(source_phot, m_phot_grid);
@@ -50,30 +52,21 @@ PhzDataModel::SourceResults SingleGridPhzFunctor::operator()(const SourceCatalog
   // Calculate the 1D PDF
   auto pdf_1D = m_marginalization_func(posterior_grid);
   
-  // Create the porsterior map to return
-  std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
-  posterior_map.emplace(std::make_pair(std::string{""}, std::move(posterior_grid)));
-
-  // Create the likelihood map to return
-  std::map<std::string, PhzDataModel::LikelihoodGrid> likelihood_map {};
-  likelihood_map.emplace(std::make_pair(std::string{""}, std::move(likelihood_grid)));
-  
-  // Create the best_chi_square map
-  std::map<std::string, double> best_chi2_map {
-    {"", best_chi_square}
-  };
-  
-  // Return the result
-  PhzDataModel::SourceResults result {};
-  result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(best_fit_result);
-  result.setResult<PhzDataModel::SourceResultType::Z_1D_PDF>(std::move(pdf_1D));
-  result.setResult<PhzDataModel::SourceResultType::LIKELIHOOD>(std::move(likelihood_map));
-  result.setResult<PhzDataModel::SourceResultType::POSTERIOR>(std::move(posterior_map));
-  result.setResult<PhzDataModel::SourceResultType::SCALE_FACTOR>(*scale_factor_result);
-  result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_CHI_SQUARE>(best_chi_square);
-  result.setResult<PhzDataModel::SourceResultType::BEST_CHI_SQUARE_MAP>(std::move(best_chi2_map));
-  return result;
+  // Add the results to the SourceResults object
+  results.getResult<PhzDataModel::SourceResultType::REGION_NAMES>().emplace_back(m_region_name);
+  results.getResult<PhzDataModel::SourceResultType::REGION_BEST_MODEL_ITERATOR>().emplace(
+                std::make_pair(m_region_name, best_fit_result));
+  results.getResult<PhzDataModel::SourceResultType::REGION_Z_1D_PDF>().emplace(
+                std::make_pair(m_region_name, std::move(pdf_1D)));
+  results.getResult<PhzDataModel::SourceResultType::REGION_LIKELIHOOD>().emplace(
+                std::make_pair(m_region_name, std::move(likelihood_grid)));
+  results.getResult<PhzDataModel::SourceResultType::REGION_POSTERIOR>().emplace(
+                std::make_pair(m_region_name, std::move(posterior_grid)));
+  results.getResult<PhzDataModel::SourceResultType::REGION_BEST_MODEL_SCALE_FACTOR>().emplace(
+                std::make_pair(m_region_name, *scale_factor_result));
+  results.getResult<PhzDataModel::SourceResultType::REGION_BEST_MODEL_CHI_SQUARE>().emplace(
+                std::make_pair(m_region_name, best_chi_square));
 }
-
+  
 } // end of namespace PhzLikelihood
 } // end of namespace Euclid

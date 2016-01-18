@@ -278,11 +278,11 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
   }
   if (m_likelihood_flag) {
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::LikelihoodHandler<PhzDataModel::SourceResultType::LIKELIHOOD> {m_out_likelihood_dir.string()}});
+        new PhzOutput::LikelihoodHandler<PhzDataModel::SourceResultType::REGION_LIKELIHOOD> {m_out_likelihood_dir.string()}});
   }
   if (m_posterior_flag) {
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::LikelihoodHandler<PhzDataModel::SourceResultType::POSTERIOR> {m_out_posterior_dir}});
+        new PhzOutput::LikelihoodHandler<PhzDataModel::SourceResultType::REGION_POSTERIOR> {m_out_posterior_dir}});
   }
             
   return output_handler;

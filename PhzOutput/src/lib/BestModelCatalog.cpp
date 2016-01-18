@@ -44,7 +44,7 @@ void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
   auto reddening_curve = best_model.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>().qualifiedName();
   auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
   auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
-  auto scale = results.getResult<PhzDataModel::SourceResultType::SCALE_FACTOR>();
+  auto scale = results.getResult<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>();
   auto likelihood = results.getResult<PhzDataModel::SourceResultType::BEST_MODEL_CHI_SQUARE>();
   auto& pdf_1d = results.getResult<PhzDataModel::SourceResultType::Z_1D_PDF>();
   auto pdf_1d_peak_z = std::max_element(pdf_1d.begin(), pdf_1d.end()).axisValue<0>();

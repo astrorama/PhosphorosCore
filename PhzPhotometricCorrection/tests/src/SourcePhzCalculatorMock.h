@@ -52,11 +52,11 @@ public:
     PhzDataModel::SourceResults result {};
     result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(m_phot_grid.begin());
     result.setResult<PhzDataModel::SourceResultType::Z_1D_PDF>(PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}});
-    result.setResult<PhzDataModel::SourceResultType::LIKELIHOOD>(std::move(likelihood_map));
-    result.setResult<PhzDataModel::SourceResultType::POSTERIOR>(std::move(posterior_map));
-    result.setResult<PhzDataModel::SourceResultType::SCALE_FACTOR>(0);
+    result.setResult<PhzDataModel::SourceResultType::REGION_LIKELIHOOD>(std::move(likelihood_map));
+    result.setResult<PhzDataModel::SourceResultType::REGION_POSTERIOR>(std::move(posterior_map));
+    result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>(0);
     result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_CHI_SQUARE>(0);
-    result.setResult<PhzDataModel::SourceResultType::BEST_CHI_SQUARE_MAP>(std::map<std::string, double>{});
+    result.setResult<PhzDataModel::SourceResultType::REGION_BEST_MODEL_CHI_SQUARE>(std::map<std::string, double>{});
     EXPECT_CALL(*this, FunctorCall(_)).WillOnce(Return(
         new PhzDataModel::SourceResults {result}
     ));

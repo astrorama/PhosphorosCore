@@ -68,7 +68,7 @@ void LikelihoodHandler<T>::handleSourceOutput(const SourceCatalog::Source& sourc
   std::string filename = (m_out_dir/(id+".fits")).string();
   fs::remove(filename);
   auto& posteriors_map = results.getResult<T>();
-  auto& best_chi2_map = results.getResult<PhzDataModel::SourceResultType::BEST_CHI_SQUARE_MAP>();
+  auto& best_chi2_map = results.getResult<PhzDataModel::SourceResultType::REGION_BEST_MODEL_CHI_SQUARE>();
   
   for (auto& pair : posteriors_map) {
     // Create the first HDU with the array. We do that in a scope so the file is

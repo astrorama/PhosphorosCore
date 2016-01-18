@@ -23,6 +23,7 @@
 
 #include <type_traits>
 #include <map>
+#include <vector>
 #include <string>
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/Pdf1D.h"
@@ -47,10 +48,9 @@ struct SourceResultTypeTraits {
 
 template <SourceResultType T>
 struct SourceResultTypeTraits<T, typename std::enable_if<
-                                    T == SourceResultType::SCALE_FACTOR ||
-                                    T == SourceResultType::BEST_MODEL_CHI_SQUARE
+                                    T == SourceResultType::REGION_NAMES
                              >::type> {
-  using type = double;
+  using type = std::vector<std::string>;
 };
 
 
@@ -64,7 +64,25 @@ struct SourceResultTypeTraits<T, typename std::enable_if<
 
 template <SourceResultType T>
 struct SourceResultTypeTraits<T, typename std::enable_if<
-                                    T == SourceResultType::BEST_CHI_SQUARE_MAP
+                                    T == SourceResultType::REGION_BEST_MODEL_ITERATOR
+                             >::type> {
+  using type = std::map<std::string, PhotometryGrid::const_iterator>;
+};
+
+
+template <SourceResultType T>
+struct SourceResultTypeTraits<T, typename std::enable_if<
+                                    T == SourceResultType::BEST_MODEL_SCALE_FACTOR ||
+                                    T == SourceResultType::BEST_MODEL_CHI_SQUARE
+                             >::type> {
+  using type = double;
+};
+
+
+template <SourceResultType T>
+struct SourceResultTypeTraits<T, typename std::enable_if<
+                                    T == SourceResultType::REGION_BEST_MODEL_CHI_SQUARE ||
+                                    T == SourceResultType::REGION_BEST_MODEL_SCALE_FACTOR
                              >::type> {
   using type = std::map<std::string, double>;
 };
@@ -80,8 +98,16 @@ struct SourceResultTypeTraits<T, typename std::enable_if<
 
 template <SourceResultType T>
 struct SourceResultTypeTraits<T, typename std::enable_if<
-                                    T == SourceResultType::LIKELIHOOD ||
-                                    T == SourceResultType::POSTERIOR
+                                    T == SourceResultType::REGION_Z_1D_PDF
+                             >::type> {
+  using type = std::map<std::string, PhzDataModel::Pdf1D>;
+};
+
+
+template <SourceResultType T>
+struct SourceResultTypeTraits<T, typename std::enable_if<
+                                    T == SourceResultType::REGION_LIKELIHOOD ||
+                                    T == SourceResultType::REGION_POSTERIOR
                              >::type> {
   using type = std::map<std::string, LikelihoodGrid>;
 };

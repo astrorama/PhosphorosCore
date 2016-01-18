@@ -35,20 +35,32 @@ namespace PhzDataModel {
 
 /// An enumeration representing the available PHZ source results
 enum class SourceResultType {
-  /// An iterator pointing to the model photometry which is the best match
+  /// The names of the parameter space regions
+  REGION_NAMES,
+  /// An map containing the the iterators to the best match model photometries
+  /// for each parameter space region
+  REGION_BEST_MODEL_ITERATOR,
+  /// An iterator pointing to the model photometry which is the overall best match
   BEST_MODEL_ITERATOR,
+  /// A map containing the grids representing the 1D PDF over the redshift for
+  /// each parameter space region
+  REGION_Z_1D_PDF,
   /// A grid representing the 1D PDF over the redshift
   Z_1D_PDF,
-  /// A map containing the likelihood (before priors) for all parameter space regions
-  LIKELIHOOD,
-  /// A map containing the posterior for all parameter space regions
-  POSTERIOR,
-  /// A double with the value of the alpha scale factor used for the fitting
-  SCALE_FACTOR,
-  /// A double with the chi square value of the best fitted model
-  BEST_MODEL_CHI_SQUARE,
+  /// A map containing the likelihood (before priors) for each parameter space region
+  REGION_LIKELIHOOD,
+  /// A map containing the posterior for each parameter space region
+  REGION_POSTERIOR,
+  /// A map containing the scale factor of the best match model photometry
+  /// for each parameter space region
+  REGION_BEST_MODEL_SCALE_FACTOR,
+  /// A double with the value of the scale factor of the overall best match
+  /// model photometry
+  BEST_MODEL_SCALE_FACTOR,
   /// A map containing the best chi square for each parameter space region
-  BEST_CHI_SQUARE_MAP
+  REGION_BEST_MODEL_CHI_SQUARE,
+  /// A double with the chi square value of the overall best fitted model
+  BEST_MODEL_CHI_SQUARE
 };
 
 
@@ -70,11 +82,14 @@ public:
    */
   virtual ~SourceResults() = default;
   
-  template <SourceResultType T>
-  void setResult(typename SourceResultTypeTraits<T>::type result);
+  template <SourceResultType T, typename... Args>
+  typename SourceResultTypeTraits<T>::type& setResult(Args&&... args);
   
   template <SourceResultType T>
   const typename SourceResultTypeTraits<T>::type& getResult() const;
+  
+  template <SourceResultType T>
+  typename SourceResultTypeTraits<T>::type& getResult();
 
 private:
   

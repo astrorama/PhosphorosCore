@@ -27,13 +27,30 @@
 namespace Euclid {
 namespace PhzDataModel {
 
-template<SourceResultType T>
-void SourceResults::setResult(typename SourceResultTypeTraits<T>::type result) {
-  result_map[T] = std::make_shared<typename SourceResultTypeTraits<T>::type>(std::move(result));
+template<SourceResultType T, typename... Args>
+typename SourceResultTypeTraits<T>::type& SourceResults::setResult(Args&&... args) {
+  if (result_map.find(T) != result_map.end()) {
+    throw Elements::Exception() << "SourceResults instance already contains the "
+                  << "result with SourceResultType = " 
+                  << static_cast<std::underlying_type<SourceResultType>::type>(T);
+  }
+  result_map[T] = std::make_shared<typename SourceResultTypeTraits<T>::type>(std::forward<Args>(args)...);
+  return getResult<T>();
 }
 
 template<SourceResultType T>
 const typename SourceResultTypeTraits<T>::type& SourceResults::getResult() const {
+  auto result_iter = result_map.find(T);
+  if (result_iter == result_map.end()) {
+    throw Elements::Exception() << "SourceResults instance does not contain the "
+                  << "result with SourceResultType = " 
+                  << static_cast<std::underlying_type<SourceResultType>::type>(T);
+  }
+  return *boost::any_cast<std::shared_ptr<typename SourceResultTypeTraits<T>::type>>(result_iter->second);
+}
+
+template<SourceResultType T>
+typename SourceResultTypeTraits<T>::type& SourceResults::getResult() {
   auto result_iter = result_map.find(T);
   if (result_iter == result_map.end()) {
     throw Elements::Exception() << "SourceResults instance does not contain the "

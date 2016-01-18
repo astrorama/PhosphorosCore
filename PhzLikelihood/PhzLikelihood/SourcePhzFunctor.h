@@ -9,6 +9,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzLikelihood/SingleGridPhzFunctor.h"
 
@@ -89,7 +90,7 @@ public:
 private:
 
   PhzDataModel::PhotometricCorrectionMap m_phot_corr_map;
-  std::map<std::string, SingleGridPhzFunctor> m_single_grid_functor_map;
+  std::vector<SingleGridPhzFunctor> m_single_grid_functor_list {};
 
 };
 
