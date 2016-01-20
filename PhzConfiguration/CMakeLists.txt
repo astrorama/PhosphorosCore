@@ -114,3 +114,9 @@ elements_add_unit_test(VolumePriorConfig_test tests/src/VolumePriorConfig_test.c
 elements_add_unit_test(MultithreadConfig_test tests/src/MultithreadConfig_test.cpp 
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(AxisFunctionPriorConfig_test tests/src/AxisFunctionPriorConfig_test.cpp 
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
+elements_add_unit_test(AxisFunctionPriorProviderConfig_test tests/src/AxisFunctionPriorProviderConfig_test.cpp 
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
