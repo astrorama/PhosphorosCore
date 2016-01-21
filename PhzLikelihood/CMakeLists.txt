@@ -56,6 +56,9 @@ elements_add_unit_test(VolumePrior_test tests/src/VolumePrior_test.cpp
 elements_add_unit_test(AxisFunctionPrior_test tests/src/AxisFunctionPrior_test.cpp 
                      LINK_LIBRARIES PhzLikelihood
                      TYPE Boost)
+elements_add_unit_test(AxisWeightPrior_test tests/src/AxisWeightPrior_test.cpp 
+                     LINK_LIBRARIES PhzLikelihood
+                     TYPE Boost)
 
 
 endif(GMOCK_FOUND)

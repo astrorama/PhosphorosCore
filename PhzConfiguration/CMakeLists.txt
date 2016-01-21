@@ -120,3 +120,6 @@ elements_add_unit_test(AxisFunctionPriorConfig_test tests/src/AxisFunctionPriorC
 elements_add_unit_test(AxisFunctionPriorProviderConfig_test tests/src/AxisFunctionPriorProviderConfig_test.cpp 
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(AxisWeightPriorConfig_test tests/src/AxisWeightPriorConfig_test.cpp 
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)

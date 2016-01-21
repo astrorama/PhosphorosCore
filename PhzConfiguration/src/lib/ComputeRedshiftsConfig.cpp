@@ -45,6 +45,7 @@
 #include "PhzConfiguration/VolumePriorConfig.h"
 #include "PhzConfiguration/MultithreadConfig.h"
 #include "PhzConfiguration/AxisFunctionPriorConfig.h"
+#include "PhzConfiguration/AxisWeightPriorConfig.h"
 #include "PhzOutput/BestModelCatalog.h"
 
 #include "PhzOutput/BestModelCatalog.h"
@@ -92,6 +93,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<VolumePriorConfig>();
   declareDependency<MultithreadConfig>();
   declareDependency<AxisFunctionPriorConfig>();
+  declareDependency<AxisWeightPriorConfig>();
 }
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
