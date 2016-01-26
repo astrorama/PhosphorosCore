@@ -34,6 +34,11 @@ public:
    * @param prior a shared_ptr on the prior to be adapted.
    */
   SharedPriorAdapter(std::shared_ptr<Prior> prior);
+  
+  /// Convenient factory, which creates an instance of the prior to be
+  /// addapted by perfect forwarding the given arguments
+  template <typename... PriorArgs>
+  static SharedPriorAdapter<Prior> factory(PriorArgs&&... prior_args);
 
   /**
    * @brief destructor

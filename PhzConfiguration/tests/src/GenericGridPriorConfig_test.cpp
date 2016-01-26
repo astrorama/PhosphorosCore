@@ -17,45 +17,31 @@
  */  
 
 /**
- * @file PhzConfiguration/AxisWeightPriorConfig.h
- * @date 01/21/16
+ * @file tests/src/GenericGridPriorConfig_test.cpp
+ * @date 01/22/16
  * @author nikoapos
  */
 
-#ifndef _PHZCONFIGURATION_AXISWEIGHTPRIORCONFIG_H
-#define _PHZCONFIGURATION_AXISWEIGHTPRIORCONFIG_H
+#include <boost/test/unit_test.hpp>
 
-#include "Configuration/Configuration.h"
+#include "PhzConfiguration/GenericGridPriorConfig.h"
 
-namespace Euclid {
-namespace PhzConfiguration {
+using namespace Euclid::PhzConfiguration;
 
-/**
- * @class AxisWeightPriorConfig
- * @brief
- *
- */
-class AxisWeightPriorConfig : public Configuration::Configuration {
+//-----------------------------------------------------------------------------
 
-public:
-  
-  AxisWeightPriorConfig(long manager_id);
+BOOST_AUTO_TEST_SUITE (GenericGridPriorConfig_test)
 
-  /**
-   * @brief Destructor
-   */
-  virtual ~AxisWeightPriorConfig() = default;
-  
-  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
+//-----------------------------------------------------------------------------
 
-  void preInitialize(const UserValues& args) override;
+BOOST_AUTO_TEST_CASE( example_test ) {
 
-  void initialize(const UserValues& args) override;
+  BOOST_FAIL("!!!! Please implement your tests !!!!");
 
-}; /* End of AxisWeightPriorConfig class */
+}
 
-} /* namespace PhzConfiguration */
-} /* namespace Euclid */
+//-----------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_SUITE_END ()
 
 
-#endif

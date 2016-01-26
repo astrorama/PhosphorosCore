@@ -17,44 +17,52 @@
  */  
 
 /**
- * @file PhzConfiguration/AxisWeightPriorConfig.h
- * @date 01/21/16
+ * @file PhzLikelihood/GenericGridPrior.h
+ * @date 01/22/16
  * @author nikoapos
  */
 
-#ifndef _PHZCONFIGURATION_AXISWEIGHTPRIORCONFIG_H
-#define _PHZCONFIGURATION_AXISWEIGHTPRIORCONFIG_H
+#ifndef _PHZLIKELIHOOD_GENERICGRIDPRIOR_H
+#define _PHZLIKELIHOOD_GENERICGRIDPRIOR_H
 
-#include "Configuration/Configuration.h"
+#include <vector>
+#include "SourceCatalog/SourceAttributes/Photometry.h"
+#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/PhotometryGrid.h"
+#include "PhzDataModel/ScaleFactorGrid.h"
+#include "PhzDataModel/PriorGrid.h"
 
 namespace Euclid {
-namespace PhzConfiguration {
+namespace PhzLikelihood {
 
 /**
- * @class AxisWeightPriorConfig
+ * @class GenericGridPrior
  * @brief
  *
  */
-class AxisWeightPriorConfig : public Configuration::Configuration {
+class GenericGridPrior {
 
 public:
   
-  AxisWeightPriorConfig(long manager_id);
+  GenericGridPrior(std::vector<PhzDataModel::PriorGrid> prior_grid_list);
 
   /**
    * @brief Destructor
    */
-  virtual ~AxisWeightPriorConfig() = default;
+  virtual ~GenericGridPrior() = default;
+
+  void operator()(PhzDataModel::LikelihoodGrid& likelihood_grid,
+                  const SourceCatalog::Photometry&,
+                  const PhzDataModel::PhotometryGrid&,
+                  const PhzDataModel::ScaleFactordGrid&) const;
+
+private:
   
-  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
+  std::vector<PhzDataModel::PriorGrid> m_prior_grid_list;
 
-  void preInitialize(const UserValues& args) override;
+}; /* End of GenericGridPrior class */
 
-  void initialize(const UserValues& args) override;
-
-}; /* End of AxisWeightPriorConfig class */
-
-} /* namespace PhzConfiguration */
+} /* namespace PhzLikelihood */
 } /* namespace Euclid */
 
 

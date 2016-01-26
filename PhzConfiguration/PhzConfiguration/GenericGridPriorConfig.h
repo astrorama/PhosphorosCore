@@ -17,13 +17,13 @@
  */  
 
 /**
- * @file PhzConfiguration/AxisWeightPriorConfig.h
- * @date 01/21/16
+ * @file PhzConfiguration/GenericGridPriorConfig.h
+ * @date 01/22/16
  * @author nikoapos
  */
 
-#ifndef _PHZCONFIGURATION_AXISWEIGHTPRIORCONFIG_H
-#define _PHZCONFIGURATION_AXISWEIGHTPRIORCONFIG_H
+#ifndef _PHZCONFIGURATION_GENERICGRIDPRIORCONFIG_H
+#define _PHZCONFIGURATION_GENERICGRIDPRIORCONFIG_H
 
 #include "Configuration/Configuration.h"
 
@@ -31,28 +31,26 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 /**
- * @class AxisWeightPriorConfig
+ * @class GenericGridPriorConfig
  * @brief
  *
  */
-class AxisWeightPriorConfig : public Configuration::Configuration {
+class GenericGridPriorConfig : public Configuration::Configuration {
 
 public:
   
-  AxisWeightPriorConfig(long manager_id);
+  GenericGridPriorConfig(long manager_id);
 
   /**
    * @brief Destructor
    */
-  virtual ~AxisWeightPriorConfig() = default;
+  virtual ~GenericGridPriorConfig() = default;
   
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
-  void preInitialize(const UserValues& args) override;
-
   void initialize(const UserValues& args) override;
 
-}; /* End of AxisWeightPriorConfig class */
+}; /* End of GenericGridPriorConfig class */
 
 } /* namespace PhzConfiguration */
 } /* namespace Euclid */
