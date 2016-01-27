@@ -27,6 +27,7 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include <boost/archive/binary_iarchive.hpp>
+#include "GridContainer/serialize.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzConfiguration/LuminosityPriorConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
@@ -132,7 +133,7 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
      bia >> info;
 
      // Read grids from the file
-     auto grid = PhzDataModel::phzGridBinaryImport<PhzDataModel::PhotometryCellManager>(in);
+     auto grid = GridContainer::gridBinaryImport<PhzDataModel::PhotometryGrid>(in);
 
      // get the luminosity calculator
      m_luminosity_model_grid.reset(new PhzDataModel::PhotometryGrid{std::move(grid)});

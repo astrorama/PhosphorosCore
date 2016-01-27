@@ -76,20 +76,6 @@ ModelAxesTuple createAxesTuple(std::vector<double> zs, std::vector<double> ebvs,
 template<typename GridCellManager>
 using PhzGrid = typename GridContainer::GridContainer<GridCellManager, double, double, XYDataset::QualifiedName, XYDataset::QualifiedName>;
 
-/**
- * @brief Retrieves a PhzGrid from a binary stream.
- *
- * @param in
- * The istream containing the serialized PhzGrid.
- *
- * @return
- * The re-constructed PhzGrid.
- */
-template<typename GridCellManager>
-PhzGrid<GridCellManager> phzGridBinaryImport(std::istream& in) {
-  return GridContainer::gridBinaryImport<GridCellManager, double, double, XYDataset::QualifiedName, XYDataset::QualifiedName>(in);
-}
-
 }
 } // end of namespace Euclid
 

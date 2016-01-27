@@ -28,6 +28,7 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 
+#include "GridContainer/serialize.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 
 #include "PhzConfiguration/CatalogTypeConfig.h"
@@ -71,7 +72,7 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
   boost::archive::binary_iarchive bia {in};
   bia >> m_info;
   for (auto& pair : m_info.region_axes_map) {
-    m_grids.emplace(std::make_pair(pair.first, PhzDataModel::phzGridBinaryImport<PhzDataModel::PhotometryCellManager>(in)));
+    m_grids.emplace(std::make_pair(pair.first, GridContainer::gridBinaryImport<PhzDataModel::PhotometryGrid>(in)));
   }
 }
 
