@@ -44,6 +44,9 @@
 #include "PhzConfiguration/MarginalizationConfig.h"
 #include "PhzConfiguration/VolumePriorConfig.h"
 #include "PhzConfiguration/MultithreadConfig.h"
+#include "PhzConfiguration/AxisFunctionPriorConfig.h"
+#include "PhzConfiguration/AxisWeightPriorConfig.h"
+#include "PhzConfiguration/GenericGridPriorConfig.h"
 #include "PhzOutput/BestModelCatalog.h"
 
 #include "PhzOutput/BestModelCatalog.h"
@@ -90,6 +93,9 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<MarginalizationConfig>();
   declareDependency<VolumePriorConfig>();
   declareDependency<MultithreadConfig>();
+  declareDependency<AxisFunctionPriorConfig>();
+  declareDependency<AxisWeightPriorConfig>();
+  declareDependency<GenericGridPriorConfig>();
 }
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {

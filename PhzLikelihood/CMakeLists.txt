@@ -53,6 +53,14 @@ elements_add_unit_test(SharedPriorAdapter_test tests/src/SharedPriorAdapter_test
 elements_add_unit_test(VolumePrior_test tests/src/VolumePrior_test.cpp 
                      LINK_LIBRARIES PhzLikelihood
                      TYPE Boost)
-
+elements_add_unit_test(AxisFunctionPrior_test tests/src/AxisFunctionPrior_test.cpp 
+                     LINK_LIBRARIES PhzLikelihood
+                     TYPE Boost)
+elements_add_unit_test(AxisWeightPrior_test tests/src/AxisWeightPrior_test.cpp 
+                     LINK_LIBRARIES PhzLikelihood
+                     TYPE Boost)
+elements_add_unit_test(GenericGridPrior_test tests/src/GenericGridPrior_test.cpp 
+                     LINK_LIBRARIES PhzLikelihood
+                     TYPE Boost)
 
 endif(GMOCK_FOUND)
