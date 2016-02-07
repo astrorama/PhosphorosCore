@@ -29,13 +29,13 @@ void SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
   auto likelihood_res = m_likelihood_func(source_phot, m_phot_grid);
   PhzDataModel::LikelihoodGrid likelihood_grid {std::move(std::get<0>(likelihood_res))};
   PhzDataModel::ScaleFactordGrid scale_factor_grid {std::move(std::get<1>(likelihood_res))};
-  double best_chi_square = std::get<2>(likelihood_res);
+  double best_chi_square = -2. * std::get<2>(likelihood_res);
   
   // copy the likelihood Grid
   PhzDataModel::LikelihoodGrid posterior_grid{likelihood_grid.getAxesTuple()};
   std::copy(likelihood_grid.begin(), likelihood_grid.end(), posterior_grid.begin());
 
-  // Apply all the priors to the likelihood
+  // Apply all the priors to the posterior
   for (auto& prior : m_priors) {
     prior(posterior_grid, source_phot, m_phot_grid, scale_factor_grid);
   }
