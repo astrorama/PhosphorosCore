@@ -49,12 +49,23 @@ void SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
   auto scale_factor_result = scale_factor_grid.begin();
   scale_factor_result.fixAllAxes(best_fit);
   
-  // Scale the posterior to have peak at 1 and compute its best chi square
+  // Scale the posterior to have peak at 1 and compute its best chi square. Note that
+  // if the whole grid is zeroes we cannot scale it to one. In this case we set all
+  // the values to a very small value, so some other region will be picked up as the
+  // best one.
   double posterior_peak = *best_fit;
-  for (auto& v : posterior_grid) {
-    v = v / posterior_peak;
+  double posterior_norm_log = 0;
+  if (posterior_peak == 0) {
+    for (auto& v : posterior_grid) {
+      v = 1.;
+    }
+    posterior_norm_log = std::numeric_limits<double>::lowest();
+  } else {
+    for (auto& v : posterior_grid) {
+      v = v / posterior_peak;
+    }
+    posterior_norm_log = likelihood_norm_log + std::log(posterior_peak);
   }
-  double posterior_norm_log = likelihood_norm_log + std::log(posterior_peak);
   
   // Calculate the 1D PDF
   auto pdf_1D = m_marginalization_func(posterior_grid);
