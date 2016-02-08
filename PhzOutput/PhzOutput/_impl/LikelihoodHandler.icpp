@@ -18,8 +18,8 @@ namespace PhzOutput {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
-template<PhzDataModel::SourceResultType T>
-LikelihoodHandler<T>::LikelihoodHandler(boost::filesystem::path out_dir)
+template<PhzDataModel::SourceResultType GridMap, PhzDataModel::SourceResultType NormLogMap>
+LikelihoodHandler<GridMap, NormLogMap>::LikelihoodHandler(boost::filesystem::path out_dir)
           : m_out_dir{std::move(out_dir)} {
 
   // Check directory and write permissions
@@ -27,21 +27,22 @@ LikelihoodHandler<T>::LikelihoodHandler(boost::filesystem::path out_dir)
 
 }
 
-template<PhzDataModel::SourceResultType T>
-void LikelihoodHandler<T>::handleSourceOutput(const SourceCatalog::Source& source,
-                                              const PhzDataModel::SourceResults& results) {
+template<PhzDataModel::SourceResultType GridMap, PhzDataModel::SourceResultType NormLogMap>
+void LikelihoodHandler<GridMap, NormLogMap>::handleSourceOutput(
+                                          const SourceCatalog::Source& source,
+                                          const PhzDataModel::SourceResults& results) {
   std::string id = std::to_string(source.getId());
   std::string filename = (m_out_dir/(id+".fits")).string();
   fs::remove(filename);
-  auto& posteriors_map = results.getResult<T>();
-  auto& best_chi2_map = results.getResult<PhzDataModel::SourceResultType::REGION_POSTERIOR_NORM_LOG>();
+  auto& posteriors_map = results.getResult<GridMap>();
+  auto& norm_log_map = results.getResult<NormLogMap>();
   
   for (auto& pair : posteriors_map) {
     GridContainer::gridFitsExport(filename, pair.first, pair.second);
     CCfits::FITS fits (filename, CCfits::Write);
     auto& array_hdu = fits.extension(fits.extension().size() - pair.second.axisNumber());
     array_hdu.addKey("ID", source.getId(), "");
-    array_hdu.addKey("CHI2", best_chi2_map.at(pair.first), "");
+    array_hdu.addKey("NORM_LOG", norm_log_map.at(pair.first), "");
   }
   
   logger.debug() << "Created file " << filename << " for source " << id;
