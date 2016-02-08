@@ -34,7 +34,7 @@ void LikelihoodHandler<T>::handleSourceOutput(const SourceCatalog::Source& sourc
   std::string filename = (m_out_dir/(id+".fits")).string();
   fs::remove(filename);
   auto& posteriors_map = results.getResult<T>();
-  auto& best_chi2_map = results.getResult<PhzDataModel::SourceResultType::REGION_BEST_MODEL_CHI_SQUARE>();
+  auto& best_chi2_map = results.getResult<PhzDataModel::SourceResultType::REGION_POSTERIOR_NORM_LOG>();
   
   for (auto& pair : posteriors_map) {
     GridContainer::gridFitsExport(filename, pair.first, pair.second);

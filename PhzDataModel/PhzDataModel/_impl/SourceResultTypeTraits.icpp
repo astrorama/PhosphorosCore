@@ -81,7 +81,8 @@ struct SourceResultTypeTraits<T, typename std::enable_if<
 
 template <SourceResultType T>
 struct SourceResultTypeTraits<T, typename std::enable_if<
-                                    T == SourceResultType::REGION_BEST_MODEL_CHI_SQUARE ||
+                                    T == SourceResultType::REGION_LIKELIHOOD_NORM_LOG ||
+                                    T == SourceResultType::REGION_POSTERIOR_NORM_LOG ||
                                     T == SourceResultType::REGION_BEST_MODEL_SCALE_FACTOR
                              >::type> {
   using type = std::map<std::string, double>;

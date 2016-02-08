@@ -58,22 +58,22 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
 }
 
 static PhzDataModel::Pdf1D combine1DPdfs(const std::map<std::string, PhzDataModel::Pdf1D>& pdf_map,
-                                         const std::map<std::string, double>& chi_square_map) {
+                                         const std::map<std::string, double>& norm_log_map) {
   
   // All the likelihoods were shifted so the peak has value 1. This means that
   // the 1D PDFs are also shifted with the same constant. We get the constants
   // in such way so the region with the best chi square will have the multiplier 1
   std::map<std::string, double> factor_map {};
-  double min_chi_square = std::numeric_limits<double>::max();
-  for (auto& pair : chi_square_map) {
-    double chi_square = pair.second;
-    factor_map[pair.first] = chi_square;
-    if (chi_square < min_chi_square) {
-      min_chi_square = chi_square;
+  double max_norm_log = std::numeric_limits<double>::max();
+  for (auto& pair : norm_log_map) {
+    double norm_log = pair.second;
+    factor_map[pair.first] = norm_log;
+    if (norm_log < max_norm_log) {
+      max_norm_log = norm_log;
     }
   }
   for (auto& factor : factor_map) {
-    factor.second = std::exp(-.5 * (factor.second - min_chi_square));
+    factor.second = std::exp(factor.second - max_norm_log);
   }
   
   // Create the functions representing all the PDF results and initialize the
@@ -140,19 +140,20 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
   results.setResult<ResType::REGION_LIKELIHOOD>();
   results.setResult<ResType::REGION_POSTERIOR>();
   results.setResult<ResType::REGION_BEST_MODEL_SCALE_FACTOR>();
-  results.setResult<ResType::REGION_BEST_MODEL_CHI_SQUARE>();
+  results.setResult<ResType::REGION_LIKELIHOOD_NORM_LOG>();
+  results.setResult<ResType::REGION_POSTERIOR_NORM_LOG>();
   
   // Calculate the results for all the regions
   for (auto& func : m_single_grid_functor_list) {
     func(cor_source_phot, results);
   }
   
-  // Find the result with the best chi square (smaller values are better matches)
-  auto& chi_map = results.getResult<ResType::REGION_BEST_MODEL_CHI_SQUARE>();
-  auto& best_region = std::min_element(chi_map.begin(), chi_map.end(),
-          [] (std::remove_reference<decltype(chi_map)>::type::const_reference pair1,
-              std::remove_reference<decltype(chi_map)>::type::const_reference pair2) {
-            return pair1.second < pair2.second;
+  // Find the result region which contains the model with the best posterior
+  auto& posterior_norm_log_map = results.getResult<ResType::REGION_POSTERIOR_NORM_LOG>();
+  auto& best_region = std::max_element(posterior_norm_log_map.begin(), posterior_norm_log_map.end(),
+          [] (std::remove_reference<decltype(posterior_norm_log_map)>::type::const_reference pair1,
+              std::remove_reference<decltype(posterior_norm_log_map)>::type::const_reference pair2) {
+            return pair1.second > pair2.second;
           })->first;
           
   results.setResult<ResType::BEST_MODEL_ITERATOR>(
@@ -160,14 +161,14 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
           
   results.setResult<ResType::Z_1D_PDF>(combine1DPdfs(
                     results.getResult<ResType::REGION_Z_1D_PDF>(),
-                    results.getResult<ResType::REGION_BEST_MODEL_CHI_SQUARE>()
+                    results.getResult<ResType::REGION_POSTERIOR_NORM_LOG>()
           ));
           
   results.setResult<ResType::BEST_MODEL_SCALE_FACTOR>(
             results.getResult<ResType::REGION_BEST_MODEL_SCALE_FACTOR>().at(best_region));
           
   results.setResult<ResType::BEST_MODEL_CHI_SQUARE>(
-            results.getResult<ResType::REGION_BEST_MODEL_CHI_SQUARE>().at(best_region));
+            results.getResult<ResType::REGION_POSTERIOR_NORM_LOG>().at(best_region));
   
   return results;
 }

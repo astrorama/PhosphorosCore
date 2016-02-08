@@ -29,7 +29,7 @@ void SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
   auto likelihood_res = m_likelihood_func(source_phot, m_phot_grid);
   PhzDataModel::LikelihoodGrid likelihood_grid {std::move(std::get<0>(likelihood_res))};
   PhzDataModel::ScaleFactordGrid scale_factor_grid {std::move(std::get<1>(likelihood_res))};
-  double likelihood_best_chi_square = -2. * std::get<2>(likelihood_res);
+  double likelihood_norm_log = std::get<2>(likelihood_res);
   
   // copy the likelihood Grid
   PhzDataModel::LikelihoodGrid posterior_grid{likelihood_grid.getAxesTuple()};
@@ -54,7 +54,7 @@ void SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
   for (auto& v : posterior_grid) {
     v = v / posterior_peak;
   }
-  double posterior_best_chi_square = likelihood_best_chi_square - 2. * std::log(posterior_peak);
+  double posterior_norm_log = likelihood_norm_log + std::log(posterior_peak);
   
   // Calculate the 1D PDF
   auto pdf_1D = m_marginalization_func(posterior_grid);
@@ -71,8 +71,10 @@ void SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
                 std::make_pair(m_region_name, std::move(posterior_grid)));
   results.getResult<PhzDataModel::SourceResultType::REGION_BEST_MODEL_SCALE_FACTOR>().emplace(
                 std::make_pair(m_region_name, *scale_factor_result));
-  results.getResult<PhzDataModel::SourceResultType::REGION_BEST_MODEL_CHI_SQUARE>().emplace(
-                std::make_pair(m_region_name, posterior_best_chi_square));
+  results.getResult<PhzDataModel::SourceResultType::REGION_LIKELIHOOD_NORM_LOG>().emplace(
+                std::make_pair(m_region_name, likelihood_norm_log));
+  results.getResult<PhzDataModel::SourceResultType::REGION_POSTERIOR_NORM_LOG>().emplace(
+                std::make_pair(m_region_name, posterior_norm_log));
 }
   
 } // end of namespace PhzLikelihood

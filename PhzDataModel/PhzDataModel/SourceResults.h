@@ -57,8 +57,12 @@ enum class SourceResultType {
   /// A double with the value of the scale factor of the overall best match
   /// model photometry
   BEST_MODEL_SCALE_FACTOR,
-  /// A map containing the best chi square for each parameter space region
-  REGION_BEST_MODEL_CHI_SQUARE,
+  /// A map containing the natural logarithm of the normalization of the likelihood
+  /// grid for each parameter space region
+  REGION_LIKELIHOOD_NORM_LOG,
+  /// A map containing the natural logarithm of the normalization of the posterior
+  /// grid for each parameter space region
+  REGION_POSTERIOR_NORM_LOG,
   /// A double with the chi square value of the overall best fitted model
   BEST_MODEL_CHI_SQUARE
 };
