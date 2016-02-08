@@ -30,7 +30,6 @@ void SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
   PhzDataModel::LikelihoodGrid likelihood_grid {std::move(std::get<0>(likelihood_res))};
   PhzDataModel::ScaleFactordGrid scale_factor_grid {std::move(std::get<1>(likelihood_res))};
   double likelihood_norm_log = std::get<2>(likelihood_res);
-  std::cout << m_region_name << " likelihood log = " << likelihood_norm_log << '\n';
   
   // copy the likelihood Grid
   PhzDataModel::LikelihoodGrid posterior_grid{likelihood_grid.getAxesTuple()};
