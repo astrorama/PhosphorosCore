@@ -153,7 +153,7 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
   auto& best_region = std::max_element(posterior_norm_log_map.begin(), posterior_norm_log_map.end(),
           [] (std::remove_reference<decltype(posterior_norm_log_map)>::type::const_reference pair1,
               std::remove_reference<decltype(posterior_norm_log_map)>::type::const_reference pair2) {
-            return pair1.second > pair2.second;
+            return pair1.second < pair2.second;
           })->first;
           
   results.setResult<ResType::BEST_MODEL_ITERATOR>(
