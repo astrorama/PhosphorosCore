@@ -82,24 +82,28 @@ public:
    virtual const PhzDataModel::PhotometryGrid::const_iterator fixIterator(
        const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor) const = 0;
 
+   const XYDataset::QualifiedName& getLuminosityFilter(){
+       return m_luminosity_filter;
+   }
+
 protected:
-  
+
    std::shared_ptr<PhzDataModel::PhotometryGrid> m_model_photometry_grid;
-   
+
    std::size_t getEbvIndex(double ebv) const {
      return m_ebv_index_map.at(ebv);
    }
-   
+
    std::size_t getRedCurveIndex(const XYDataset::QualifiedName& red_curve) const {
      return m_red_curve_index_map.at(red_curve);
    }
-   
+
    std::size_t getSedIndex(const XYDataset::QualifiedName& sed) const {
      return m_sed_index_map.at(sed);
    }
-   
+
 private:
-  
+
    XYDataset::QualifiedName m_luminosity_filter;
    std::size_t m_luminosity_filter_index;
    std::map<double,double> m_luminosity_distance_map;
