@@ -35,7 +35,7 @@ public:
    * - A grid containing the Likelihood of each model, normalized so the maximum
    *   likelihood is 1
    * - A grid containing the scale factor of each model
-   * - A double with the smallest value of the chi square (before normalization)
+   * - A double with the natural logarithm of the normalization of the likelihood grid
    */
   using result_type = std::tuple<PhzDataModel::LikelihoodGrid,
                                  PhzDataModel::ScaleFactordGrid,
