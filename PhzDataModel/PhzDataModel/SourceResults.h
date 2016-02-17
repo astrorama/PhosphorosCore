@@ -63,8 +63,8 @@ enum class SourceResultType {
   /// A map containing the natural logarithm of the normalization of the posterior
   /// grid for each parameter space region
   REGION_POSTERIOR_NORM_LOG,
-  /// A double with the chi square value of the overall best fitted model
-  BEST_MODEL_CHI_SQUARE
+  /// The natural logarithm of the posterior of the overall best fitted model
+  BEST_MODEL_POSTERIOR_LOG
 };
 
 

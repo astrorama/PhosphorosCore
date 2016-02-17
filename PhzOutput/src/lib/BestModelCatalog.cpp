@@ -45,10 +45,10 @@ void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
   auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
   auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
   auto scale = results.getResult<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>();
-  auto likelihood = results.getResult<PhzDataModel::SourceResultType::BEST_MODEL_CHI_SQUARE>();
+  auto posterior_log = results.getResult<PhzDataModel::SourceResultType::BEST_MODEL_POSTERIOR_LOG>();
   auto& pdf_1d = results.getResult<PhzDataModel::SourceResultType::Z_1D_PDF>();
   auto pdf_1d_peak_z = std::max_element(pdf_1d.begin(), pdf_1d.end()).axisValue<0>();
-  m_row_list.push_back(Table::Row{{source.getId(), sed, sed_index, reddening_curve, ebv, z, scale, likelihood, pdf_1d_peak_z}, m_column_info});
+  m_row_list.push_back(Table::Row{{source.getId(), sed, sed_index, reddening_curve, ebv, z, scale, posterior_log, pdf_1d_peak_z}, m_column_info});
 }
 
 } // end of namespace PhzOutput

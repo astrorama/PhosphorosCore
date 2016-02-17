@@ -167,7 +167,7 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
   results.setResult<ResType::BEST_MODEL_SCALE_FACTOR>(
             results.getResult<ResType::REGION_BEST_MODEL_SCALE_FACTOR>().at(best_region));
           
-  results.setResult<ResType::BEST_MODEL_CHI_SQUARE>(
+  results.setResult<ResType::BEST_MODEL_POSTERIOR_LOG>(
             results.getResult<ResType::REGION_POSTERIOR_NORM_LOG>().at(best_region));
   
   return results;

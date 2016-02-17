@@ -73,7 +73,7 @@ struct SourceResultTypeTraits<T, typename std::enable_if<
 template <SourceResultType T>
 struct SourceResultTypeTraits<T, typename std::enable_if<
                                     T == SourceResultType::BEST_MODEL_SCALE_FACTOR ||
-                                    T == SourceResultType::BEST_MODEL_CHI_SQUARE
+                                    T == SourceResultType::BEST_MODEL_POSTERIOR_LOG
                              >::type> {
   using type = double;
 };
