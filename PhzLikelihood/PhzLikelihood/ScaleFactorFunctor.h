@@ -269,10 +269,21 @@ public:
       return ScaleFactorNormal<Adder>{}(source, source_end, model);
     }
     
-    double acc = 1E-5;
     double der_step = 1E-4;
     double a = 0;
-    double step = 10.;
+    // We compute the beginning step as an approximation of the scale factor
+    // based on the ratios of the source and model photometries
+    double step = 1;
+    int c = 0;
+    for (auto s=source, m=model; s != source_end; ++s,++m) {
+      if ((*s).upper_limit_flag) {
+        continue;
+      }
+      step += (*s).flux / (*m).flux;
+      ++c;
+    }
+    step /= c;
+    double acc = step * 1E-5;
     double step_factor = .5;
     bool dir_right = true;
     double chi_a = -2 * LikelihoodLogarithmFunc{}(source, source_end, model, a);
