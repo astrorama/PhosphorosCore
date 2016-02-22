@@ -25,6 +25,12 @@ static std::map<int64_t, PhzDataModel::PhotometricCorrectionMap> createSourcePho
   // Iterate through the sources and calcualte their optimal photometric corerctions
   std::map<int64_t, PhzDataModel::PhotometricCorrectionMap> result {};
   for (; source != source_end; ++source) {
+      auto source_id = source->getId();
+      // Check that the source is one of the sources we have the best fit models and
+      // the scale factor
+      if (model_phot_map.count(source_id) == 0 || scale_factor_map.count(source_id) == 0) {
+        continue;
+      }
 
     // Get the source photometry
     auto source_phot_ptr = source->template getAttribute<SourceCatalog::Photometry>();
