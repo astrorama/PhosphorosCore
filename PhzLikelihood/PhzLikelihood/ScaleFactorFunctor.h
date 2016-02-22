@@ -73,7 +73,11 @@ public:
   void operator()(const SourceCatalog::FluxErrorPair& source,
                   const SourceCatalog::FluxErrorPair& model,
                   double& numerator, double& denominator) {
-    double error_square = source.error * source.error;
+    // If the source error is zero we set it to the minimum positive value represented
+    // by double precision, to avoid dividing with zero
+    double error_square = (source.error != 0)
+                        ? (source.error * source.error) 
+                        : std::numeric_limits<double>::min();
     // If the source flux is negative, which prevents the scale factor getting
     // negative values (flipping the template). Physically this means that we do
     // not allow for unrealistic negative fluxes in the models (which would mean
@@ -276,7 +280,7 @@ public:
     double step = 1;
     int c = 0;
     for (auto s=source, m=model; s != source_end; ++s,++m) {
-      if ((*s).upper_limit_flag) {
+      if ((*s).upper_limit_flag || (*m).flux == 0) {
         continue;
       }
       step += (*s).flux / (*m).flux;

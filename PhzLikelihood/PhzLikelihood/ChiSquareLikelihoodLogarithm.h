@@ -123,7 +123,12 @@ public:
                      const SourceCatalog::FluxErrorPair& model,
                      double scale) const {
     double difference = scale * model.flux - source.flux;
-    return difference * difference / (source.error * source.error);
+    // If the source error is zero we set it to the minimum positive value represented
+    // by double precision, to avoid dividing with zero
+    double error_square = (source.error != 0)
+                        ? (source.error * source.error) 
+                        : std::numeric_limits<double>::min();
+    return difference * difference / error_square;
   }
   
 }; // end of class ChiSquareNormal
