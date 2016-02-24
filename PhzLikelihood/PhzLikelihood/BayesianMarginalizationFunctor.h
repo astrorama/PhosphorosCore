@@ -18,15 +18,17 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
-class BayesianMarginalizationFunctor_ {
+class BayesianMarginalizationFunctor {
   
 public:
   
   using AxisCorrection = std::function<void(PhzDataModel::LikelihoodGrid& likelihood_grid)>;
   
+  BayesianMarginalizationFunctor();
+  
   template <int I>
-  void setAsNumericalAxis() {
-    m_numerical_axes_corr[I] = NumericalAxisCorrection<I> {};
+  void setArithmeticAxisAsNotNumerical() {
+    m_numerical_axes_corr.erase(I);
   }
   
   void addCorrection(AxisCorrection correction) {
@@ -41,24 +43,6 @@ private:
   // once per axis
   std::map<int, AxisCorrection> m_numerical_axes_corr;
   std::vector<AxisCorrection> m_other_axes_corr;
-  
-};
-
-class BayesianMarginalizationFunctor {
-
-public:
-  
-  using SedAxisCorrection = GroupedAxisCorrection<PhzDataModel::ModelParameter::SED>;
-
-  BayesianMarginalizationFunctor(){};
-
-  BayesianMarginalizationFunctor(std::shared_ptr<SedAxisCorrection> sed_correction_ptr);
-
-  PhzDataModel::Pdf1D operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const;
-  
-private:
-  
-  std::shared_ptr<SedAxisCorrection> m_sed_correction_ptr = nullptr;
 
 };
 

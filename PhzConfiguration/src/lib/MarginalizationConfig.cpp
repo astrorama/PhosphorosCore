@@ -63,8 +63,8 @@ void MarginalizationConfig::initialize(const UserValues& args) {
   } else if (collapse_type == "MAX") {
     m_marginalization_function = MaxMarginalizationFunctor<ModelParameter::Z> { };
   } else {
-    BayesianMarginalizationFunctor_ func {};
-    func.setAsNumericalAxis<ModelParameter::EBV>();
+    BayesianMarginalizationFunctor func {};
+    func.setArithmeticAxisAsNotNumerical<ModelParameter::Z>();
     for (auto& corr : m_corrections) {
       func.addCorrection(corr);
     }
@@ -73,7 +73,7 @@ void MarginalizationConfig::initialize(const UserValues& args) {
 }
 
 void MarginalizationConfig::addMarginalizationCorrection(
-            PhzLikelihood::BayesianMarginalizationFunctor_::AxisCorrection corr) {
+            PhzLikelihood::BayesianMarginalizationFunctor::AxisCorrection corr) {
   if (getCurrentState() >= State::INITIALIZED) {
     throw Elements::Exception() << "addMarginalizationCorrection() call on an "
         << "already initialized MarginalizationConfig";

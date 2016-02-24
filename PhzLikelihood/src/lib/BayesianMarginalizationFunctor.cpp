@@ -12,30 +12,46 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
+namespace {
 
-BayesianMarginalizationFunctor::BayesianMarginalizationFunctor(std::shared_ptr<SedAxisCorrection> sed_correction_ptr)
-:m_sed_correction_ptr{move(sed_correction_ptr)}{}
 
-PhzDataModel::Pdf1D BayesianMarginalizationFunctor::operator()(
-                    const PhzDataModel::LikelihoodGrid& likelihood_grid) const {
-  // Make a copy of the likelihood grid, so we can modify it
-  PhzDataModel::LikelihoodGrid likelihood_copy {likelihood_grid.getAxesTuple()};
-  std::copy(likelihood_grid.begin(), likelihood_grid.end(), likelihood_copy.begin());
-
-  // Apply corrections for the numerical axes which will be marginalized
-  NumericalAxisCorrection<PhzDataModel::ModelParameter::EBV> ebv_corr {};
-  ebv_corr(likelihood_copy);
-
-  if (m_sed_correction_ptr!=nullptr){
-    (*m_sed_correction_ptr)(likelihood_copy);
+template <int I=0>
+struct NumercalAxisCorrectionAdder {
+  
+  template <typename T = PhzDataModel::LikelihoodGrid::axis_type<I>>
+  static void addCorrections(std::map<int, BayesianMarginalizationFunctor::AxisCorrection>& axes_corr,
+                             typename std::enable_if<std::is_arithmetic<T>::value>::type* = 0) {
+    axes_corr[I] = NumericalAxisCorrection<I> {};
+    NumercalAxisCorrectionAdder<I+1>::addCorrections(axes_corr);
   }
+  
+  template <typename T = PhzDataModel::LikelihoodGrid::axis_type<I>>
+  static void addCorrections(std::map<int, BayesianMarginalizationFunctor::AxisCorrection>& axes_corr,
+                             typename std::enable_if<!std::is_arithmetic<T>::value>::type* = 0) {
+    // Non numerical axis, do not add correction
+    NumercalAxisCorrectionAdder<I+1>::addCorrections(axes_corr);
+  }
+  
+};
 
-  // Calcualte the 1D PDF as a simple SUM
-  SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z> sum_marg {};
-  return sum_marg(likelihood_copy);
+template <>
+struct NumercalAxisCorrectionAdder<PhzDataModel::LikelihoodGrid::axisNumber()> {
+  
+  static void addCorrections(std::map<int, BayesianMarginalizationFunctor::AxisCorrection>&) {
+    // Do nothing here
+  }
+  
+};
+
 }
 
-PhzDataModel::Pdf1D BayesianMarginalizationFunctor_::operator()(
+
+BayesianMarginalizationFunctor::BayesianMarginalizationFunctor(){
+  NumercalAxisCorrectionAdder<>::addCorrections(m_numerical_axes_corr);
+}
+
+
+PhzDataModel::Pdf1D BayesianMarginalizationFunctor::operator()(
                     const PhzDataModel::LikelihoodGrid& likelihood_grid) const {
   
   // Make a copy of the likelihood grid, so we can modify it
