@@ -125,9 +125,12 @@ public:
     double difference = scale * model.flux - source.flux;
     // If the source error is zero we set it to the minimum positive value represented
     // by double precision, to avoid dividing with zero
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
     double error_square = (source.error != 0)
                         ? (source.error * source.error) 
                         : std::numeric_limits<double>::min();
+#pragma GCC diagnostic pop
     return difference * difference / error_square;
   }
   

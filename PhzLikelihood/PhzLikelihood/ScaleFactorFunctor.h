@@ -75,9 +75,12 @@ public:
                   double& numerator, double& denominator) {
     // If the source error is zero we set it to the minimum positive value represented
     // by double precision, to avoid dividing with zero
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
     double error_square = (source.error != 0)
                         ? (source.error * source.error) 
                         : std::numeric_limits<double>::min();
+#pragma GCC diagnostic pop
     // If the source flux is negative, which prevents the scale factor getting
     // negative values (flipping the template). Physically this means that we do
     // not allow for unrealistic negative fluxes in the models (which would mean
