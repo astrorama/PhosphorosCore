@@ -64,21 +64,22 @@ void MarginalizationConfig::initialize(const UserValues& args) {
     m_marginalization_function = MaxMarginalizationFunctor<ModelParameter::Z> { };
   } else {
     BayesianMarginalizationFunctor func {};
-    func.setArithmeticAxisAsNotNumerical<ModelParameter::Z>();
-    for (auto& corr : m_corrections) {
-      func.addCorrection(corr);
+    for (auto& pair : m_corrections) {
+      for (auto& corr : pair.second) {
+        func.addCorrection(pair.first, corr);
+      }
     }
     m_marginalization_function = func;
   }
 }
 
-void MarginalizationConfig::addMarginalizationCorrection(
+void MarginalizationConfig::addMarginalizationCorrection(int axis,
             PhzLikelihood::BayesianMarginalizationFunctor::AxisCorrection corr) {
   if (getCurrentState() >= State::INITIALIZED) {
     throw Elements::Exception() << "addMarginalizationCorrection() call on an "
         << "already initialized MarginalizationConfig";
   }
-  m_corrections.emplace_back(std::move(corr));
+  m_corrections[axis].emplace_back(std::move(corr));
 }
 
 const PhzLikelihood::CatalogHandler::MarginalizationFunction& MarginalizationConfig::getMarginalizationFunc() const {

@@ -88,6 +88,7 @@ void LuminositySedGroupConfig::initialize (const UserValues& args) {
   m_luminosity_sed_group_manager_ptr.reset( new PhzDataModel::QualifiedNameGroupManager(groups) );
   
   getDependency<MarginalizationConfig>().addMarginalizationCorrection(
+    PhzDataModel::ModelParameter::SED,
     PhzLikelihood::GroupedAxisCorrection<PhzDataModel::ModelParameter::SED>{
                                 PhzDataModel::QualifiedNameGroupManager{groups}}
   );

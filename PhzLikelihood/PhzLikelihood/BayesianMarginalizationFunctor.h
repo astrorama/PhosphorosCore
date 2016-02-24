@@ -31,8 +31,8 @@ public:
     m_numerical_axes_corr.erase(I);
   }
   
-  void addCorrection(AxisCorrection correction) {
-    m_other_axes_corr.emplace_back(std::move(correction));
+  void addCorrection(int axis, AxisCorrection correction) {
+    m_custom_axes_corr[axis].emplace_back(std::move(correction));
   }
 
   PhzDataModel::Pdf1D operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const;
@@ -42,7 +42,7 @@ private:
   // For the numerical corrections we use a map to guarantee that we do it only
   // once per axis
   std::map<int, AxisCorrection> m_numerical_axes_corr;
-  std::vector<AxisCorrection> m_other_axes_corr;
+  std::map<int, std::vector<AxisCorrection>> m_custom_axes_corr;
 
 };
 

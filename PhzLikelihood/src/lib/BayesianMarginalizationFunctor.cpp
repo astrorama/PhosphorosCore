@@ -46,8 +46,11 @@ struct NumercalAxisCorrectionAdder<PhzDataModel::LikelihoodGrid::axisNumber()> {
 }
 
 
-BayesianMarginalizationFunctor::BayesianMarginalizationFunctor(){
+BayesianMarginalizationFunctor::BayesianMarginalizationFunctor() {
   NumercalAxisCorrectionAdder<>::addCorrections(m_numerical_axes_corr);
+  for (size_t i = 0; i < PhzDataModel::LikelihoodGrid::axisNumber(); ++i) {
+    m_custom_axes_corr[i].clear();
+  }
 }
 
 
@@ -59,11 +62,19 @@ PhzDataModel::Pdf1D BayesianMarginalizationFunctor::operator()(
   std::copy(likelihood_grid.begin(), likelihood_grid.end(), likelihood_copy.begin());
   
   for (auto& pair : m_numerical_axes_corr) {
+    if (pair.first == PhzDataModel::ModelParameter::Z) {
+      continue;
+    }
     pair.second(likelihood_copy);
   }
   
-  for (auto& corr : m_other_axes_corr) {
-    corr(likelihood_copy);
+  for (size_t i = 0; i < PhzDataModel::LikelihoodGrid::axisNumber(); ++i) {
+    if (i == PhzDataModel::ModelParameter::Z) {
+      continue;
+    }
+    for (auto& corr : m_custom_axes_corr.at(i)) {
+      corr(likelihood_copy);
+    }
   }
 
   // Calcualate the 1D PDF as a simple SUM
