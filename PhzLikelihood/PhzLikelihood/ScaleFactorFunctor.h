@@ -283,7 +283,10 @@ public:
     double step = 1;
     int c = 0;
     for (auto s=source, m=model; s != source_end; ++s,++m) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
       if ((*s).upper_limit_flag || (*m).flux == 0) {
+#pragma GCC diagnostic pop
         continue;
       }
       step += (*s).flux / (*m).flux;
