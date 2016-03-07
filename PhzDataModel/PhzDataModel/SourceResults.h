@@ -68,6 +68,15 @@ enum class SourceResultType {
 };
 
 
+/**
+ * @class SourceResultTypeTraits
+ * @brief
+ * Traits class used for defining the type of each source result
+ * @details
+ * When a new result type is added, a specialization of this class must be
+ * defined for declaring its type. For examples see the already defined
+ * specializations in PhzDataModel/_impl/SourceResultTypeTraits.icpp
+ */
 template <SourceResultType T, typename=void>
 struct SourceResultTypeTraits;
 
@@ -75,7 +84,14 @@ struct SourceResultTypeTraits;
 /**
  * @class SourceResults
  * @brief
- *
+ * Keeps the PHZ related results from the Phosphoros computation for a single
+ * source
+ * @details
+ * This class is agnostic on the type of the results it keeps. The possible
+ * results are defined by the enumeration SourceResultType. When a SourceResults
+ * object is copied, the resulted object points to the same underlying results.
+ * Any modifications done to the result objects themselves are visible to all
+ * SourceResults.
  */
 class SourceResults {
 
@@ -86,12 +102,28 @@ public:
    */
   virtual ~SourceResults() = default;
   
+  /**
+   * @brief Adds a new result instance to the SourceResults
+   * @details
+   * The new result object is constructed by forwarding the given arguments to
+   * its constructor.
+   * @tparam T
+   *    The result to add
+   * @param args
+   *    The arguments to construct the result with
+   * @return 
+   *    A reference to the newly added result
+   */
   template <SourceResultType T, typename... Args>
   typename SourceResultTypeTraits<T>::type& setResult(Args&&... args);
   
+  /// Returns a reference to the requested result or throws Elements::Exception
+  /// if the SourceResults does not contain this result type
   template <SourceResultType T>
   const typename SourceResultTypeTraits<T>::type& getResult() const;
   
+  /// Returns a reference to the requested result or throws Elements::Exception
+  /// if the SourceResults does not contain this result type
   template <SourceResultType T>
   typename SourceResultTypeTraits<T>::type& getResult();
 

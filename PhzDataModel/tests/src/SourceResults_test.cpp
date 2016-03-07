@@ -34,9 +34,54 @@ BOOST_AUTO_TEST_SUITE (SourceResults_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( example_test ) {
+BOOST_AUTO_TEST_CASE( resultCreationAndRetrieval ) {
 
-  BOOST_FAIL("!!!! Please implement your tests !!!!");
+  // Given
+  SourceResults sr {};
+  auto& names = sr.setResult<SourceResultType::REGION_NAMES>();
+  
+  // When
+  names.push_back("one");
+  names.push_back("two");
+  auto& res = sr.getResult<SourceResultType::REGION_NAMES>();
+  
+  // Then
+  BOOST_CHECK_EQUAL(res.size(), 2);
+  BOOST_CHECK_EQUAL(res[0], "one");
+  BOOST_CHECK_EQUAL(res[1], "two");
+
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE( copy ) {
+
+  // Given
+  SourceResults sr1 {};
+  auto& names = sr1.setResult<SourceResultType::REGION_NAMES>();
+  names.push_back("one");
+  names.push_back("two");
+  
+  // When
+  SourceResults sr2 {sr1};
+  auto& res = sr2.getResult<SourceResultType::REGION_NAMES>();
+  
+  // Then
+  BOOST_CHECK_EQUAL(res.size(), 2);
+  BOOST_CHECK_EQUAL(res[0], "one");
+  BOOST_CHECK_EQUAL(res[1], "two");
+
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE( resultNotRegisteredException ) {
+
+  // Given
+  SourceResults sr {};
+  
+  // Then
+  BOOST_CHECK_THROW(sr.getResult<SourceResultType::REGION_NAMES>(), Elements::Exception);
 
 }
 
