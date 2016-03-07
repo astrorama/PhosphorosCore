@@ -54,7 +54,7 @@ BayesianMarginalizationFunctor::BayesianMarginalizationFunctor() {
 }
 
 
-PhzDataModel::Pdf1D BayesianMarginalizationFunctor::operator()(
+PhzDataModel::Pdf1DZ BayesianMarginalizationFunctor::operator()(
                     const PhzDataModel::LikelihoodGrid& likelihood_grid) const {
   
   // Make a copy of the likelihood grid, so we can modify it

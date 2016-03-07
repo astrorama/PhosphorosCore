@@ -57,8 +57,9 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
   return SourceCatalog::Photometry{filter_names_ptr, std::move(fluxes)};
 }
 
-static PhzDataModel::Pdf1D combine1DPdfs(const std::map<std::string, PhzDataModel::Pdf1D>& pdf_map,
-                                         const std::map<std::string, double>& norm_log_map) {
+static PhzDataModel::Pdf1DZ combine1DPdfs(
+                        const std::map<std::string, PhzDataModel::Pdf1DZ>& pdf_map,
+                        const std::map<std::string, double>& norm_log_map) {
   
   // All the likelihoods were shifted so the peak has value 1. This means that
   // the 1D PDFs are also shifted with the same constant. We get the constants
@@ -116,7 +117,7 @@ static PhzDataModel::Pdf1D combine1DPdfs(const std::map<std::string, PhzDataMode
   }
   
   // Convert the vectors to Pdf1D
-  PhzDataModel::Pdf1D result {{"Z", final_x}};
+  PhzDataModel::Pdf1DZ result {{"Z", final_x}};
   auto value_iter = final_y.begin();
   for (auto cell_iter=result.begin(); cell_iter!=result.end(); ++cell_iter, ++ value_iter) {
     *cell_iter = *value_iter;

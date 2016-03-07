@@ -11,6 +11,7 @@
 #include <map>
 #include <vector>
 #include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/PhzModel.h"
 #include "PhzLikelihood/NumericalAxisCorrection.h"
 #include "PhzLikelihood/GroupedAxisCorrection.h"
 #include "PhzDataModel/Pdf1D.h"
@@ -35,7 +36,7 @@ public:
     m_custom_axes_corr[axis].emplace_back(std::move(correction));
   }
 
-  PhzDataModel::Pdf1D operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const;
+  PhzDataModel::Pdf1DZ operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const;
   
 private:
   

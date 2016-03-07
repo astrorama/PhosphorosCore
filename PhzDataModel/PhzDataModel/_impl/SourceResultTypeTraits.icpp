@@ -28,6 +28,7 @@
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/Pdf1D.h"
 #include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/PhzModel.h"
 
 namespace Euclid {
 namespace PhzDataModel {
@@ -93,7 +94,7 @@ template <SourceResultType T>
 struct SourceResultTypeTraits<T, typename std::enable_if<
                                     T == SourceResultType::Z_1D_PDF
                              >::type> {
-  using type = PhzDataModel::Pdf1D;
+  using type = PhzDataModel::Pdf1DZ;
 };
 
 
@@ -101,7 +102,7 @@ template <SourceResultType T>
 struct SourceResultTypeTraits<T, typename std::enable_if<
                                     T == SourceResultType::REGION_Z_1D_PDF
                              >::type> {
-  using type = std::map<std::string, PhzDataModel::Pdf1D>;
+  using type = std::map<std::string, PhzDataModel::Pdf1DZ>;
 };
 
 

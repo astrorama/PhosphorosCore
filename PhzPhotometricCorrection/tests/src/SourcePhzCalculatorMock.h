@@ -51,7 +51,7 @@ public:
               PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{}))));
     PhzDataModel::SourceResults result {};
     result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(m_phot_grid.begin());
-    result.setResult<PhzDataModel::SourceResultType::Z_1D_PDF>(PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}});
+    result.setResult<PhzDataModel::SourceResultType::Z_1D_PDF>(PhzDataModel::Pdf1DZ{GridContainer::GridAxis<double>{"Axis",{}}});
     result.setResult<PhzDataModel::SourceResultType::REGION_LIKELIHOOD>(std::move(likelihood_map));
     result.setResult<PhzDataModel::SourceResultType::REGION_POSTERIOR>(std::move(posterior_map));
     result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>(0);
