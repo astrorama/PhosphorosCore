@@ -143,17 +143,8 @@ BOOST_FIXTURE_TEST_CASE(orderIsRespected, MultithreadHandler_fixture) {
   MultithreadHandler handler {check_order_handler, progress, order};
   
   // When
-  int thread_no = 100;
-  std::vector<std::thread> thread_list {};
-  for (int thr_i = 0; thr_i < thread_no; ++thr_i) {
-    thread_list.emplace_back([this, &handler, thr_i, thread_no]() {
-      for (std::size_t i = thr_i; i < source_list.size(); i=i+thread_no) {
-        handler.handleSourceOutput(source_list.at(i), result_list.at(i));
-      }
-    });
-  }
-  for (auto& thr : thread_list) {
-    thr.join();
+  for (std::size_t i = 0; i < source_list.size(); ++i) {
+    handler.handleSourceOutput(source_list.at(i), result_list.at(i));
   }
   
   // Then
