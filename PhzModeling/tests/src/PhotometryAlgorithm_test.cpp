@@ -178,8 +178,8 @@ BOOST_FIXTURE_TEST_CASE(execution_test, PhotometryAlgorithm_Fixture) {
    auto filter5 =photometry.find("filterSet1/filter5");
    BOOST_CHECK(filter5);
 
-   BOOST_CHECK_CLOSE(model_vector_iterator->size()/2200.,filter2->flux*1E-5, 1E-10);
-   BOOST_CHECK_CLOSE((model_vector_iterator->size()-1)/4500.,filter5->flux*1E-5, 1E-10);
+   BOOST_CHECK_CLOSE(model_vector_iterator->size()/2200.,filter2->flux*1E-17, 1E-10);
+   BOOST_CHECK_CLOSE((model_vector_iterator->size()-1)/4500.,filter5->flux*1E-17, 1E-10);
    ++model_vector_iterator;
   }
 
