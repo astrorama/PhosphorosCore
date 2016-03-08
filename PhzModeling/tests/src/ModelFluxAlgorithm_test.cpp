@@ -115,7 +115,7 @@ BOOST_FIXTURE_TEST_CASE(execution_test, ModelFluxAlgorithm_Fixture) {
   int number= flat_model.size();
   for(auto flux_pair:result_vector){
     BOOST_CHECK(Elements::isEqual(0.,flux_pair.error));
-    BOOST_CHECK(Elements::isEqual(number*1.E17,flux_pair.flux));
+    BOOST_CHECK(Elements::isEqual(number*1.E29,flux_pair.flux));
     --number;
   }
 
