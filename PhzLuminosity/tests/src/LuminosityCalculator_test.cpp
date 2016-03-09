@@ -75,9 +75,32 @@ struct LuminosityCalculator_Fixture {
 
 
   LuminosityCalculator_Fixture(){
+    /* fill the Model_grid: the model grid has axies :
+     *  z={0.0}
+     *  ebv={0.0,0.1,0.2}
+     *  reddening curve = {reddeningCurves/Curve1}
+     *  seds = {ed/Curve_1,sed/Curve_2,sed/Curve_3}
+     *  alltogether it is 1x3x1x3=9 models
+     *
+     *  the grid is filled with photometries values with the first photometrie
+     *  matching the luminosityFilterName
+     *  {{1.7,0.1}{0.1,0.3}}
+     *  {{2.7,0.1}{0.1,0.3}}
+     *  {{3.7,0.1}{0.1,0.3}}
+     *  {{4.7,0.1}{0.1,0.3}}
+     *  {{5.7,0.1}{0.1,0.3}}
+     *  {{6.7,0.1}{0.1,0.3}}
+     *  {{7.7,0.1}{0.1,0.3}}
+     *  {{8.7,0.1}{0.1,0.3}}
+     *  {{9.7,0.1}{0.1,0.3}}
+     *
+     *  the scale factor grid has the same axis but the z which
+     *  contains {0.0,0.2,0.6,1.0}and is filled with values
+     *  1.3, 2.3, 3.3, 4.3, ...
+     *
+     */
 
-
-    double value = 1.7;
+   double value = 1.7;
     for (auto& photometry : model_grid){
       std::vector<SourceCatalog::FluxErrorPair> photometry_vector { SourceCatalog::FluxErrorPair(value,
            0.1), SourceCatalog::FluxErrorPair(0.1, 0.3) };
@@ -99,7 +122,8 @@ struct LuminosityCalculator_Fixture {
 
 BOOST_AUTO_TEST_SUITE (LuminosityCalculator_test)
 
-//---------------------------------------------------------------------------
+
+
 /**
  * Check the Luminosity in flux
  */
@@ -108,12 +132,13 @@ BOOST_FIXTURE_TEST_CASE(test_flux, LuminosityCalculator_Fixture) {
        new PhzDataModel::PhotometryGrid { std::move(model_grid) } };
 
 std::map<double,double> distance_correction{{0.0,0.},{0.2,100.},{0.6,1000000.},{1.0,10000000000.}};
-std::map<double,double> flux_values{{0.0,2.21},{0.2,3.91},{0.6,5.61},{1.0,7.31}};
+std::map<double,double> flux_values{{0.0,7.2825e-1},{0.2,1.07367},{0.6,1.15537},{1.0,1.2044}};
+
 
 TestLuminosityCalculator lum_comp_funct {
    luminosityFilterName,
    model_grid_ptr,
-   {{0.0,0.},{0.2,100.},{0.6,10000.},{1.0,1000000.}},
+   distance_correction,
    {},
    false };
 auto scale_iter = scale_factor_grid.cbegin();
@@ -122,10 +147,11 @@ while (scale_iter != scale_factor_grid.cend() && loop<4) {
 
  double z = scale_iter.axisValue<PhzDataModel::ModelParameter::Z>();
 
- auto computed = lum_comp_funct(scale_iter);
- auto expected =flux_values.at(z)*distance_correction.at(z);
 
- BOOST_CHECK_CLOSE(computed,expected,1E-8);
+ auto computed = lum_comp_funct(scale_iter);
+ auto expected =flux_values.at(z)*distance_correction.at(z)*distance_correction.at(z);
+
+ BOOST_CHECK_CLOSE(computed,expected,1E-2); // check at 1e-2 % => 1e-4 which is the precision expected from the provided flux_values
  ++scale_iter;
  ++loop;
 }
@@ -138,14 +164,14 @@ BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
   std::shared_ptr<PhzDataModel::PhotometryGrid> model_grid_ptr {
       new PhzDataModel::PhotometryGrid { std::move(model_grid) } };
 
-  std::map<double,double> modulus_correction{{0.0,-0.},{0.2,-1.},{0.6,-10.},{1.0,-100.}};
-  std::map<double,double> log_lum{{0.0,-0.8609806842},{0.2,-1.4804419},{0.6,-1.8724072},{1.0,-2.1597934}};
+  std::map<double,double> modulus_correction{{0.0,0.},{0.2,1.},{0.6,10.},{1.0,100.}};
+  std::map<double,double> log_lum{{0.0,23.0390849},{0.2,22.6175768},{0.6,22.53795},{1.0,22.49285}};
 
   TestLuminosityCalculator lum_comp_funct {
       luminosityFilterName,
       model_grid_ptr,
       {},
-      {{0.0,0.},{0.2,1.},{0.6,10.},{1.0,100.}},
+      modulus_correction,
       true };
   auto scale_iter = scale_factor_grid.cbegin();
   int loop=0;
@@ -154,9 +180,9 @@ BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
     double z = scale_iter.axisValue<PhzDataModel::ModelParameter::Z>();
 
     auto computed = lum_comp_funct(scale_iter);
-    auto expected = log_lum.at(z)+modulus_correction.at(z);
+    auto expected = log_lum.at(z)-modulus_correction.at(z);
 
-    BOOST_CHECK_CLOSE(computed,expected,1E-6);
+    BOOST_CHECK_CLOSE(computed,expected,1E-2);
     ++scale_iter;
     ++loop;
   }
