@@ -37,14 +37,17 @@ namespace PhzLikelihood {
 
 /**
  * @class AxisFunctionPrior
- * @brief
- *
+ * @brief Class which apply a prior of a specific axis, given as a function
+ * @details
+ * This prior can only be used for axes which have numerical values. The given
+ * prior function will be called with the axis knot values.
  */
 template <int AxisIndex>
 class AxisFunctionPrior {
 
 public:
   
+  /// Constructs a new AxisFunctionPrior, with the given function
   AxisFunctionPrior(std::unique_ptr<MathUtils::Function> prior_func);
 
   /**
@@ -52,6 +55,17 @@ public:
    */
   virtual ~AxisFunctionPrior() = default;
   
+  /**
+   * @brief Applies the axis function prior to a likelihood grid
+   * @param likelihoodGrid
+   *    The grid to apply the prior on
+   * @param sourcePhotometry
+   *    This parameter is not used by this prior
+   * @param modelGrid
+   *    This parameter is not used by this prior
+   * @param scaleFactorGrid
+   *    This parameter is not used by this prior
+   */
   void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
                   const SourceCatalog::Photometry& sourcePhotometry,
                   const PhzDataModel::PhotometryGrid& modelGrid,
