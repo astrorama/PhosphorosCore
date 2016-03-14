@@ -41,6 +41,8 @@ namespace PhzLikelihood {
  * @details
  * This prior can only be used for axes which have numerical values. The given
  * prior function will be called with the axis knot values.
+ * @tparam AxisIndex
+ *    The axis to apply the prior
  */
 template <int AxisIndex>
 class AxisFunctionPrior {

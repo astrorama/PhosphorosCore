@@ -37,15 +37,19 @@ namespace Euclid {
 namespace PhzLikelihood {
 
 /**
- * @class AxisWeightPrior
- * @brief
- *
+ * @class AxisFunctionPrior
+ * @brief Class which apply weights as a prior of a specific axis
+ * @details
+ * Currently this prior can only be used for axes of QualifiedName knots.
+ * @tparam AxisIndex
+ *    The axis to apply the prior
  */
 template <int AxisIndex>
 class AxisWeightPrior {
 
 public:
   
+  /// Constructs a new AxisWeightPrior, with the given weights
   AxisWeightPrior(std::map<XYDataset::QualifiedName, double> weight_map);
 
   /**
@@ -53,6 +57,20 @@ public:
    */
   virtual ~AxisWeightPrior() = default;
 
+  /**
+   * @brief Applies the axis weight prior to a likelihood grid
+   * @param likelihoodGrid
+   *    The grid to apply the prior on
+   * @param sourcePhotometry
+   *    This parameter is not used by this prior
+   * @param modelGrid
+   *    This parameter is not used by this prior
+   * @param scaleFactorGrid
+   *    This parameter is not used by this prior
+   * @throws std::out_of_range
+   *    If the given grid contains a knot for which there was no weight given
+   *    during construction
+   */
   void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
                   const SourceCatalog::Photometry& sourcePhotometry,
                   const PhzDataModel::PhotometryGrid& modelGrid,
