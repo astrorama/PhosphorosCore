@@ -96,38 +96,6 @@ BOOST_FIXTURE_TEST_CASE(SourceWithoutPhotometry_test, PhotometricCorrectionAlgor
 }
 
 //-----------------------------------------------------------------------------
-// Check that we get exception if a scale factor is missing
-//-----------------------------------------------------------------------------
-BOOST_FIXTURE_TEST_CASE(MissingScaleFactor_test, PhotometricCorrectionAlgorithm_Fixture) {
-  
-  // Given
-  scale_factors.erase(2);
-  
-  // When
-  PhzPhotometricCorrection::PhotometricCorrectionAlgorithm algo {};
-  
-  // Then
-  BOOST_CHECK_THROW(algo(sources.begin(), sources.end(), scale_factors, models), Elements::Exception);
-
-}
-
-//-----------------------------------------------------------------------------
-// Check that we get exception if a model photometry is missing
-//-----------------------------------------------------------------------------
-BOOST_FIXTURE_TEST_CASE(MissingModelPhotometry_test, PhotometricCorrectionAlgorithm_Fixture) {
-  
-  // Given
-  models.erase(2);
-  
-  // When
-  PhzPhotometricCorrection::PhotometricCorrectionAlgorithm algo {};
-  
-  // Then
-  BOOST_CHECK_THROW(algo(sources.begin(), sources.end(), scale_factors, models), Elements::Exception);
-
-}
-
-//-----------------------------------------------------------------------------
 // Check that we get correct photometric correction values for even number
 // of sources
 //-----------------------------------------------------------------------------
