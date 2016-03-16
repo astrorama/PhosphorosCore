@@ -37,13 +37,19 @@ namespace PhzLikelihood {
 
 /**
  * @class GenericGridPrior
- * @brief
- *
+ * @brief Class which applies a user defined prior
+ * @details
+ * This prior can be used only for likelihood grids which have the exact same
+ * coordinates with the prior grid given by the user. For convenience, the user
+ * can give a set of grids to this class, so the class can be reused for many
+ * different likelihood grids (in the case of sparse likelihood grid for example).
  */
 class GenericGridPrior {
 
 public:
   
+  /// Constructs a new GenericGridPrior, which can handle likelihood grids with
+  /// the same axes as the given prior grid list
   GenericGridPrior(std::vector<PhzDataModel::PriorGrid> prior_grid_list);
 
   /**
@@ -51,6 +57,24 @@ public:
    */
   virtual ~GenericGridPrior() = default;
 
+  /**
+   * @brief Applies the prior to the given likelihood grid
+   * @details
+   * This call assumes that the user gave to the constructor a prior grid with
+   * the same axes as the likelihood grid. It applies the prior by multiplying
+   * all the cells of the likelihood grid with the corresponding ones of the
+   * prior grid.
+   * @param likelihoodGrid
+   *    The grid to apply the prior on
+   * @param sourcePhotometry
+   *    This parameter is not used by this prior
+   * @param modelGrid
+   *    This parameter is not used by this prior
+   * @param scaleFactorGrid
+   *    This parameter is not used by this prior
+   * @throws Elements::Exception
+   *    If there was no prior grid with the same axes given during construction
+   */
   void operator()(PhzDataModel::LikelihoodGrid& likelihood_grid,
                   const SourceCatalog::Photometry&,
                   const PhzDataModel::PhotometryGrid&,
