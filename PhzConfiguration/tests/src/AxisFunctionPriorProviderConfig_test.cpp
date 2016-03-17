@@ -22,11 +22,39 @@
  * @author nikoapos
  */
 
+#include <fstream>
 #include <boost/test/unit_test.hpp>
-
+#include "ElementsKernel/Temporary.h"
 #include "PhzConfiguration/AxisFunctionPriorProviderConfig.h"
+#include "ConfigManager_fixture.h"
 
+using namespace Euclid;
 using namespace Euclid::PhzConfiguration;
+namespace po = boost::program_options;
+namespace fs = boost::filesystem;
+
+struct AxisFunctionPriorProviderConfig_fixture : public ConfigManager_fixture {
+  
+  Elements::TempDir temp_dir {};
+  
+  std::map<std::string, po::variable_value> options_map {};
+  
+  AxisFunctionPriorProviderConfig_fixture() {
+
+    auto prior_dir = temp_dir.path() / "AxisPriors";
+    fs::create_directories(prior_dir);
+    
+    std::ofstream out {(prior_dir/"axis_prior.txt").string()};
+    out << "0 0\n";
+    out << "1 1\n";
+    out.close();
+    
+    options_map = registerConfigAndGetDefaultOptionsMap<AxisFunctionPriorProviderConfig>();
+    options_map["aux-data-dir"].value() = boost::any {temp_dir.path().string()};
+    
+  }
+  
+};
 
 //-----------------------------------------------------------------------------
 
@@ -34,9 +62,17 @@ BOOST_AUTO_TEST_SUITE (AxisFunctionPriorProviderConfig_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( example_test ) {
+BOOST_FIXTURE_TEST_CASE(getProvider, AxisFunctionPriorProviderConfig_fixture) {
 
-  BOOST_FAIL("!!!! Please implement your tests !!!!");
+  // Given
+  config_manager.initialize(options_map);
+  
+  // When
+  auto& provider = config_manager.getConfiguration<AxisFunctionPriorProviderConfig>().getAxisFunctionPriorDatasetProvider();
+  
+  // Then
+  BOOST_CHECK(provider != nullptr);
+  BOOST_CHECK_EQUAL(provider->listContents("")[0].qualifiedName(), "axis_prior");
 
 }
 
