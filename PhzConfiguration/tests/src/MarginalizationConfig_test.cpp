@@ -34,12 +34,14 @@ using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
 
 namespace {
-  const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
+
+const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
+
 }
 
 struct MarginalizationConfig_fixture : public ConfigManager_fixture {
   
-  std::vector<double> zs {0, 1};
+  std::vector<double> zs {0, 0.5, 1, 1.5, 2, 2.5, 3};
   std::vector<double> ebvs {0, 1};
   std::vector<Euclid::XYDataset::QualifiedName> red_curves {{"red_curve"}};
   std::vector<Euclid::XYDataset::QualifiedName> seds {{"sed1"}, {"sed2"}};
