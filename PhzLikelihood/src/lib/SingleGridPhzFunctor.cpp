@@ -50,12 +50,13 @@ void SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
   scale_factor_result.fixAllAxes(best_fit);
   
   // Scale the posterior to have peak at 1 and compute its best chi square. Note that
-  // if the whole grid is zeroes we cannot scale it to one. In this case we set all
+  // if the whole grid is zeroes or negative values due to double arithmetic
+  // issues, we cannot scale it to one. In this case we set all
   // the values to a very small value, so some other region will be picked up as the
   // best one.
   double posterior_peak = *best_fit;
   double posterior_norm_log = 0;
-  if (posterior_peak == 0) {
+  if (posterior_peak <= 0) {
     for (auto& v : posterior_grid) {
       v = 1.;
     }
