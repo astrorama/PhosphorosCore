@@ -73,9 +73,9 @@ double LuminosityCalculator::getLuminosityFromModel(
   // the zero-point of 3631 Jansky (our flux is in microJansky)
   // The division with (1+z) is done to correct the fact that the flux is expressed
   // in energy
-  double flux = (*band).flux * scale_factor / 3631E6 / (1+z);
+  double flux = (*band).flux * scale_factor /(1+z);
   if (m_in_mag){
-    result= -2.5 * std::log10(flux) - m_distance_modulus_map.at(z);
+    result= -2.5 * std::log10(flux / 3631E6) - m_distance_modulus_map.at(z);
 
   } else {
     double luminous_distance = m_luminosity_distance_map.at(z);// in [pc]

@@ -84,19 +84,22 @@ struct LuminosityCalculator_Fixture {
      *
      *  the grid is filled with photometries values with the first photometrie
      *  matching the luminosityFilterName
-     *  {{1.7,0.1}{0.1,0.3}}
-     *  {{2.7,0.1}{0.1,0.3}}
-     *  {{3.7,0.1}{0.1,0.3}}
-     *  {{4.7,0.1}{0.1,0.3}}
-     *  {{5.7,0.1}{0.1,0.3}}
+     *  {{1.7,0.1}{0.1,0.3}}     ebv=0 SED=curve_1
+     *  {{2.7,0.1}{0.1,0.3}}     ebv=0.1 SED=curve_1
+     *  {{3.7,0.1}{0.1,0.3}}     ebv=0.2 SED=curve_1
+     *
+     *  {{4.7,0.1}{0.1,0.3}}     ebv=0 SED=curve_2
+     *  {{5.7,0.1}{0.1,0.3}}     ...
      *  {{6.7,0.1}{0.1,0.3}}
-     *  {{7.7,0.1}{0.1,0.3}}
+     *
+     *  {{7.7,0.1}{0.1,0.3}}     ebv=0 SED=curve_3
      *  {{8.7,0.1}{0.1,0.3}}
      *  {{9.7,0.1}{0.1,0.3}}
      *
      *  the scale factor grid has the same axis but the z which
      *  contains {0.0,0.2,0.6,1.0}and is filled with values
      *  1.3, 2.3, 3.3, 4.3, ...
+     *  Z=0 values are thus 1.3, 5.3,...
      *
      */
 
@@ -132,7 +135,7 @@ BOOST_FIXTURE_TEST_CASE(test_flux, LuminosityCalculator_Fixture) {
        new PhzDataModel::PhotometryGrid { std::move(model_grid) } };
 
 std::map<double,double> distance_correction{{0.0,0.},{0.2,100.},{0.6,1000000.},{1.0,10000000000.}};
-std::map<double,double> flux_values{{0.0,7.2825e-1},{0.2,1.07367},{0.6,1.15537},{1.0,1.2044}};
+std::map<double,double> flux_values{{0.0,2644265000.0},{0.2,3898595833.33},{0.6,4195228125.0},{1.0,4373207500.0}};
 
 
 TestLuminosityCalculator lum_comp_funct {
