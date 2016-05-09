@@ -34,7 +34,7 @@ struct ConfigManager_fixture {
     }
     
     boost::program_options::variables_map map {};
-    auto parsed = boost::program_options::command_line_parser({NULL}, 0)
+    auto parsed = boost::program_options::command_line_parser({0}, 0)
                         .options(options).run();
     boost::program_options::store(parsed, map);
     

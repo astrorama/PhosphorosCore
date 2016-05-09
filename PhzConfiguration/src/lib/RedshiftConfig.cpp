@@ -28,6 +28,7 @@
 #include "CheckString.h"
 #include "PhzConfiguration/RedshiftConfig.h"
 #include "PhzConfiguration/ProgramOptionsHelper.h"
+#include "RangeHelper.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -65,32 +66,39 @@ static std::vector<double> getRegionZList(const std::string& region_name,
   // A set is used to avoid duplicates and to order the different entries
   std::set<double> selected {};
   if (options.count(Z_RANGE+postfix) > 0) {
-    auto ranges_list = options.at(Z_RANGE+postfix).as<std::vector<std::string>>();
-    for (auto& range_string : ranges_list) {
-      checkRangeString(Z_RANGE+postfix, range_string);
-      std::stringstream range_stream {range_string};
+    std::vector<std::tuple<double, double, double>> ranges_list {};
+    try {
+      ranges_list = parseRanges(options.at(Z_RANGE+postfix).as<std::vector<std::string>>());
+    } catch (Elements::Exception ex) {
+      throw Elements::Exception() << "Invalid " << (Z_RANGE+postfix) << " option : " << ex.what();
+    }
+    
+    for (auto& range : ranges_list) {
       double min {};
       double max {};
       double step {};
-      std::string dummy{};
-      range_stream >> min >> max >> step >> dummy;
-      if (!dummy.empty()) {
-        throw Elements::Exception() <<"Invalid character(s) for the " << (Z_RANGE+postfix) << " "
-                                    << "option from here : " << dummy;
+      std::tie(min, max,step) = range;
+      
+      if (!selected.empty() && *selected.rbegin() > min) {
+        throw Elements::Exception() << "Overlapping range for " << (Z_RANGE+postfix)
+                                    << " option : " << min << ' ' << max << ' ' << step;
       }
-      // Check the range is allowed before inserting
-      if ( (max < min) || (!selected.empty() && (*--selected.end() > min))) {
-        throw Elements::Exception()<< "Invalid range(s) for " << (Z_RANGE+postfix) << " option : \""
-                                  <<range_stream.str()<<"\"";
-      }
-      // Insert value in the set
+      
       for (double value=min; value<=max; value+=step) {
         selected.insert(value);
+      }
+      // If the last value we reached using the step is less than 1% of the step
+      // away from the max, we remove it, because we add the max value anyways
+      auto last_iter = selected.end();
+      --last_iter;
+      if (max - *last_iter < step/100) {
+        selected.erase(last_iter);
       }
       // We always add the max, for the case the step was not reaching it exactly
       selected.insert(max);
     }
   }
+  
   // Add the z-value option
   if (options.count(Z_VALUE+postfix) > 0) {
     auto values_list = options.at(Z_VALUE+postfix).as<std::vector<std::string>>();
