@@ -142,7 +142,7 @@ TestLuminosityCalculator lum_comp_funct {
    luminosityFilterName,
    model_grid_ptr,
    distance_correction,
-   {},
+   std::map<double,double>{},
    false };
 auto scale_iter = scale_factor_grid.cbegin();
 int loop=0;
@@ -173,7 +173,7 @@ BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
   TestLuminosityCalculator lum_comp_funct {
       luminosityFilterName,
       model_grid_ptr,
-      {},
+      std::map<double,double>{},
       modulus_correction,
       true };
   auto scale_iter = scale_factor_grid.cbegin();
