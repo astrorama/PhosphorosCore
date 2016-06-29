@@ -69,8 +69,7 @@ public:
                     } ))
         )).WillOnce(Return(new PhzLikelihood::LikelihoodGridFunctor::result_type {
                                         PhzDataModel::LikelihoodGrid{phot_grid.getAxesTuple()},
-                                        PhzDataModel::ScaleFactordGrid{phot_grid.getAxesTuple()},
-                                        0.
+                                        PhzDataModel::ScaleFactordGrid{phot_grid.getAxesTuple()}
                     }));
   }
   

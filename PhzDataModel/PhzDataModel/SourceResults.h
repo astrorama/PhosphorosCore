@@ -47,6 +47,11 @@ enum class SourceResultType {
   REGION_Z_1D_PDF,
   /// A grid representing the 1D PDF over the redshift
   Z_1D_PDF,
+  /// A map containing the logarithm of the normalization of the 1D PDF for each
+  /// parameter space region
+  REGION_Z_1D_PDF_NORM_LOG,
+  /// The logarithm of the normalization of the 1D PDF
+  Z_1D_PDF_NORM_LOG,
   /// A map containing the likelihood (before priors) for each parameter space region
   REGION_LIKELIHOOD,
   /// A map containing the posterior for each parameter space region
@@ -57,12 +62,6 @@ enum class SourceResultType {
   /// A double with the value of the scale factor of the overall best match
   /// model photometry
   BEST_MODEL_SCALE_FACTOR,
-  /// A map containing the natural logarithm of the normalization of the likelihood
-  /// grid for each parameter space region
-  REGION_LIKELIHOOD_NORM_LOG,
-  /// A map containing the natural logarithm of the normalization of the posterior
-  /// grid for each parameter space region
-  REGION_POSTERIOR_NORM_LOG,
   /// The natural logarithm of the posterior of the overall best fitted model
   BEST_MODEL_POSTERIOR_LOG
 };

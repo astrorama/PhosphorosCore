@@ -14,7 +14,7 @@
 namespace Euclid {
 namespace PhzOutput {
 
-template<PhzDataModel::SourceResultType GridMap, PhzDataModel::SourceResultType NormLogMap>
+template<PhzDataModel::SourceResultType GridMap>
 class LikelihoodHandler : public OutputHandler {
 
 public:

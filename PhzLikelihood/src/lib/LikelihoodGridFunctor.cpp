@@ -25,17 +25,7 @@ auto LikelihoodGridFunctor::operator()(const SourceCatalog::Photometry& source_p
   m_likelihood_log_func(source_phot, phot_grid.begin(), phot_grid.end(),
                         likelihood_grid.begin(), scale_factor_grid.begin());
 
-  // Shift the logarithm of the likelihood to have maximum zero, so the maximum
-  // of the likelihood will be one. We do that because if there are too small
-  // values of the likelihood logarithm, doubles do not have enough accuracy to
-  // keep the values of the likelihood. In the same loop we calculate the
-  // likelihood.
-  double norm_log = *std::max_element(likelihood_grid.begin(), likelihood_grid.end());
-  for (auto iter=likelihood_grid.begin(); iter!= likelihood_grid.end(); ++iter) {
-    *iter = std::exp(*iter - norm_log);
-  }
-
-  return result_type {std::move(likelihood_grid), std::move(scale_factor_grid), norm_log};
+  return result_type {std::move(likelihood_grid), std::move(scale_factor_grid)};
 }
 
 

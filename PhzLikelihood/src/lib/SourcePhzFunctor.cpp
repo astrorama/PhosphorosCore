@@ -138,11 +138,10 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
   results.setResult<ResType::REGION_NAMES>();
   results.setResult<ResType::REGION_BEST_MODEL_ITERATOR>();
   results.setResult<ResType::REGION_Z_1D_PDF>();
+  results.setResult<ResType::REGION_Z_1D_PDF_NORM_LOG>();
   results.setResult<ResType::REGION_LIKELIHOOD>();
   results.setResult<ResType::REGION_POSTERIOR>();
   results.setResult<ResType::REGION_BEST_MODEL_SCALE_FACTOR>();
-  results.setResult<ResType::REGION_LIKELIHOOD_NORM_LOG>();
-  results.setResult<ResType::REGION_POSTERIOR_NORM_LOG>();
   
   // Calculate the results for all the regions
   for (auto& func : m_single_grid_functor_list) {
@@ -150,26 +149,31 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
   }
   
   // Find the result region which contains the model with the best posterior
-  auto& posterior_norm_log_map = results.getResult<ResType::REGION_POSTERIOR_NORM_LOG>();
-  auto& best_region = std::max_element(posterior_norm_log_map.begin(), posterior_norm_log_map.end(),
-          [] (std::remove_reference<decltype(posterior_norm_log_map)>::type::const_reference pair1,
-              std::remove_reference<decltype(posterior_norm_log_map)>::type::const_reference pair2) {
-            return pair1.second < pair2.second;
-          })->first;
+  std::string best_region;
+  double best_region_posterior = std::numeric_limits<double>::lowest();
+  auto& region_best_model_iterators = results.getResult<ResType::REGION_BEST_MODEL_ITERATOR>();
+  auto& region_posteriors = results.getResult<ResType::REGION_POSTERIOR>();
+  for (auto& name : results.getResult<ResType::REGION_NAMES>()) {
+    auto iter = region_posteriors.at(name).begin();
+    iter.fixAllAxes(region_best_model_iterators.at(name));
+    if (*iter > best_region_posterior) {
+      best_region = name;
+      best_region_posterior = *iter;
+    }
+  }
           
   results.setResult<ResType::BEST_MODEL_ITERATOR>(
             results.getResult<ResType::REGION_BEST_MODEL_ITERATOR>().at(best_region));
           
   results.setResult<ResType::Z_1D_PDF>(combine1DPdfs(
                     results.getResult<ResType::REGION_Z_1D_PDF>(),
-                    results.getResult<ResType::REGION_POSTERIOR_NORM_LOG>()
+                    results.getResult<ResType::REGION_Z_1D_PDF_NORM_LOG>()
           ));
           
   results.setResult<ResType::BEST_MODEL_SCALE_FACTOR>(
             results.getResult<ResType::REGION_BEST_MODEL_SCALE_FACTOR>().at(best_region));
           
-  results.setResult<ResType::BEST_MODEL_POSTERIOR_LOG>(
-            results.getResult<ResType::REGION_POSTERIOR_NORM_LOG>().at(best_region));
+  results.setResult<ResType::BEST_MODEL_POSTERIOR_LOG>(best_region_posterior);
   
   return results;
 }
