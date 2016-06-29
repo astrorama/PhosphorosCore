@@ -69,7 +69,7 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
         double luminosity = (*m_luminosity_calculator)(scal_iter);
 
         double prior = luminosity_function(luminosity);
-        *likelihood_iter *= prior;
+        *likelihood_iter += std::log(prior);
 
         ++likelihood_iter;
         ++scal_iter;
