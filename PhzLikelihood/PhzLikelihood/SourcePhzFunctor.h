@@ -82,10 +82,12 @@ public:
    *
    * @param source_phot
    *    The photometry of the source
+   * @param fixed_z
+   *    If not negative, the redshift will be fixed to the given value
    * @return
    *    The PHZ results for the given source
    */
-  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot) const;
+  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot, double fixed_z=-99) const;
 
 private:
 

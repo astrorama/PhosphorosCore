@@ -105,9 +105,11 @@ public:
    *    The photometry of the source
    * @param results
    *    The SourceResults object to add the results for the specific region
+   * @param fixed_z
+   *    If not negative, the redshift will be fixed to the given value
    */
   void operator()(const SourceCatalog::Photometry& source_phot,
-                  PhzDataModel::SourceResults& results) const;
+                  PhzDataModel::SourceResults& results, double fixed_z=-99) const;
   
 private:
   

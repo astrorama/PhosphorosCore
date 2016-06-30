@@ -47,6 +47,7 @@
 #include "PhzConfiguration/AxisFunctionPriorConfig.h"
 #include "PhzConfiguration/AxisWeightPriorConfig.h"
 #include "PhzConfiguration/GenericGridPriorConfig.h"
+#include "PhzConfiguration/FixedRedshiftConfig.h"
 #include "PhzOutput/BestModelCatalog.h"
 
 #include "PhzOutput/BestModelCatalog.h"
@@ -96,6 +97,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<AxisFunctionPriorConfig>();
   declareDependency<AxisWeightPriorConfig>();
   declareDependency<GenericGridPriorConfig>();
+  declareDependency<FixedRedshiftConfig>();
 }
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {

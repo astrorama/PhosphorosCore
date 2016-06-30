@@ -126,7 +126,7 @@ static PhzDataModel::Pdf1DZ combine1DPdfs(
   return result;
 }
 
-PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) const {
+PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot, double fixed_z) const {
   using ResType = PhzDataModel::SourceResultType;
   
   // Apply the photometric correction to the given source photometry
@@ -145,7 +145,7 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
   
   // Calculate the results for all the regions
   for (auto& func : m_single_grid_functor_list) {
-    func(cor_source_phot, results);
+    func(cor_source_phot, results, fixed_z);
   }
   
   // Find the result region which contains the model with the best posterior
