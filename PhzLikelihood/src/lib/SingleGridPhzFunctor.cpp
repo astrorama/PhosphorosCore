@@ -25,9 +25,6 @@ SingleGridPhzFunctor::SingleGridPhzFunctor(const std::string& region_name,
 namespace {
 
 std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixed_z) {
-  if (fixed_z < 0) {
-    return 0;
-  }
   auto& z_axis = grid.getAxis<PhzDataModel::ModelParameter::Z>();
   int i = 0;
   for (auto& z : z_axis) {
@@ -47,27 +44,26 @@ std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixe
 void SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_phot,
                                       PhzDataModel::SourceResults& results, double fixed_z) const {
   
-  // If we have a fixed redshift and we are out of range we skip everything
-  if (fixed_z >= 0) {
+  if (fixed_z < 0) {
+    computeEverything(source_phot, m_phot_grid, results);
+  } else {
     auto& z_axis = m_phot_grid.getAxis<PhzDataModel::ModelParameter::Z>();
+  // If we have a fixed redshift and we are out of range we skip everything
     if (fixed_z < z_axis[0] || fixed_z > z_axis[z_axis.size()-1]) {
       return;
     }
+    auto fixed_z_index = getFixedZIndex(m_phot_grid, fixed_z);
+    auto& fixed_phot_grid = m_phot_grid.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(fixed_z_index);
+    computeEverything(source_phot, fixed_phot_grid, results);
   }
-  
-  // Note to developers:
-  // Here we want to use either the full model grid, or just a slice of it. Because
-  // The photometry grid does not allow for copying, we can keep the result of the
-  // slice only in a const reference. This does not allow us to just assign a
-  // reference according the fixed_z value, neither to avoid creating the slice
-  // when we do not need it (because the temporary will go out of scope),
-  // so we use a dummy pointer pointing to the correct grid.
-  auto fixed_z_index = getFixedZIndex(m_phot_grid, fixed_z);
-  auto& fixed_phot_grid = m_phot_grid.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(fixed_z_index);
-  auto* phot_grid_ptr = (fixed_z >= 0) ? &fixed_phot_grid : &m_phot_grid;
-  
+
+}
+
+void SingleGridPhzFunctor::computeEverything(const SourceCatalog::Photometry& source_phot,
+                                             const PhzDataModel::PhotometryGrid& phot_grid,
+                                             PhzDataModel::SourceResults& results) const {
   // Calculate the likelihood over all the models
-  auto likelihood_res = m_likelihood_func(source_phot, *phot_grid_ptr);
+  auto likelihood_res = m_likelihood_func(source_phot, phot_grid);
   PhzDataModel::LikelihoodGrid likelihood_grid {std::move(std::get<0>(likelihood_res))};
   PhzDataModel::ScaleFactordGrid scale_factor_grid {std::move(std::get<1>(likelihood_res))};
   
@@ -77,7 +73,7 @@ void SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
 
   // Apply all the priors to the posterior
   for (auto& prior : m_priors) {
-    prior(posterior_grid, source_phot, *phot_grid_ptr, scale_factor_grid);
+    prior(posterior_grid, source_phot, phot_grid, scale_factor_grid);
   }
   
   // Select the best fitted model
@@ -116,6 +112,7 @@ void SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_ph
   results.getResult<PhzDataModel::SourceResultType::REGION_BEST_MODEL_SCALE_FACTOR>().emplace(
                 std::make_pair(m_region_name, *scale_factor_result));
 }
+
   
 } // end of namespace PhzLikelihood
 } // end of namespace Euclid

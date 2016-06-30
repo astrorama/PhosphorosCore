@@ -120,6 +120,12 @@ private:
   LikelihoodGridFunction m_likelihood_func;
   BestFitSearchFunction m_best_fit_search_func;
   
+  /// This is a helper method to avoid creating a copy of the grid when we have
+  /// fixed redshift
+  void computeEverything(const SourceCatalog::Photometry& source_phot,
+                         const PhzDataModel::PhotometryGrid& phot_grid,
+                         PhzDataModel::SourceResults& results) const;
+  
 };
 
 } // end of namespace PhzLikelihood
