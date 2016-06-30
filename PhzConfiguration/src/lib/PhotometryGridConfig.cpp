@@ -23,6 +23,7 @@
  */
 
 #include <fstream>
+#include <algorithm>
 #include <boost/archive/binary_iarchive.hpp>
 
 #include "ElementsKernel/Exception.h"
@@ -31,6 +32,8 @@
 #include "GridContainer/serialize.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 
+#include "Configuration/ConfigManager.h"
+#include "Configuration/PhotometricBandMappingConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
@@ -48,6 +51,12 @@ static const std::string MODEL_GRID_FILE {"model-grid-file"};
 PhotometryGridConfig::PhotometryGridConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<CatalogTypeConfig>();
   declareDependency<IntermediateDirConfig>();
+  
+  // We add an extra dependency to the PhotometricBandMappingConfig. If the user
+  // is loading a catalog with photometries, we want to have model grids with the
+  // same photometries.
+  auto& manager = Euclid::Configuration::ConfigManager::getInstance(manager_id);
+  manager.registerDependency<PhotometryGridConfig, Euclid::Configuration::PhotometricBandMappingConfig>();
 }
 
 auto PhotometryGridConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -73,6 +82,52 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
   bia >> m_info;
   for (auto& pair : m_info.region_axes_map) {
     m_grids.emplace(std::make_pair(pair.first, GridContainer::gridBinaryImport<PhzDataModel::PhotometryGrid>(in)));
+  }
+  
+  // Here we try to get the PhotometricBandMappingConfig. If this is throws, it
+  // means the PhotometryGridConfig is not used together with a Photometry catalog,
+  // so we need to do nothing. Otherwise we set the photometries to the correct
+  // filters
+  std::shared_ptr<std::vector<std::string>> filter_names {nullptr};
+  try {
+    auto& filter_mapping = getDependency<Euclid::Configuration::PhotometricBandMappingConfig>().getPhotometricBandMapping();
+    filter_names = std::make_shared<std::vector<std::string>>();
+    for (auto& pair : filter_mapping) {
+      filter_names->push_back(pair.first);
+    }
+  } catch (Elements::Exception e) {
+    // The exception means the PhotometricBandMappingConfig was not registered
+  }
+    
+  if (filter_names != nullptr) {
+    // Check if we need to change the photometries
+    bool same = filter_names->size() == m_info.filter_names.size();
+    if (same) {
+      same = std::equal(m_info.filter_names.begin(), m_info.filter_names.end(), filter_names->begin());
+    }
+    
+    if (!same) {
+      // Check that we have all the catalog photometries in the grid
+      for (auto& f : *filter_names) {
+        if (std::count(m_info.filter_names.begin(), m_info.filter_names.end(), f) == 0) {
+          throw Elements::Exception() << "Filter " << f << " missing from the model grid";
+        }
+      }
+      
+      // Here we know we need to make new photometries and replace the members
+      m_info.filter_names.clear();
+      m_info.filter_names.insert(m_info.filter_names.begin(), filter_names->begin(), filter_names->end());
+      
+      for (auto& pair : m_grids) {
+        for (auto& p : pair.second) {
+          std::vector<SourceCatalog::FluxErrorPair> values {};
+          for (auto& f : *filter_names) {
+            values.emplace_back(*(p.find(f)));
+          }
+          p = SourceCatalog::Photometry(filter_names, std::move(values));
+        }
+      }
+    }
   }
 }
 
