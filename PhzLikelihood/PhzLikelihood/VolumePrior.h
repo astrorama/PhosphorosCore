@@ -55,9 +55,12 @@ public:
    *    The cosmology to be used for distance computations
    * @param expected_redshifts
    *    The redshifts for which the prior will be precomputed
+   * @param effectiveness
+   *    The effectiveness of the prior in range [0,1]
    */
   VolumePrior(const PhysicsUtils::CosmologicalParameters& cosmology,
-              const std::vector<double>& expected_redshifts);
+              const std::vector<double>& expected_redshifts,
+              double effectiveness=1.);
 
   /**
    * @brief Destructor

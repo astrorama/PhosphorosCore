@@ -36,6 +36,7 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 static const std::string VOLUME_PRIOR {"volume-prior"};
+static const std::string VOLUME_PRIOR_EFFECTIVENESS {"volume-prior-effectiveness"};
 
 VolumePriorConfig::VolumePriorConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PriorConfig>();
@@ -46,7 +47,9 @@ VolumePriorConfig::VolumePriorConfig(long manager_id) : Configuration(manager_id
 auto VolumePriorConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Volume Prior options", {
     {VOLUME_PRIOR.c_str(), po::value<std::string>()->default_value("NO"),
-          "If added, turn Volume Prior on (YES/NO, default: NO)"}
+          "If added, turn Volume Prior on (YES/NO, default: NO)"},
+    {VOLUME_PRIOR_EFFECTIVENESS.c_str(), po::value<double>()->default_value(1.),
+          "A value in the range [0,1] showing how strongly to apply the prior"}
   }}};
 }
 
@@ -56,10 +59,16 @@ void VolumePriorConfig::preInitialize(const UserValues& args) {
     throw Elements::Exception() << "Invalid " + VOLUME_PRIOR + " value: "
         << args.at(VOLUME_PRIOR).as<std::string>() << " (allowed values: YES, NO)"; 
   }
+  auto eff = args.at(VOLUME_PRIOR_EFFECTIVENESS).as<double>();
+  if (eff < 0 || eff > 1) {
+    throw Elements::Exception() << "Invalid " + VOLUME_PRIOR_EFFECTIVENESS + " value: "
+        << eff << " (must be in range [0,1])"; 
+  }
 }
 
 void VolumePriorConfig::initialize(const UserValues& args) {
   if (args.at(VOLUME_PRIOR).as<std::string>() == "YES") {
+    double effectiveness = args.at(VOLUME_PRIOR_EFFECTIVENESS).as<double>();
     auto& cosmology = getDependency<CosmologicalParameterConfig>().getCosmologicalParam();
     std::set<double> zs {};
     for (auto& pair : getDependency<PhotometryGridConfig>().getPhotometryGridInfo().region_axes_map) {
@@ -68,7 +77,7 @@ void VolumePriorConfig::initialize(const UserValues& args) {
       }
     }
     std::vector<double> expected_redshifts {zs.begin(), zs.end()};
-    getDependency<PriorConfig>().addPrior(PhzLikelihood::VolumePrior(cosmology,expected_redshifts));
+    getDependency<PriorConfig>().addPrior(PhzLikelihood::VolumePrior(cosmology,expected_redshifts, effectiveness));
   }
 }
 
