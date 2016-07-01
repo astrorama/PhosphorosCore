@@ -135,7 +135,7 @@ private:
 } /* namespace PhzDataModel */
 } /* namespace Euclid */
 
-#include "_impl/SourceResults.icpp"
-#include "_impl/SourceResultTypeTraits.icpp"
+#include "PhzDataModel/_impl/SourceResults.icpp"
+#include "PhzDataModel/_impl/SourceResultTypeTraits.icpp"
 
 #endif

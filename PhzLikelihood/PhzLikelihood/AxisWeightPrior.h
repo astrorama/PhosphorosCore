@@ -85,6 +85,6 @@ private:
 } /* namespace PhzLikelihood */
 } /* namespace Euclid */
 
-#include "_impl/AxisWeightPrior.icpp"
+#include "PhzLikelihood/_impl/AxisWeightPrior.icpp"
 
 #endif

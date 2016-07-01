@@ -82,6 +82,6 @@ private:
 } /* namespace PhzLikelihood */
 } /* namespace Euclid */
 
-#include "_impl/AxisFunctionPrior.icpp"
+#include "PhzLikelihood/_impl/AxisFunctionPrior.icpp"
 
 #endif
