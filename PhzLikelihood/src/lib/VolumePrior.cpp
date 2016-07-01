@@ -53,6 +53,11 @@ VolumePrior::VolumePrior(const PhysicsUtils::CosmologicalParameters& cosmology,
   if (m_precomputed.count(0) > 0 && m_precomputed[0] == 0) {
     m_precomputed[0] = PhysicsUtils::CosmologicalDistances{}.dimensionlessComovingVolumeElement(1E-4, cosmology);
   }
+  
+  // We convert the precomputed to log space
+  for (auto& pair : m_precomputed) {
+    pair.second = std::log(pair.second);
+  }
 }
 
 void VolumePrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
