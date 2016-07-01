@@ -31,7 +31,8 @@ public:
 LuminosityPrior(
     std::unique_ptr<const LuminosityCalculator> luminosityCalculator,
     PhzDataModel::QualifiedNameGroupManager sedGroupManager,
-    LuminosityFunctionSet luminosityFunctionSet );
+    LuminosityFunctionSet luminosityFunctionSet,
+    double effectiveness=1.);
 
 void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
       const SourceCatalog::Photometry& sourcePhotometry,
@@ -43,6 +44,7 @@ private:
   std::unique_ptr<const LuminosityCalculator> m_luminosity_calculator;
   PhzDataModel::QualifiedNameGroupManager m_sed_group_manager;
   LuminosityFunctionSet m_luminosity_function_set;
+  double m_effectiveness;
 };
 
 }
