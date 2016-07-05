@@ -20,10 +20,12 @@ LuminosityPrior::LuminosityPrior(
     std::unique_ptr<const LuminosityCalculator> luminosityCalculator,
     PhzDataModel::QualifiedNameGroupManager sedGroupManager,
     LuminosityFunctionSet luminosityFunctionSet,
+    const PhysicsUtils::CosmologicalParameters& cosmology,
     double effectiveness):
 m_luminosity_calculator{std::move(luminosityCalculator)},
 m_sed_group_manager(std::move(sedGroupManager)),
 m_luminosity_function_set{std::move(luminosityFunctionSet)},
+m_mag_shift{-5. * std::log10(cosmology.getHubbleConstant() / 100.)},
 m_effectiveness{effectiveness} {
 
 }
@@ -79,7 +81,7 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
       while (prior_iter != prior_grid.end()) {
         double luminosity = (*m_luminosity_calculator)(scal_iter);
 
-        *prior_iter = luminosity_function(luminosity);
+        *prior_iter = luminosity_function(luminosity + m_mag_shift);
         if (*prior_iter > max) {
           max = *prior_iter;
         }

@@ -13,6 +13,8 @@
 #include <memory>
 
 #include "SourceCatalog/SourceAttributes/Photometry.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
+
 #include "PhzDataModel/LikelihoodGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
@@ -32,6 +34,7 @@ LuminosityPrior(
     std::unique_ptr<const LuminosityCalculator> luminosityCalculator,
     PhzDataModel::QualifiedNameGroupManager sedGroupManager,
     LuminosityFunctionSet luminosityFunctionSet,
+    const PhysicsUtils::CosmologicalParameters& cosmology,
     double effectiveness=1.);
 
 void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
@@ -44,7 +47,9 @@ private:
   std::unique_ptr<const LuminosityCalculator> m_luminosity_calculator;
   PhzDataModel::QualifiedNameGroupManager m_sed_group_manager;
   LuminosityFunctionSet m_luminosity_function_set;
+  double m_mag_shift;
   double m_effectiveness;
+  
 };
 
 }

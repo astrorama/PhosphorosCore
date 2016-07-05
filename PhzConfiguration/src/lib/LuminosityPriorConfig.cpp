@@ -189,7 +189,7 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
        std::move(luminosityCalculator),
        getDependency<LuminositySedGroupConfig>().getLuminositySedGroupManager(),
        PhzLuminosity::LuminosityFunctionSet{std::move(lum_function_vector)},
-       effectiveness}};
+       cosmological_param, effectiveness}};
 
      PhzLikelihood::SharedPriorAdapter<PhzLuminosity::LuminosityPrior> prior{prior_ptr};
 
