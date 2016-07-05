@@ -46,6 +46,10 @@ public:
    */
   virtual ~BestModelOutputConfig() = default;
 
+  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
+
+  void preInitialize(const UserValues& args) override;
+
   void initialize(const UserValues& args) override;
 
 }; /* End of BestModelOutputConfig class */

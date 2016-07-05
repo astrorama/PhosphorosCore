@@ -26,17 +26,41 @@
 #include "PhzConfiguration/OutputCatalogConfig.h"
 #include "PhzOutput/PhzColumnHandlers/BestModel.h"
 
+namespace po = boost::program_options;
+
 namespace Euclid {
 namespace PhzConfiguration {
+
+static const std::string CREATE_OUTPUT_BEST_MODEL_FLAG {"create-output-best-model"};
 
 BestModelOutputConfig::BestModelOutputConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<OutputCatalogConfig>();
 }
 
-void BestModelOutputConfig::initialize(const UserValues&) {
-  getDependency<OutputCatalogConfig>().addColumnHandler(
-      std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::BestModel{}}
-  );
+auto BestModelOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
+  return {{"Compute Redshifts options", {
+    {CREATE_OUTPUT_BEST_MODEL_FLAG.c_str(), po::value<std::string>()->default_value("YES"),
+        "Enables or disables the best model info in the output (YES/NO, default: YES)"}
+  }}};
+}
+
+void BestModelOutputConfig::preInitialize(const UserValues& args) {
+  
+  if (args.at(CREATE_OUTPUT_BEST_MODEL_FLAG).as<std::string>() != "YES" &&
+      args.at(CREATE_OUTPUT_BEST_MODEL_FLAG).as<std::string>() != "NO") {
+    throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_BEST_MODEL_FLAG
+        << ": " << args.at(CREATE_OUTPUT_BEST_MODEL_FLAG).as<std::string>();
+  }
+  
+}
+
+void BestModelOutputConfig::initialize(const UserValues& args) {
+  
+  if (args.at(CREATE_OUTPUT_BEST_MODEL_FLAG).as<std::string>() == "YES") {
+    getDependency<OutputCatalogConfig>().addColumnHandler(
+        std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::BestModel{}}
+    );
+  }
 }
 
 } // PhzConfiguration namespace
