@@ -104,10 +104,6 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
     *l_it += std::log(*p_it);
   }
   
-//  for (auto v : prior_grid) {
-//    logger.info() << v;
-//  }
-//  throw Elements::Exception() << "Done";
 }
 
 }
