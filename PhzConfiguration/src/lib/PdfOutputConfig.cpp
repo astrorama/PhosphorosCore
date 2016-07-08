@@ -28,7 +28,7 @@
 #include "PhzConfiguration/PhzOutputDirConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzOutput/PhzColumnHandlers/Pdf.h"
-#include "PhzOutput/PhzOutput/PdfOutput.h"
+#include "PhzOutput/PdfOutput.h"
 
 namespace po = boost::program_options;
 
