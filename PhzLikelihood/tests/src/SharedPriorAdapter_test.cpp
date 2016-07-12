@@ -9,7 +9,6 @@
 
 #include "XYDataset/QualifiedName.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzDataModel/DoubleGrid.h"
 
 #include "PhzLikelihood/SharedPriorAdapter.h"
@@ -26,14 +25,14 @@ struct SharedPriorAdaptor_Fixture {
     void operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
             const SourceCatalog::Photometry& sourcePhotometry,
             const PhzDataModel::PhotometryGrid& modelGrid,
-            const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const {
+            const PhzDataModel::DoubleGrid& scaleFactorGrid) const {
       internal_call(likelihoodGrid, sourcePhotometry, modelGrid, scaleFactorGrid);
     }
 
     MOCK_CONST_METHOD4(internal_call, void(PhzDataModel::DoubleGrid&,
         const SourceCatalog::Photometry&,
         const PhzDataModel::PhotometryGrid&,
-        const PhzDataModel::ScaleFactordGrid&));
+        const PhzDataModel::DoubleGrid&));
 
   };
 
@@ -47,7 +46,7 @@ struct SharedPriorAdaptor_Fixture {
   Euclid::PhzDataModel::ModelAxesTuple parameter_space= Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);
 
   // Create the Grids
-  PhzDataModel::ScaleFactordGrid scale_factor_grid{parameter_space};
+  PhzDataModel::DoubleGrid scale_factor_grid{parameter_space};
 
   PhzDataModel::PhotometryGrid photometry_grid {parameter_space};
 

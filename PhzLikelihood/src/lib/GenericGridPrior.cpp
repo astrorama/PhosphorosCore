@@ -35,7 +35,7 @@ GenericGridPrior::GenericGridPrior(std::vector<PhzDataModel::DoubleGrid> prior_g
 void GenericGridPrior::operator()(PhzDataModel::DoubleGrid& likelihood_grid,
                                   const SourceCatalog::Photometry&,
                                   const PhzDataModel::PhotometryGrid&,
-                                  const PhzDataModel::ScaleFactordGrid&) const {
+                                  const PhzDataModel::DoubleGrid&) const {
   for (auto& prior_grid : m_prior_grid_list) {
     if (prior_grid.getAxesTuple() == likelihood_grid.getAxesTuple()) {
       auto prior_it = prior_grid.begin();

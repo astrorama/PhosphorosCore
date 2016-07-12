@@ -29,7 +29,6 @@
 #include "ConfigManager_fixture.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/DoubleGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
@@ -40,7 +39,7 @@ struct DummyPrior{
   void operator()(Euclid::PhzDataModel::DoubleGrid&,
                   const Euclid::SourceCatalog::Photometry&,
                   const Euclid::PhzDataModel::PhotometryGrid&,
-                  const Euclid::PhzDataModel::ScaleFactordGrid&) {};
+                  const Euclid::PhzDataModel::DoubleGrid&) {};
 };
 
 //-----------------------------------------------------------------------------

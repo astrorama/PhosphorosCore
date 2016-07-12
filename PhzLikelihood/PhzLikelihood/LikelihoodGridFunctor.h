@@ -11,7 +11,6 @@
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/DoubleGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -33,7 +32,7 @@ public:
    * - A grid containing the scale factor of each model
    */
   using result_type = std::tuple<PhzDataModel::DoubleGrid,
-                                 PhzDataModel::ScaleFactordGrid>;
+                                 PhzDataModel::DoubleGrid>;
 
   /**
    * Definition of the STL-like algorithm for calculating the grid containing
@@ -46,7 +45,7 @@ public:
                              PhzDataModel::PhotometryGrid::const_iterator model_begin,
                              PhzDataModel::PhotometryGrid::const_iterator model_end,
                              PhzDataModel::DoubleGrid::iterator likelihood_log_begin,
-                             PhzDataModel::ScaleFactordGrid::iterator scale_factor_begin)
+                             PhzDataModel::DoubleGrid::iterator scale_factor_begin)
                        > LikelihoodLogarithmFunction;
 
   /**

@@ -26,7 +26,7 @@ struct LuminosityCalculator_Fixture {
   public:
 
     const PhzDataModel::PhotometryGrid::const_iterator fixIterator(
-           const PhzDataModel::ScaleFactordGrid::const_iterator&) const override{
+           const PhzDataModel::DoubleGrid::const_iterator&) const override{
       return m_model_photometry_grid->cbegin();
     }
 
@@ -55,7 +55,7 @@ struct LuminosityCalculator_Fixture {
   Euclid::PhzDataModel::ModelAxesTuple parameter_space= Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);
 
   // Create the scale factor Grid
-  PhzDataModel::ScaleFactordGrid scale_factor_grid{parameter_space};
+  PhzDataModel::DoubleGrid scale_factor_grid{parameter_space};
 
   std::vector<double> zs_mod{0.0};
   Euclid::PhzDataModel::ModelAxesTuple parameter_space_slice= Euclid::PhzDataModel::createAxesTuple(zs_mod,ebvs,reddeing_curves,seds);

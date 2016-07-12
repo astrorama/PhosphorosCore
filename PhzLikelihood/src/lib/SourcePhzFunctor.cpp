@@ -17,7 +17,6 @@
 #include "MathUtils/function/function_tools.h"
 #include "MathUtils/interpolation/interpolation.h"
 #include "PhzDataModel/DoubleGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
 
 namespace Euclid {

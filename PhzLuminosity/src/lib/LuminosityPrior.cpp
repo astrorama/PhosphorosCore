@@ -32,7 +32,7 @@ m_effectiveness{effectiveness} {
 
 void LuminosityPrior::operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
     const SourceCatalog::Photometry&, const PhzDataModel::PhotometryGrid&,
-    const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const {
+    const PhzDataModel::DoubleGrid& scaleFactorGrid) const {
 
   // We first create a grid that contains only the prior, so we can normalize
   // it and apply the efficiency

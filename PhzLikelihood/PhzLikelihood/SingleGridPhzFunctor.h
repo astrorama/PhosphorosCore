@@ -15,7 +15,6 @@
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/Pdf1D.h"
 #include "PhzDataModel/DoubleGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzLikelihood/LikelihoodGridFunctor.h"
 #include "PhzLikelihood/BayesianMarginalizationFunctor.h"
 
@@ -64,7 +63,7 @@ public:
   typedef std::function<void(PhzDataModel::DoubleGrid&,
                              const SourceCatalog::Photometry&,
                              const PhzDataModel::PhotometryGrid&,
-                             const PhzDataModel::ScaleFactordGrid&)> PriorFunction;
+                             const PhzDataModel::DoubleGrid&)> PriorFunction;
 
   /**
    * Constructs a new SingleGridPhzFunctor instance. It gets as parameters the

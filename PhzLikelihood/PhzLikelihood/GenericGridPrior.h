@@ -29,7 +29,6 @@
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzDataModel/DoubleGrid.h"
 
 namespace Euclid {
@@ -78,7 +77,7 @@ public:
   void operator()(PhzDataModel::DoubleGrid& likelihood_grid,
                   const SourceCatalog::Photometry&,
                   const PhzDataModel::PhotometryGrid&,
-                  const PhzDataModel::ScaleFactordGrid&) const;
+                  const PhzDataModel::DoubleGrid&) const;
 
 private:
   

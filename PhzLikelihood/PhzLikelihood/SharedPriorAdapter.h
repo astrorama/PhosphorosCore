@@ -10,7 +10,6 @@
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/DoubleGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
 
 
 namespace Euclid {
@@ -65,7 +64,7 @@ public:
   void operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
         const SourceCatalog::Photometry& sourcePhotometry,
         const PhzDataModel::PhotometryGrid& modelGrid,
-        const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const;
+        const PhzDataModel::DoubleGrid& scaleFactorGrid) const;
 
 private:
   std::shared_ptr<Prior> m_prior;

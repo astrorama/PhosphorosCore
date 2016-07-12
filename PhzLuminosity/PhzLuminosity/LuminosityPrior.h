@@ -17,7 +17,6 @@
 
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
 
 #include "PhzLuminosity/LuminosityFunctionSet.h"
 #include "PhzLuminosity/LuminosityCalculator.h"
@@ -40,7 +39,7 @@ LuminosityPrior(
 void operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
       const SourceCatalog::Photometry& sourcePhotometry,
       const PhzDataModel::PhotometryGrid& modelGrid,
-      const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const;
+      const PhzDataModel::DoubleGrid& scaleFactorGrid) const;
 
 private:
 

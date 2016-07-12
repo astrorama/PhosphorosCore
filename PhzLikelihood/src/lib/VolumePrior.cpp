@@ -63,7 +63,7 @@ VolumePrior::VolumePrior(const PhysicsUtils::CosmologicalParameters& cosmology,
 void VolumePrior::operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
                              const SourceCatalog::Photometry&,
                              const PhzDataModel::PhotometryGrid&,
-                             const PhzDataModel::ScaleFactordGrid&) const {
+                             const PhzDataModel::DoubleGrid&) const {
   for (auto iter = likelihoodGrid.begin(); iter != likelihoodGrid.end(); ++iter) {
     *iter += m_precomputed.at(iter.axisValue<PhzDataModel::ModelParameter::Z>());
   }

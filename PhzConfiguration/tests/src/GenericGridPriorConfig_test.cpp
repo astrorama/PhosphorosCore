@@ -27,7 +27,6 @@
 #include "GridContainer/serialize.h"
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzConfiguration/GenericGridPriorConfig.h"
 #include "ConfigManager_fixture.h"
@@ -56,7 +55,7 @@ struct GenericGridPriorConfig_fixture : public ConfigManager_fixture {
   
   PhzDataModel::DoubleGrid likelihood_grid {axes};
   PhzDataModel::PhotometryGrid model_grid {axes};
-  PhzDataModel::ScaleFactordGrid scale_grid {axes};
+  PhzDataModel::DoubleGrid scale_grid {axes};
   
   std::shared_ptr<std::vector<std::string>> filters {new std::vector<std::string> {"filter"}};
   std::vector<SourceCatalog::FluxErrorPair> phot_values {{1.1, 0.}};

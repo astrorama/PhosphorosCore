@@ -22,7 +22,7 @@ namespace PhzLikelihood {
   void SharedPriorAdapter<Prior>::operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
         const SourceCatalog::Photometry& sourcePhotometry,
         const PhzDataModel::PhotometryGrid& modelGrid,
-        const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const{
+        const PhzDataModel::DoubleGrid& scaleFactorGrid) const{
     (*m_prior)(likelihoodGrid,sourcePhotometry,modelGrid,scaleFactorGrid);
   }
 
