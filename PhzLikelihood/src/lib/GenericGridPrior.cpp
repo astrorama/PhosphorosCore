@@ -28,7 +28,7 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
-GenericGridPrior::GenericGridPrior(std::vector<PhzDataModel::PriorGrid> prior_grid_list)
+GenericGridPrior::GenericGridPrior(std::vector<PhzDataModel::DoubleGrid> prior_grid_list)
         : m_prior_grid_list{std::move(prior_grid_list)} {
 }
 

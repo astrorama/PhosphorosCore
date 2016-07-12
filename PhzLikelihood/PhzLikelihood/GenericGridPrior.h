@@ -30,7 +30,7 @@
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
-#include "PhzDataModel/PriorGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -50,7 +50,7 @@ public:
   
   /// Constructs a new GenericGridPrior, which can handle likelihood grids with
   /// the same axes as the given prior grid list
-  GenericGridPrior(std::vector<PhzDataModel::PriorGrid> prior_grid_list);
+  GenericGridPrior(std::vector<PhzDataModel::DoubleGrid> prior_grid_list);
 
   /**
    * @brief Destructor
@@ -82,7 +82,7 @@ public:
 
 private:
   
-  std::vector<PhzDataModel::PriorGrid> m_prior_grid_list;
+  std::vector<PhzDataModel::DoubleGrid> m_prior_grid_list;
 
 }; /* End of GenericGridPrior class */
 

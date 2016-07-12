@@ -9,7 +9,7 @@
 #include <functional>
 #include "MathUtils/function/Function.h"
 #include "PhzLuminosity/LuminosityPrior.h"
-#include "PhzDataModel/PriorGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
@@ -36,7 +36,7 @@ void LuminosityPrior::operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
 
   // We first create a grid that contains only the prior, so we can normalize
   // it and apply the efficiency
-  PhzDataModel::PriorGrid prior_grid {likelihoodGrid.getAxesTuple()};
+  PhzDataModel::DoubleGrid prior_grid {likelihoodGrid.getAxesTuple()};
   for (auto& cell : prior_grid) {
     cell = 1.;
   }

@@ -46,15 +46,15 @@ struct AxisFunctionPrior_Fixture {
   std::vector<SourceCatalog::FluxErrorPair> phot_values {{1.1, 0.}};
   SourceCatalog::Photometry photometry {filters, phot_values};
   
-  PriorGrid prior_grid {axes};
+  DoubleGrid prior_grid {axes};
   
   std::vector<double> dummy_zs_1 {0.3};
   PhzDataModel::ModelAxesTuple dummy_axes_1 = PhzDataModel::createAxesTuple(dummy_zs_1, ebvs, reddeing_curves, seds);
-  PriorGrid dummy_prior_grid_1 {dummy_axes_1};
+  DoubleGrid dummy_prior_grid_1 {dummy_axes_1};
   
   std::vector<double> dummy_zs_2 {0.4};
   PhzDataModel::ModelAxesTuple dummy_axes_2 = PhzDataModel::createAxesTuple(dummy_zs_2, ebvs, reddeing_curves, seds);
-  PriorGrid dummy_prior_grid_2 {dummy_axes_2};
+  DoubleGrid dummy_prior_grid_2 {dummy_axes_2};
   
 };
 
@@ -76,7 +76,7 @@ BOOST_FIXTURE_TEST_CASE(prior_application, AxisFunctionPrior_Fixture) {
           it.axisIndex<ModelParameter::EBV>() +
           it.axisIndex<ModelParameter::Z>();
   }
-  std::vector<PriorGrid> prior_grid_list {};
+  std::vector<DoubleGrid> prior_grid_list {};
   prior_grid_list.emplace_back(std::move(dummy_prior_grid_1));
   prior_grid_list.emplace_back(std::move(prior_grid));
   prior_grid_list.emplace_back(std::move(dummy_prior_grid_2));
@@ -100,7 +100,7 @@ BOOST_FIXTURE_TEST_CASE(prior_application, AxisFunctionPrior_Fixture) {
 BOOST_FIXTURE_TEST_CASE(missing_prior_grid, AxisFunctionPrior_Fixture) {
 
   // Given
-  std::vector<PriorGrid> prior_grid_list {};
+  std::vector<DoubleGrid> prior_grid_list {};
   prior_grid_list.emplace_back(std::move(dummy_prior_grid_1));
   prior_grid_list.emplace_back(std::move(dummy_prior_grid_2));
   

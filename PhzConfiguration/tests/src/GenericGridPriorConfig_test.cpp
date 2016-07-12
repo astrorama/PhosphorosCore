@@ -25,7 +25,6 @@
 #include <boost/test/unit_test.hpp>
 #include "ElementsKernel/Temporary.h"
 #include "GridContainer/serialize.h"
-#include "PhzDataModel/PriorGrid.h"
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
@@ -71,7 +70,7 @@ struct GenericGridPriorConfig_fixture : public ConfigManager_fixture {
       l = 1.;
     }
     
-    PhzDataModel::PriorGrid prior_grid {axes};
+    PhzDataModel::DoubleGrid prior_grid {axes};
     for (auto it = prior_grid.begin(); it != prior_grid.end(); ++it) {
       *it = it.axisIndex<PhzDataModel::ModelParameter::SED>() *
               it.axisIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>() *
