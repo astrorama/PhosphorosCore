@@ -72,7 +72,7 @@ public:
                    LikelihoodGridFunction likelihood_grid_func,
                    std::vector<PriorFunction> priors = {},
                    MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor{},
-                   BestFitSearchFunction best_fit_search_func = std::max_element<PhzDataModel::LikelihoodGrid::iterator>);
+                   BestFitSearchFunction best_fit_search_func = std::max_element<PhzDataModel::DoubleGrid::iterator>);
 
   /**
    * Calculates the PHZ results for the given source photometry. The given

@@ -30,7 +30,7 @@ m_effectiveness{effectiveness} {
 
 }
 
-void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
+void LuminosityPrior::operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
     const SourceCatalog::Photometry&, const PhzDataModel::PhotometryGrid&,
     const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const {
 

@@ -29,7 +29,7 @@
 #include <map>
 #include "PhysicsUtils/CosmologicalParameters.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 
@@ -86,7 +86,7 @@ public:
    *    If the given likelihood grid Z axis contains knots which are not included
    *    the the expected_redshifts parameter of the constructor
    */
-  void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
+  void operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
                   const SourceCatalog::Photometry& sourcePhotometry,
                   const PhzDataModel::PhotometryGrid& modelGrid,
                   const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const;

@@ -8,7 +8,7 @@ namespace Euclid {
 namespace PhzLikelihood {
 
 template <int FinalAxis>
-auto SumMarginalizationFunctor<FinalAxis>::operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const -> result_type {
+auto SumMarginalizationFunctor<FinalAxis>::operator()(const PhzDataModel::DoubleGrid& likelihood_grid) const -> result_type {
   
   // Calculate the result as addition of the rest axes
   result_type result {likelihood_grid.getAxis<FinalAxis>()};

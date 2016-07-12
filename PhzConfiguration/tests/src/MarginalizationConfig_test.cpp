@@ -47,7 +47,7 @@ struct MarginalizationConfig_fixture : public ConfigManager_fixture {
   std::vector<Euclid::XYDataset::QualifiedName> seds {{"sed1"}, {"sed2"}};
   ModelAxesTuple axes = createAxesTuple(zs, ebvs, red_curves, seds);
   
-  LikelihoodGrid likelihood_grid {axes};
+  DoubleGrid likelihood_grid {axes};
   
   std::map<std::string, po::variable_value> options_map {};
   
@@ -63,7 +63,7 @@ struct MarginalizationConfig_fixture : public ConfigManager_fixture {
       }
       void preInitialize(const UserValues&) {
         getDependency<MarginalizationConfig>().addMarginalizationCorrection(ModelParameter::SED, 
-                [](PhzDataModel::LikelihoodGrid& grid) {
+                [](PhzDataModel::DoubleGrid& grid) {
                   for (auto& cell : grid.fixAxisByIndex<ModelParameter::Z>(0)) {
                     cell = cell * 2;
                   }

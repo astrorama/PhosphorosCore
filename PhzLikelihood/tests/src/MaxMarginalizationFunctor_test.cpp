@@ -19,7 +19,7 @@ struct MaxMarginalizationFunctor_Fixture {
   std::vector<XYDataset::QualifiedName> reddening_curves {{"Curve1"}, {"Curve2"}};
   std::vector<XYDataset::QualifiedName> seds {{"Sed1"}, {"Sed2"}};
   
-  PhzDataModel::LikelihoodGrid likelihood_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
+  PhzDataModel::DoubleGrid likelihood_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
   
 };
 

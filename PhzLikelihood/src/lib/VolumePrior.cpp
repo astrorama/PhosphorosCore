@@ -60,7 +60,7 @@ VolumePrior::VolumePrior(const PhysicsUtils::CosmologicalParameters& cosmology,
   }
 }
 
-void VolumePrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
+void VolumePrior::operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
                              const SourceCatalog::Photometry&,
                              const PhzDataModel::PhotometryGrid&,
                              const PhzDataModel::ScaleFactordGrid&) const {

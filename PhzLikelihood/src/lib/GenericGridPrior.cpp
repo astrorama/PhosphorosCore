@@ -32,7 +32,7 @@ GenericGridPrior::GenericGridPrior(std::vector<PhzDataModel::PriorGrid> prior_gr
         : m_prior_grid_list{std::move(prior_grid_list)} {
 }
 
-void GenericGridPrior::operator()(PhzDataModel::LikelihoodGrid& likelihood_grid,
+void GenericGridPrior::operator()(PhzDataModel::DoubleGrid& likelihood_grid,
                                   const SourceCatalog::Photometry&,
                                   const PhzDataModel::PhotometryGrid&,
                                   const PhzDataModel::ScaleFactordGrid&) const {

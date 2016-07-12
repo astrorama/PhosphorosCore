@@ -15,7 +15,7 @@
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhysicsUtils/CosmologicalParameters.h"
 
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 
@@ -37,7 +37,7 @@ LuminosityPrior(
     const PhysicsUtils::CosmologicalParameters& cosmology,
     double effectiveness=1.);
 
-void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
+void operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
       const SourceCatalog::Photometry& sourcePhotometry,
       const PhzDataModel::PhotometryGrid& modelGrid,
       const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const;

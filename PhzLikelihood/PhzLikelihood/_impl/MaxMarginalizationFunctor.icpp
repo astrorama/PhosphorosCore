@@ -10,7 +10,7 @@ namespace Euclid {
 namespace PhzLikelihood {
 
 template <int FinalAxis>
-auto MaxMarginalizationFunctor<FinalAxis>::operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const -> result_type {
+auto MaxMarginalizationFunctor<FinalAxis>::operator()(const PhzDataModel::DoubleGrid& likelihood_grid) const -> result_type {
   
   // Calculate the result as maximum of the rest axes
   result_type result {likelihood_grid.getAxis<FinalAxis>()};

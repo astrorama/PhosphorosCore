@@ -12,7 +12,7 @@
 #include "ElementsKernel/Real.h"
 #include "ElementsKernel/EnableGMock.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "FluxErrorPair_boost.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzLikelihood/LikelihoodGridFunctor.h"
@@ -68,7 +68,7 @@ public:
                       return true;
                     } ))
         )).WillOnce(Return(new PhzLikelihood::LikelihoodGridFunctor::result_type {
-                                        PhzDataModel::LikelihoodGrid{phot_grid.getAxesTuple()},
+                                        PhzDataModel::DoubleGrid{phot_grid.getAxesTuple()},
                                         PhzDataModel::ScaleFactordGrid{phot_grid.getAxesTuple()}
                     }));
   }

@@ -98,7 +98,7 @@ void SingleGridPhzFunctor::computeEverything(const PhzDataModel::PhotometryGrid&
   // First we have to produce a grid with the posterior not in log and
   // scaled to have peak = 1
   double norm_log = *std::max_element(posterior_grid.begin(), posterior_grid.end());
-  PhzDataModel::LikelihoodGrid posterior_grid_normalized {posterior_grid.getAxesTuple()};
+  PhzDataModel::DoubleGrid posterior_grid_normalized {posterior_grid.getAxesTuple()};
   for (auto log_it=posterior_grid.begin(), norm_it=posterior_grid_normalized.begin();
           log_it!=posterior_grid.end(); ++log_it, ++norm_it) {
     *norm_it = std::exp(*log_it - norm_log);

@@ -8,7 +8,7 @@
 #define _PHZLIKELIHOOD_GROUPEDAXISCORRECTION_H
 
 #include "PhzDataModel/QualifiedNameGroupManager.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -52,7 +52,7 @@ public:
    *    If the given grid has an axis value that is not belonging to any of the
    *    groups passed at the constructor
    */
-  void operator()(PhzDataModel::LikelihoodGrid& likelihood_grid);
+  void operator()(PhzDataModel::DoubleGrid& likelihood_grid);
 
 private:
   

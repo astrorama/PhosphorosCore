@@ -10,7 +10,7 @@
 #include "XYDataset/QualifiedName.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 
 #include "PhzLikelihood/SharedPriorAdapter.h"
 
@@ -23,14 +23,14 @@ struct SharedPriorAdaptor_Fixture {
   class PriorMock{
   public:
 
-    void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
+    void operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
             const SourceCatalog::Photometry& sourcePhotometry,
             const PhzDataModel::PhotometryGrid& modelGrid,
             const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const {
       internal_call(likelihoodGrid, sourcePhotometry, modelGrid, scaleFactorGrid);
     }
 
-    MOCK_CONST_METHOD4(internal_call, void(PhzDataModel::LikelihoodGrid&,
+    MOCK_CONST_METHOD4(internal_call, void(PhzDataModel::DoubleGrid&,
         const SourceCatalog::Photometry&,
         const PhzDataModel::PhotometryGrid&,
         const PhzDataModel::ScaleFactordGrid&));
@@ -51,7 +51,7 @@ struct SharedPriorAdaptor_Fixture {
 
   PhzDataModel::PhotometryGrid photometry_grid {parameter_space};
 
-  PhzDataModel::LikelihoodGrid likelihood_grid {parameter_space};
+  PhzDataModel::DoubleGrid likelihood_grid {parameter_space};
 
 
   // Shared pointer of filter name vector

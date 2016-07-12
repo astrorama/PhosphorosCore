@@ -28,7 +28,7 @@
 #include <memory>
 #include "MathUtils/function/Function.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 
@@ -68,7 +68,7 @@ public:
    * @param scaleFactorGrid
    *    This parameter is not used by this prior
    */
-  void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
+  void operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
                   const SourceCatalog::Photometry& sourcePhotometry,
                   const PhzDataModel::PhotometryGrid& modelGrid,
                   const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const;

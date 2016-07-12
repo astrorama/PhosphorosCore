@@ -30,7 +30,7 @@ AxisWeightPrior<AxisIndex>::AxisWeightPrior(std::map<XYDataset::QualifiedName, d
 }
 
 template <int AxisIndex>
-void AxisWeightPrior<AxisIndex>::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
+void AxisWeightPrior<AxisIndex>::operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
                                             const SourceCatalog::Photometry&,
                                             const PhzDataModel::PhotometryGrid&,
                                             const PhzDataModel::ScaleFactordGrid&) const {

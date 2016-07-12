@@ -23,12 +23,9 @@
 
 #include <type_traits>
 #include <map>
-#include <vector>
 #include <string>
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/Pdf1D.h"
-#include "PhzDataModel/LikelihoodGrid.h"
-#include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/RegionResults.h"
 
 namespace Euclid {

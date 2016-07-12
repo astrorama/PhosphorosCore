@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE( functorCall ) {
   std::vector<double> ebv_values {0.0, 0.01, 0.03, 0.04, 0.05};
   std::vector<XYDataset::QualifiedName> reddening_curves {{"Curve1"}, {"Curve2"}};
   std::vector<XYDataset::QualifiedName> seds {{"Sed1"}, {"Sed2"}, {"Sed3"}, {"Sed4"}, {"Sed5"}, {"Sed6"}};
-  PhzDataModel::LikelihoodGrid likelihood_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
+  PhzDataModel::DoubleGrid likelihood_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
   for (auto& cell : likelihood_grid) {
     cell = 1.;
   }
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE( functorCall_exception ) {
   std::vector<double> ebv_values {0.0, 0.01, 0.03, 0.04, 0.05};
   std::vector<XYDataset::QualifiedName> reddening_curves {{"Curve1"}, {"Curve2"}};
   std::vector<XYDataset::QualifiedName> seds {{"Sed1"}, {"Sed2"}, {"Sed3"}, {"Sed4"}, {"Sed5"}, {"Sed6"}};
-  PhzDataModel::LikelihoodGrid likelihood_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
+  PhzDataModel::DoubleGrid likelihood_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
   for (auto& cell : likelihood_grid) {
     cell = 1.;
   }

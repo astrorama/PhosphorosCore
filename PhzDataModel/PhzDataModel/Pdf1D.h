@@ -8,16 +8,16 @@
 #define	PHZDATAMODEL_PDF1D_H
 
 #include "GridContainer/GridContainer.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhzModel.h"
 
 namespace Euclid {
 namespace PhzDataModel {
 
 template <typename T>
-using Pdf1D = GridContainer::GridContainer<std::vector<LikelihoodGrid::cell_type>, T>;
+using Pdf1D = GridContainer::GridContainer<std::vector<DoubleGrid::cell_type>, T>;
 
-using Pdf1DZ = Pdf1D<PhzDataModel::LikelihoodGrid::axis_type<PhzDataModel::ModelParameter::Z>>;
+using Pdf1DZ = Pdf1D<DoubleGrid::axis_type<ModelParameter::Z>>;
 
 } // end of namespace PhzDataModel
 } // end of namespace Euclid

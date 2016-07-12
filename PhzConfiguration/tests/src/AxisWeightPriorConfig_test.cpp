@@ -25,7 +25,7 @@
 #include <fstream>
 #include <boost/test/unit_test.hpp>
 #include "ElementsKernel/Temporary.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzConfiguration/AxisWeightPriorConfig.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "ConfigManager_fixture.h"
@@ -54,7 +54,7 @@ struct AxisWeightPriorConfig_fixture : public ConfigManager_fixture {
   std::vector<XYDataset::QualifiedName> seds {{"sed1"}, {"sed2"}, {"sed3"}};
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
   
-  PhzDataModel::LikelihoodGrid likelihood_grid {axes};
+  PhzDataModel::DoubleGrid likelihood_grid {axes};
   PhzDataModel::PhotometryGrid model_grid {axes};
   PhzDataModel::ScaleFactordGrid scale_grid {axes};
   

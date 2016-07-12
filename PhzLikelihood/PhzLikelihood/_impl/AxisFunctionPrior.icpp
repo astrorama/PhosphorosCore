@@ -30,7 +30,7 @@ AxisFunctionPrior<AxisIndex>::AxisFunctionPrior(std::unique_ptr<MathUtils::Funct
 }
   
 template <int AxisIndex>
-void AxisFunctionPrior<AxisIndex>::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
+void AxisFunctionPrior<AxisIndex>::operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
                                               const SourceCatalog::Photometry&,
                                               const PhzDataModel::PhotometryGrid&,
                                               const PhzDataModel::ScaleFactordGrid&) const {

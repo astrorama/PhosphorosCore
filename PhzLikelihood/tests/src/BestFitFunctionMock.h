@@ -11,7 +11,7 @@
 #include <boost/test/test_tools.hpp>
 #include "ElementsKernel/EnableGMock.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
 #include "FluxErrorPair_boost.h"
 
@@ -28,7 +28,7 @@ public:
 
   virtual ~BestFitFunctionMock() = default;
 
-  typedef PhzDataModel::LikelihoodGrid::iterator likely_iter;
+  typedef PhzDataModel::DoubleGrid::iterator likely_iter;
 
   MOCK_METHOD2(FunctorCall, likely_iter(likely_iter likelihood_begin, likely_iter likelihood_end));
 
@@ -40,8 +40,8 @@ public:
   // used when these actions are needed (the mock instance does not support them). Note
   // that this object is valid only as long as the mock object is not deleted.
   PhzLikelihood::SourcePhzFunctor::BestFitSearchFunction getFunctorObject() {
-    return [=](PhzDataModel::LikelihoodGrid::iterator likelihood_begin,
-               PhzDataModel::LikelihoodGrid::iterator likelihood_end) {
+    return [=](PhzDataModel::DoubleGrid::iterator likelihood_begin,
+               PhzDataModel::DoubleGrid::iterator likelihood_end) {
       return this->FunctorCall(likelihood_begin, likelihood_end);
     };
   }

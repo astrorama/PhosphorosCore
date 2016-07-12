@@ -26,7 +26,7 @@
 #include "ElementsKernel/Temporary.h"
 #include "GridContainer/serialize.h"
 #include "PhzDataModel/PriorGrid.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzConfiguration/PriorConfig.h"
@@ -55,7 +55,7 @@ struct GenericGridPriorConfig_fixture : public ConfigManager_fixture {
   std::vector<XYDataset::QualifiedName> seds {{"sed1"}, {"sed2"}, {"sed3"}};
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
   
-  PhzDataModel::LikelihoodGrid likelihood_grid {axes};
+  PhzDataModel::DoubleGrid likelihood_grid {axes};
   PhzDataModel::PhotometryGrid model_grid {axes};
   PhzDataModel::ScaleFactordGrid scale_grid {axes};
   

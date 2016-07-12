@@ -24,7 +24,7 @@
 
 #include "ElementsKernel/Exception.h"
 #include "PhzDataModel/Pdf1D.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzOutput/MultithreadHandler.h"
 #include "PhzUtils/Multithreading.h"
 

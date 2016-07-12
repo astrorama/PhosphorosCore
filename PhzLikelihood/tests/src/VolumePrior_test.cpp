@@ -37,7 +37,7 @@ struct VolumePrior_Fixture {
   std::vector<XYDataset::QualifiedName> seds {{"sed1"}, {"sed2"}};
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
   
-  PhzDataModel::LikelihoodGrid likelihood_grid {axes};
+  PhzDataModel::DoubleGrid likelihood_grid {axes};
   PhzDataModel::PhotometryGrid model_grid {axes};
   PhzDataModel::ScaleFactordGrid scale_grid {axes};
   

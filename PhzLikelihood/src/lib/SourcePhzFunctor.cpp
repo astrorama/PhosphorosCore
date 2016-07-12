@@ -16,7 +16,7 @@
 #include "MathUtils/function/Function.h"
 #include "MathUtils/function/function_tools.h"
 #include "MathUtils/interpolation/interpolation.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
 

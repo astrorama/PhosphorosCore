@@ -10,7 +10,7 @@
 #include <tuple>
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 
 namespace Euclid {
@@ -32,7 +32,7 @@ public:
    * - A grid containing the Likelihood logarithm of each model
    * - A grid containing the scale factor of each model
    */
-  using result_type = std::tuple<PhzDataModel::LikelihoodGrid,
+  using result_type = std::tuple<PhzDataModel::DoubleGrid,
                                  PhzDataModel::ScaleFactordGrid>;
 
   /**
@@ -45,7 +45,7 @@ public:
   typedef std::function<void(const SourceCatalog::Photometry& source_photometry,
                              PhzDataModel::PhotometryGrid::const_iterator model_begin,
                              PhzDataModel::PhotometryGrid::const_iterator model_end,
-                             PhzDataModel::LikelihoodGrid::iterator likelihood_log_begin,
+                             PhzDataModel::DoubleGrid::iterator likelihood_log_begin,
                              PhzDataModel::ScaleFactordGrid::iterator scale_factor_begin)
                        > LikelihoodLogarithmFunction;
 

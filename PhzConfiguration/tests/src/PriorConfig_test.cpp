@@ -28,7 +28,7 @@
 #include "PhzConfiguration/PriorConfig.h"
 #include "ConfigManager_fixture.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 
 using namespace Euclid::PhzConfiguration;
@@ -37,7 +37,7 @@ namespace fs = boost::filesystem;
 
 
 struct DummyPrior{
-  void operator()(Euclid::PhzDataModel::LikelihoodGrid&,
+  void operator()(Euclid::PhzDataModel::DoubleGrid&,
                   const Euclid::SourceCatalog::Photometry&,
                   const Euclid::PhzDataModel::PhotometryGrid&,
                   const Euclid::PhzDataModel::ScaleFactordGrid&) {};

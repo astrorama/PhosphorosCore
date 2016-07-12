@@ -18,7 +18,7 @@ LikelihoodGridFunctor::LikelihoodGridFunctor(LikelihoodLogarithmFunction likelih
 auto LikelihoodGridFunctor::operator()(const SourceCatalog::Photometry& source_phot,
                          const PhzDataModel::PhotometryGrid& phot_grid) -> result_type {
   // Create new likelihood and scale factor grids, with all cells set to 0
-  PhzDataModel::LikelihoodGrid likelihood_grid {phot_grid.getAxesTuple()};
+  PhzDataModel::DoubleGrid likelihood_grid {phot_grid.getAxesTuple()};
   PhzDataModel::ScaleFactordGrid scale_factor_grid {phot_grid.getAxesTuple()};
 
   // Calculate the natural logarithm of the likelihood over the grid

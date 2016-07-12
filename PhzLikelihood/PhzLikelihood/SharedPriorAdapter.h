@@ -9,7 +9,7 @@
 
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 
 
@@ -62,7 +62,7 @@ public:
   /**
    * @brief function call operator. Has the signature to be used as a PriorFunction.
    */
-  void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
+  void operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
         const SourceCatalog::Photometry& sourcePhotometry,
         const PhzDataModel::PhotometryGrid& modelGrid,
         const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const;

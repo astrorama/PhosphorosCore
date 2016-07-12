@@ -27,7 +27,7 @@
 
 #include <vector>
 #include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzDataModel/PriorGrid.h"
@@ -75,7 +75,7 @@ public:
    * @throws Elements::Exception
    *    If there was no prior grid with the same axes given during construction
    */
-  void operator()(PhzDataModel::LikelihoodGrid& likelihood_grid,
+  void operator()(PhzDataModel::DoubleGrid& likelihood_grid,
                   const SourceCatalog::Photometry&,
                   const PhzDataModel::PhotometryGrid&,
                   const PhzDataModel::ScaleFactordGrid&) const;
