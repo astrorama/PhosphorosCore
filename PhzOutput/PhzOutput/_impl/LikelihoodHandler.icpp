@@ -18,8 +18,8 @@ namespace PhzOutput {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
-template<PhzDataModel::SourceResultType GridMap>
-LikelihoodHandler<GridMap>::LikelihoodHandler(boost::filesystem::path out_dir)
+template<PhzDataModel::RegionResultType GridType>
+LikelihoodHandler<GridType>::LikelihoodHandler(boost::filesystem::path out_dir)
           : m_out_dir{std::move(out_dir)} {
 
   // Check directory and write permissions
@@ -27,19 +27,19 @@ LikelihoodHandler<GridMap>::LikelihoodHandler(boost::filesystem::path out_dir)
 
 }
 
-template<PhzDataModel::SourceResultType GridMap>
-void LikelihoodHandler<GridMap>::handleSourceOutput(
+template<PhzDataModel::RegionResultType GridType>
+void LikelihoodHandler<GridType>::handleSourceOutput(
                                           const SourceCatalog::Source& source,
                                           const PhzDataModel::SourceResults& results) {
   std::string id = std::to_string(source.getId());
   std::string filename = (m_out_dir/(id+".fits")).string();
   fs::remove(filename);
-  auto& posteriors_map = results.getResult<GridMap>();
   
-  for (auto& pair : posteriors_map) {
-    GridContainer::gridFitsExport(filename, pair.first, pair.second);
+  for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
+    auto& grid = pair.second.get<GridType>();
+    GridContainer::gridFitsExport(filename, pair.first, grid);
     CCfits::FITS fits (filename, CCfits::Write);
-    auto& array_hdu = fits.extension(fits.extension().size() - pair.second.axisNumber());
+    auto& array_hdu = fits.extension(fits.extension().size() - grid.axisNumber());
     array_hdu.addKey("ID", source.getId(), "");
   }
   

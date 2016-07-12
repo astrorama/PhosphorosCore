@@ -6,23 +6,26 @@
 
 #include <algorithm>
 #include "PhzLikelihood/SingleGridPhzFunctor.h"
+#include "PhzDataModel/RegionResults.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
 
-SingleGridPhzFunctor::SingleGridPhzFunctor(const std::string& region_name,
-                                           const PhzDataModel::PhotometryGrid& phot_grid,
-                                           std::vector<PriorFunction> priors,
+
+SingleGridPhzFunctor::SingleGridPhzFunctor(std::vector<PriorFunction> priors,
                                            MarginalizationFunction marginalization_func,
                                            LikelihoodGridFunction likelihood_func,
                                            BestFitSearchFunction best_fit_search_func)
-        : m_region_name{region_name}, m_phot_grid(phot_grid), m_priors{std::move(priors)},
+        : m_priors{std::move(priors)},
           m_marginalization_func{std::move(marginalization_func)},
           m_likelihood_func{std::move(likelihood_func)},
           m_best_fit_search_func{std::move(best_fit_search_func)} {
 }
+   
           
 namespace {
+
+using ResType = PhzDataModel::RegionResultType;
 
 std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixed_z) {
   auto& z_axis = grid.getAxis<PhzDataModel::ModelParameter::Z>();
@@ -40,35 +43,46 @@ std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixe
 }
 
 } // end of anonymous namespace
-          
-void SingleGridPhzFunctor::operator()(const SourceCatalog::Photometry& source_phot,
-                                      PhzDataModel::SourceResults& results, double fixed_z) const {
   
-  if (fixed_z < 0) {
-    computeEverything(source_phot, m_phot_grid, results);
-  } else {
-    auto& z_axis = m_phot_grid.getAxis<PhzDataModel::ModelParameter::Z>();
+
+void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) const {
+  
+  auto& model_grid = results.get<ResType::MODEL_GRID_REFERENCE>().get();
+  
+  if (results.contains<ResType::FIXED_REDSHIFT>()) {
+    
+    double fixed_z = results.get<ResType::FIXED_REDSHIFT>();
+    auto& z_axis = model_grid.getAxis<PhzDataModel::ModelParameter::Z>();
   // If we have a fixed redshift and we are out of range we skip everything
     if (fixed_z < z_axis[0] || fixed_z > z_axis[z_axis.size()-1]) {
       return;
     }
-    auto fixed_z_index = getFixedZIndex(m_phot_grid, fixed_z);
-    auto& fixed_phot_grid = m_phot_grid.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(fixed_z_index);
-    computeEverything(source_phot, fixed_phot_grid, results);
+    auto fixed_z_index = getFixedZIndex(model_grid, fixed_z);
+    auto& fixed_model_grid = model_grid.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(fixed_z_index);
+    computeEverything(fixed_model_grid, results);
+    
+  } else {
+    
+    computeEverything(model_grid, results);
+    
   }
 
 }
 
-void SingleGridPhzFunctor::computeEverything(const SourceCatalog::Photometry& source_phot,
-                                             const PhzDataModel::PhotometryGrid& phot_grid,
-                                             PhzDataModel::SourceResults& results) const {
+
+void SingleGridPhzFunctor::computeEverything(const PhzDataModel::PhotometryGrid& phot_grid,
+                                             PhzDataModel::RegionResults& results) const {
+  
+  // Get from the results what we need for the computation
+  auto& source_phot = results.get<ResType::SOURCE_PHOTOMETRY_REFERENCE>().get();
+  
   // Calculate the likelihood over all the models
   auto likelihood_res = m_likelihood_func(source_phot, phot_grid);
-  PhzDataModel::LikelihoodGrid likelihood_grid {std::move(std::get<0>(likelihood_res))};
-  PhzDataModel::ScaleFactordGrid scale_factor_grid {std::move(std::get<1>(likelihood_res))};
+  auto& likelihood_grid = results.set<ResType::LIKELIHOOD_GRID>(std::move(std::get<0>(likelihood_res)));
+  auto& scale_factor_grid = results.set<ResType::SCALE_FACTOR_GRID>(std::move(std::get<1>(likelihood_res)));
   
-  // copy the likelihood Grid
-  PhzDataModel::LikelihoodGrid posterior_grid{likelihood_grid.getAxesTuple()};
+  // Create the posterior grid as a copy of the likelihood grid
+  auto& posterior_grid = results.set<ResType::POSTERIOR_GRID>(likelihood_grid.getAxesTuple());
   std::copy(likelihood_grid.begin(), likelihood_grid.end(), posterior_grid.begin());
 
   // Apply all the priors to the posterior
@@ -76,14 +90,9 @@ void SingleGridPhzFunctor::computeEverything(const SourceCatalog::Photometry& so
     prior(posterior_grid, source_phot, phot_grid, scale_factor_grid);
   }
   
-  // Select the best fitted model
+  // Find the best fitted model
   auto best_fit = m_best_fit_search_func(posterior_grid.begin(), posterior_grid.end());
-  // Create an iterator of PhotometryGrid instead of the LikelihoodGrid that we have
-  auto best_fit_result = m_phot_grid.begin();
-  best_fit_result.fixAllAxes(best_fit);
-  // Get an iterator to the scale factor of the best fit model
-  auto scale_factor_result = scale_factor_grid.begin();
-  scale_factor_result.fixAllAxes(best_fit);
+  results.set<ResType::BEST_MODEL_ITERATOR>(best_fit);
   
   // Calculate the 1D PDF
   // First we have to produce a grid with the posterior not in log and
@@ -96,21 +105,9 @@ void SingleGridPhzFunctor::computeEverything(const SourceCatalog::Photometry& so
   }
   // Now we can compute the 1D PDF
   auto pdf_1D = m_marginalization_func(posterior_grid_normalized);
+  results.set<ResType::Z_1D_PDF>(std::move(pdf_1D));
+  results.set<ResType::Z_1D_PDF_NORM_LOG>(norm_log);
   
-  // Add the results to the SourceResults object
-  results.getResult<PhzDataModel::SourceResultType::REGION_NAMES>().emplace_back(m_region_name);
-  results.getResult<PhzDataModel::SourceResultType::REGION_BEST_MODEL_ITERATOR>().emplace(
-                std::make_pair(m_region_name, best_fit_result));
-  results.getResult<PhzDataModel::SourceResultType::REGION_Z_1D_PDF>().emplace(
-                std::make_pair(m_region_name, std::move(pdf_1D)));
-  results.getResult<PhzDataModel::SourceResultType::REGION_Z_1D_PDF_NORM_LOG>().emplace(
-                std::make_pair(m_region_name, norm_log));
-  results.getResult<PhzDataModel::SourceResultType::REGION_LIKELIHOOD>().emplace(
-                std::make_pair(m_region_name, std::move(likelihood_grid)));
-  results.getResult<PhzDataModel::SourceResultType::REGION_POSTERIOR>().emplace(
-                std::make_pair(m_region_name, std::move(posterior_grid)));
-  results.getResult<PhzDataModel::SourceResultType::REGION_BEST_MODEL_SCALE_FACTOR>().emplace(
-                std::make_pair(m_region_name, *scale_factor_result));
 }
 
   

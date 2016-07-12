@@ -9,6 +9,7 @@
 #include <set>
 #include <memory>
 #include <limits>
+#include <utility>
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
@@ -24,16 +25,24 @@ namespace PhzLikelihood {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzLikelihood");
 
+namespace {
+
+using ResType = PhzDataModel::SourceResultType;
+using RegResType = PhzDataModel::RegionResultType;
+  
+}
+
 SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                                    LikelihoodGridFunction likelihood_func,
                                    std::vector<PriorFunction> priors,
                                    MarginalizationFunction marginalization_func,
                                    BestFitSearchFunction best_fit_search_func)
-        : m_phot_corr_map{std::move(phot_corr_map)} {
+        : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid_map(phot_grid_map) {
   for (auto& pair : phot_grid_map) {
-    m_single_grid_functor_list.emplace_back(pair.first, pair.second, priors, marginalization_func,
-                                            likelihood_func, best_fit_search_func);
+    m_single_grid_functor_map.emplace(std::piecewise_construct,
+            std::forward_as_tuple(pair.first),
+            std::forward_as_tuple(priors, marginalization_func, likelihood_func, best_fit_search_func));
   }
 }
 
@@ -57,17 +66,14 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
   return SourceCatalog::Photometry{filter_names_ptr, std::move(fluxes)};
 }
 
-static PhzDataModel::Pdf1DZ combine1DPdfs(
-                        const std::map<std::string, PhzDataModel::Pdf1DZ>& pdf_map,
-                        const std::map<std::string, double>& norm_log_map) {
+static PhzDataModel::Pdf1DZ combine1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map) {
   
-  // All the likelihoods were shifted so the peak has value 1. This means that
-  // the 1D PDFs are also shifted with the same constant. We get the constants
-  // in such way so the region with the best chi square will have the multiplier 1
+  // All the 1D PDFs were shifted. We compute factors for each PDF
+  // in such way so the region with the highest shift will have the multiplier 1
   std::map<std::string, double> factor_map {};
   double max_norm_log = std::numeric_limits<double>::max();
-  for (auto& pair : norm_log_map) {
-    double norm_log = pair.second;
+  for (auto& pair : reg_result_map) {
+    double norm_log = pair.second.get<RegResType::Z_1D_PDF_NORM_LOG>();
     factor_map[pair.first] = norm_log;
     if (norm_log < max_norm_log) {
       max_norm_log = norm_log;
@@ -81,11 +87,11 @@ static PhzDataModel::Pdf1DZ combine1DPdfs(
   // knots for which we produce the final result for
   std::set<double> x_set {};
   std::vector<std::unique_ptr<MathUtils::Function>> pdf_func_list {};
-  for (auto& pair : pdf_map) {
+  for (auto& pair : reg_result_map) {
     std::vector<double> pdf_x {};
     std::vector<double> pdf_y {};
     double factor = factor_map.at(pair.first);
-    auto& pdf = pair.second;
+    auto& pdf = pair.second.get<RegResType::Z_1D_PDF>();
     for (auto iter=pdf.begin(); iter!=pdf.end(); ++iter) {
       x_set.insert(iter.template axisValue<0>());
       pdf_x.emplace_back(iter.template axisValue<0>());
@@ -127,53 +133,53 @@ static PhzDataModel::Pdf1DZ combine1DPdfs(
 }
 
 PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot, double fixed_z) const {
-  using ResType = PhzDataModel::SourceResultType;
   
   // Apply the photometric correction to the given source photometry
   auto cor_source_phot = applyPhotCorr(m_phot_corr_map, source_phot);
 
-  // Create a new results object and initialize all the region map results to the
-  // empty maps
+  // Create a new results object
   PhzDataModel::SourceResults results {};
-  results.setResult<ResType::REGION_NAMES>();
-  results.setResult<ResType::REGION_BEST_MODEL_ITERATOR>();
-  results.setResult<ResType::REGION_Z_1D_PDF>();
-  results.setResult<ResType::REGION_Z_1D_PDF_NORM_LOG>();
-  results.setResult<ResType::REGION_LIKELIHOOD>();
-  results.setResult<ResType::REGION_POSTERIOR>();
-  results.setResult<ResType::REGION_BEST_MODEL_SCALE_FACTOR>();
   
   // Calculate the results for all the regions
-  for (auto& func : m_single_grid_functor_list) {
-    func(cor_source_phot, results, fixed_z);
+  auto& region_results_map = results.set<ResType::REGION_RESULTS_MAP>();
+  for (auto& pair : m_single_grid_functor_map) {
+    
+    //Setup the results with what is the input of the SingleGridPhzFunctor
+    auto& region_results = region_results_map[pair.first];
+    region_results.set<RegResType::MODEL_GRID_REFERENCE>(std::cref(m_phot_grid_map.at(pair.first)));
+    region_results.set<RegResType::SOURCE_PHOTOMETRY_REFERENCE>(std::cref(cor_source_phot));
+    if (fixed_z >= 0) {
+      region_results.set<RegResType::FIXED_REDSHIFT>(fixed_z);
+    }
+    
+    // Call the functor
+    pair.second(region_results);
+    
   }
   
   // Find the result region which contains the model with the best posterior
   std::string best_region;
   double best_region_posterior = std::numeric_limits<double>::lowest();
-  auto& region_best_model_iterators = results.getResult<ResType::REGION_BEST_MODEL_ITERATOR>();
-  auto& region_posteriors = results.getResult<ResType::REGION_POSTERIOR>();
-  for (auto& name : results.getResult<ResType::REGION_NAMES>()) {
-    auto iter = region_posteriors.at(name).begin();
-    iter.fixAllAxes(region_best_model_iterators.at(name));
+  for (auto& pair : results.get<ResType::REGION_RESULTS_MAP>()){
+    auto& iter = pair.second.get<RegResType::BEST_MODEL_ITERATOR>();
     if (*iter > best_region_posterior) {
-      best_region = name;
-      best_region_posterior = *iter;
+      best_region = pair.first;
     }
   }
+  auto& best_region_results = results.get<ResType::REGION_RESULTS_MAP>().at(best_region);
+  
+  auto post_it = best_region_results.get<RegResType::BEST_MODEL_ITERATOR>();
+  auto model_it = best_region_results.get<RegResType::MODEL_GRID_REFERENCE>().get().begin();
+  model_it.fixAllAxes(post_it);
+  results.set<ResType::BEST_MODEL_ITERATOR>(model_it);
           
-  results.setResult<ResType::BEST_MODEL_ITERATOR>(
-            results.getResult<ResType::REGION_BEST_MODEL_ITERATOR>().at(best_region));
+  results.set<ResType::Z_1D_PDF>(combine1DPdfs(results.get<ResType::REGION_RESULTS_MAP>()));
           
-  results.setResult<ResType::Z_1D_PDF>(combine1DPdfs(
-                    results.getResult<ResType::REGION_Z_1D_PDF>(),
-                    results.getResult<ResType::REGION_Z_1D_PDF_NORM_LOG>()
-          ));
+  auto scale_it = best_region_results.get<RegResType::SCALE_FACTOR_GRID>().begin();
+  scale_it.fixAllAxes(post_it);
+  results.set<ResType::BEST_MODEL_SCALE_FACTOR>(*scale_it);
           
-  results.setResult<ResType::BEST_MODEL_SCALE_FACTOR>(
-            results.getResult<ResType::REGION_BEST_MODEL_SCALE_FACTOR>().at(best_region));
-          
-  results.setResult<ResType::BEST_MODEL_POSTERIOR_LOG>(best_region_posterior);
+  results.set<ResType::BEST_MODEL_POSTERIOR_LOG>(*post_it);
   
   return results;
 }

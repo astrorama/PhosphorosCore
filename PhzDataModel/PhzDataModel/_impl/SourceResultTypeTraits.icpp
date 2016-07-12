@@ -29,34 +29,14 @@
 #include "PhzDataModel/Pdf1D.h"
 #include "PhzDataModel/LikelihoodGrid.h"
 #include "PhzDataModel/PhzModel.h"
+#include "PhzDataModel/RegionResults.h"
 
 namespace Euclid {
 namespace PhzDataModel {
 
 
-template <SourceResultType T, typename>
-struct SourceResultTypeTraits {
-  // The T != T is used because the static assert must use a template parameter,
-  // otherwise it will be executed even without template instantiation.
-  static_assert(T != T,
-      "READ THE MESSAGE BELLOW!!!\n\n"
-      "If you get this message you added a new entry to the SourceResultType\n"
-      "enumeration without specifying the SourceResultTypeTraits which handles\n"
-      "it. Read the documentation in PhzDataModel/_impl/SourceResultTypeTraits.icpp\n"
-      "file to understand the steps for fixing your problem.\n");
-};
-
-
 template <SourceResultType T>
-struct SourceResultTypeTraits<T, typename std::enable_if<
-                                    T == SourceResultType::REGION_NAMES
-                             >::type> {
-  using type = std::vector<std::string>;
-};
-
-
-template <SourceResultType T>
-struct SourceResultTypeTraits<T, typename std::enable_if<
+struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
                                     T == SourceResultType::BEST_MODEL_ITERATOR
                              >::type> {
   using type = PhotometryGrid::const_iterator;
@@ -64,15 +44,7 @@ struct SourceResultTypeTraits<T, typename std::enable_if<
 
 
 template <SourceResultType T>
-struct SourceResultTypeTraits<T, typename std::enable_if<
-                                    T == SourceResultType::REGION_BEST_MODEL_ITERATOR
-                             >::type> {
-  using type = std::map<std::string, PhotometryGrid::const_iterator>;
-};
-
-
-template <SourceResultType T>
-struct SourceResultTypeTraits<T, typename std::enable_if<
+struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
                                     T == SourceResultType::Z_1D_PDF_NORM_LOG ||
                                     T == SourceResultType::BEST_MODEL_SCALE_FACTOR ||
                                     T == SourceResultType::BEST_MODEL_POSTERIOR_LOG
@@ -82,16 +54,7 @@ struct SourceResultTypeTraits<T, typename std::enable_if<
 
 
 template <SourceResultType T>
-struct SourceResultTypeTraits<T, typename std::enable_if<
-                                    T == SourceResultType::REGION_Z_1D_PDF_NORM_LOG ||
-                                    T == SourceResultType::REGION_BEST_MODEL_SCALE_FACTOR
-                             >::type> {
-  using type = std::map<std::string, double>;
-};
-
-
-template <SourceResultType T>
-struct SourceResultTypeTraits<T, typename std::enable_if<
+struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
                                     T == SourceResultType::Z_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DZ;
@@ -99,19 +62,10 @@ struct SourceResultTypeTraits<T, typename std::enable_if<
 
 
 template <SourceResultType T>
-struct SourceResultTypeTraits<T, typename std::enable_if<
-                                    T == SourceResultType::REGION_Z_1D_PDF
+struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::REGION_RESULTS_MAP
                              >::type> {
-  using type = std::map<std::string, PhzDataModel::Pdf1DZ>;
-};
-
-
-template <SourceResultType T>
-struct SourceResultTypeTraits<T, typename std::enable_if<
-                                    T == SourceResultType::REGION_LIKELIHOOD ||
-                                    T == SourceResultType::REGION_POSTERIOR
-                             >::type> {
-  using type = std::map<std::string, LikelihoodGrid>;
+  using type = std::map<std::string, RegionResults>;
 };
 
 

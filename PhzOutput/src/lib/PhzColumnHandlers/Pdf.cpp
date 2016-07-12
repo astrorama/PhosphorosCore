@@ -39,7 +39,7 @@ std::vector<Table::Row::cell_type> Pdf::convertResults(
                       const SourceCatalog::Source&,
                       const PhzDataModel::SourceResults& results) const {
   
-  auto& pdf_1d = results.getResult<PhzDataModel::SourceResultType::Z_1D_PDF>();
+  auto& pdf_1d = results.get<PhzDataModel::SourceResultType::Z_1D_PDF>();
   std::vector<double> data {pdf_1d.begin(), pdf_1d.end()};
   
   return std::vector<Table::Row::cell_type> {std::move(data)};
