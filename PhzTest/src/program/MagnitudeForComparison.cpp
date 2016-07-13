@@ -67,7 +67,7 @@ namespace fs = boost::filesystem;
 
 static Elements::Logging logger = Elements::Logging::getLogger("MagnitudeForComparison");
 
-
+using ResType = PhzDataModel::RegionResultType;
 
 static long config_manager_id = getUniqueManagerId();
 
@@ -176,9 +176,13 @@ public:
       if (source_photometry==nullptr){
         logger.info() << "null photometry";
       }
+      
       //  compute the scale factor grid
-      auto likelihood_res = likelihood_func(*source_photometry, model_single_grid);
-      PhzDataModel::DoubleGrid scale_factor_grid {std::move(std::get<1>(likelihood_res))};
+      PhzDataModel::RegionResults results {};
+      results.set<ResType::SOURCE_PHOTOMETRY_REFERENCE>(*source_photometry);
+      results.set<ResType::MODEL_GRID_REFERENCE>(model_single_grid);
+      likelihood_func(results);
+      auto& scale_factor_grid = results.get<ResType::SCALE_FACTOR_GRID>();
 
 
       //  fix the iterator on the scale factor grid
