@@ -15,6 +15,7 @@
 
 using namespace testing;
 using namespace Euclid;
+using namespace Euclid::PhzDataModel;
 
 
 struct SharedPriorAdaptor_Fixture {
@@ -22,17 +23,11 @@ struct SharedPriorAdaptor_Fixture {
   class PriorMock{
   public:
 
-    void operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
-            const SourceCatalog::Photometry& sourcePhotometry,
-            const PhzDataModel::PhotometryGrid& modelGrid,
-            const PhzDataModel::DoubleGrid& scaleFactorGrid) const {
-      internal_call(likelihoodGrid, sourcePhotometry, modelGrid, scaleFactorGrid);
+    void operator()(PhzDataModel::RegionResults& results) const {
+      internal_call(results);
     }
 
-    MOCK_CONST_METHOD4(internal_call, void(PhzDataModel::DoubleGrid&,
-        const SourceCatalog::Photometry&,
-        const PhzDataModel::PhotometryGrid&,
-        const PhzDataModel::DoubleGrid&));
+    MOCK_CONST_METHOD1(internal_call, void(PhzDataModel::RegionResults& results));
 
   };
 
@@ -46,11 +41,11 @@ struct SharedPriorAdaptor_Fixture {
   Euclid::PhzDataModel::ModelAxesTuple parameter_space= Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);
 
   // Create the Grids
-  PhzDataModel::DoubleGrid scale_factor_grid{parameter_space};
-
-  PhzDataModel::PhotometryGrid photometry_grid {parameter_space};
-
-  PhzDataModel::DoubleGrid likelihood_grid {parameter_space};
+  RegionResults results {};
+  DoubleGrid& scale_factor_grid = results.set<RegionResultType::SCALE_FACTOR_GRID>(parameter_space);
+  PhotometryGrid photometry_grid {parameter_space};
+  const PhotometryGrid& photometry_grid_ref = results.set<RegionResultType::MODEL_GRID_REFERENCE>(photometry_grid).get();
+  DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_GRID>(parameter_space);
 
 
   // Shared pointer of filter name vector
@@ -82,7 +77,7 @@ struct SharedPriorAdaptor_Fixture {
     }
 
     value = 1.9;
-    for (auto& likelihood : likelihood_grid){
+    for (auto& likelihood : posterior_grid){
       likelihood=value;
       value+=1.;
     }
@@ -100,11 +95,11 @@ BOOST_FIXTURE_TEST_CASE( functorCall, SharedPriorAdaptor_Fixture ) {
 
   std::shared_ptr<PriorMock> prior_ptr{new PriorMock()};
 
-  EXPECT_CALL(*prior_ptr,internal_call(_, _, _, _));
+  EXPECT_CALL(*prior_ptr,internal_call(_));
 
   PhzLikelihood::SharedPriorAdapter<PriorMock> adaptor{prior_ptr};
 
-  adaptor(likelihood_grid,ref_photometry,photometry_grid,scale_factor_grid);
+  adaptor(results);
 
 }
 
@@ -112,14 +107,14 @@ BOOST_FIXTURE_TEST_CASE( copy, SharedPriorAdaptor_Fixture ) {
 
   std::shared_ptr<PriorMock> prior_ptr{new PriorMock()};
 
-  EXPECT_CALL(*prior_ptr,internal_call(_, _, _, _)).Times(2);
+  EXPECT_CALL(*prior_ptr,internal_call(_)).Times(2);
 
   PhzLikelihood::SharedPriorAdapter<PriorMock> adaptor{prior_ptr};
 
   PhzLikelihood::SharedPriorAdapter<PriorMock> adaptor_copied{adaptor};
 
-  adaptor_copied(likelihood_grid,ref_photometry,photometry_grid,scale_factor_grid);
-  adaptor(likelihood_grid,ref_photometry,photometry_grid,scale_factor_grid);
+  adaptor_copied(results);
+  adaptor(results);
 
 }
 
@@ -127,14 +122,14 @@ BOOST_FIXTURE_TEST_CASE( assigned, SharedPriorAdaptor_Fixture ) {
 
   std::shared_ptr<PriorMock> prior_ptr{new PriorMock()};
 
-  EXPECT_CALL(*prior_ptr,internal_call(_, _, _, _)).Times(2);
+  EXPECT_CALL(*prior_ptr,internal_call(_)).Times(2);
 
   PhzLikelihood::SharedPriorAdapter<PriorMock> adaptor{prior_ptr};
 
   PhzLikelihood::SharedPriorAdapter<PriorMock> adaptor_assigned =adaptor;
 
-  adaptor_assigned(likelihood_grid,ref_photometry,photometry_grid,scale_factor_grid);
-  adaptor(likelihood_grid,ref_photometry,photometry_grid,scale_factor_grid);
+  adaptor_assigned(results);
+  adaptor(results);
 
 }
 

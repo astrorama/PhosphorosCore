@@ -52,12 +52,18 @@ public:
   typedef std::function<PhzDataModel::Pdf1DZ(const PhzDataModel::DoubleGrid&)> MarginalizationFunction;
   
   /**
-   * Definition of the function signature for applying a prior to a likelihood grid.
+   * Definition of the function signature for applying a prior to the posterior
+   * grid. It is a function which uses the given results objects both for its
+   * input and output. It requires that the given object already contains the
+   * POSTERIOR_GRID result, on which it applies the prior directly. The different
+   * prior implementations are free to use also the following results:
+   * - MODEL_GRID_REFERENCE
+   * - SOURCE_PHOTOMETRY_REFERENCE
+   * - SCALE_FACTOR_GRID
+   * - LIKELIHOOD_GRID
+   * - POSTERIOR_GRID
    */
-  typedef std::function<void(PhzDataModel::DoubleGrid&,
-                             const SourceCatalog::Photometry&,
-                             const PhzDataModel::PhotometryGrid&,
-                             const PhzDataModel::DoubleGrid&)> PriorFunction;
+  typedef std::function<void(PhzDataModel::RegionResults& results)> PriorFunction;
 
   /**
    * Constructs a new SingleGridPhzFunctor instance. It gets as parameters the

@@ -25,22 +25,17 @@ void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) cons
 
   using ResType = PhzDataModel::RegionResultType;
   
-  // Get from the results what we need for the computation
-  auto& source_phot = results.get<ResType::SOURCE_PHOTOMETRY_REFERENCE>().get();
-  auto& model_grid = results.get<ResType::MODEL_GRID_REFERENCE>().get();
-  
   // Calculate the likelihood over all the models
   m_likelihood_func(results);
-  auto& likelihood_grid = results.get<ResType::LIKELIHOOD_GRID>();
-  auto& scale_factor_grid = results.get<ResType::SCALE_FACTOR_GRID>();
   
   // Create the posterior grid as a copy of the likelihood grid
+  auto& likelihood_grid = results.get<ResType::LIKELIHOOD_GRID>();
   auto& posterior_grid = results.set<ResType::POSTERIOR_GRID>(likelihood_grid.getAxesTuple());
   std::copy(likelihood_grid.begin(), likelihood_grid.end(), posterior_grid.begin());
 
   // Apply all the priors to the posterior
   for (auto& prior : m_priors) {
-    prior(posterior_grid, source_phot, model_grid, scale_factor_grid);
+    prior(results);
   }
   
   // Find the best fitted model

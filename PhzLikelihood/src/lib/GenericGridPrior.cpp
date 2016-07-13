@@ -32,16 +32,14 @@ GenericGridPrior::GenericGridPrior(std::vector<PhzDataModel::DoubleGrid> prior_g
         : m_prior_grid_list{std::move(prior_grid_list)} {
 }
 
-void GenericGridPrior::operator()(PhzDataModel::DoubleGrid& likelihood_grid,
-                                  const SourceCatalog::Photometry&,
-                                  const PhzDataModel::PhotometryGrid&,
-                                  const PhzDataModel::DoubleGrid&) const {
+void GenericGridPrior::operator()(PhzDataModel::RegionResults& results) const {
+  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_GRID>();
   for (auto& prior_grid : m_prior_grid_list) {
-    if (prior_grid.getAxesTuple() == likelihood_grid.getAxesTuple()) {
+    if (prior_grid.getAxesTuple() == posterior_grid.getAxesTuple()) {
       auto prior_it = prior_grid.begin();
-      auto like_it = likelihood_grid.begin();
-      for (; like_it != likelihood_grid.end(); ++prior_it, ++like_it) {
-        *like_it *= *prior_it;
+      auto post_it = posterior_grid.begin();
+      for (; post_it != posterior_grid.end(); ++prior_it, ++post_it) {
+        *post_it *= *prior_it;
       }
       return;
     }

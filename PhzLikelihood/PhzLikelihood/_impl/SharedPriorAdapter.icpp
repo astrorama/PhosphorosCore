@@ -19,11 +19,8 @@ namespace PhzLikelihood {
   SharedPriorAdapter<Prior>::SharedPriorAdapter(std::shared_ptr<Prior> prior):m_prior{prior}{}
 
   template<typename Prior>
-  void SharedPriorAdapter<Prior>::operator()(PhzDataModel::DoubleGrid& likelihoodGrid,
-        const SourceCatalog::Photometry& sourcePhotometry,
-        const PhzDataModel::PhotometryGrid& modelGrid,
-        const PhzDataModel::DoubleGrid& scaleFactorGrid) const{
-    (*m_prior)(likelihoodGrid,sourcePhotometry,modelGrid,scaleFactorGrid);
+  void SharedPriorAdapter<Prior>::operator()(PhzDataModel::RegionResults& results) const{
+    (*m_prior)(results);
   }
 
 
