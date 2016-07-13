@@ -23,7 +23,7 @@ void LikelihoodGridFunctor::operator()(PhzDataModel::RegionResults& results) {
   auto& source_phot = results.get<ResType::SOURCE_PHOTOMETRY_REFERENCE>().get();
   
   // Create new likelihood and scale factor grids, with all cells set to 0
-  auto& likelihood_grid = results.set<ResType::LIKELIHOOD_GRID>(model_grid.getAxesTuple());
+  auto& likelihood_grid = results.set<ResType::LIKELIHOOD_LOG_GRID>(model_grid.getAxesTuple());
   auto& scale_factor_grid = results.set<ResType::SCALE_FACTOR_GRID>(model_grid.getAxesTuple());
 
   // Calculate the natural logarithm of the likelihood over the grid

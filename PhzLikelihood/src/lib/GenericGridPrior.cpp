@@ -33,7 +33,7 @@ GenericGridPrior::GenericGridPrior(std::vector<PhzDataModel::DoubleGrid> prior_g
 }
 
 void GenericGridPrior::operator()(PhzDataModel::RegionResults& results) const {
-  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_GRID>();
+  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
   for (auto& prior_grid : m_prior_grid_list) {
     if (prior_grid.getAxesTuple() == posterior_grid.getAxesTuple()) {
       auto prior_it = prior_grid.begin();

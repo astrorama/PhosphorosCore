@@ -78,8 +78,8 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
                               T == RegionResultType::SCALE_FACTOR_GRID ||
-                              T == RegionResultType::LIKELIHOOD_GRID ||
-                              T == RegionResultType::POSTERIOR_GRID
+                              T == RegionResultType::LIKELIHOOD_LOG_GRID ||
+                              T == RegionResultType::POSTERIOR_LOG_GRID
                        >::type> {
   using type = DoubleGrid;
 };

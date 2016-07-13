@@ -40,7 +40,7 @@ struct VolumePrior_Fixture {
   std::vector<XYDataset::QualifiedName> seds {{"sed1"}, {"sed2"}};
   ModelAxesTuple axes = createAxesTuple(zs, ebvs, reddeing_curves, seds);
   
-  PhzDataModel::DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_GRID>(axes);
+  PhzDataModel::DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(axes);
   
   PhysicsUtils::CosmologicalParameters cosmology {0.286, 0.714, 69.6};
   

@@ -41,7 +41,7 @@ struct AxisFunctionPrior_Fixture {
   std::vector<XYDataset::QualifiedName> seds {{"sed1"}, {"sed2"}};
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
   
-  PhzDataModel::DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_GRID>(axes);
+  PhzDataModel::DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(axes);
   
 };
 

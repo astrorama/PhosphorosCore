@@ -45,7 +45,7 @@ struct SharedPriorAdaptor_Fixture {
   DoubleGrid& scale_factor_grid = results.set<RegionResultType::SCALE_FACTOR_GRID>(parameter_space);
   PhotometryGrid photometry_grid {parameter_space};
   const PhotometryGrid& photometry_grid_ref = results.set<RegionResultType::MODEL_GRID_REFERENCE>(photometry_grid).get();
-  DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_GRID>(parameter_space);
+  DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(parameter_space);
 
 
   // Shared pointer of filter name vector

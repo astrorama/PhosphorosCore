@@ -34,7 +34,7 @@ m_effectiveness{effectiveness} {
 void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
   
   // Get from the results the input
-  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_GRID>();
+  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
   const auto& scale_factor_grid = results.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
 
   // We first create a grid that contains only the prior, so we can normalize

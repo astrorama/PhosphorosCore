@@ -43,9 +43,9 @@ enum class RegionResultType {
   /// The grid containing the scale factor for all models
   SCALE_FACTOR_GRID,
   /// The grid containing the likelihood for all models
-  LIKELIHOOD_GRID,
+  LIKELIHOOD_LOG_GRID,
   /// The grid containing the posterior for all models
-  POSTERIOR_GRID,
+  POSTERIOR_LOG_GRID,
   /// The 1D PDF over the redshift
   Z_1D_PDF,
   /// The logarithm of the normalization of the 1D PDF over the redshift

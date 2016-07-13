@@ -29,8 +29,8 @@ void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) cons
   m_likelihood_func(results);
   
   // Create the posterior grid as a copy of the likelihood grid
-  auto& likelihood_grid = results.get<ResType::LIKELIHOOD_GRID>();
-  auto& posterior_grid = results.set<ResType::POSTERIOR_GRID>(likelihood_grid.getAxesTuple());
+  auto& likelihood_grid = results.get<ResType::LIKELIHOOD_LOG_GRID>();
+  auto& posterior_grid = results.set<ResType::POSTERIOR_LOG_GRID>(likelihood_grid.getAxesTuple());
   std::copy(likelihood_grid.begin(), likelihood_grid.end(), posterior_grid.begin());
 
   // Apply all the priors to the posterior
