@@ -30,14 +30,19 @@ public:
   
   /**
    * Definition of the functor for calculating the likelihood grid. It is a
-   * function which gets a source photometry and a grid with model photometries,
-   * and returns the likelihood grid, the scale factor grid and the minimum
-   * chi square value.
+   * function which uses the given results objects both for its input and output.
+   * When the function is called, the results is guaranteed to contain the
+   * following:
+   * 
+   * - MODEL_GRID_REFERENCE
+   * - SOURCE_PHOTOMETRY_REFERENCE
+   * 
+   * The given functors must populate the results with the following:
+   * 
+   * - LIKELIHOOD_GRID
+   * - SCALE_FACTOR_GRID
    */
-  typedef std::function<LikelihoodGridFunctor::result_type(
-                                const SourceCatalog::Photometry& source_phot,      
-                                const PhzDataModel::PhotometryGrid& phot_grid)
-                       > LikelihoodGridFunction;
+  typedef std::function<void(PhzDataModel::RegionResults& results)> LikelihoodGridFunction;
 
   /**
    * Definition of the function signature for performing the marginalization. It

@@ -30,9 +30,9 @@ void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) cons
   auto& model_grid = results.get<ResType::MODEL_GRID_REFERENCE>().get();
   
   // Calculate the likelihood over all the models
-  auto likelihood_res = m_likelihood_func(source_phot, model_grid);
-  auto& likelihood_grid = results.set<ResType::LIKELIHOOD_GRID>(std::move(std::get<0>(likelihood_res)));
-  auto& scale_factor_grid = results.set<ResType::SCALE_FACTOR_GRID>(std::move(std::get<1>(likelihood_res)));
+  m_likelihood_func(results);
+  auto& likelihood_grid = results.get<ResType::LIKELIHOOD_GRID>();
+  auto& scale_factor_grid = results.get<ResType::SCALE_FACTOR_GRID>();
   
   // Create the posterior grid as a copy of the likelihood grid
   auto& posterior_grid = results.set<ResType::POSTERIOR_GRID>(likelihood_grid.getAxesTuple());

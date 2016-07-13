@@ -11,6 +11,7 @@
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/RegionResults.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -25,14 +26,6 @@ namespace PhzLikelihood {
 class LikelihoodGridFunctor {
 
 public:
-
-  /**
-   * The result type of the LikelihoodGridFunctor. It contains the following:
-   * - A grid containing the Likelihood logarithm of each model
-   * - A grid containing the scale factor of each model
-   */
-  using result_type = std::tuple<PhzDataModel::DoubleGrid,
-                                 PhzDataModel::DoubleGrid>;
 
   /**
    * Definition of the STL-like algorithm for calculating the grid containing
@@ -55,18 +48,14 @@ public:
 
   /**
    * Computes the log likelihood of the given source photometry over the given
-   * photometry grid.
+   * photometry grid. The given results object must already contain the
+   * MODEL_GRID_REFERENCE and SOURCE_PHOTOMETRY_REFERENCE objects. After the
+   * call, the results will contain the LIKELIHOOD_GRID and SCALE_FACTOR_GRID.
    *
-   * @param source_phot
-   *    The photometry of the source
-   * @param phot_grid
-   *    The grid containing the model photometries
-   * @return
-   *    The results of the likelihood logarithm calculation
-   * \see result_type
+   * @param results
+   *    The results object to get the input and set the output
    */
-  result_type operator()(const SourceCatalog::Photometry& source_phot,
-                         const PhzDataModel::PhotometryGrid& phot_grid);
+  void operator()(PhzDataModel::RegionResults& results);
 
 private:
 
