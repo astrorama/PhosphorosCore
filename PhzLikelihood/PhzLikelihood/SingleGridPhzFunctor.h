@@ -9,7 +9,6 @@
 
 #include <vector>
 #include <functional>
-#include <algorithm>
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/RegionResults.h"
 #include "PhzDataModel/PhotometryGrid.h"
@@ -41,16 +40,6 @@ public:
                        > LikelihoodGridFunction;
 
   /**
-   * Definition of the STL-like algorithm for finding the best fitted model. It
-   * gets as parameters the iterator over the likelihood grid and it returns an
-   * iterator pointing to the best fitted model.
-   */
-  typedef std::function<PhzDataModel::DoubleGrid::iterator(
-                              PhzDataModel::DoubleGrid::iterator likelihood_begin,
-                              PhzDataModel::DoubleGrid::iterator likelihood_end)
-                       > BestFitSearchFunction;
-
-  /**
    * Definition of the function signature for performing the marginalization. It
    * gets as parameter a LikelihoodGrid and it returns a one dimensional grid with only
    * axis the redshift. It should not perform any normalization.
@@ -77,15 +66,12 @@ public:
    *    The priors to apply to the likelihood
    * @param likelihood_func
    *    The STL-like algorithm for calculating the likelihood grid
-   * @param best_fit_search_func
-   *    The STL-like algorithm for finding the best fitted model
    * @param marginalization_func
    *    The functor to use for performing the PDF marginalization
    */
   SingleGridPhzFunctor(std::vector<PriorFunction> priors = {},
                        MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor{},
-                       LikelihoodGridFunction likelihood_func = LikelihoodGridFunctor{LikelihoodLogarithmAlgorithm{ScaleFactorFunctorSimple{}, ChiSquareLikelihoodLogarithmSimple{}}},
-                       BestFitSearchFunction best_fit_search_func = std::max_element<PhzDataModel::DoubleGrid::iterator>);
+                       LikelihoodGridFunction likelihood_func = LikelihoodGridFunctor{LikelihoodLogarithmAlgorithm{ScaleFactorFunctorSimple{}, ChiSquareLikelihoodLogarithmSimple{}}});
 
   /**
    * Calculates the PHZ results for a single model grid of the parameter space.
@@ -119,7 +105,6 @@ private:
   std::vector<PriorFunction> m_priors;
   MarginalizationFunction m_marginalization_func;
   LikelihoodGridFunction m_likelihood_func;
-  BestFitSearchFunction m_best_fit_search_func;
   
 };
 

@@ -14,12 +14,10 @@ namespace PhzLikelihood {
 
 SingleGridPhzFunctor::SingleGridPhzFunctor(std::vector<PriorFunction> priors,
                                            MarginalizationFunction marginalization_func,
-                                           LikelihoodGridFunction likelihood_func,
-                                           BestFitSearchFunction best_fit_search_func)
+                                           LikelihoodGridFunction likelihood_func)
         : m_priors{std::move(priors)},
           m_marginalization_func{std::move(marginalization_func)},
-          m_likelihood_func{std::move(likelihood_func)},
-          m_best_fit_search_func{std::move(best_fit_search_func)} {
+          m_likelihood_func{std::move(likelihood_func)} {
 }
   
 
@@ -46,7 +44,7 @@ void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) cons
   }
   
   // Find the best fitted model
-  auto best_fit = m_best_fit_search_func(posterior_grid.begin(), posterior_grid.end());
+  auto best_fit = std::max_element(posterior_grid.begin(), posterior_grid.end());
   results.set<ResType::BEST_MODEL_ITERATOR>(best_fit);
   
   // Calculate the 1D PDF

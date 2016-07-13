@@ -35,13 +35,12 @@ SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_c
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                                    LikelihoodGridFunction likelihood_func,
                                    std::vector<PriorFunction> priors,
-                                   MarginalizationFunction marginalization_func,
-                                   BestFitSearchFunction best_fit_search_func)
+                                   MarginalizationFunction marginalization_func)
         : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid_map(phot_grid_map) {
   for (auto& pair : phot_grid_map) {
     m_single_grid_functor_map.emplace(std::piecewise_construct,
             std::forward_as_tuple(pair.first),
-            std::forward_as_tuple(priors, marginalization_func, likelihood_func, best_fit_search_func));
+            std::forward_as_tuple(priors, marginalization_func, likelihood_func));
   }
 }
 
