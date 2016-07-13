@@ -130,6 +130,27 @@ static PhzDataModel::Pdf1DZ combine1DPdfs(const std::map<std::string, PhzDataMod
   
   return result;
 }
+   
+          
+namespace {
+
+std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixed_z) {
+  auto& z_axis = grid.getAxis<PhzDataModel::ModelParameter::Z>();
+  int i = 0;
+  for (auto& z : z_axis) {
+    if (z > fixed_z) {
+      break;
+    }
+    ++i;
+  }
+  if (i != 0 && (fixed_z - z_axis[i-1]) < (z_axis[i] - fixed_z)) {
+    --i;
+  } 
+  return i;
+}
+
+} // end of anonymous namespace
+
 
 PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot, double fixed_z) const {
   
@@ -145,10 +166,35 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
     
     //Setup the results with what is the input of the SingleGridPhzFunctor
     auto& region_results = region_results_map[pair.first];
-    region_results.set<RegResType::MODEL_GRID_REFERENCE>(std::cref(m_phot_grid_map.at(pair.first)));
     region_results.set<RegResType::SOURCE_PHOTOMETRY_REFERENCE>(std::cref(cor_source_phot));
+    
+    // We check if we have a fixed redshift. If we do, we only continue for
+    // regions that have this redshift in their range and we pass them as model
+    // grid the corresponding grid slice. If we do not, we pass as grid the
+    // full model grid.
+    auto& model_grid = m_phot_grid_map.at(pair.first);
     if (fixed_z >= 0) {
-      region_results.set<RegResType::FIXED_REDSHIFT>(fixed_z);
+      
+      auto& z_axis = model_grid.getAxis<PhzDataModel::ModelParameter::Z>();
+      // If we have a fixed redshift and we are out of range we skip the region
+      if (fixed_z < z_axis[0] || fixed_z > z_axis[z_axis.size()-1]) {
+        continue;
+      }
+      auto fixed_z_index = getFixedZIndex(model_grid, fixed_z);
+      
+      // The reason of the following const_cast is that the const version of the
+      // fixAxisByIndex() returns a const PhotometryGrid, which cannot be moved
+      // in the region_results object. I know that this allows to modify the const
+      // model grid, but I couldn't find a more elegant way of doing this.
+      PhzDataModel::PhotometryGrid& non_const_model_grid = const_cast<PhzDataModel::PhotometryGrid&>(model_grid);
+      auto& fixed_model_grid = region_results.set<RegResType::FIXED_REDSHIFT_MODEL_GRID>(
+                    non_const_model_grid.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(fixed_z_index));
+      region_results.set<RegResType::MODEL_GRID_REFERENCE>(fixed_model_grid);
+      
+    } else {
+      
+      // We do not have a fixed redshift, so use the original model grid
+      region_results.set<RegResType::MODEL_GRID_REFERENCE>(model_grid);
     }
     
     // Call the functor
@@ -163,6 +209,7 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
     auto& iter = pair.second.get<RegResType::BEST_MODEL_ITERATOR>();
     if (*iter > best_region_posterior) {
       best_region = pair.first;
+      best_region_posterior = *iter;
     }
   }
   auto& best_region_results = results.get<ResType::REGION_RESULTS_MAP>().at(best_region);

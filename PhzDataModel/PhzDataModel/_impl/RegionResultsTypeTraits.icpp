@@ -53,7 +53,14 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
-                              T == RegionResultType::FIXED_REDSHIFT ||
+                              T == RegionResultType::FIXED_REDSHIFT_MODEL_GRID
+                       >::type> {
+  using type = PhotometryGrid;
+};
+
+
+template <RegionResultType T>
+struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
                               T == RegionResultType::Z_1D_PDF_NORM_LOG
                        >::type> {
   using type = double;

@@ -21,63 +21,18 @@ SingleGridPhzFunctor::SingleGridPhzFunctor(std::vector<PriorFunction> priors,
           m_likelihood_func{std::move(likelihood_func)},
           m_best_fit_search_func{std::move(best_fit_search_func)} {
 }
-   
-          
-namespace {
-
-using ResType = PhzDataModel::RegionResultType;
-
-std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixed_z) {
-  auto& z_axis = grid.getAxis<PhzDataModel::ModelParameter::Z>();
-  int i = 0;
-  for (auto& z : z_axis) {
-    if (z > fixed_z) {
-      break;
-    }
-    ++i;
-  }
-  if (i != 0 && (fixed_z - z_axis[i-1]) < (z_axis[i] - fixed_z)) {
-    --i;
-  } 
-  return i;
-}
-
-} // end of anonymous namespace
   
 
 void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) const {
-  
-  auto& model_grid = results.get<ResType::MODEL_GRID_REFERENCE>().get();
-  
-  if (results.contains<ResType::FIXED_REDSHIFT>()) {
-    
-    double fixed_z = results.get<ResType::FIXED_REDSHIFT>();
-    auto& z_axis = model_grid.getAxis<PhzDataModel::ModelParameter::Z>();
-  // If we have a fixed redshift and we are out of range we skip everything
-    if (fixed_z < z_axis[0] || fixed_z > z_axis[z_axis.size()-1]) {
-      return;
-    }
-    auto fixed_z_index = getFixedZIndex(model_grid, fixed_z);
-    auto& fixed_model_grid = model_grid.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(fixed_z_index);
-    computeEverything(fixed_model_grid, results);
-    
-  } else {
-    
-    computeEverything(model_grid, results);
-    
-  }
 
-}
-
-
-void SingleGridPhzFunctor::computeEverything(const PhzDataModel::PhotometryGrid& phot_grid,
-                                             PhzDataModel::RegionResults& results) const {
+  using ResType = PhzDataModel::RegionResultType;
   
   // Get from the results what we need for the computation
   auto& source_phot = results.get<ResType::SOURCE_PHOTOMETRY_REFERENCE>().get();
+  auto& model_grid = results.get<ResType::MODEL_GRID_REFERENCE>().get();
   
   // Calculate the likelihood over all the models
-  auto likelihood_res = m_likelihood_func(source_phot, phot_grid);
+  auto likelihood_res = m_likelihood_func(source_phot, model_grid);
   auto& likelihood_grid = results.set<ResType::LIKELIHOOD_GRID>(std::move(std::get<0>(likelihood_res)));
   auto& scale_factor_grid = results.set<ResType::SCALE_FACTOR_GRID>(std::move(std::get<1>(likelihood_res)));
   
@@ -87,7 +42,7 @@ void SingleGridPhzFunctor::computeEverything(const PhzDataModel::PhotometryGrid&
 
   // Apply all the priors to the posterior
   for (auto& prior : m_priors) {
-    prior(posterior_grid, source_phot, phot_grid, scale_factor_grid);
+    prior(posterior_grid, source_phot, model_grid, scale_factor_grid);
   }
   
   // Find the best fitted model

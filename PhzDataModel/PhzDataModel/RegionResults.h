@@ -34,8 +34,10 @@ enum class RegionResultType {
   MODEL_GRID_REFERENCE,
   /// A reference to the source photometry for which the results are computed
   SOURCE_PHOTOMETRY_REFERENCE,
-  /// The value of the redshift, if the redshift axis should be fixed
-  FIXED_REDSHIFT,
+  /// The model grid slice, when we have a fixed redshift. Note that this exists
+  /// to allow for having a valid reference in the MODEL_GRID_REFERENCE result,
+  /// which is pointing to the slice.
+  FIXED_REDSHIFT_MODEL_GRID,
   /// Iterator of the posterior grid, pointing to the best fitted model
   BEST_MODEL_ITERATOR,
   /// The grid containing the scale factor for all models
