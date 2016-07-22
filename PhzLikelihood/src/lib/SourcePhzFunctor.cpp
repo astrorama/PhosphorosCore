@@ -69,11 +69,11 @@ static PhzDataModel::Pdf1DZ combine1DPdfs(const std::map<std::string, PhzDataMod
   // All the 1D PDFs were shifted. We compute factors for each PDF
   // in such way so the region with the highest shift will have the multiplier 1
   std::map<std::string, double> factor_map {};
-  double max_norm_log = std::numeric_limits<double>::max();
+  double max_norm_log = std::numeric_limits<double>::lowest();
   for (auto& pair : reg_result_map) {
     double norm_log = pair.second.get<RegResType::Z_1D_PDF_NORM_LOG>();
     factor_map[pair.first] = norm_log;
-    if (norm_log < max_norm_log) {
+    if (norm_log > max_norm_log) {
       max_norm_log = norm_log;
     }
   }
