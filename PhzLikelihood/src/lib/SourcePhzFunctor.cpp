@@ -65,11 +65,11 @@ static PhzDataModel::Pdf1DZ combine1DPdfs(
   // the 1D PDFs are also shifted with the same constant. We get the constants
   // in such way so the region with the best chi square will have the multiplier 1
   std::map<std::string, double> factor_map {};
-  double max_norm_log = std::numeric_limits<double>::max();
+  double max_norm_log = std::numeric_limits<double>::lowest();
   for (auto& pair : norm_log_map) {
     double norm_log = pair.second;
     factor_map[pair.first] = norm_log;
-    if (norm_log < max_norm_log) {
+    if (norm_log > max_norm_log) {
       max_norm_log = norm_log;
     }
   }
