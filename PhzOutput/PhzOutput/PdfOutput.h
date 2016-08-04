@@ -60,7 +60,7 @@ public:
    *    The results of the template fitting for the source
    */
   void handleSourceOutput(const SourceCatalog::Source& source,
-                          const PhzDataModel::SourceResults& results);
+                          const PhzDataModel::SourceResults& results) override;
 
 private:
 

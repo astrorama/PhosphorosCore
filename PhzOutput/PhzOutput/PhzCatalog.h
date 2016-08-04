@@ -57,7 +57,7 @@ public:
   virtual ~PhzCatalog();
   
   void handleSourceOutput(const SourceCatalog::Source& source,
-                          const PhzDataModel::SourceResults& results);
+                          const PhzDataModel::SourceResults& results) override;
 
   void addComment(std::string comment);
   

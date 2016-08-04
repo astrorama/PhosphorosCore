@@ -49,9 +49,9 @@ public:
     *
     * @return The density of galaxy by computing the Schechter function.
     */
-  double operator()(const double luminosity) const;
+  double operator()(const double luminosity) const override;
 
-  std::unique_ptr<MathUtils::Function> clone() const;
+  std::unique_ptr<MathUtils::Function> clone() const override;
 
 
 private:

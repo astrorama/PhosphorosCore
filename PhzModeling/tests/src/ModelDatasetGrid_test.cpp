@@ -55,7 +55,7 @@ struct ModelDatasetGrid_Fixture {
 
     virtual ~DummyExtinctionFunction() = default;
 
-    double operator()(const double x) const {
+    double operator()(const double x) const override {
       if (x<1100.){
         return 2.*m_factor;
       }
@@ -66,7 +66,7 @@ struct ModelDatasetGrid_Fixture {
       return 1.*m_factor;
     }
 
-    std::unique_ptr<Function> clone() const{
+    std::unique_ptr<Function> clone() const override {
        return std::unique_ptr<Function>{new DummyExtinctionFunction()};
     }
    private:

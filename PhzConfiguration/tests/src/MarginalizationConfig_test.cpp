@@ -61,7 +61,7 @@ struct MarginalizationConfig_fixture : public ConfigManager_fixture {
       TestConfig(long id) : Configuration(id) {
         declareDependency<MarginalizationConfig>();
       }
-      void preInitialize(const UserValues&) {
+      void preInitialize(const UserValues&) override {
         getDependency<MarginalizationConfig>().addMarginalizationCorrection(ModelParameter::SED, 
                 [](PhzDataModel::LikelihoodGrid& grid) {
                   for (auto& cell : grid.fixAxisByIndex<ModelParameter::Z>(0)) {

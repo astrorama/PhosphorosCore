@@ -26,11 +26,11 @@ struct PhotometryAlgorithm_Fixture {
 
     virtual ~DummyFilterFunction() = default;
 
-    double operator()(double) const {
+    double operator()(double) const override {
       return 1.;
     }
 
-    std::unique_ptr<Function> clone() const{
+    std::unique_ptr<Function> clone() const override {
        return std::unique_ptr<Function>{new DummyFilterFunction()};
     }
   };
