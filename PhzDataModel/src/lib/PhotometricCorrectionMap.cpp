@@ -45,12 +45,12 @@ PhotometricCorrectionMap readPhotometricCorrectionMap(std::istream& in) {
     throw Elements::Exception() << "readPhotometricCorrectionMap: table must contain columns 'Filter' and 'Correction'";
   }
 
-  if (column_info->getType(*(column_info->find("Filter")))!= typeid(std::string)){
+  if (column_info->getDescription(*(column_info->find("Filter"))).type != typeid(std::string)){
     throw Elements::Exception() << "readPhotometricCorrectionMap: the column 'Filter' must be of type 'string'";
 
   }
 
-  if (column_info->getType(*(column_info->find("Correction")))!= typeid(double)){
+  if (column_info->getDescription(*(column_info->find("Correction"))).type != typeid(double)){
     throw Elements::Exception() << "readPhotometricCorrectionMap: the columns 'Correction' must be of type 'double'";
 
   }

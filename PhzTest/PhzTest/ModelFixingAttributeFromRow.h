@@ -36,7 +36,7 @@ public:
 
     // Z
     auto z_column = column_info_ptr->find("Z");
-    if( z_column == nullptr || std::type_index(typeid(double)) != column_info_ptr->getType(*z_column) ){
+    if( z_column == nullptr || std::type_index(typeid(double)) != column_info_ptr->getDescription(*z_column).type ){
       throw Elements::Exception() << "The column 'Z' is missing or do not have 'double' type.";
     }
 
@@ -48,7 +48,7 @@ public:
 
     // EBV
     auto ebv_column = column_info_ptr->find("EBV");
-    if( ebv_column == nullptr || std::type_index(typeid(double)) != column_info_ptr->getType(*(ebv_column)) ){
+    if( ebv_column == nullptr || std::type_index(typeid(double)) != column_info_ptr->getDescription(*(ebv_column)).type ){
       throw Elements::Exception() << "The column 'EBV' is missing or do not have 'double' type.";
     }
 

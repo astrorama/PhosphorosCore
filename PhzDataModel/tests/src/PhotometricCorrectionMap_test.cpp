@@ -28,16 +28,16 @@ struct PhotometricCorrectionMap_Fixture {
   PhzDataModel::PhotometricCorrectionMap ref_map= PhzDataModel::PhotometricCorrectionMap{{filter1,1.1},{filter2,2.2},{filter3,3.3}};
 
   std::string string_representation =
-      "#           Filter Correction\n"
-      "#           string     double\n"
+      "# Column: Filter string\n"
+      "# Column: Correction double\n"
       "\n"
       "  Filters/Filter_1        1.1\n"
       "  Filters/Filter_3        3.3\n"
       "  Filters/Filter_2        2.2\n";
 
   std::string string_representation_wrong_name1 =
-      "#           Fillter Correction\n"
-      "#           string     double\n"
+      "# Column: Fillter string\n"
+      "# Column: Correction double\n"
       "\n"
       "  Filters/Filter_1        1.1\n"
       "  Filters/Filter_3        3.3\n"
@@ -45,8 +45,8 @@ struct PhotometricCorrectionMap_Fixture {
 
 
 std::string string_representation_wrong_name2 =
-     "#           Filter Corrrection\n"
-     "#           string     double\n"
+      "# Column: Filter string\n"
+      "# Column: Corrrection double\n"
      "\n"
      "  Filters/Filter_1        1.1\n"
      "  Filters/Filter_3        3.3\n"
@@ -54,16 +54,16 @@ std::string string_representation_wrong_name2 =
 
 
 std::string string_representation_wrong_type1 =
-     "#           Filter Correction\n"
-     "#           double     double\n"
+      "# Column: Filter double\n"
+      "# Column: Correction double\n"
      "\n"
      "  Filters/Filter_1        1.1\n"
      "  Filters/Filter_3        3.3\n"
      "  Filters/Filter_2        2.2\n";
 
 std::string string_representation_wrong_type2 =
-     "#           Filter Correction\n"
-     "#           string     string\n"
+      "# Column: Filter string\n"
+      "# Column: Correction string\n"
      "\n"
      "  Filters/Filter_1        1.1\n"
      "  Filters/Filter_3        3.3\n"
