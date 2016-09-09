@@ -58,7 +58,7 @@ PhzCatalog::~PhzCatalog() {
     Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
     if (m_format == Format::ASCII) {
       std::ofstream out {m_out_file.string()};
-      Table::AsciiWriter().write(out, out_table, m_comments, false);
+      Table::AsciiWriter().write(out, out_table, m_comments);
     } else {
       CCfits::FITS fits {"!"+m_out_file.string(), CCfits::RWmode::Write};
       Table::FitsWriter().write(fits, "Best Model Catalog", out_table, m_comments);
