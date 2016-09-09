@@ -52,8 +52,7 @@ struct PhosphorosCatalogConfig_fixture : public ConfigManager_fixture {
     fs::create_directories(temp_dir.path()/catalog_type);
     {
       std::ofstream out {(temp_dir.path()/catalog_type/catalog_file).string()};
-      out << "# ID\n"
-          << "# int64\n"
+      out << "# Column: ID int64\n"
           << "  1\n";
     }
     {
