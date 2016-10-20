@@ -1,20 +1,20 @@
-/*  
- * Copyright (C) 2012-2020 Euclid Science Ground Segment    
- *  
+/*
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ *
  * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 3.0 of the License, or (at your option)  
- * any later version.  
- *  
- * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
- * details.  
- *  
- * You should have received a copy of the GNU Lesser General Public License 
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
- */  
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 /**
  * @file src/lib/PdfOutputConfig.cpp
@@ -45,7 +45,7 @@ PdfOutputConfig::PdfOutputConfig(long manager_id) : Configuration(manager_id) {
 }
 
 auto PdfOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Compute Redshifts options", {
+  return {{"Output options", {
     {CREATE_OUTPUT_PDF_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
         "The output pdf flag for creating the file (YES/NO, default: NO)"},
     {OUTPUT_PDF_FORMAT.c_str(), po::value<std::string>()->default_value("VECTOR-COLUMN"),
@@ -54,13 +54,13 @@ auto PdfOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescrip
 }
 
 void PdfOutputConfig::preInitialize(const UserValues& args) {
-  
+
   if (args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() != "YES" &&
       args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() != "NO") {
     throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_PDF_FLAG
         << ": " << args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>();
   }
-  
+
   if (args.at(OUTPUT_PDF_FORMAT).as<std::string>() != "VECTOR-COLUMN" &&
       args.at(OUTPUT_PDF_FORMAT).as<std::string>() != "INDIVIDUAL-HDUS") {
     throw Elements::Exception() << "Invalid value for option " << OUTPUT_PDF_FORMAT
@@ -69,10 +69,10 @@ void PdfOutputConfig::preInitialize(const UserValues& args) {
 }
 
 void PdfOutputConfig::initialize(const UserValues& args) {
-  
+
   m_pdf_flag = (args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() == "YES");
   m_format = args.at(OUTPUT_PDF_FORMAT).as<std::string>();
-  
+
   if (m_pdf_flag && m_format == "VECTOR-COLUMN") {
     // Create the redshift bins comment
     std::set<double> z_knots {};
@@ -89,12 +89,12 @@ void PdfOutputConfig::initialize(const UserValues& args) {
     comment.seekp(-1, comment.cur);
     comment << '}';
     getDependency<OutputCatalogConfig>().addComment(comment.str());
-    
+
     getDependency<OutputCatalogConfig>().addColumnHandler(
         std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf{}}
     );
   }
-  
+
   if (m_pdf_flag && m_format == "INDIVIDUAL-HDUS") {
     m_out_pdf_file = getDependency<PhzOutputDirConfig>().getPhzOutputDir() / "pdf.fits";
   }

@@ -38,7 +38,7 @@ BestModelOutputConfig::BestModelOutputConfig(long manager_id) : Configuration(ma
 }
 
 auto BestModelOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Compute Redshifts options", {
+  return {{"Output options", {
     {CREATE_OUTPUT_BEST_MODEL_FLAG.c_str(), po::value<std::string>()->default_value("YES"),
         "Enables or disables the best model info in the output (YES/NO, default: YES)"}
   }}};

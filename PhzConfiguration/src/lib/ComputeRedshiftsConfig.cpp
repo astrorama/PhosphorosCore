@@ -110,7 +110,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
 }
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Compute Redshifts options", {
+  return {{"Output options", {
     {CREATE_OUTPUT_LIKELIHOODS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
         "The output likelihoods flag for creating the file (YES/NO, default: NO)"},
     {CREATE_OUTPUT_POSTERIORS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
@@ -220,23 +220,23 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
   MultiOutputHandler& result = static_cast<MultiOutputHandler&>(*output_handler);
 
   result.addHandler(getDependency<OutputCatalogConfig>().getOutputHandler());
-  
+
   result.addHandler(getDependency<PdfOutputConfig>().getOutputHandler());
-  
+
   if (m_likelihood_flag) {
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
         new PhzOutput::LikelihoodHandler<
                 PhzDataModel::SourceResultType::REGION_LIKELIHOOD
         > {m_out_likelihood_dir}});
   }
-  
+
   if (m_posterior_flag) {
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
         new PhzOutput::LikelihoodHandler<
                 PhzDataModel::SourceResultType::REGION_POSTERIOR
         > {m_out_posterior_dir}});
   }
-            
+
   return output_handler;
 }
 
