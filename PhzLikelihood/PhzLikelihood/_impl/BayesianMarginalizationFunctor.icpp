@@ -11,32 +11,32 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
-namespace {
+namespace BayesianMarginalizationFunctor_impl {
 
 
-template <int I=0>
+template <int FinalAxis, int I=0>
 struct NumercalAxisCorrectionAdder {
   
   template <typename T = PhzDataModel::DoubleGrid::axis_type<I>>
-  static void addCorrections(std::map<int, BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>::AxisCorrection>& axes_corr,
+  static void addCorrections(std::map<int, typename BayesianMarginalizationFunctor<FinalAxis>::AxisCorrection>& axes_corr,
                              typename std::enable_if<std::is_arithmetic<T>::value>::type* = 0) {
     axes_corr[I] = NumericalAxisCorrection<I> {};
-    NumercalAxisCorrectionAdder<I+1>::addCorrections(axes_corr);
+    NumercalAxisCorrectionAdder<FinalAxis, I+1>::addCorrections(axes_corr);
   }
   
   template <typename T = PhzDataModel::DoubleGrid::axis_type<I>>
-  static void addCorrections(std::map<int, BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>::AxisCorrection>& axes_corr,
+  static void addCorrections(std::map<int, typename BayesianMarginalizationFunctor<FinalAxis>::AxisCorrection>& axes_corr,
                              typename std::enable_if<!std::is_arithmetic<T>::value>::type* = 0) {
     // Non numerical axis, do not add correction
-    NumercalAxisCorrectionAdder<I+1>::addCorrections(axes_corr);
+    NumercalAxisCorrectionAdder<FinalAxis, I+1>::addCorrections(axes_corr);
   }
   
 };
 
-template <>
-struct NumercalAxisCorrectionAdder<PhzDataModel::DoubleGrid::axisNumber()> {
+template <int FinalAxis>
+struct NumercalAxisCorrectionAdder<FinalAxis, PhzDataModel::DoubleGrid::axisNumber()> {
   
-  static void addCorrections(std::map<int, BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>::AxisCorrection>&) {
+  static void addCorrections(std::map<int, typename BayesianMarginalizationFunctor<FinalAxis>::AxisCorrection>&) {
     // Do nothing here
   }
   
@@ -47,7 +47,7 @@ struct NumercalAxisCorrectionAdder<PhzDataModel::DoubleGrid::axisNumber()> {
 
 template <int FinalAxis>
 BayesianMarginalizationFunctor<FinalAxis>::BayesianMarginalizationFunctor() {
-  NumercalAxisCorrectionAdder<>::addCorrections(m_numerical_axes_corr);
+  BayesianMarginalizationFunctor_impl::NumercalAxisCorrectionAdder<FinalAxis>::addCorrections(m_numerical_axes_corr);
   for (size_t i = 0; i < PhzDataModel::DoubleGrid::axisNumber(); ++i) {
     m_custom_axes_corr[i].clear();
   }
