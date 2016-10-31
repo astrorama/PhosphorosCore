@@ -6,3 +6,6 @@
 /build.*
 /InstallArea
 /*.log
+/.sonar
+/PAQA
+/sonar-project.properties
