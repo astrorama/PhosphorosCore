@@ -9,7 +9,8 @@
 #include <functional>
 #include "MathUtils/function/Function.h"
 #include "PhzLuminosity/LuminosityPrior.h"
-#include "PhzDataModel/PriorGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/RegionResults.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
@@ -30,20 +31,22 @@ m_effectiveness{effectiveness} {
 
 }
 
-void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
-    const SourceCatalog::Photometry&, const PhzDataModel::PhotometryGrid&,
-    const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const {
+void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
+  
+  // Get from the results the input
+  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
+  const auto& scale_factor_grid = results.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
 
   // We first create a grid that contains only the prior, so we can normalize
   // it and apply the efficiency
-  PhzDataModel::PriorGrid prior_grid {likelihoodGrid.getAxesTuple()};
+  PhzDataModel::DoubleGrid prior_grid {posterior_grid.getAxesTuple()};
   for (auto& cell : prior_grid) {
     cell = 1.;
   }
   double max = 0;
   
-  auto& z_axis = likelihoodGrid.getAxis<PhzDataModel::ModelParameter::Z>();
-  auto& sed_axis = likelihoodGrid.getAxis<PhzDataModel::ModelParameter::SED>();
+  auto& z_axis = posterior_grid.getAxis<PhzDataModel::ModelParameter::Z>();
+  auto& sed_axis = posterior_grid.getAxis<PhzDataModel::ModelParameter::SED>();
 
   std::function<double(double)> luminosity_function {};
   std::string current_sed_group {};
@@ -74,7 +77,7 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
       prior_iter.fixAxisByIndex<PhzDataModel::ModelParameter::SED>(sed_index);
       prior_iter.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(z_index);
 
-      auto scal_iter = scaleFactorGrid.begin();
+      auto scal_iter = scale_factor_grid.begin();
       scal_iter.fixAxisByIndex<PhzDataModel::ModelParameter::SED>(sed_index);
       scal_iter.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(z_index);
 
@@ -100,7 +103,7 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
   }
   
   // Apply the prior to the likelihood
-  for (auto l_it=likelihoodGrid.begin(), p_it=prior_grid.begin(); l_it!=likelihoodGrid.end(); ++l_it, ++p_it) {
+  for (auto l_it=posterior_grid.begin(), p_it=prior_grid.begin(); l_it!=posterior_grid.end(); ++l_it, ++p_it) {
     *l_it += std::log(*p_it);
   }
   

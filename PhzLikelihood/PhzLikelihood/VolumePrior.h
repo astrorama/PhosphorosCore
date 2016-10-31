@@ -28,10 +28,7 @@
 #include <vector>
 #include <map>
 #include "PhysicsUtils/CosmologicalParameters.h"
-#include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/LikelihoodGrid.h"
-#include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
+#include "PhzDataModel/RegionResults.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -68,28 +65,19 @@ public:
   virtual ~VolumePrior() = default;
 
   /**
-   * @brief Applies the volume prior to a likelihood grid
+   * @brief Applies the volume prior to a posterior grid
    * @details
    * The volume prior is applied by multiplying each likelihood cell with the
    * corresponding dimensionless comoving volume element for its redshift. The
    * values used are the ones precomputed by the constructor, which is done for
    * optimization.
-   * @param likelihoodGrid
-   *    The grid to apply the prior on
-   * @param sourcePhotometry
-   *    This parameter is not used by this prior
-   * @param modelGrid
-   *    This parameter is not used by this prior
-   * @param scaleFactorGrid
-   *    This parameter is not used by this prior
+   * @param results
+   *    The results object containing the posterior to apply the prior to
    * @throws std::out_of_range
    *    If the given likelihood grid Z axis contains knots which are not included
    *    the the expected_redshifts parameter of the constructor
    */
-  void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
-                  const SourceCatalog::Photometry& sourcePhotometry,
-                  const PhzDataModel::PhotometryGrid& modelGrid,
-                  const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const;
+  void operator()(PhzDataModel::RegionResults& results) const;
 
 private:
   

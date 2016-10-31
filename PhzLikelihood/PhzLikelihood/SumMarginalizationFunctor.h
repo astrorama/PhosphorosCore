@@ -8,7 +8,7 @@
 #define	PHZLIKELIHOOD_SUMMARGINALIZATIONFUNCTOR_H
 
 #include <numeric>
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/Pdf1D.h"
 
@@ -34,7 +34,7 @@ class SumMarginalizationFunctor {
   
 public:
   
-  using result_type = PhzDataModel::Pdf1D<PhzDataModel::LikelihoodGrid::axis_type<FinalAxis>>;
+  using result_type = PhzDataModel::Pdf1D<PhzDataModel::DoubleGrid::axis_type<FinalAxis>>;
   
   /**
    * @brief Returns the marginalized 1D PDF of the given likelihood grid
@@ -45,7 +45,7 @@ public:
    * @param likelihood_grid The likelihood grid to margnalize
    * @return The 1D PDF
    */
-  result_type operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const;
+  result_type operator()(const PhzDataModel::DoubleGrid& likelihood_grid) const;
   
 };
 

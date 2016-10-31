@@ -10,8 +10,8 @@
 #include <tuple>
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/LikelihoodGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/RegionResults.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -28,14 +28,6 @@ class LikelihoodGridFunctor {
 public:
 
   /**
-   * The result type of the LikelihoodGridFunctor. It contains the following:
-   * - A grid containing the Likelihood logarithm of each model
-   * - A grid containing the scale factor of each model
-   */
-  using result_type = std::tuple<PhzDataModel::LikelihoodGrid,
-                                 PhzDataModel::ScaleFactordGrid>;
-
-  /**
    * Definition of the STL-like algorithm for calculating the grid containing
    * the natural logarithm of the likelihood. It is a function which gets a
    * source photometry and an iterator over the model photometries and populates
@@ -45,8 +37,8 @@ public:
   typedef std::function<void(const SourceCatalog::Photometry& source_photometry,
                              PhzDataModel::PhotometryGrid::const_iterator model_begin,
                              PhzDataModel::PhotometryGrid::const_iterator model_end,
-                             PhzDataModel::LikelihoodGrid::iterator likelihood_log_begin,
-                             PhzDataModel::ScaleFactordGrid::iterator scale_factor_begin)
+                             PhzDataModel::DoubleGrid::iterator likelihood_log_begin,
+                             PhzDataModel::DoubleGrid::iterator scale_factor_begin)
                        > LikelihoodLogarithmFunction;
 
   /**
@@ -56,18 +48,14 @@ public:
 
   /**
    * Computes the log likelihood of the given source photometry over the given
-   * photometry grid.
+   * photometry grid. The given results object must already contain the
+   * MODEL_GRID_REFERENCE and SOURCE_PHOTOMETRY_REFERENCE objects. After the
+   * call, the results will contain the LIKELIHOOD_GRID and SCALE_FACTOR_GRID.
    *
-   * @param source_phot
-   *    The photometry of the source
-   * @param phot_grid
-   *    The grid containing the model photometries
-   * @return
-   *    The results of the likelihood logarithm calculation
-   * \see result_type
+   * @param results
+   *    The results object to get the input and set the output
    */
-  result_type operator()(const SourceCatalog::Photometry& source_phot,
-                         const PhzDataModel::PhotometryGrid& phot_grid);
+  void operator()(PhzDataModel::RegionResults& results);
 
 private:
 

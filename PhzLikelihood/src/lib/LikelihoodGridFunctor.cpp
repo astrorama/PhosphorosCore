@@ -15,17 +15,21 @@ LikelihoodGridFunctor::LikelihoodGridFunctor(LikelihoodLogarithmFunction likelih
           : m_likelihood_log_func {std::move(likelihood_log_func)} { }
 
 
-auto LikelihoodGridFunctor::operator()(const SourceCatalog::Photometry& source_phot,
-                         const PhzDataModel::PhotometryGrid& phot_grid) -> result_type {
+void LikelihoodGridFunctor::operator()(PhzDataModel::RegionResults& results) {
+  using ResType = PhzDataModel::RegionResultType;
+  
+  // Get from the results the objects we need
+  auto& model_grid = results.get<ResType::MODEL_GRID_REFERENCE>().get();
+  auto& source_phot = results.get<ResType::SOURCE_PHOTOMETRY_REFERENCE>().get();
+  
   // Create new likelihood and scale factor grids, with all cells set to 0
-  PhzDataModel::LikelihoodGrid likelihood_grid {phot_grid.getAxesTuple()};
-  PhzDataModel::ScaleFactordGrid scale_factor_grid {phot_grid.getAxesTuple()};
+  auto& likelihood_grid = results.set<ResType::LIKELIHOOD_LOG_GRID>(model_grid.getAxesTuple());
+  auto& scale_factor_grid = results.set<ResType::SCALE_FACTOR_GRID>(model_grid.getAxesTuple());
 
   // Calculate the natural logarithm of the likelihood over the grid
-  m_likelihood_log_func(source_phot, phot_grid.begin(), phot_grid.end(),
+  m_likelihood_log_func(source_phot, model_grid.begin(), model_grid.end(),
                         likelihood_grid.begin(), scale_factor_grid.begin());
 
-  return result_type {std::move(likelihood_grid), std::move(scale_factor_grid)};
 }
 
 

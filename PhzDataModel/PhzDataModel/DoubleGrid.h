@@ -17,12 +17,12 @@
  */
 
 /* 
- * @file PriorGrid.h
+ * @file DoubleGrid.h
  * @author nikoapos
  */
 
-#ifndef PHZDATAMODEL_PRIORGRID_H
-#define	PHZDATAMODEL_PRIORGRID_H
+#ifndef PHZDATAMODEL_DOUBLEGRID_H
+#define PHZDATAMODEL_DOUBLEGRID_H
 
 #include <vector>
 #include "PhzDataModel/PhzModel.h"
@@ -30,12 +30,12 @@
 namespace Euclid {
 namespace PhzDataModel {
 
-typedef std::vector<double> PriorGridCellManager;
+typedef std::vector<double> DoubleCellManager;
 
-typedef PhzGrid<PriorGridCellManager> PriorGrid;
+typedef PhzGrid<DoubleCellManager> DoubleGrid;
 
-} // end of namespace PhzDataModel
+}
 } // end of namespace Euclid
 
-#endif	/* PHZDATAMODEL_PRIORGRID_H */
+#endif /* PHZDATAMODEL_DOUBLEGRID_H */
 

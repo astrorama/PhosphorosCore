@@ -44,13 +44,13 @@ std::vector<Table::Row::cell_type> BestModel::convertResults(
                       const SourceCatalog::Source&,
                       const PhzDataModel::SourceResults& results) const {
   
-  auto& best_model = results.getResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
+  auto& best_model = results.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
   auto sed = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
   int64_t sed_index = best_model.axisIndex<PhzDataModel::ModelParameter::SED>() + 1;
   auto reddening_curve = best_model.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>().qualifiedName();
   auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
   auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
-  auto scale = results.getResult<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>();
+  auto scale = results.get<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>();
   
   return std::vector<Table::Row::cell_type> {
     sed, sed_index, reddening_curve, ebv, z, scale

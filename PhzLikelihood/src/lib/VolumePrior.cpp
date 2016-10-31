@@ -60,11 +60,9 @@ VolumePrior::VolumePrior(const PhysicsUtils::CosmologicalParameters& cosmology,
   }
 }
 
-void VolumePrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
-                             const SourceCatalog::Photometry&,
-                             const PhzDataModel::PhotometryGrid&,
-                             const PhzDataModel::ScaleFactordGrid&) const {
-  for (auto iter = likelihoodGrid.begin(); iter != likelihoodGrid.end(); ++iter) {
+void VolumePrior::operator()(PhzDataModel::RegionResults& results) const {
+  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
+  for (auto iter = posterior_grid.begin(); iter != posterior_grid.end(); ++iter) {
     *iter += m_precomputed.at(iter.axisValue<PhzDataModel::ModelParameter::Z>());
   }
 }

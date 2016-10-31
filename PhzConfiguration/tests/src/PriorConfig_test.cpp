@@ -24,12 +24,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "ConfigManager_fixture.h"
-#include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/LikelihoodGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
+#include "PhzDataModel/RegionResults.h"
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
@@ -37,10 +34,7 @@ namespace fs = boost::filesystem;
 
 
 struct DummyPrior{
-  void operator()(Euclid::PhzDataModel::LikelihoodGrid&,
-                  const Euclid::SourceCatalog::Photometry&,
-                  const Euclid::PhzDataModel::PhotometryGrid&,
-                  const Euclid::PhzDataModel::ScaleFactordGrid&) {};
+  void operator()(Euclid::PhzDataModel::RegionResults&) {};
 };
 
 //-----------------------------------------------------------------------------

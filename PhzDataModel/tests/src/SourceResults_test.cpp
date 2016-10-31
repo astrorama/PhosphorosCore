@@ -38,17 +38,14 @@ BOOST_AUTO_TEST_CASE( resultCreationAndRetrieval ) {
 
   // Given
   SourceResults sr {};
-  auto& names = sr.setResult<SourceResultType::REGION_NAMES>();
+  auto& scale = sr.set<SourceResultType::BEST_MODEL_SCALE_FACTOR>(1.1);
   
   // When
-  names.push_back("one");
-  names.push_back("two");
-  auto& res = sr.getResult<SourceResultType::REGION_NAMES>();
+  scale = 2.2;
+  auto& res = sr.get<SourceResultType::BEST_MODEL_SCALE_FACTOR>();
   
   // Then
-  BOOST_CHECK_EQUAL(res.size(), 2);
-  BOOST_CHECK_EQUAL(res[0], "one");
-  BOOST_CHECK_EQUAL(res[1], "two");
+  BOOST_CHECK_EQUAL(res, 2.2);
 
 }
 
@@ -58,18 +55,14 @@ BOOST_AUTO_TEST_CASE( copy ) {
 
   // Given
   SourceResults sr1 {};
-  auto& names = sr1.setResult<SourceResultType::REGION_NAMES>();
-  names.push_back("one");
-  names.push_back("two");
+  auto& scale = sr1.set<SourceResultType::BEST_MODEL_SCALE_FACTOR>(1.1);
   
   // When
   SourceResults sr2 {sr1};
-  auto& res = sr2.getResult<SourceResultType::REGION_NAMES>();
+  auto& res = sr2.get<SourceResultType::BEST_MODEL_SCALE_FACTOR>();
   
   // Then
-  BOOST_CHECK_EQUAL(res.size(), 2);
-  BOOST_CHECK_EQUAL(res[0], "one");
-  BOOST_CHECK_EQUAL(res[1], "two");
+  BOOST_CHECK_EQUAL(res, scale);
 
 }
 
@@ -81,7 +74,7 @@ BOOST_AUTO_TEST_CASE( resultNotRegisteredException ) {
   SourceResults sr {};
   
   // Then
-  BOOST_CHECK_THROW(sr.getResult<SourceResultType::REGION_NAMES>(), Elements::Exception);
+  BOOST_CHECK_THROW(sr.get<SourceResultType::BEST_MODEL_SCALE_FACTOR>(), Elements::Exception);
 
 }
 

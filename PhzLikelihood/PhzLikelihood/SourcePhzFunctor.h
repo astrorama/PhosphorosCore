@@ -9,8 +9,8 @@
 
 #include <map>
 #include <string>
-#include <vector>
 #include "PhzDataModel/PhotometricCorrectionMap.h"
+#include "PhzDataModel/SourceResults.h"
 #include "PhzLikelihood/SingleGridPhzFunctor.h"
 
 #include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
@@ -39,7 +39,6 @@ class SourcePhzFunctor {
 public:
 
   using LikelihoodGridFunction = SingleGridPhzFunctor::LikelihoodGridFunction;
-  using BestFitSearchFunction = SingleGridPhzFunctor::BestFitSearchFunction;
   using MarginalizationFunction = SingleGridPhzFunctor::MarginalizationFunction;
   using PriorFunction = SingleGridPhzFunctor::PriorFunction;
   
@@ -62,8 +61,6 @@ public:
    *    The function to use for computing the likelihood grid for a single source
    * @param priors
    *    The priors to apply to the likelihood
-   * @param best_fit_search_func
-   *    The STL-like algorithm for finding the best fitted model
    * @param marginalization_func
    *    The functor to use for performing the PDF marginalization
    */
@@ -71,8 +68,7 @@ public:
                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                    LikelihoodGridFunction likelihood_grid_func,
                    std::vector<PriorFunction> priors = {},
-                   MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor{},
-                   BestFitSearchFunction best_fit_search_func = std::max_element<PhzDataModel::LikelihoodGrid::iterator>);
+                   MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor{});
 
   /**
    * Calculates the PHZ results for the given source photometry. The given
@@ -92,7 +88,8 @@ public:
 private:
 
   PhzDataModel::PhotometricCorrectionMap m_phot_corr_map;
-  std::vector<SingleGridPhzFunctor> m_single_grid_functor_list {};
+  const std::map<std::string, PhzDataModel::PhotometryGrid>& m_phot_grid_map;
+  std::map<std::string, SingleGridPhzFunctor> m_single_grid_functor_map {};
 
 };
 

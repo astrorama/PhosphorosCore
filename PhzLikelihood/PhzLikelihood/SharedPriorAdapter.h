@@ -7,10 +7,7 @@
 #ifndef PHZLIKELIHOOD_PHZLIKELIHOOD_SHAREDPRIORADAPTER_H_
 #define PHZLIKELIHOOD_PHZLIKELIHOOD_SHAREDPRIORADAPTER_H_
 
-#include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/LikelihoodGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
+#include "PhzDataModel/RegionResults.h"
 
 
 namespace Euclid {
@@ -62,10 +59,7 @@ public:
   /**
    * @brief function call operator. Has the signature to be used as a PriorFunction.
    */
-  void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
-        const SourceCatalog::Photometry& sourcePhotometry,
-        const PhzDataModel::PhotometryGrid& modelGrid,
-        const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const;
+  void operator()(PhzDataModel::RegionResults& results) const;
 
 private:
   std::shared_ptr<Prior> m_prior;

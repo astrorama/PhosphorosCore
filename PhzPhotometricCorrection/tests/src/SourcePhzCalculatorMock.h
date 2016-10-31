@@ -43,19 +43,11 @@ public:
   }
 
   void expectFunctorCall() {
-    std::map<std::string, PhzDataModel::LikelihoodGrid> likelihood_map {};
-    likelihood_map.emplace(std::make_pair(std::string(""),
-              PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{}))));
-    std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
-    posterior_map.emplace(std::make_pair(std::string(""),
-              PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{}))));
     PhzDataModel::SourceResults result {};
-    result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(m_phot_grid.begin());
-    result.setResult<PhzDataModel::SourceResultType::Z_1D_PDF>(PhzDataModel::Pdf1DZ{GridContainer::GridAxis<double>{"Axis",{}}});
-    result.setResult<PhzDataModel::SourceResultType::REGION_LIKELIHOOD>(std::move(likelihood_map));
-    result.setResult<PhzDataModel::SourceResultType::REGION_POSTERIOR>(std::move(posterior_map));
-    result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>(0);
-    result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_POSTERIOR_LOG>(0);
+    result.set<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(m_phot_grid.begin());
+    result.set<PhzDataModel::SourceResultType::Z_1D_PDF>(PhzDataModel::Pdf1DZ{GridContainer::GridAxis<double>{"Axis",{}}});
+    result.set<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>(0);
+    result.set<PhzDataModel::SourceResultType::BEST_MODEL_POSTERIOR_LOG>(0);
     EXPECT_CALL(*this, FunctorCall(_)).WillOnce(Return(
         new PhzDataModel::SourceResults {result}
     ));

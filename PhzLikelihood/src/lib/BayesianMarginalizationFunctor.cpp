@@ -18,14 +18,14 @@ namespace {
 template <int I=0>
 struct NumercalAxisCorrectionAdder {
   
-  template <typename T = PhzDataModel::LikelihoodGrid::axis_type<I>>
+  template <typename T = PhzDataModel::DoubleGrid::axis_type<I>>
   static void addCorrections(std::map<int, BayesianMarginalizationFunctor::AxisCorrection>& axes_corr,
                              typename std::enable_if<std::is_arithmetic<T>::value>::type* = 0) {
     axes_corr[I] = NumericalAxisCorrection<I> {};
     NumercalAxisCorrectionAdder<I+1>::addCorrections(axes_corr);
   }
   
-  template <typename T = PhzDataModel::LikelihoodGrid::axis_type<I>>
+  template <typename T = PhzDataModel::DoubleGrid::axis_type<I>>
   static void addCorrections(std::map<int, BayesianMarginalizationFunctor::AxisCorrection>& axes_corr,
                              typename std::enable_if<!std::is_arithmetic<T>::value>::type* = 0) {
     // Non numerical axis, do not add correction
@@ -35,7 +35,7 @@ struct NumercalAxisCorrectionAdder {
 };
 
 template <>
-struct NumercalAxisCorrectionAdder<PhzDataModel::LikelihoodGrid::axisNumber()> {
+struct NumercalAxisCorrectionAdder<PhzDataModel::DoubleGrid::axisNumber()> {
   
   static void addCorrections(std::map<int, BayesianMarginalizationFunctor::AxisCorrection>&) {
     // Do nothing here
@@ -48,17 +48,17 @@ struct NumercalAxisCorrectionAdder<PhzDataModel::LikelihoodGrid::axisNumber()> {
 
 BayesianMarginalizationFunctor::BayesianMarginalizationFunctor() {
   NumercalAxisCorrectionAdder<>::addCorrections(m_numerical_axes_corr);
-  for (size_t i = 0; i < PhzDataModel::LikelihoodGrid::axisNumber(); ++i) {
+  for (size_t i = 0; i < PhzDataModel::DoubleGrid::axisNumber(); ++i) {
     m_custom_axes_corr[i].clear();
   }
 }
 
 
 PhzDataModel::Pdf1DZ BayesianMarginalizationFunctor::operator()(
-                    const PhzDataModel::LikelihoodGrid& likelihood_grid) const {
+                    const PhzDataModel::DoubleGrid& likelihood_grid) const {
   
   // Make a copy of the likelihood grid, so we can modify it
-  PhzDataModel::LikelihoodGrid likelihood_copy {likelihood_grid.getAxesTuple()};
+  PhzDataModel::DoubleGrid likelihood_copy {likelihood_grid.getAxesTuple()};
   std::copy(likelihood_grid.begin(), likelihood_grid.end(), likelihood_copy.begin());
   
   for (auto& pair : m_numerical_axes_corr) {
@@ -68,7 +68,7 @@ PhzDataModel::Pdf1DZ BayesianMarginalizationFunctor::operator()(
     pair.second(likelihood_copy);
   }
   
-  for (size_t i = 0; i < PhzDataModel::LikelihoodGrid::axisNumber(); ++i) {
+  for (size_t i = 0; i < PhzDataModel::DoubleGrid::axisNumber(); ++i) {
     if (i == PhzDataModel::ModelParameter::Z) {
       continue;
     }

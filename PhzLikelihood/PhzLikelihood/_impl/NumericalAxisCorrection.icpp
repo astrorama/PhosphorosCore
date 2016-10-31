@@ -8,7 +8,7 @@ namespace Euclid {
 namespace PhzLikelihood {
 
 template<int I>
-void NumericalAxisCorrection<I>::operator()(PhzDataModel::LikelihoodGrid& likelihood_grid) {
+void NumericalAxisCorrection<I>::operator()(PhzDataModel::DoubleGrid& likelihood_grid) {
   auto axis = likelihood_grid.getAxis<I>();
   if (axis.size() <= 1) {
     return;

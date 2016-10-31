@@ -14,7 +14,7 @@ namespace PhzLuminosity {
 
 static Elements::Logging logger = Elements::Logging::getLogger("LuminosityCalculator");
 
-double LuminosityCalculator::operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor) const {
+double LuminosityCalculator::operator()(const PhzDataModel::DoubleGrid::const_iterator& scale_factor) const {
   auto model_iter = fixIterator(scale_factor);
   double z = scale_factor.axisValue<PhzDataModel::ModelParameter::Z>();
   return getLuminosityFromModel(model_iter, *scale_factor, z);

@@ -40,8 +40,8 @@ std::vector<Table::Row::cell_type> PosteriorStatistics::convertResults(
                       const SourceCatalog::Source&,
                       const PhzDataModel::SourceResults& results) const {
   
-  auto posterior_log = results.getResult<PhzDataModel::SourceResultType::BEST_MODEL_POSTERIOR_LOG>();
-  auto& pdf_1d = results.getResult<PhzDataModel::SourceResultType::Z_1D_PDF>();
+  auto posterior_log = results.get<PhzDataModel::SourceResultType::BEST_MODEL_POSTERIOR_LOG>();
+  auto& pdf_1d = results.get<PhzDataModel::SourceResultType::Z_1D_PDF>();
   auto pdf_1d_peak_z = std::max_element(pdf_1d.begin(), pdf_1d.end()).axisValue<0>();
   
   return std::vector<Table::Row::cell_type> {
