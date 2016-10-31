@@ -68,7 +68,7 @@ public:
                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                    LikelihoodGridFunction likelihood_grid_func,
                    std::vector<PriorFunction> priors = {},
-                   MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor{});
+                   MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{});
 
   /**
    * Calculates the PHZ results for the given source photometry. The given

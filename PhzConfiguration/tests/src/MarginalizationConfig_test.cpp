@@ -138,7 +138,7 @@ BOOST_FIXTURE_TEST_CASE(bayesian_type, MarginalizationConfig_fixture) {
   auto& marginalize_func = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFunc();
   
   // Then
-  BOOST_CHECK_EQUAL(marginalize_func.target_type().name(), typeid(const PhzLikelihood::BayesianMarginalizationFunctor&).name());
+  BOOST_CHECK_EQUAL(marginalize_func.target_type().name(), typeid(const PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>&).name());
 
 }
 

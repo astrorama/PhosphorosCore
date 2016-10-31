@@ -81,7 +81,7 @@ public:
    *    The functor to use for performing the PDF marginalization
    */
   SingleGridPhzFunctor(std::vector<PriorFunction> priors = {},
-                       MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor{},
+                       MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{},
                        LikelihoodGridFunction likelihood_func = LikelihoodGridFunctor{LikelihoodLogarithmAlgorithm{ScaleFactorFunctorSimple{}, ChiSquareLikelihoodLogarithmSimple{}}});
 
   /**

@@ -19,9 +19,12 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
+template <int FinalAxis>
 class BayesianMarginalizationFunctor {
   
 public:
+  
+  using result_type = PhzDataModel::Pdf1D<PhzDataModel::DoubleGrid::axis_type<FinalAxis>>;
   
   using AxisCorrection = std::function<void(PhzDataModel::DoubleGrid& likelihood_grid)>;
   
@@ -36,7 +39,7 @@ public:
     m_custom_axes_corr[axis].emplace_back(std::move(correction));
   }
 
-  PhzDataModel::Pdf1DZ operator()(const PhzDataModel::DoubleGrid& likelihood_grid) const;
+  result_type operator()(const PhzDataModel::DoubleGrid& likelihood_grid) const;
   
 private:
   
@@ -49,6 +52,8 @@ private:
 
 } // end of namespace PhzLikelihood
 } // end of namespace Euclid
+
+#include "PhzLikelihood/_impl/BayesianMarginalizationFunctor.icpp"
 
 #endif	/* PHZLIKELIHOOD_BAYESIANMARGINALIZATIONFUNCTOR_H */
 
