@@ -36,7 +36,6 @@ struct Pdf1DTraits {
 template <>
 struct Pdf1DTraits<PhzDataModel::ModelParameter::Z> {
   static constexpr auto PdfRes = RegResType::Z_1D_PDF;
-  static constexpr auto LogNormRes = RegResType::Z_1D_PDF_NORM_LOG;
   using PdfType = PhzDataModel::Pdf1D<PhzDataModel::ModelParameterTraits<PhzDataModel::ModelParameter::Z>::type>;
 };
   
@@ -84,7 +83,7 @@ static typename Pdf1DTraits<FixedAxis>::PdfType combine1DPdfs(const std::map<std
   std::map<std::string, double> factor_map {};
   double max_norm_log = std::numeric_limits<double>::lowest();
   for (auto& pair : reg_result_map) {
-    double norm_log = pair.second.get<Pdf1DTraits<FixedAxis>::LogNormRes>();
+    double norm_log = pair.second.get<RegResType::LOG_1D_PDF_NORM>();
     factor_map[pair.first] = norm_log;
     if (norm_log > max_norm_log) {
       max_norm_log = norm_log;

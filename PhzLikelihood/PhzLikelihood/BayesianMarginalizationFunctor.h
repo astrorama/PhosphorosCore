@@ -24,7 +24,7 @@ class BayesianMarginalizationFunctor {
   
 public:
   
-  using result_type = PhzDataModel::Pdf1D<PhzDataModel::DoubleGrid::axis_type<FinalAxis>>;
+  using result_type = PhzDataModel::Pdf1DParam<FinalAxis>;
   
   using AxisCorrection = std::function<void(PhzDataModel::DoubleGrid& likelihood_grid)>;
   

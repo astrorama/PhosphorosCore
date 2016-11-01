@@ -45,7 +45,7 @@ public:
   void expectFunctorCall() {
     PhzDataModel::SourceResults result {};
     result.set<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(m_phot_grid.begin());
-    result.set<PhzDataModel::SourceResultType::Z_1D_PDF>(PhzDataModel::Pdf1DZ{GridContainer::GridAxis<double>{"Axis",{}}});
+    result.set<PhzDataModel::SourceResultType::Z_1D_PDF>(PhzDataModel::Pdf1DParam<PhzDataModel::ModelParameter::Z>{GridContainer::GridAxis<double>{"Axis",{}}});
     result.set<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>(0);
     result.set<PhzDataModel::SourceResultType::BEST_MODEL_POSTERIOR_LOG>(0);
     EXPECT_CALL(*this, FunctorCall(_)).WillOnce(Return(

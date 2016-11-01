@@ -54,7 +54,7 @@ void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) cons
   // Now we can compute the 1D PDF
   auto pdf_1D = m_marginalization_func(posterior_grid_normalized);
   results.set<ResType::Z_1D_PDF>(std::move(pdf_1D));
-  results.set<ResType::Z_1D_PDF_NORM_LOG>(norm_log);
+  results.set<ResType::LOG_1D_PDF_NORM>(norm_log);
   
 }
 

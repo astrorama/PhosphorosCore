@@ -10,6 +10,7 @@
 #include <numeric>
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhzModel.h"
+#include "PhzDataModel/Pdf1D.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -32,11 +33,8 @@ namespace PhzLikelihood {
 template<int FinalAxis>
 class MaxMarginalizationFunctor {
   
-  /// Alias to the type of the X axis of the final 1D PDF
-  typedef PhzDataModel::DoubleGrid::axis_type<FinalAxis> axis_type;
-  
   /// Alias of the returned Grid type representing the 1D PDF
-  typedef GridContainer::GridContainer<PhzDataModel::DoubleCellManager, axis_type> result_type;
+  using result_type = PhzDataModel::Pdf1DParam<FinalAxis>;
   
 public:
   

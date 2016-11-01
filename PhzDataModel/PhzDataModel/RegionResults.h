@@ -46,10 +46,16 @@ enum class RegionResultType {
   LIKELIHOOD_LOG_GRID,
   /// The grid containing the posterior for all models
   POSTERIOR_LOG_GRID,
+  /// The 1D PDF over the SED
+  SED_1D_PDF,
+  /// The 1D PDF over the reddening curve
+  RED_CURVE_1D_PDF,
+  /// The 1D PDF over the E(B-V)
+  EBV_1D_PDF,
   /// The 1D PDF over the redshift
   Z_1D_PDF,
-  /// The logarithm of the normalization of the 1D PDF over the redshift
-  Z_1D_PDF_NORM_LOG
+  /// The logarithm of the normalization of the 1D PDFs
+  LOG_1D_PDF_NORM
 };
 
 using RegionResults = TypedEnumMap<RegionResultType>;

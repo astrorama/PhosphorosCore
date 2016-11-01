@@ -34,7 +34,7 @@ class SumMarginalizationFunctor {
   
 public:
   
-  using result_type = PhzDataModel::Pdf1D<PhzDataModel::DoubleGrid::axis_type<FinalAxis>>;
+  using result_type = PhzDataModel::Pdf1DParam<FinalAxis>;
   
   /**
    * @brief Returns the marginalized 1D PDF of the given likelihood grid

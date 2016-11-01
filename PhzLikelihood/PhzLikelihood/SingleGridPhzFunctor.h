@@ -49,7 +49,7 @@ public:
    * gets as parameter a LikelihoodGrid and it returns a one dimensional grid with only
    * axis the redshift. It should not perform any normalization.
    */
-  typedef std::function<PhzDataModel::Pdf1DZ(const PhzDataModel::DoubleGrid&)> MarginalizationFunction;
+  typedef std::function<PhzDataModel::Pdf1DParam<PhzDataModel::ModelParameter::Z>(const PhzDataModel::DoubleGrid&)> MarginalizationFunction;
   
   /**
    * Definition of the function signature for applying a prior to the posterior
