@@ -75,7 +75,7 @@ class ComputeRedshifts : public Elements::Program {
     auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();
     
     PhzLikelihood::ParallelCatalogHandler handler {phot_corr_map, model_phot_grid, likelihood_grid_func,
-                                                   priors, marginalization_func};
+                                                   priors, {marginalization_func}};
 
     auto& catalog = config_manager.getConfiguration<CatalogConfig>().getCatalog();
     auto out_ptr = config_manager.getConfiguration<ComputeRedshiftsConfig>().getOutputHandler();

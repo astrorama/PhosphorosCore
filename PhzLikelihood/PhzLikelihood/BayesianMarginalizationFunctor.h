@@ -12,9 +12,9 @@
 #include <vector>
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhzModel.h"
+#include "PhzDataModel/RegionResults.h"
 #include "PhzLikelihood/NumericalAxisCorrection.h"
 #include "PhzLikelihood/GroupedAxisCorrection.h"
-#include "PhzDataModel/Pdf1D.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -23,8 +23,6 @@ template <int FinalAxis>
 class BayesianMarginalizationFunctor {
   
 public:
-  
-  using result_type = PhzDataModel::Pdf1DParam<FinalAxis>;
   
   using AxisCorrection = std::function<void(PhzDataModel::DoubleGrid& likelihood_grid)>;
   
@@ -39,7 +37,7 @@ public:
     m_custom_axes_corr[axis].emplace_back(std::move(correction));
   }
 
-  result_type operator()(const PhzDataModel::DoubleGrid& likelihood_grid) const;
+  void operator()(PhzDataModel::RegionResults& results) const;
   
 private:
   

@@ -18,6 +18,7 @@
 #include "MathUtils/interpolation/interpolation.h"
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
+#include "PhzLikelihood/Pdf1DTraits.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -28,16 +29,6 @@ namespace {
 
 using ResType = PhzDataModel::SourceResultType;
 using RegResType = PhzDataModel::RegionResultType;
-
-template <int FixedAxis>
-struct Pdf1DTraits {
-};
-
-template <>
-struct Pdf1DTraits<PhzDataModel::ModelParameter::Z> {
-  static constexpr auto PdfRes = RegResType::Z_1D_PDF;
-  using PdfType = PhzDataModel::Pdf1D<PhzDataModel::ModelParameterTraits<PhzDataModel::ModelParameter::Z>::type>;
-};
   
 } // end of anonymous namespace
 
@@ -45,12 +36,12 @@ SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_c
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                                    LikelihoodGridFunction likelihood_func,
                                    std::vector<PriorFunction> priors,
-                                   MarginalizationFunction marginalization_func)
+                                   std::vector<MarginalizationFunction> marginalization_func_list)
         : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid_map(phot_grid_map) {
   for (auto& pair : phot_grid_map) {
     m_single_grid_functor_map.emplace(std::piecewise_construct,
             std::forward_as_tuple(pair.first),
-            std::forward_as_tuple(priors, marginalization_func, likelihood_func));
+            std::forward_as_tuple(priors, marginalization_func_list, likelihood_func));
   }
 }
 
@@ -76,14 +67,14 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
 
 
 template <int FixedAxis>
-static typename Pdf1DTraits<FixedAxis>::PdfType combine1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map) {
+static typename PhzDataModel::Pdf1DParam<FixedAxis> combine1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map) {
   
   // All the 1D PDFs were shifted. We compute factors for each PDF
   // in such way so the region with the highest shift will have the multiplier 1
   std::map<std::string, double> factor_map {};
   double max_norm_log = std::numeric_limits<double>::lowest();
   for (auto& pair : reg_result_map) {
-    double norm_log = pair.second.get<RegResType::LOG_1D_PDF_NORM>();
+    double norm_log = pair.second.get<RegResType::NORMALIZATION_LOG>();
     factor_map[pair.first] = norm_log;
     if (norm_log > max_norm_log) {
       max_norm_log = norm_log;
@@ -133,7 +124,7 @@ static typename Pdf1DTraits<FixedAxis>::PdfType combine1DPdfs(const std::map<std
   }
   
   // Convert the vectors to Pdf1D
-  typename Pdf1DTraits<FixedAxis>::PdfType result {{PhzDataModel::ModelParameterTraits<FixedAxis>::name, final_x}};
+  typename PhzDataModel::Pdf1DParam<FixedAxis> result {{PhzDataModel::ModelParameterTraits<FixedAxis>::name, final_x}};
   auto value_iter = final_y.begin();
   for (auto cell_iter=result.begin(); cell_iter!=result.end(); ++cell_iter, ++ value_iter) {
     *cell_iter = *value_iter;

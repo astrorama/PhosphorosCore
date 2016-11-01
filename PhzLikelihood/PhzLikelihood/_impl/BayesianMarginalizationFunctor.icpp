@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "PhzLikelihood/NumericalAxisCorrection.h"
 #include "PhzLikelihood/SumMarginalizationFunctor.h"
+#include "PhzLikelihood/Pdf1DTraits.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -55,18 +56,24 @@ BayesianMarginalizationFunctor<FinalAxis>::BayesianMarginalizationFunctor() {
 
 
 template <int FinalAxis>
-auto BayesianMarginalizationFunctor<FinalAxis>::operator()(
-                    const PhzDataModel::DoubleGrid& likelihood_grid) const -> result_type {
+void BayesianMarginalizationFunctor<FinalAxis>::operator()(PhzDataModel::RegionResults& results) const {
   
-  // Make a copy of the likelihood grid, so we can modify it
-  PhzDataModel::DoubleGrid likelihood_copy {likelihood_grid.getAxesTuple()};
-  std::copy(likelihood_grid.begin(), likelihood_grid.end(), likelihood_copy.begin());
+  // Get the posterior grid from the passed object
+  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_GRID>();
   
+  // Make a copy of the posterior grid in a new results object, which will be
+  // passed to a SumMarginalizationFunctor. We need a copy anyways, because we
+  // will modify it.
+  PhzDataModel::RegionResults temp_results {};
+  auto& posterior_copy = temp_results.set<PhzDataModel::RegionResultType::POSTERIOR_GRID>(posterior_grid.getAxesTuple());
+  std::copy(posterior_grid.begin(), posterior_grid.end(), posterior_copy.begin());
+  
+  // Apply all the axes corrections
   for (auto& pair : m_numerical_axes_corr) {
     if (pair.first == FinalAxis) {
       continue;
     }
-    pair.second(likelihood_copy);
+    pair.second(posterior_copy);
   }
   
   for (size_t i = 0; i < PhzDataModel::DoubleGrid::axisNumber(); ++i) {
@@ -74,13 +81,17 @@ auto BayesianMarginalizationFunctor<FinalAxis>::operator()(
       continue;
     }
     for (auto& corr : m_custom_axes_corr.at(i)) {
-      corr(likelihood_copy);
+      corr(posterior_copy);
     }
   }
 
-  // Calcualate the 1D PDF as a simple SUM
+  // Calculate the 1D PDF as a simple SUM using a SumMarginalizationFunctor
   SumMarginalizationFunctor<FinalAxis> sum_marg {};
-  return sum_marg(likelihood_copy);
+  sum_marg(temp_results);
+  
+  // Copy the 1D PDF to our results
+  auto& temp_pdf = temp_results.get<Pdf1DTraits<FinalAxis>::PdfRes>();
+  results.set<Pdf1DTraits<FinalAxis>::PdfRes>(std::move(temp_pdf));
 }
 
 

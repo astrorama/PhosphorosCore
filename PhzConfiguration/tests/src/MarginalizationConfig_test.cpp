@@ -148,11 +148,14 @@ BOOST_FIXTURE_TEST_CASE(marginalizationCorrection, MarginalizationConfig_fixture
 
   // Given
   options_map[AXES_COLLAPSE_TYPE].value() = boost::any{std::string{"BAYESIAN"}};
+  PhzDataModel::RegionResults reg_results {};
+  reg_results.set<PhzDataModel::RegionResultType::POSTERIOR_GRID>(std::move(likelihood_grid));
   
   // When
   config_manager.initialize(options_map);
   auto& marginalize_func = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFunc();
-  auto pdf = marginalize_func(likelihood_grid);
+  marginalize_func(reg_results);
+  auto& pdf = reg_results.get<PhzDataModel::RegionResultType::Z_1D_PDF>();
   
   // Then
   BOOST_CHECK_EQUAL(pdf(0), 2*pdf(1));

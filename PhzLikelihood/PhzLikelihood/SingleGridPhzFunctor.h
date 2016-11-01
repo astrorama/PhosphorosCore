@@ -43,13 +43,20 @@ public:
    * - SCALE_FACTOR_GRID
    */
   typedef std::function<void(PhzDataModel::RegionResults& results)> LikelihoodGridFunction;
-
+  
   /**
    * Definition of the function signature for performing the marginalization. It
-   * gets as parameter a LikelihoodGrid and it returns a one dimensional grid with only
-   * axis the redshift. It should not perform any normalization.
+   * is a function which uses the given result object both for its input and
+   * output. When it is called, the passed object is guaranteed to contain the
+   * POSTERIOR_GRID result. The different marginalization implementations
+   * should produce marginalized versions of this grid, without performing any
+   * normalization, and store them to the following results:
+   * - SED_1D_PDF
+   * - RED_CURVE_1D_PDF
+   * - EBV_1D_PDF
+   * - Z_1D_PDF
    */
-  typedef std::function<PhzDataModel::Pdf1DParam<PhzDataModel::ModelParameter::Z>(const PhzDataModel::DoubleGrid&)> MarginalizationFunction;
+  typedef std::function<void(PhzDataModel::RegionResults& results)> MarginalizationFunction;
   
   /**
    * Definition of the function signature for applying a prior to the posterior
@@ -81,7 +88,7 @@ public:
    *    The functor to use for performing the PDF marginalization
    */
   SingleGridPhzFunctor(std::vector<PriorFunction> priors = {},
-                       MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{},
+                       std::vector<MarginalizationFunction> marginalization_func_list = {BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{}},
                        LikelihoodGridFunction likelihood_func = LikelihoodGridFunctor{LikelihoodLogarithmAlgorithm{ScaleFactorFunctorSimple{}, ChiSquareLikelihoodLogarithmSimple{}}});
 
   /**
@@ -114,7 +121,7 @@ public:
 private:
   
   std::vector<PriorFunction> m_priors;
-  MarginalizationFunction m_marginalization_func;
+  std::vector<MarginalizationFunction> m_marginalization_func_list;
   LikelihoodGridFunction m_likelihood_func;
   
 };
