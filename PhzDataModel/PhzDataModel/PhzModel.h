@@ -37,6 +37,15 @@ struct ModelParameter {
   };
 };
 
+template <int ModelParameter>
+struct ModelParameterTraits;
+
+template <>
+struct ModelParameterTraits<ModelParameter::Z> {
+  static constexpr auto name = "Z";
+  using type = double;
+};
+
 /**
  * @def Euclid::PhzDataModel::ModelAxesTuple
  * @brief Alias on the Axes tuple specifying the actual type of axis.

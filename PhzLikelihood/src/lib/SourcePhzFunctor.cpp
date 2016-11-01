@@ -28,8 +28,19 @@ namespace {
 
 using ResType = PhzDataModel::SourceResultType;
 using RegResType = PhzDataModel::RegionResultType;
+
+template <int FixedAxis>
+struct Pdf1DTraits {
+};
+
+template <>
+struct Pdf1DTraits<PhzDataModel::ModelParameter::Z> {
+  static constexpr auto PdfRes = RegResType::Z_1D_PDF;
+  static constexpr auto LogNormRes = RegResType::Z_1D_PDF_NORM_LOG;
+  using PdfType = PhzDataModel::Pdf1D<PhzDataModel::ModelParameterTraits<PhzDataModel::ModelParameter::Z>::type>;
+};
   
-}
+} // end of anonymous namespace
 
 SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
@@ -64,14 +75,16 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
   return SourceCatalog::Photometry{filter_names_ptr, std::move(fluxes)};
 }
 
-static PhzDataModel::Pdf1DZ combine1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map) {
+
+template <int FixedAxis>
+static typename Pdf1DTraits<FixedAxis>::PdfType combine1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map) {
   
   // All the 1D PDFs were shifted. We compute factors for each PDF
   // in such way so the region with the highest shift will have the multiplier 1
   std::map<std::string, double> factor_map {};
   double max_norm_log = std::numeric_limits<double>::lowest();
   for (auto& pair : reg_result_map) {
-    double norm_log = pair.second.get<RegResType::Z_1D_PDF_NORM_LOG>();
+    double norm_log = pair.second.get<Pdf1DTraits<FixedAxis>::LogNormRes>();
     factor_map[pair.first] = norm_log;
     if (norm_log > max_norm_log) {
       max_norm_log = norm_log;
@@ -89,7 +102,7 @@ static PhzDataModel::Pdf1DZ combine1DPdfs(const std::map<std::string, PhzDataMod
     std::vector<double> pdf_x {};
     std::vector<double> pdf_y {};
     double factor = factor_map.at(pair.first);
-    auto& pdf = pair.second.get<RegResType::Z_1D_PDF>();
+    auto& pdf = pair.second.get<Pdf1DTraits<FixedAxis>::PdfRes>();
     for (auto iter=pdf.begin(); iter!=pdf.end(); ++iter) {
       x_set.insert(iter.template axisValue<0>());
       pdf_x.emplace_back(iter.template axisValue<0>());
@@ -121,7 +134,7 @@ static PhzDataModel::Pdf1DZ combine1DPdfs(const std::map<std::string, PhzDataMod
   }
   
   // Convert the vectors to Pdf1D
-  PhzDataModel::Pdf1DZ result {{"Z", final_x}};
+  typename Pdf1DTraits<FixedAxis>::PdfType result {{PhzDataModel::ModelParameterTraits<FixedAxis>::name, final_x}};
   auto value_iter = final_y.begin();
   for (auto cell_iter=result.begin(); cell_iter!=result.end(); ++cell_iter, ++ value_iter) {
     *cell_iter = *value_iter;
@@ -218,7 +231,7 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
   model_it.fixAllAxes(post_it);
   results.set<ResType::BEST_MODEL_ITERATOR>(model_it);
           
-  results.set<ResType::Z_1D_PDF>(combine1DPdfs(results.get<ResType::REGION_RESULTS_MAP>()));
+  results.set<ResType::Z_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>()));
           
   auto scale_it = best_region_results.get<RegResType::SCALE_FACTOR_GRID>().begin();
   scale_it.fixAllAxes(post_it);
