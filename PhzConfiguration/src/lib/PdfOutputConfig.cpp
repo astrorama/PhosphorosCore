@@ -63,32 +63,33 @@ void PdfOutputConfig::preInitialize(const UserValues& args) {
 
 void PdfOutputConfig::initialize(const UserValues& args) {
 
-  m_pdf_flag = getDependency<PdfOutputFlagsConfig>().pdfZFlag();
+  auto& flags = getDependency<PdfOutputFlagsConfig>();
   m_format = args.at(OUTPUT_PDF_FORMAT).as<std::string>();
 
-  if (m_pdf_flag && m_format == "VECTOR-COLUMN") {
-    // Create the redshift bins comment
-    std::set<double> z_knots {};
-    for (auto& pair : getDependency<PhotometryGridConfig>().getPhotometryGridInfo().region_axes_map) {
-      for (auto& z : std::get<PhzDataModel::ModelParameter::Z>(pair.second)) {
-        z_knots.insert(z);
-      }
+  if (m_format == "VECTOR-COLUMN") {
+    if (flags.pdfSedFlag()) {
+      getDependency<OutputCatalogConfig>().addColumnHandler(
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::ModelParameter::SED>{}}
+      );
     }
-    std::stringstream comment {};
-    comment << "Z-BINS : {";
-    for (auto z : z_knots) {
-      comment << z << ',';
+    if (flags.pdfRedCurveFlag()) {
+      getDependency<OutputCatalogConfig>().addColumnHandler(
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::ModelParameter::REDDENING_CURVE>{}}
+      );
     }
-    comment.seekp(-1, comment.cur);
-    comment << '}';
-    getDependency<OutputCatalogConfig>().addComment(comment.str());
-
-    getDependency<OutputCatalogConfig>().addColumnHandler(
-        std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf{}}
-    );
+    if (flags.pdfEbvFlag()) {
+      getDependency<OutputCatalogConfig>().addColumnHandler(
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::ModelParameter::EBV>{}}
+      );
+    }
+    if (flags.pdfZFlag()) {
+      getDependency<OutputCatalogConfig>().addColumnHandler(
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::ModelParameter::Z>{}}
+      );
+    }
   }
 
-  if (m_pdf_flag && m_format == "INDIVIDUAL-HDUS") {
+  if (m_format == "INDIVIDUAL-HDUS") {
     m_out_pdf_dir = getDependency<PhzOutputDirConfig>().getPhzOutputDir();
   }
 }
