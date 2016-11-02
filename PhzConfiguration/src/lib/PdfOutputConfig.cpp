@@ -27,6 +27,7 @@
 #include "PhzConfiguration/OutputCatalogConfig.h"
 #include "PhzConfiguration/PhzOutputDirConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
+#include "PhzConfiguration/PdfOutputFlagsConfig.h"
 #include "PhzOutput/PhzColumnHandlers/Pdf.h"
 #include "PhzOutput/PdfOutput.h"
 
@@ -35,31 +36,23 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string CREATE_OUTPUT_PDF_FLAG {"create-output-pdf"};
 static const std::string OUTPUT_PDF_FORMAT {"output-pdf-format"};
 
 PdfOutputConfig::PdfOutputConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PhzOutputDirConfig>();
   declareDependency<OutputCatalogConfig>();
   declareDependency<PhotometryGridConfig>();
+  declareDependency<PdfOutputFlagsConfig>();
 }
 
 auto PdfOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Output options", {
-    {CREATE_OUTPUT_PDF_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
-        "The output pdf flag for creating the file (YES/NO, default: NO)"},
     {OUTPUT_PDF_FORMAT.c_str(), po::value<std::string>()->default_value("VECTOR-COLUMN"),
         "The format of the 1D PDF. One of VECTOR-COLUMN (default) or INDIVIDUAL-HDUS"}
   }}};
 }
 
 void PdfOutputConfig::preInitialize(const UserValues& args) {
-
-  if (args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() != "YES" &&
-      args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() != "NO") {
-    throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_PDF_FLAG
-        << ": " << args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>();
-  }
 
   if (args.at(OUTPUT_PDF_FORMAT).as<std::string>() != "VECTOR-COLUMN" &&
       args.at(OUTPUT_PDF_FORMAT).as<std::string>() != "INDIVIDUAL-HDUS") {
@@ -70,7 +63,7 @@ void PdfOutputConfig::preInitialize(const UserValues& args) {
 
 void PdfOutputConfig::initialize(const UserValues& args) {
 
-  m_pdf_flag = (args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() == "YES");
+  m_pdf_flag = getDependency<PdfOutputFlagsConfig>().pdfZFlag();
   m_format = args.at(OUTPUT_PDF_FORMAT).as<std::string>();
 
   if (m_pdf_flag && m_format == "VECTOR-COLUMN") {

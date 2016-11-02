@@ -54,13 +54,13 @@ public:
 
   void initialize(const UserValues& args) override;
 
-  const PhzLikelihood::CatalogHandler::MarginalizationFunction & getMarginalizationFunc() const;
+  const std::vector<PhzLikelihood::CatalogHandler::MarginalizationFunction>& getMarginalizationFuncList() const;
   
   void addMarginalizationCorrection(int axis, PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>::AxisCorrection corr);
   
 private:
   
-  PhzLikelihood::CatalogHandler::MarginalizationFunction m_marginalization_function;
+  std::vector<PhzLikelihood::CatalogHandler::MarginalizationFunction> m_marginalization_func_list;
   std::map<int, std::vector<PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>::AxisCorrection>> m_corrections;
 
 }; /* End of MarginalizationConfig class */
