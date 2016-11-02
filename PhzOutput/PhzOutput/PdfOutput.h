@@ -29,25 +29,12 @@ namespace PhzOutput {
  * every 5000 sources. For the moment, this number is hard coded.
  *
  */
-
+template <int Parameter>
 class PdfOutput : public OutputHandler {
 
 public:
-
-  /**
-   * @brief Constructor
-   * The filename is passed to the constructor
-   * @details
-   *
-   * @param out_file
-   * The path and filename of the FITS file of type boost::filesystem::path
-   *
-   */
-//	PdfOutput(boost::filesystem::path out_file) :m_out_file{out_file},
-//	                              m_fits_file{new CCfits::FITS{"!"+out_file.string(), CCfits::RWmode::Write}},
-//	                              m_counter(0) {}
-
-	PdfOutput(boost::filesystem::path out_file);
+  
+  PdfOutput(boost::filesystem::path out_dir);
 
   virtual ~PdfOutput();
 
@@ -73,6 +60,6 @@ private:
 } // end of namespace PhzOutput
 } // end of namespace Euclid
 
-
+#include "PhzOutput/_impl/PdfOutput.icpp"
 
 #endif /* PHZOUTPUT_PHZOUTPUT_PDFOUTPUT_H_ */

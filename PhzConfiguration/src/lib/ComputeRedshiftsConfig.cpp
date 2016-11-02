@@ -221,7 +221,9 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
 
   result.addHandler(getDependency<OutputCatalogConfig>().getOutputHandler());
 
-  result.addHandler(getDependency<PdfOutputConfig>().getOutputHandler());
+  for (auto& handler : getDependency<PdfOutputConfig>().getOutputHandlers()) {
+    result.addHandler(std::move(handler));
+  }
 
   if (m_likelihood_flag) {
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {

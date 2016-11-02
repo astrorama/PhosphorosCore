@@ -89,23 +89,39 @@ void PdfOutputConfig::initialize(const UserValues& args) {
   }
 
   if (m_pdf_flag && m_format == "INDIVIDUAL-HDUS") {
-    m_out_pdf_file = getDependency<PhzOutputDirConfig>().getPhzOutputDir() / "pdf.fits";
+    m_out_pdf_dir = getDependency<PhzOutputDirConfig>().getPhzOutputDir();
   }
 }
 
-std::unique_ptr<PhzOutput::OutputHandler> PdfOutputConfig::getOutputHandler() const {
+std::vector<std::unique_ptr<PhzOutput::OutputHandler>> PdfOutputConfig::getOutputHandlers() const {
   if (getCurrentState() < Configuration::Configuration::State::FINAL) {
     throw Elements::Exception()
         << "Call to getOutputHandler() on a not initialized instance.";
   }
 
-  if (m_pdf_flag && m_format == "INDIVIDUAL-HDUS") {
-    return std::unique_ptr<PhzOutput::OutputHandler> {
-      new PhzOutput::PdfOutput {m_out_pdf_file}
-    };
-  } else {
-    return nullptr;
+  std::vector<std::unique_ptr<PhzOutput::OutputHandler>> handlers {};
+  
+  if (m_format == "INDIVIDUAL-HDUS") {
+    auto& flags = getDependency<PdfOutputFlagsConfig>();
+    if (flags.pdfSedFlag()) {
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
+        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::SED> {m_out_pdf_dir}});
+    }
+    if (flags.pdfRedCurveFlag()) {
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
+        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::REDDENING_CURVE> {m_out_pdf_dir}});
+    }
+    if (flags.pdfEbvFlag()) {
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
+        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::EBV> {m_out_pdf_dir}});
+    }
+    if (flags.pdfZFlag()) {
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
+        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::Z> {m_out_pdf_dir}});
+    }
   }
+  
+  return handlers;
 }
 
 } // PhzConfiguration namespace
