@@ -29,7 +29,7 @@
 #include <string>
 #include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
-#include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/PhotometryGrid.h"
 #include "PhzModeling/PhotometryGridCreator.h"
 
 namespace Euclid {
@@ -46,7 +46,7 @@ class CorrectionCoefficientGridOutputConfig : public Configuration::Configuratio
 
 public:
 
- typedef std::function<void(const std::map<std::string, PhzDataModel::DoubleGrid>&)> OutputFunction;
+ typedef std::function<void(const std::map<std::string, PhzDataModel::PhotometryGrid>&)> OutputFunction;
 
   /**
    * @brief Constructor
@@ -60,7 +60,7 @@ public:
 
   /**
    * @details
-   * Add the "output-correction-coefficient-grid" option to the "Compute Correction Coefficient Grid options" group
+   * Add the "output-galactic-correction-coefficient-grid" option to the "Compute Galactic Correction Coefficient Grid options" group
    */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
