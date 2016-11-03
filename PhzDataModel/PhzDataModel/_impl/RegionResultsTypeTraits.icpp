@@ -61,7 +61,7 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
-                              T == RegionResultType::Z_1D_PDF_NORM_LOG
+                              T == RegionResultType::NORMALIZATION_LOG
                        >::type> {
   using type = double;
 };
@@ -79,7 +79,8 @@ template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
                               T == RegionResultType::SCALE_FACTOR_GRID ||
                               T == RegionResultType::LIKELIHOOD_LOG_GRID ||
-                              T == RegionResultType::POSTERIOR_LOG_GRID
+                              T == RegionResultType::POSTERIOR_LOG_GRID ||
+                              T == RegionResultType::POSTERIOR_GRID
                        >::type> {
   using type = DoubleGrid;
 };
@@ -87,9 +88,33 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
+                                    T == RegionResultType::SED_1D_PDF
+                             >::type> {
+  using type = PhzDataModel::Pdf1DParam<ModelParameter::SED>;
+};
+
+
+template <RegionResultType T>
+struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
+                                    T == RegionResultType::RED_CURVE_1D_PDF
+                             >::type> {
+  using type = PhzDataModel::Pdf1DParam<ModelParameter::REDDENING_CURVE>;
+};
+
+
+template <RegionResultType T>
+struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
+                                    T == RegionResultType::EBV_1D_PDF
+                             >::type> {
+  using type = PhzDataModel::Pdf1DParam<ModelParameter::EBV>;
+};
+
+
+template <RegionResultType T>
+struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
                                     T == RegionResultType::Z_1D_PDF
                              >::type> {
-  using type = PhzDataModel::Pdf1DZ;
+  using type = PhzDataModel::Pdf1DParam<ModelParameter::Z>;
 };
 
 

@@ -37,6 +37,33 @@ struct ModelParameter {
   };
 };
 
+template <int ModelParameter>
+struct ModelParameterTraits;
+
+template <>
+struct ModelParameterTraits<ModelParameter::SED> {
+  static constexpr auto name = "SED";
+  using type = XYDataset::QualifiedName;
+};
+
+template <>
+struct ModelParameterTraits<ModelParameter::REDDENING_CURVE> {
+  static constexpr auto name = "Reddening Curve";
+  using type = XYDataset::QualifiedName;
+};
+
+template <>
+struct ModelParameterTraits<ModelParameter::EBV> {
+  static constexpr auto name = "E(B-V)";
+  using type = double;
+};
+
+template <>
+struct ModelParameterTraits<ModelParameter::Z> {
+  static constexpr auto name = "Z";
+  using type = double;
+};
+
 /**
  * @def Euclid::PhzDataModel::ModelAxesTuple
  * @brief Alias on the Axes tuple specifying the actual type of axis.

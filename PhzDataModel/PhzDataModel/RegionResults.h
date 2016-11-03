@@ -42,14 +42,22 @@ enum class RegionResultType {
   BEST_MODEL_ITERATOR,
   /// The grid containing the scale factor for all models
   SCALE_FACTOR_GRID,
-  /// The grid containing the likelihood for all models
+  /// The grid containing the logarithm of the likelihood for all models
   LIKELIHOOD_LOG_GRID,
-  /// The grid containing the posterior for all models
+  /// The grid containing the logarithm of the posterior for all models
   POSTERIOR_LOG_GRID,
+  /// The grid containing the normalized posterior for all models
+  POSTERIOR_GRID,
+  /// The 1D PDF over the SED
+  SED_1D_PDF,
+  /// The 1D PDF over the reddening curve
+  RED_CURVE_1D_PDF,
+  /// The 1D PDF over the E(B-V)
+  EBV_1D_PDF,
   /// The 1D PDF over the redshift
   Z_1D_PDF,
-  /// The logarithm of the normalization of the 1D PDF over the redshift
-  Z_1D_PDF_NORM_LOG
+  /// The logarithm of the normalization of the posterior grid and the 1D PDFs
+  NORMALIZATION_LOG
 };
 
 using RegionResults = TypedEnumMap<RegionResultType>;

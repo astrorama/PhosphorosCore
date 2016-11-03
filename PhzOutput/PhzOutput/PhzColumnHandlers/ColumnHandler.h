@@ -53,6 +53,10 @@ public:
   virtual std::vector<Table::Row::cell_type> convertResults(
                             const SourceCatalog::Source& source,
                             const PhzDataModel::SourceResults& results) const = 0;
+  
+  virtual std::vector<std::string> getComments() {
+    return {};
+  }
 
 }; /* End of ColumnHandler class */
 

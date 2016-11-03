@@ -54,13 +54,13 @@ public:
 
   void initialize(const UserValues& args) override;
   
-  std::unique_ptr<PhzOutput::OutputHandler> getOutputHandler() const;
+  std::vector<std::unique_ptr<PhzOutput::OutputHandler>> getOutputHandlers() const;
   
 private:
   
   bool m_pdf_flag = false;
   std::string m_format;
-  boost::filesystem::path m_out_pdf_file;
+  boost::filesystem::path m_out_pdf_dir;
 
 }; /* End of PdfOutputConfig class */
 
