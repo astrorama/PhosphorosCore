@@ -36,6 +36,7 @@ namespace ColumnHandlers {
  * @brief
  *
  */
+template <int Parameter>
 class Pdf : public ColumnHandler {
 
 public:
@@ -50,6 +51,12 @@ public:
   std::vector<Table::Row::cell_type> convertResults(
                     const SourceCatalog::Source& source,
                     const PhzDataModel::SourceResults& results) const override;
+  
+  std::vector<std::string> getComments() override;
+  
+private:
+
+  mutable std::string m_knots_comment {};
 
 }; /* End of Pdf class */
 
@@ -57,5 +64,6 @@ public:
 } /* namespace PhzOutput */
 } /* namespace Euclid */
 
+#include "PhzOutput/_impl/Pdf.icpp"
 
 #endif

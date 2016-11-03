@@ -17,7 +17,8 @@ namespace PhzDataModel {
 template <typename T>
 using Pdf1D = GridContainer::GridContainer<std::vector<DoubleGrid::cell_type>, T>;
 
-using Pdf1DZ = Pdf1D<DoubleGrid::axis_type<ModelParameter::Z>>;
+template <int Parameter>
+using Pdf1DParam = Pdf1D<typename ModelParameterTraits<Parameter>::type>;
 
 } // end of namespace PhzDataModel
 } // end of namespace Euclid

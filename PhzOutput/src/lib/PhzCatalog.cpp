@@ -56,6 +56,11 @@ PhzCatalog::~PhzCatalog() {
     Table::Table out_table {std::move(m_row_list)};
     // Check directory and write permissions
     Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
+    for (auto& handler : m_handler_list) {
+      for (auto& comment : handler->getComments()) {
+        addComment(std::move(comment));
+      }
+    }
     if (m_format == Format::ASCII) {
       std::ofstream out {m_out_file.string()};
       Table::AsciiWriter().write(out, out_table, m_comments);

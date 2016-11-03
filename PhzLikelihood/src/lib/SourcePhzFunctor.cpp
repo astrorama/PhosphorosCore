@@ -10,14 +10,19 @@
 #include <memory>
 #include <limits>
 #include <utility>
+#include <type_traits>
+#include <numeric>
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "MathUtils/function/Function.h"
+#include "MathUtils/function/FunctionAdapter.h"
 #include "MathUtils/function/function_tools.h"
 #include "MathUtils/interpolation/interpolation.h"
 #include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/Pdf1D.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
+#include "PhzLikelihood/Pdf1DTraits.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -29,20 +34,23 @@ namespace {
 using ResType = PhzDataModel::SourceResultType;
 using RegResType = PhzDataModel::RegionResultType;
   
-}
+} // end of anonymous namespace
 
 SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                                    LikelihoodGridFunction likelihood_func,
                                    std::vector<PriorFunction> priors,
-                                   MarginalizationFunction marginalization_func)
+                                   std::vector<MarginalizationFunction> marginalization_func_list)
         : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid_map(phot_grid_map) {
   for (auto& pair : phot_grid_map) {
     m_single_grid_functor_map.emplace(std::piecewise_construct,
             std::forward_as_tuple(pair.first),
-            std::forward_as_tuple(priors, marginalization_func, likelihood_func));
+            std::forward_as_tuple(priors, marginalization_func_list, likelihood_func));
   }
 }
+   
+          
+namespace {
 
 SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectionMap& pc_map,
                                         const SourceCatalog::Photometry& source_phot) {
@@ -64,74 +72,147 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
   return SourceCatalog::Photometry{filter_names_ptr, std::move(fluxes)};
 }
 
-static PhzDataModel::Pdf1DZ combine1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map) {
-  
-  // All the 1D PDFs were shifted. We compute factors for each PDF
-  // in such way so the region with the highest shift will have the multiplier 1
-  std::map<std::string, double> factor_map {};
-  double max_norm_log = std::numeric_limits<double>::lowest();
-  for (auto& pair : reg_result_map) {
-    double norm_log = pair.second.get<RegResType::Z_1D_PDF_NORM_LOG>();
-    factor_map[pair.first] = norm_log;
-    if (norm_log > max_norm_log) {
-      max_norm_log = norm_log;
-    }
+
+template <typename AxisType, typename std::enable_if<std::is_arithmetic<AxisType>::value>::type* = nullptr>
+std::unique_ptr<MathUtils::Function> pdf_to_func(const PhzDataModel::Pdf1D<AxisType>& pdf, double factor, std::set<double>& x_set) {
+  // If the pdf is empty we return a function which always returns 0
+  if (pdf.size() == 0) {
+    return std::unique_ptr<MathUtils::Function>{new MathUtils::FunctionAdapter{[](double){return 0;}}};
   }
-  for (auto& factor : factor_map) {
-    factor.second = std::exp(factor.second - max_norm_log);
+  // If we have a single value we return a dirac function
+  if (pdf.size() == 1) {
+    double single_x = pdf.template getAxis<0>()[0];
+    double single_y = factor * pdf.at(0);
+    return std::unique_ptr<MathUtils::Function>{new MathUtils::FunctionAdapter{[single_x, single_y](double x){return (x == single_x) ? single_y : 0;}}};
   }
+  // Here we have more than one knots, so we return an interpolation function
+  std::vector<double> pdf_x {};
+  std::vector<double> pdf_y {};
+  for (auto iter=pdf.begin(); iter!=pdf.end(); ++iter) {
+    auto x_value = iter.template axisValue<0>();
+    x_set.insert(x_value);
+    pdf_x.emplace_back(x_value);
+    pdf_y.push_back(factor * *iter);
+  }
+  return MathUtils::interpolate(pdf_x, pdf_y, MathUtils::InterpolationType::LINEAR);
+}
+
+
+template <typename AxisType, typename std::enable_if<std::is_arithmetic<AxisType>::value>::type* = nullptr>
+PhzDataModel::Pdf1D<AxisType> combineTwoPdfs(const PhzDataModel::Pdf1D<AxisType>& pdf1, double pdf1_factor, const PhzDataModel::Pdf1D<AxisType>& pdf2, double pdf2_factor) {
   
-  // Create the functions representing all the PDF results and initialize the
+  // Create the functions representing the two PDFs results and initialize the
   // knots for which we produce the final result for
   std::set<double> x_set {};
-  std::vector<std::unique_ptr<MathUtils::Function>> pdf_func_list {};
-  for (auto& pair : reg_result_map) {
-    std::vector<double> pdf_x {};
-    std::vector<double> pdf_y {};
-    double factor = factor_map.at(pair.first);
-    auto& pdf = pair.second.get<RegResType::Z_1D_PDF>();
-    for (auto iter=pdf.begin(); iter!=pdf.end(); ++iter) {
-      x_set.insert(iter.template axisValue<0>());
-      pdf_x.emplace_back(iter.template axisValue<0>());
-      pdf_y.push_back(factor * *iter);
-    }
-    // If we have a PDF with a single value we ignore it. There is no way to
-    // use it in a reasonable way, because we cannot normalize a dirac method.
-    if (pdf_x.size() > 1) {
-      pdf_func_list.emplace_back(MathUtils::interpolate(pdf_x, pdf_y, MathUtils::InterpolationType::LINEAR));
-    }
-  }
+  auto pdf1_func = pdf_to_func(pdf1, pdf1_factor, x_set);
+  auto pdf2_func = pdf_to_func(pdf2, pdf2_factor, x_set);
   
-  // Calculate the sum of all the PDFs
+  // Calculate the sum of the PDFs
   std::vector<double> final_x {x_set.begin(), x_set.end()};
-  std::vector<double> final_y {};
-  for (double x : final_x) {
-    double y = 0;
-    for (auto& func : pdf_func_list) {
-      y += (*func)(x);
-    }
-    final_y.push_back(y);
-  }
-  
-  // Normalize the final PDF
-  auto as_function = MathUtils::interpolate(final_x, final_y, MathUtils::InterpolationType::LINEAR);
-  double integral = MathUtils::integrate(*as_function, final_x.front(), final_x.back());
-  for (auto& pdf_value : final_y) {
-    pdf_value /= integral;
-  }
-  
-  // Convert the vectors to Pdf1D
-  PhzDataModel::Pdf1DZ result {{"Z", final_x}};
-  auto value_iter = final_y.begin();
-  for (auto cell_iter=result.begin(); cell_iter!=result.end(); ++cell_iter, ++ value_iter) {
-    *cell_iter = *value_iter;
+  PhzDataModel::Pdf1D<AxisType> result {{pdf1.template getAxis<0>().name(), std::move(final_x)}};
+  for (auto iter = result.begin(); iter != result.end(); ++iter) {
+    auto x_value = iter.template axisValue<0>();
+    *iter = (*pdf1_func)(x_value) + (*pdf2_func)(x_value);
   }
   
   return result;
 }
-   
-          
-namespace {
+
+
+template <typename AxisType, typename std::enable_if<!std::is_arithmetic<AxisType>::value>::type* = nullptr>
+PhzDataModel::Pdf1D<AxisType> combineTwoPdfs(const PhzDataModel::Pdf1D<AxisType>& pdf1, double pdf1_factor, const PhzDataModel::Pdf1D<AxisType>& pdf2, double pdf2_factor) {
+  
+  // We create a map were we keep the results of the addition
+  std::map<AxisType, double> result_map {};
+  for (auto iter = pdf1.begin(); iter != pdf1.end(); ++iter) {
+    result_map[iter.template axisValue<0>()] += pdf1_factor * *iter;
+  }
+  for (auto iter = pdf2.begin(); iter != pdf2.end(); ++iter) {
+    result_map[iter.template axisValue<0>()] += pdf2_factor * *iter;
+  }
+  
+  // Create the knots of the combined PDF. The knots of the first PDF are added
+  // first and they are followed by the knots of the second pdf which are different
+  std::set<AxisType> x_set {};
+  std::vector<AxisType> xs {};
+  for (auto& x : pdf1.template getAxis<0>()) {
+    x_set.insert(x);
+    xs.push_back(x);
+  }
+  for (auto& x : pdf2.template getAxis<0>()) {
+    if (x_set.find(x) == x_set.end()) {
+      xs.push_back(x);
+    }
+  }
+  
+  PhzDataModel::Pdf1D<AxisType> result {{pdf1.template getAxis<0>().name(), std::move(xs)}};
+  for (auto iter = result.begin(); iter != result.end(); ++iter) {
+    *iter = result_map[iter.template axisValue<0>()];
+  }
+  return result;
+}
+
+
+template <typename AxisType, typename std::enable_if<std::is_arithmetic<AxisType>::value>::type* = nullptr>
+void normalizePdf(PhzDataModel::Pdf1D<AxisType>& pdf) {
+  // If we have a numerical axis we normalize so the total integral is 1
+  std::vector<double> xs {};
+  std::vector<double> ys {};
+  for (auto iter = pdf.begin(); iter != pdf.end(); ++iter) {
+    xs.push_back(iter.template axisValue<0>());
+    ys.push_back(*iter);
+  }
+  auto as_function = MathUtils::interpolate(xs, ys, MathUtils::InterpolationType::LINEAR);
+  double integral = MathUtils::integrate(*as_function, xs.front(), xs.back());
+  for (auto& cell : pdf) {
+    cell /= integral;
+  }
+}
+
+
+template <typename AxisType, typename std::enable_if<!std::is_arithmetic<AxisType>::value>::type* = nullptr>
+void normalizePdf(PhzDataModel::Pdf1D<AxisType>& pdf) {
+  // If we do not have an arithmetic axis we normalize so the total sum is 1
+  double sum = std::accumulate(pdf.begin(), pdf.end(), 0.);
+  for (auto& cell : pdf) {
+    cell /= sum;
+  }
+}
+
+
+template <int FixedAxis>
+typename PhzDataModel::Pdf1DParam<FixedAxis> combine1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map) {
+  
+  // All the 1D PDFs were normalized. We compute factors for each PDF
+  // in such way so the region with the smallest normalization log will have the
+  // multiplier 1, and the rest region factors will rescale them to match this
+  // normalization
+  std::map<std::string, double> factor_map {};
+  double min_norm_log = std::numeric_limits<double>::lowest();
+  for (auto& pair : reg_result_map) {
+    double norm_log = pair.second.get<RegResType::NORMALIZATION_LOG>();
+    factor_map[pair.first] = norm_log;
+    if (norm_log > min_norm_log) {
+      min_norm_log = norm_log;
+    }
+  }
+  for (auto& factor : factor_map) {
+    factor.second = std::exp(factor.second - min_norm_log);
+  }
+  
+  // We combine all the PDFs from the regions, one by one, starting with an emtpy one
+  typename PhzDataModel::Pdf1DParam<FixedAxis> combined_pdf {{PhzDataModel::ModelParameterTraits<FixedAxis>::name, {}}};
+  for (auto& pair : reg_result_map) {
+    double factor = factor_map.at(pair.first);
+    auto& reg_pdf = pair.second.get<Pdf1DTraits<FixedAxis>::PdfRes>();
+    combined_pdf = combineTwoPdfs(combined_pdf, 1., reg_pdf, factor);
+  }
+  
+  // Normalize the final PDF
+  normalizePdf(combined_pdf);
+  
+  return combined_pdf;
+}
 
 std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixed_z) {
   auto& z_axis = grid.getAxis<PhzDataModel::ModelParameter::Z>();
@@ -217,8 +298,21 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
   auto model_it = best_region_results.get<RegResType::MODEL_GRID_REFERENCE>().get().begin();
   model_it.fixAllAxes(post_it);
   results.set<ResType::BEST_MODEL_ITERATOR>(model_it);
-          
-  results.set<ResType::Z_1D_PDF>(combine1DPdfs(results.get<ResType::REGION_RESULTS_MAP>()));
+  
+  // We add the combined 1D PDFs only if they are computed for the regions
+  auto& first_region_results = results.get<ResType::REGION_RESULTS_MAP>().begin()->second;
+  if (first_region_results.contains<RegResType::SED_1D_PDF>()) {
+    results.set<ResType::SED_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::SED>(results.get<ResType::REGION_RESULTS_MAP>()));
+  }
+  if (first_region_results.contains<RegResType::RED_CURVE_1D_PDF>()) {
+    results.set<ResType::RED_CURVE_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::REDDENING_CURVE>(results.get<ResType::REGION_RESULTS_MAP>()));
+  }
+  if (first_region_results.contains<RegResType::EBV_1D_PDF>()) {
+    results.set<ResType::EBV_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::EBV>(results.get<ResType::REGION_RESULTS_MAP>()));
+  }
+  if (first_region_results.contains<RegResType::Z_1D_PDF>()) {
+    results.set<ResType::Z_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>()));
+  }
           
   auto scale_it = best_region_results.get<RegResType::SCALE_FACTOR_GRID>().begin();
   scale_it.fixAllAxes(post_it);

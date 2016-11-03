@@ -39,10 +39,16 @@ namespace PhzDataModel {
 enum class SourceResultType {
   /// An posterior grid iterator pointing to the overall best match
   BEST_MODEL_ITERATOR,
+  /// The 1D PDF over the SED
+  SED_1D_PDF,
+  /// The 1D PDF over the reddening curve
+  RED_CURVE_1D_PDF,
+  /// The 1D PDF over the E(B-V)
+  EBV_1D_PDF,
   /// A grid representing the 1D PDF over the redshift
   Z_1D_PDF,
-  /// The logarithm of the normalization of the 1D PDF
-  Z_1D_PDF_NORM_LOG,
+  /// The logarithm of the normalization of the 1D PDFs
+  LOG_1D_PDF_NORM,
   /// A double with the value of the scale factor of the overall best match
   /// model photometry
   BEST_MODEL_SCALE_FACTOR,

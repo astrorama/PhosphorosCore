@@ -42,7 +42,7 @@ struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
 
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
-                                    T == SourceResultType::Z_1D_PDF_NORM_LOG ||
+                                    T == SourceResultType::LOG_1D_PDF_NORM ||
                                     T == SourceResultType::BEST_MODEL_SCALE_FACTOR ||
                                     T == SourceResultType::BEST_MODEL_POSTERIOR_LOG
                              >::type> {
@@ -52,9 +52,33 @@ struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
 
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::SED_1D_PDF
+                             >::type> {
+  using type = PhzDataModel::Pdf1DParam<ModelParameter::SED>;
+};
+
+
+template <SourceResultType T>
+struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::RED_CURVE_1D_PDF
+                             >::type> {
+  using type = PhzDataModel::Pdf1DParam<ModelParameter::REDDENING_CURVE>;
+};
+
+
+template <SourceResultType T>
+struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::EBV_1D_PDF
+                             >::type> {
+  using type = PhzDataModel::Pdf1DParam<ModelParameter::EBV>;
+};
+
+
+template <SourceResultType T>
+struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
                                     T == SourceResultType::Z_1D_PDF
                              >::type> {
-  using type = PhzDataModel::Pdf1DZ;
+  using type = PhzDataModel::Pdf1DParam<ModelParameter::Z>;
 };
 
 

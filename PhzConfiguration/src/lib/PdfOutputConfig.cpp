@@ -27,6 +27,7 @@
 #include "PhzConfiguration/OutputCatalogConfig.h"
 #include "PhzConfiguration/PhzOutputDirConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
+#include "PhzConfiguration/PdfOutputFlagsConfig.h"
 #include "PhzOutput/PhzColumnHandlers/Pdf.h"
 #include "PhzOutput/PdfOutput.h"
 
@@ -35,31 +36,23 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string CREATE_OUTPUT_PDF_FLAG {"create-output-pdf"};
 static const std::string OUTPUT_PDF_FORMAT {"output-pdf-format"};
 
 PdfOutputConfig::PdfOutputConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PhzOutputDirConfig>();
   declareDependency<OutputCatalogConfig>();
   declareDependency<PhotometryGridConfig>();
+  declareDependency<PdfOutputFlagsConfig>();
 }
 
 auto PdfOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Output options", {
-    {CREATE_OUTPUT_PDF_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
-        "The output pdf flag for creating the file (YES/NO, default: NO)"},
     {OUTPUT_PDF_FORMAT.c_str(), po::value<std::string>()->default_value("VECTOR-COLUMN"),
         "The format of the 1D PDF. One of VECTOR-COLUMN (default) or INDIVIDUAL-HDUS"}
   }}};
 }
 
 void PdfOutputConfig::preInitialize(const UserValues& args) {
-
-  if (args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() != "YES" &&
-      args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() != "NO") {
-    throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_PDF_FLAG
-        << ": " << args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>();
-  }
 
   if (args.at(OUTPUT_PDF_FORMAT).as<std::string>() != "VECTOR-COLUMN" &&
       args.at(OUTPUT_PDF_FORMAT).as<std::string>() != "INDIVIDUAL-HDUS") {
@@ -70,49 +63,66 @@ void PdfOutputConfig::preInitialize(const UserValues& args) {
 
 void PdfOutputConfig::initialize(const UserValues& args) {
 
-  m_pdf_flag = (args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() == "YES");
+  auto& flags = getDependency<PdfOutputFlagsConfig>();
   m_format = args.at(OUTPUT_PDF_FORMAT).as<std::string>();
 
-  if (m_pdf_flag && m_format == "VECTOR-COLUMN") {
-    // Create the redshift bins comment
-    std::set<double> z_knots {};
-    for (auto& pair : getDependency<PhotometryGridConfig>().getPhotometryGridInfo().region_axes_map) {
-      for (auto& z : std::get<PhzDataModel::ModelParameter::Z>(pair.second)) {
-        z_knots.insert(z);
-      }
+  if (m_format == "VECTOR-COLUMN") {
+    if (flags.pdfSedFlag()) {
+      getDependency<OutputCatalogConfig>().addColumnHandler(
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::ModelParameter::SED>{}}
+      );
     }
-    std::stringstream comment {};
-    comment << "Z-BINS : {";
-    for (auto z : z_knots) {
-      comment << z << ',';
+    if (flags.pdfRedCurveFlag()) {
+      getDependency<OutputCatalogConfig>().addColumnHandler(
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::ModelParameter::REDDENING_CURVE>{}}
+      );
     }
-    comment.seekp(-1, comment.cur);
-    comment << '}';
-    getDependency<OutputCatalogConfig>().addComment(comment.str());
-
-    getDependency<OutputCatalogConfig>().addColumnHandler(
-        std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf{}}
-    );
+    if (flags.pdfEbvFlag()) {
+      getDependency<OutputCatalogConfig>().addColumnHandler(
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::ModelParameter::EBV>{}}
+      );
+    }
+    if (flags.pdfZFlag()) {
+      getDependency<OutputCatalogConfig>().addColumnHandler(
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::ModelParameter::Z>{}}
+      );
+    }
   }
 
-  if (m_pdf_flag && m_format == "INDIVIDUAL-HDUS") {
-    m_out_pdf_file = getDependency<PhzOutputDirConfig>().getPhzOutputDir() / "pdf.fits";
+  if (m_format == "INDIVIDUAL-HDUS") {
+    m_out_pdf_dir = getDependency<PhzOutputDirConfig>().getPhzOutputDir();
   }
 }
 
-std::unique_ptr<PhzOutput::OutputHandler> PdfOutputConfig::getOutputHandler() const {
+std::vector<std::unique_ptr<PhzOutput::OutputHandler>> PdfOutputConfig::getOutputHandlers() const {
   if (getCurrentState() < Configuration::Configuration::State::FINAL) {
     throw Elements::Exception()
         << "Call to getOutputHandler() on a not initialized instance.";
   }
 
-  if (m_pdf_flag && m_format == "INDIVIDUAL-HDUS") {
-    return std::unique_ptr<PhzOutput::OutputHandler> {
-      new PhzOutput::PdfOutput {m_out_pdf_file}
-    };
-  } else {
-    return nullptr;
+  std::vector<std::unique_ptr<PhzOutput::OutputHandler>> handlers {};
+  
+  if (m_format == "INDIVIDUAL-HDUS") {
+    auto& flags = getDependency<PdfOutputFlagsConfig>();
+    if (flags.pdfSedFlag()) {
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
+        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::SED> {m_out_pdf_dir}});
+    }
+    if (flags.pdfRedCurveFlag()) {
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
+        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::REDDENING_CURVE> {m_out_pdf_dir}});
+    }
+    if (flags.pdfEbvFlag()) {
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
+        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::EBV> {m_out_pdf_dir}});
+    }
+    if (flags.pdfZFlag()) {
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
+        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::Z> {m_out_pdf_dir}});
+    }
   }
+  
+  return handlers;
 }
 
 } // PhzConfiguration namespace

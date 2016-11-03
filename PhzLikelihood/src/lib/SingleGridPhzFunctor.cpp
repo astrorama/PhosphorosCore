@@ -13,10 +13,10 @@ namespace PhzLikelihood {
 
 
 SingleGridPhzFunctor::SingleGridPhzFunctor(std::vector<PriorFunction> priors,
-                                           MarginalizationFunction marginalization_func,
+                                           std::vector<MarginalizationFunction> marginalization_func_list,
                                            LikelihoodGridFunction likelihood_func)
         : m_priors{std::move(priors)},
-          m_marginalization_func{std::move(marginalization_func)},
+          m_marginalization_func_list{std::move(marginalization_func_list)},
           m_likelihood_func{std::move(likelihood_func)} {
 }
   
@@ -42,19 +42,20 @@ void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) cons
   auto best_fit = std::max_element(posterior_grid.begin(), posterior_grid.end());
   results.set<ResType::BEST_MODEL_ITERATOR>(best_fit);
   
-  // Calculate the 1D PDF
+  // Calculate the 1D PDFs
   // First we have to produce a grid with the posterior not in log and
   // scaled to have peak = 1
   double norm_log = *std::max_element(posterior_grid.begin(), posterior_grid.end());
-  PhzDataModel::DoubleGrid posterior_grid_normalized {posterior_grid.getAxesTuple()};
+  auto& posterior_grid_normalized = results.set<ResType::POSTERIOR_GRID>(posterior_grid.getAxesTuple());
   for (auto log_it=posterior_grid.begin(), norm_it=posterior_grid_normalized.begin();
           log_it!=posterior_grid.end(); ++log_it, ++norm_it) {
     *norm_it = std::exp(*log_it - norm_log);
   }
-  // Now we can compute the 1D PDF
-  auto pdf_1D = m_marginalization_func(posterior_grid_normalized);
-  results.set<ResType::Z_1D_PDF>(std::move(pdf_1D));
-  results.set<ResType::Z_1D_PDF_NORM_LOG>(norm_log);
+  results.set<ResType::NORMALIZATION_LOG>(norm_log);
+  // Now we can compute the 1D PDFs
+  for (auto& marginalization_func : m_marginalization_func_list) {
+    marginalization_func(results);
+  }
   
 }
 

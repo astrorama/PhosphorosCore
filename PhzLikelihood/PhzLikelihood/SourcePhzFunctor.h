@@ -61,14 +61,14 @@ public:
    *    The function to use for computing the likelihood grid for a single source
    * @param priors
    *    The priors to apply to the likelihood
-   * @param marginalization_func
-   *    The functor to use for performing the PDF marginalization
+   * @param marginalization_func_list
+   *    The functors to use for performing the PDF marginalizations
    */
   SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                    LikelihoodGridFunction likelihood_grid_func,
                    std::vector<PriorFunction> priors = {},
-                   MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor{});
+                   std::vector<MarginalizationFunction> marginalization_func_list = {BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{}});
 
   /**
    * Calculates the PHZ results for the given source photometry. The given
