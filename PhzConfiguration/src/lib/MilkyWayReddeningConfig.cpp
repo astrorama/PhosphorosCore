@@ -46,26 +46,22 @@ MilkyWayReddeningConfig::MilkyWayReddeningConfig(long manager_id) : Configuratio
 }
 
 auto MilkyWayReddeningConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Extinction options", {
+  return {{"Galactic Extinction options", {
     {MILKY_WAY_REDDENING_CURVE_NAME.c_str(), po::value<std::string>(),
         "Define the reddening curve to be used for the Milky Way extinction"}
   }}};
 }
 
 void MilkyWayReddeningConfig::initialize(const UserValues& args) {
-  m_miky_way_reddening_curve = XYDataset::QualifiedName(args.find(MILKY_WAY_REDDENING_CURVE_NAME)->second.as<std::string>());
-  auto provider = getDependency<ReddeningProviderConfig>().getReddeningDatasetProvider();
-  auto curve_list = provider->listContents("");
-  if (std::find(curve_list.begin(), curve_list.end(), m_miky_way_reddening_curve) == curve_list.end()){
-    throw Elements::Exception() << "The reddening curve "<< m_miky_way_reddening_curve.qualifiedName() << " is not found in the Provider.";
-  }
+  m_miky_way_reddening_curve = args.find(MILKY_WAY_REDDENING_CURVE_NAME)->second.as<std::string>();
+
 }
 
 const XYDataset::QualifiedName & MilkyWayReddeningConfig::getMilkyWayReddeningCurve() const{
   if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
          throw Elements::Exception() << "Call to getMilkyWayReddeningCurve() on a not initialized instance.";
     }
-    return m_miky_way_reddening_curve;
+    return XYDataset::QualifiedName(m_miky_way_reddening_curve);
 }
 
 } // PhzConfiguration namespace

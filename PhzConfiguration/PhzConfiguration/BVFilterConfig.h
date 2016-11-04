@@ -90,8 +90,8 @@ public:
 
 private:
 
-  XYDataset::QualifiedName m_b_filter{""};
-  XYDataset::QualifiedName m_v_filter{""};
+  std::string m_b_filter;
+  std::string m_v_filter;
 
 }; /* End of BVFilterConfig class */
 

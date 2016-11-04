@@ -61,20 +61,9 @@ auto BVFilterConfig::getProgramOptions() -> std::map<std::string, OptionDescript
 
 void BVFilterConfig::initialize(const UserValues& args) {
 
-  m_b_filter = XYDataset::QualifiedName(args.find(B_FILTER_NAME)->second.as<std::string>());
-  m_v_filter = XYDataset::QualifiedName(args.find(V_FILTER_NAME)->second.as<std::string>());
+  m_b_filter = args.find(B_FILTER_NAME)->second.as<std::string>();
+  m_v_filter = args.find(V_FILTER_NAME)->second.as<std::string>();
 
-  auto provider = getDependency<FilterProviderConfig>().getFilterDatasetProvider();
-
-  auto filter_list = provider->listContents("");
-
-  if (std::find(filter_list.begin(), filter_list.end(), m_b_filter) == filter_list.end()){
-    throw Elements::Exception() << "The filter "<< m_b_filter.qualifiedName() << " is not found in the Filter Provider.";
-  }
-
-  if (std::find(filter_list.begin(), filter_list.end(), m_v_filter) == filter_list.end()){
-    throw Elements::Exception() << "The filter "<< m_v_filter.qualifiedName() << " is not found in the Filter Provider.";
-  }
 }
 
 const XYDataset::QualifiedName & BVFilterConfig::getBFilter() const{
@@ -82,7 +71,7 @@ const XYDataset::QualifiedName & BVFilterConfig::getBFilter() const{
       throw Elements::Exception() << "Call to getBFilter() on a not initialized instance.";
   }
 
-  return m_b_filter;
+  return XYDataset::QualifiedName(m_b_filter);
 }
 
 const XYDataset::QualifiedName & BVFilterConfig::getVFilter() const {
@@ -90,7 +79,7 @@ const XYDataset::QualifiedName & BVFilterConfig::getVFilter() const {
       throw Elements::Exception() << "Call to getVFilter() on a not initialized instance.";
   }
 
-  return m_v_filter;
+  return XYDataset::QualifiedName(m_v_filter);
 }
 
 } // PhzConfiguration namespace

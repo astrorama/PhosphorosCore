@@ -57,7 +57,8 @@ public:
 
   virtual ~GalacticCorrectionSingleGridCreator();
 
-  PhzDataModel::PhotometryGrid createGrid(PhzDataModel::ModelAxesTuple& parameter_space,
+  PhzDataModel::PhotometryGrid createGrid(
+               const PhzDataModel::ModelAxesTuple& parameter_space,
                const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
                ProgressListener progress_listener=ProgressListener{});
 

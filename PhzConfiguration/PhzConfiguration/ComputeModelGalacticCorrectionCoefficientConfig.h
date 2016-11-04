@@ -67,7 +67,7 @@ public:
 
 private:
 
-  double m_dust_map_sed_bpc;
+  double m_dust_map_sed_bpc=1.;
 
 };
 
