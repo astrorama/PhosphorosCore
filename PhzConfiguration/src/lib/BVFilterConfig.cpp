@@ -66,7 +66,7 @@ void BVFilterConfig::initialize(const UserValues& args) {
 
 }
 
-const XYDataset::QualifiedName & BVFilterConfig::getBFilter() const{
+XYDataset::QualifiedName  BVFilterConfig::getBFilter() const{
   if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
       throw Elements::Exception() << "Call to getBFilter() on a not initialized instance.";
   }
@@ -74,7 +74,7 @@ const XYDataset::QualifiedName & BVFilterConfig::getBFilter() const{
   return XYDataset::QualifiedName(m_b_filter);
 }
 
-const XYDataset::QualifiedName & BVFilterConfig::getVFilter() const {
+XYDataset::QualifiedName  BVFilterConfig::getVFilter() const {
   if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
       throw Elements::Exception() << "Call to getVFilter() on a not initialized instance.";
   }

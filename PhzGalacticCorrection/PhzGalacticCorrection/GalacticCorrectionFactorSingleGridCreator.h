@@ -47,7 +47,7 @@ public:
   GalacticCorrectionSingleGridCreator(
        std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
        std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
-       std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+       const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
        IgmAbsorptionFunction igm_absorption_function,
        XYDataset::QualifiedName b_filter,
        XYDataset::QualifiedName v_filter,
@@ -65,7 +65,7 @@ public:
 private:
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_sed_provider;
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
-  std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
+  const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
   IgmAbsorptionFunction m_igm_absorption_function;
   XYDataset::QualifiedName m_b_filter;
   XYDataset::QualifiedName m_v_filter;

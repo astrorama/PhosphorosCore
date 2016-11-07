@@ -77,7 +77,7 @@ public:
    * @return
    * A  QualifiedName
    */
-  const XYDataset::QualifiedName & getBFilter() const;
+  XYDataset::QualifiedName  getBFilter() const;
 
   /**
    * @brief
@@ -86,7 +86,7 @@ public:
    * @return
    * A  QualifiedName
    */
-  const XYDataset::QualifiedName & getVFilter() const;
+   XYDataset::QualifiedName  getVFilter() const;
 
 private:
 

@@ -78,7 +78,7 @@ public:
     * @return
     * A QualifiedName
     */
-   const XYDataset::QualifiedName & getMilkyWayReddeningCurve() const;
+   XYDataset::QualifiedName getMilkyWayReddeningCurve() const;
 
 private:
 
