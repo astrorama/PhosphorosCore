@@ -10,6 +10,7 @@
 #include <vector>
 #include <type_traits>
 #include "ElementsKernel/Logging.h"
+#include "PhzDataModel/PhzModel.h"
 #include "Table/Table.h"
 #include "Table/FitsWriter.h"
 #include "PhzOutput/PdfOutput.h"
@@ -26,8 +27,8 @@ struct PdfOutputTraits;
 
 template <>
 struct PdfOutputTraits<PhzDataModel::ModelParameter::SED> {
-  static constexpr auto filename = "sed";
-  static constexpr auto column_name = "SED";
+  static std::string filename() {return "sed";}
+  static std::string column_name() {return "SED";}
   static constexpr auto result_type = PhzDataModel::SourceResultType::SED_1D_PDF;
   using column_type = std::string;
   static column_type convertToColumnType(const XYDataset::QualifiedName& value) {
@@ -37,9 +38,9 @@ struct PdfOutputTraits<PhzDataModel::ModelParameter::SED> {
 
 template <>
 struct PdfOutputTraits<PhzDataModel::ModelParameter::REDDENING_CURVE> {
-  static constexpr auto filename = "red_curve";
+  static std::string filename() {return "red_curve";}
   static constexpr auto result_type = PhzDataModel::SourceResultType::RED_CURVE_1D_PDF;
-  static constexpr auto column_name = "ReddeningCurve";
+  static std::string column_name() {return "ReddeningCurve";}
   using column_type = std::string;
   static column_type convertToColumnType(const XYDataset::QualifiedName& value) {
     return value.qualifiedName();
@@ -48,10 +49,10 @@ struct PdfOutputTraits<PhzDataModel::ModelParameter::REDDENING_CURVE> {
 
 template <>
 struct PdfOutputTraits<PhzDataModel::ModelParameter::EBV> {
-  static constexpr auto filename = "ebv";
+  static std::string filename() {return "ebv";}
   static constexpr auto result_type = PhzDataModel::SourceResultType::EBV_1D_PDF;
   using axis_type = PhzDataModel::ModelParameterTraits<PhzDataModel::ModelParameter::EBV>::type;
-  static constexpr auto column_name = "E(B-V)";
+  static std::string column_name() {return "E(B-V)";}
   using column_type = axis_type;
   static column_type convertToColumnType(axis_type value) {
     return value;
@@ -60,10 +61,10 @@ struct PdfOutputTraits<PhzDataModel::ModelParameter::EBV> {
 
 template <>
 struct PdfOutputTraits<PhzDataModel::ModelParameter::Z> {
-  static constexpr auto filename = "z";
+  static std::string filename() {return "z";}
   static constexpr auto result_type = PhzDataModel::SourceResultType::Z_1D_PDF;
   using axis_type = PhzDataModel::ModelParameterTraits<PhzDataModel::ModelParameter::Z>::type;
-  static constexpr auto column_name = "Z";
+  static std::string column_name() {return "Z";}
   using column_type = axis_type;
   static column_type convertToColumnType(axis_type value) {
     return value;
@@ -75,7 +76,7 @@ struct PdfOutputTraits<PhzDataModel::ModelParameter::Z> {
 template <int Parameter>
 PdfOutput<Parameter>::PdfOutput(boost::filesystem::path out_dir): m_counter (0) {
 
-  m_out_file = out_dir / (std::string{"pdf_"}+PdfOutput_impl::PdfOutputTraits<Parameter>::filename+".fits");
+  m_out_file = out_dir / (std::string{"pdf_"}+PdfOutput_impl::PdfOutputTraits<Parameter>::filename()+".fits");
   
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
@@ -88,7 +89,7 @@ PdfOutput<Parameter>::PdfOutput(boost::filesystem::path out_dir): m_counter (0) 
 template <int Parameter>
 PdfOutput<Parameter>::~PdfOutput() {
   auto logger = Elements::Logging::getLogger("PhzOutput");
-  logger.info() << "Created " << PhzDataModel::ModelParameterTraits<Parameter>::name << " 1D PDFs in file " << m_out_file.string();
+  logger.info() << "Created " << PhzDataModel::ModelParameterTraits<Parameter>::name() << " 1D PDFs in file " << m_out_file.string();
 }
 
 
@@ -100,7 +101,7 @@ void PdfOutput<Parameter>::handleSourceOutput(const SourceCatalog::Source& sourc
 
   // Create the columnInfo object
   std::shared_ptr<Euclid::Table::ColumnInfo> column_info {new Euclid::Table::ColumnInfo {{
-	  Euclid::Table::ColumnInfo::info_type(PdfOutput_impl::PdfOutputTraits<Parameter>::column_name,
+	  Euclid::Table::ColumnInfo::info_type(PdfOutput_impl::PdfOutputTraits<Parameter>::column_name(),
                                            typeid(typename PdfOutput_impl::PdfOutputTraits<Parameter>::column_type)),
 	  Euclid::Table::ColumnInfo::info_type("Probability", typeid(double))
   }}};
