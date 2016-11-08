@@ -42,25 +42,25 @@ struct ModelParameterTraits;
 
 template <>
 struct ModelParameterTraits<ModelParameter::SED> {
-  static constexpr auto name = "SED";
+  static std::string name() {return "SED";}
   using type = XYDataset::QualifiedName;
 };
 
 template <>
 struct ModelParameterTraits<ModelParameter::REDDENING_CURVE> {
-  static constexpr auto name = "Reddening Curve";
+  static std::string name() {return "Reddening Curve";}
   using type = XYDataset::QualifiedName;
 };
 
 template <>
 struct ModelParameterTraits<ModelParameter::EBV> {
-  static constexpr auto name = "E(B-V)";
+  static std::string name() {return "E(B-V)";}
   using type = double;
 };
 
 template <>
 struct ModelParameterTraits<ModelParameter::Z> {
-  static constexpr auto name = "Z";
+  static std::string name() {return "Z";}
   using type = double;
 };
 

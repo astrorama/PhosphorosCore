@@ -201,7 +201,7 @@ typename PhzDataModel::Pdf1DParam<FixedAxis> combine1DPdfs(const std::map<std::s
   }
   
   // We combine all the PDFs from the regions, one by one, starting with an emtpy one
-  typename PhzDataModel::Pdf1DParam<FixedAxis> combined_pdf {{PhzDataModel::ModelParameterTraits<FixedAxis>::name, {}}};
+  typename PhzDataModel::Pdf1DParam<FixedAxis> combined_pdf {{PhzDataModel::ModelParameterTraits<FixedAxis>::name(), {}}};
   for (auto& pair : reg_result_map) {
     double factor = factor_map.at(pair.first);
     auto& reg_pdf = pair.second.get<Pdf1DTraits<FixedAxis>::PdfRes>();

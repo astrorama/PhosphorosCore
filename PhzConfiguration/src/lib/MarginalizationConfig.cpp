@@ -93,9 +93,9 @@ void MarginalizationConfig::initialize(const UserValues& args) {
   if (flags.pdfEbvFlag()) {
     addFunctorsToList<ModelParameter::EBV>(m_marginalization_func_list, collapse_type, m_corrections);
   }
-  if (flags.pdfZFlag()) {
-    addFunctorsToList<ModelParameter::Z>(m_marginalization_func_list, collapse_type, m_corrections);
-  }
+  // We always compute the redshift 1D PDF even if it is not requested as
+  // output, because we perform statistics on it
+  addFunctorsToList<ModelParameter::Z>(m_marginalization_func_list, collapse_type, m_corrections);
 }
 
 void MarginalizationConfig::addMarginalizationCorrection(int axis,
