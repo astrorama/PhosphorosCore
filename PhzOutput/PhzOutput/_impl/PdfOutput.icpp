@@ -81,7 +81,7 @@ PdfOutput<Parameter>::PdfOutput(boost::filesystem::path out_dir): m_counter (0) 
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
 
-  m_fits_file.reset(new CCfits::FITS{"!"+m_out_file.string(), CCfits::RWmode::Write});
+  m_fits_file = std::make_shared<CCfits::FITS>("!"+m_out_file.string(), CCfits::RWmode::Write);
 
 }
 
@@ -116,17 +116,16 @@ void PdfOutput<Parameter>::handleSourceOutput(const SourceCatalog::Source& sourc
 
   Table::Table pdf_table{row_list};
 
-  // Store pdf data into fits file
-  Table::FitsWriter fits_writer {Table::FitsWriter::Format::BINARY};
-
+  Table::FitsWriter fits_writer {m_fits_file};
+  fits_writer.overrideFile(false).setHduName(std::to_string(source.getId()));
+  fits_writer.addData(pdf_table);
+  
   // Close and reopen the FITS object for efficiency reason
 	if (m_counter % 5000 == 0) {
 		m_fits_file->destroy();
-		m_fits_file.reset( new CCfits::FITS {m_out_file.string(), CCfits::RWmode::Write});
+		m_fits_file = std::make_shared<CCfits::FITS>(m_out_file.string(), CCfits::RWmode::Write);
 		m_counter = 0;
-	}
-
-  fits_writer.write(*m_fits_file, std::to_string(source.getId()), pdf_table);
+  }
 }
 
 } // end of namespace PhzOutput

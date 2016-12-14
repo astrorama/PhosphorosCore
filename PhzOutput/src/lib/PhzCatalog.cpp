@@ -22,8 +22,8 @@
  * @author nikoapos
  */
 
-#include <fstream>
 #include "ElementsKernel/Logging.h"
+#include "AlexandriaKernel/memory_tools.h"
 #include "PhzOutput/PhzCatalog.h"
 #include "PhzUtils/FileUtils.h"
 #include "Table/Table.h"
@@ -61,13 +61,16 @@ PhzCatalog::~PhzCatalog() {
         addComment(std::move(comment));
       }
     }
+    std::unique_ptr<Table::TableWriter> writer {};
     if (m_format == Format::ASCII) {
-      std::ofstream out {m_out_file.string()};
-      Table::AsciiWriter().write(out, out_table, m_comments);
+      writer = make_unique<Table::AsciiWriter>(m_out_file.string());
     } else {
-      CCfits::FITS fits {"!"+m_out_file.string(), CCfits::RWmode::Write};
-      Table::FitsWriter().write(fits, "Best Model Catalog", out_table, m_comments);
+      writer = make_unique<Table::FitsWriter>(m_out_file.string());
     }
+    for (auto& c : m_comments) {
+      writer->addComment(c);
+    }
+    writer->addData(out_table);
     logger.info() << "Created PHZ catalog in file " << m_out_file.string();
   }
   

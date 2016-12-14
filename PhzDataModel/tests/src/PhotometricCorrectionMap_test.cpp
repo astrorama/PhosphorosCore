@@ -80,7 +80,7 @@ BOOST_FIXTURE_TEST_CASE(Writer_test, PhotometricCorrectionMap_Fixture) {
   std::stringstream stream {};
   PhzDataModel::writePhotometricCorrectionMap(stream,ref_map);
 
-  auto table = Table::AsciiReader().read(stream);
+  auto table = Table::AsciiReader(stream).read();
 
   BOOST_CHECK_EQUAL(ref_map.size(), table.size());
 

@@ -52,7 +52,7 @@ public:
 private:
 
   boost::filesystem::path       m_out_file;  // Filename of the output fits file
-  std::unique_ptr<CCfits::FITS> m_fits_file; // Unique pointer to the FITS file object
+  std::shared_ptr<CCfits::FITS> m_fits_file; // Pointer to the FITS file object
   int64_t                       m_counter;   // Counting the number of sources
 
 };
