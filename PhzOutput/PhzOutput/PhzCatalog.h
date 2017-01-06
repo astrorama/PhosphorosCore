@@ -58,17 +58,17 @@ public:
   
   void handleSourceOutput(const SourceCatalog::Source& source,
                           const PhzDataModel::SourceResults& results) override;
-
-  void addComment(std::string comment);
   
 private:
   
+  void writeData();
+  
   boost::filesystem::path m_out_file;
-  Format m_format;
   std::shared_ptr<Table::ColumnInfo> m_column_info {nullptr};
   std::vector<Table::Row> m_row_list {};
   std::vector<std::shared_ptr<ColumnHandler>> m_handler_list;
-  std::vector<std::string> m_comments;
+  std::unique_ptr<Table::TableWriter> m_writer {};
+  bool m_writing_started = false;
 
 }; /* End of PhzCatalog class */
 

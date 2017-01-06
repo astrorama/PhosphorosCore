@@ -33,13 +33,16 @@
 namespace Euclid {
 namespace PhzOutput {
 
-static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
+namespace {
+
+Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
+
+} // end of anonymous namespace
 
 PhzCatalog::PhzCatalog(boost::filesystem::path out_file, Format format,
                        std::vector<std::shared_ptr<ColumnHandler>> handler_list,
                        std::vector<std::string> comments)
-        : m_out_file{out_file}, m_format{format}, m_handler_list{std::move(handler_list)},
-          m_comments{comments} {
+        : m_out_file{out_file}, m_handler_list{std::move(handler_list)} {
           
   std::vector<Table::ColumnInfo::info_type> info_list {};
   for (auto& handler : m_handler_list) {
@@ -47,33 +50,44 @@ PhzCatalog::PhzCatalog(boost::filesystem::path out_file, Format format,
     info_list.insert(info_list.end(), part_list.begin(), part_list.end());
   }
   m_column_info = std::make_shared<Table::ColumnInfo>(std::move(info_list));
+  
+  Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
+  if (format == Format::ASCII) {
+      m_writer = make_unique<Table::AsciiWriter>(m_out_file.string());
+    } else {
+      m_writer = make_unique<Table::FitsWriter>(m_out_file.string(), true);
+    }
+    for (auto& c : comments) {
+      m_writer->addComment(c);
+    }
 }
 
         
 PhzCatalog::~PhzCatalog() {
+  writeData();
+  logger.info() << "Created PHZ catalog in file " << m_out_file.string();
+}
 
-  if (!m_row_list.empty()) {
-    Table::Table out_table {std::move(m_row_list)};
-    // Check directory and write permissions
-    Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
-    for (auto& handler : m_handler_list) {
-      for (auto& comment : handler->getComments()) {
-        addComment(std::move(comment));
-      }
-    }
-    std::unique_ptr<Table::TableWriter> writer {};
-    if (m_format == Format::ASCII) {
-      writer = make_unique<Table::AsciiWriter>(m_out_file.string());
-    } else {
-      writer = make_unique<Table::FitsWriter>(m_out_file.string());
-    }
-    for (auto& c : m_comments) {
-      writer->addComment(c);
-    }
-    writer->addData(out_table);
-    logger.info() << "Created PHZ catalog in file " << m_out_file.string();
+
+void PhzCatalog::writeData() {
+  
+  // If there are no rows to write ignore the call
+  if (m_row_list.empty()) {
+    return;
   }
   
+  // If it is the first time we need to add any comments the handlers have
+  if (!m_writing_started) {
+    m_writing_started = true;
+    for (auto& handler : m_handler_list) {
+      for (auto& comment : handler->getComments()) {
+        m_writer->addComment(comment);
+      }
+    }
+  }
+  
+  Table::Table out_table {m_row_list};
+  m_writer->addData(out_table);
 }
 
 
@@ -87,10 +101,11 @@ void PhzCatalog::handleSourceOutput(const SourceCatalog::Source& source,
   }
   m_row_list.emplace_back(std::move(cell_list), m_column_info);
   
-}
-
-void PhzCatalog::addComment(std::string comment) {
-  m_comments.emplace_back(std::move(comment));
+  // If we have more than 5000 sources flush them to the output
+  if (m_row_list.size() >= 5000) {
+    writeData();
+    m_row_list.clear();
+  }
 }
 
 } // PhzOutput namespace
