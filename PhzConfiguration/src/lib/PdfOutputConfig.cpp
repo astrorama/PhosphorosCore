@@ -103,22 +103,23 @@ std::vector<std::unique_ptr<PhzOutput::OutputHandler>> PdfOutputConfig::getOutpu
   std::vector<std::unique_ptr<PhzOutput::OutputHandler>> handlers {};
   
   if (m_format == "INDIVIDUAL-HDUS") {
+    auto flush_size = getDependency<OutputCatalogConfig>().getFlushSize();
     auto& flags = getDependency<PdfOutputFlagsConfig>();
     if (flags.pdfSedFlag()) {
       handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::SED> {m_out_pdf_dir}});
+        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::SED> {m_out_pdf_dir, flush_size}});
     }
     if (flags.pdfRedCurveFlag()) {
       handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::REDDENING_CURVE> {m_out_pdf_dir}});
+        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::REDDENING_CURVE> {m_out_pdf_dir, flush_size}});
     }
     if (flags.pdfEbvFlag()) {
       handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::EBV> {m_out_pdf_dir}});
+        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::EBV> {m_out_pdf_dir, flush_size}});
     }
     if (flags.pdfZFlag()) {
       handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::Z> {m_out_pdf_dir}});
+        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::Z> {m_out_pdf_dir, flush_size}});
     }
   }
   

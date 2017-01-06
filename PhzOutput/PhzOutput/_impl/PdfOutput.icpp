@@ -74,7 +74,8 @@ struct PdfOutputTraits<PhzDataModel::ModelParameter::Z> {
 } // end of namespace PdfOutput_impl
 
 template <int Parameter>
-PdfOutput<Parameter>::PdfOutput(boost::filesystem::path out_dir): m_counter (0) {
+PdfOutput<Parameter>::PdfOutput(boost::filesystem::path out_dir, uint flush_chunk_size)
+        : m_counter (0), m_flush_chunk_size(flush_chunk_size) {
 
   m_out_file = out_dir / (std::string{"pdf_"}+PdfOutput_impl::PdfOutputTraits<Parameter>::filename()+".fits");
   
@@ -121,7 +122,7 @@ void PdfOutput<Parameter>::handleSourceOutput(const SourceCatalog::Source& sourc
   fits_writer.addData(pdf_table);
   
   // Close and reopen the FITS object for efficiency reason
-	if (m_counter % 5000 == 0) {
+	if (m_counter % m_flush_chunk_size == 0) {
 		m_fits_file->destroy();
 		m_fits_file = std::make_shared<CCfits::FITS>(m_out_file.string(), CCfits::RWmode::Write);
 		m_counter = 0;

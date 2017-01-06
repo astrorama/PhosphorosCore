@@ -41,8 +41,9 @@ Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
 PhzCatalog::PhzCatalog(boost::filesystem::path out_file, Format format,
                        std::vector<std::shared_ptr<ColumnHandler>> handler_list,
-                       std::vector<std::string> comments)
-        : m_out_file{out_file}, m_handler_list{std::move(handler_list)} {
+                       std::vector<std::string> comments, uint flush_chunk_size)
+        : m_out_file{out_file}, m_handler_list{std::move(handler_list)},
+          m_flush_chunk_size(flush_chunk_size) {
           
   std::vector<Table::ColumnInfo::info_type> info_list {};
   for (auto& handler : m_handler_list) {
@@ -102,7 +103,7 @@ void PhzCatalog::handleSourceOutput(const SourceCatalog::Source& source,
   m_row_list.emplace_back(std::move(cell_list), m_column_info);
   
   // If we have more than 5000 sources flush them to the output
-  if (m_row_list.size() >= 5000) {
+  if (m_row_list.size() >= m_flush_chunk_size) {
     writeData();
     m_row_list.clear();
   }

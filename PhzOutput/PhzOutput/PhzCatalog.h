@@ -49,7 +49,7 @@ public:
   
   PhzCatalog(boost::filesystem::path out_file, Format format,
              std::vector<std::shared_ptr<ColumnHandler>> handler_list,
-             std::vector<std::string> comments={});
+             std::vector<std::string> comments={}, uint flush_chunk_size=500);
 
   /**
    * @brief Destructor
@@ -69,6 +69,7 @@ private:
   std::vector<std::shared_ptr<ColumnHandler>> m_handler_list;
   std::unique_ptr<Table::TableWriter> m_writer {};
   bool m_writing_started = false;
+  uint m_flush_chunk_size;
 
 }; /* End of PhzCatalog class */
 
