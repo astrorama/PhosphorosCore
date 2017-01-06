@@ -9,28 +9,31 @@
 #include <future>
 #include <thread>
 #include <chrono>
-#include <algorithm>
-#include <iterator>
 #include "ElementsKernel/Logging.h"
+#include "AlexandriaKernel/ThreadPool.h"
 #include "PhzOutput/MultithreadHandler.h"
 #include "PhzUtils/Multithreading.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
 
-// This is a helper class which handles the execution of a part of the catalog.
+namespace ParallelCatalogHandler_Impl {
+
+// This is a helper class which handles the execution of a single source
 template <typename SourceIter>
-class ParallelJob {
+class SingleSourceTask {
 
 public:
 
-  ParallelJob(const CatalogHandler& handler, SourceIter begin, SourceIter end,
-              PhzOutput::OutputHandler& output_handler, std::atomic<uint>& done_counter)
-        : handler(handler), begin(begin), end(end),
-          m_output_handler(output_handler), m_done_counter(done_counter) { }
+  SingleSourceTask(const CatalogHandler& handler, SourceIter iter,
+          PhzOutput::OutputHandler& output_handler, std::atomic<uint>& done_counter)
+        : handler(handler), iter(iter),m_output_handler(output_handler), m_done_counter(done_counter) { }
 
   void operator()() {
     DoneUpdater done_updater {m_done_counter};
+    auto begin = iter;
+    auto end = iter;
+    ++end;
     handler.handleSources(begin, end, m_output_handler);
   }
 
@@ -45,41 +48,13 @@ private:
   };
 
   const PhzLikelihood::CatalogHandler& handler;
-  SourceIter begin;
-  SourceIter end;
+  SourceIter iter;
   PhzOutput::OutputHandler& m_output_handler;
   std::atomic<uint>& m_done_counter;
 
 };
 
-template<typename Iter>
-class StepIterator {
-public:
-  StepIterator(Iter iter, Iter end, uint step) : m_iter{iter}, m_end{end}, m_step{step} {}
-  StepIterator& operator++() {
-    std::advance(m_iter, m_step);
-    if (m_iter > m_end) {
-      m_iter = m_end;
-    }
-    return *this;
-  }
-  typename std::add_const<typename Iter::value_type>::type& operator*() const {
-    return *m_iter;
-  }
-  typename std::add_const<typename Iter::value_type>::type* operator->() const {
-    return &(*m_iter);
-  }
-  bool operator==(const StepIterator& other) const {
-    return m_iter == other.m_iter;
-  }
-  bool operator!=(const StepIterator& other) const {
-    return m_iter != other.m_iter;
-  }
-private:
-  Iter m_iter;
-  Iter m_end;
-  uint m_step;
-};
+} // end of namespace ParallelCatalogHandler_Impl
 
 template<typename SourceIter>
 void ParallelCatalogHandler::handleSources(SourceIter source_begin, SourceIter source_end,
@@ -106,28 +81,25 @@ void ParallelCatalogHandler::handleSources(SourceIter source_begin, SourceIter s
   
   PhzOutput::MultithreadHandler multithread_handler {out_handler, progress, source_id_order};
 
-  for (uint i=0; i< threads; ++i) {
-    StepIterator<SourceIter> begin {source_begin, source_end, threads};
-    ++source_begin;
-    StepIterator<SourceIter> end {source_end, source_end, threads};
-    futures.push_back(std::async(std::launch::async, ParallelJob<decltype(begin)> {
-      m_catalog_handler, begin, end, multithread_handler, done_counter
-    }));
+  ThreadPool pool {threads};
+  for (auto it = source_begin; it != source_end; ++it) {
+    pool.submit(ParallelCatalogHandler_Impl::SingleSourceTask<SourceIter>{
+      m_catalog_handler, it, multithread_handler, done_counter
+    });
   }
 
   if (progress_listener) {
     progress_listener(0, total_sources);
-    while (done_counter < threads) {
+    while (done_counter < total_sources) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       progress_listener(progress, total_sources);
     }
     progress_listener(total_sources, total_sources);
   }
   
-  // Wait for all threads to finish
-  for (auto& f : futures) {
-    f.get();
-  }
+  // Wait until all the tasks in the pool are finished
+  pool.block();
+
 }
 
 }
