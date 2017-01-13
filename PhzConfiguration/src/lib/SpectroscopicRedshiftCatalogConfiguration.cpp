@@ -23,59 +23,82 @@ namespace PhzConfiguration {
 static Elements::Logging logger = Elements::Logging::getLogger(
     "SpectroscopicRedshiftCatalogConfiguration");
 
+static const std::string SPECZ_COLUMN_NAME {"spec-z-column-name"};
+static const std::string SPECZ_COLUMN_INDEX {"spec-z-column-index"};
+static const std::string SPECZ_ERR_COLUMN_NAME {"spec-z-err-column-name"};
+static const std::string SPECZ_ERR_COLUMN_INDEX {"spec-z-err-column-index"};
+
 po::options_description SpectroscopicRedshiftCatalogConfiguration::getProgramOptions() {
   po::options_description options = CatalogConfiguration::getProgramOptions();
-  options.add_options()("spec-z-column-name", po::value<std::string>(),
+  options.add_options()(
+      SPECZ_COLUMN_NAME.c_str(), po::value<std::string>(),
       "The name of the column representing the spectroscopic redshift")(
-      "spec-z-column-index", po::value<int>(),
+      SPECZ_COLUMN_INDEX.c_str(), po::value<int>(),
       "The index of the column representing the spectroscopic redshift")(
-      "spec-z-err-column-name", po::value<std::string>(),
+      SPECZ_ERR_COLUMN_NAME.c_str(), po::value<std::string>(),
       "The name of the column representing spectroscopic redshift error")(
-      "spec-z-err-column-index", po::value<int>(),
+      SPECZ_ERR_COLUMN_INDEX.c_str(), po::value<int>(),
       "The index of the column representing the spectroscopic redshift error");
   return options;
 }
 
 SpectroscopicRedshiftCatalogConfiguration::SpectroscopicRedshiftCatalogConfiguration(
-    const std::map<std::string, po::variable_value>& options) :
-    CatalogConfiguration(options) {
-  if (options.find("spec-z-column-name")!=options.end()
-      && options.find("spec-z-column-index")!=options.end()) {
-    logger.error(
-        "Found both spec-z column-name and spec-z-column-index options");
-    throw Elements::Exception(
-        "Options spec-z-column-name and spec-z-column-index are mutually exclusive");
+                                      const std::map<std::string, po::variable_value>& options)
+                 : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options),
+                   CatalogConfiguration(options) {
+
+  auto options_local = options;
+
+  // Both options for spec_z not allowed
+  if (!options_local[SPECZ_COLUMN_NAME].empty() &&
+      !options_local[SPECZ_COLUMN_INDEX].empty()) {
+     logger.error() << "Found both " << SPECZ_COLUMN_NAME << " and "
+                    << SPECZ_COLUMN_INDEX << " options";
+     throw Elements::Exception() << "Options " << SPECZ_COLUMN_NAME << " and "
+                                 << SPECZ_COLUMN_INDEX << " are mutually exclusive";
+  }
+
+  // Both options for spec-z-err not allowed
+  if (!options_local[SPECZ_ERR_COLUMN_NAME].empty() &&
+      !options_local[SPECZ_ERR_COLUMN_INDEX].empty()) {
+     logger.error() << "Found both " << SPECZ_ERR_COLUMN_NAME << " and "
+                    << SPECZ_ERR_COLUMN_INDEX << " options";
+     throw Elements::Exception() << "Options " << SPECZ_ERR_COLUMN_NAME << " and "
+                                 << SPECZ_ERR_COLUMN_INDEX << " are mutually exclusive";
   }
 
   string column_name="";
-  if (options.find("spec-z-column-name")==options.end()) {
-    column_name = getAsTable().getColumnInfo()->getName(
-        boost::any_cast<int>(options.find("spec-z-column-index")->second.value())-1);
-  } else{
-    column_name = boost::any_cast<string>(options.find("spec-z-column-name")->second.value());
-  }
+  // Get column name
+  if (options_local[SPECZ_COLUMN_NAME].empty()) {
+      column_name = getAsTable().getColumnInfo()->getName(
+      boost::any_cast<int>(options.find(SPECZ_COLUMN_INDEX)->second.value())-1);
+    }
+  else {
+      column_name = boost::any_cast<string>(options.find(SPECZ_COLUMN_NAME)->second.value());
+    }
 
-  if (options.find("spec-z-err-column-name")!=options.end()
-      && options.find("spec-z-err-column-index")!=options.end()) {
-    logger.error(
-        "Found both spec-err-z column-name and spec-z-err-column-index options");
-    throw Elements::Exception(
-        "Options spec-z-err-column-name and spec-z-err-column-index are mutually exclusive");
+  // Get error column
+  string error_column_name  = "";
+  bool   error_column_found = false;
+  if (!options_local[SPECZ_ERR_COLUMN_NAME].empty()) {
+    error_column_name = boost::any_cast<string>(options_local.find(SPECZ_ERR_COLUMN_NAME)->second.value());
+    error_column_found = true;
   }
-
-  string error_column_name="";
-   if (options.find("spec-z-err-column-name")==options.end() && options.find("spec-z-err-column-index")!=options.end()) {
+  else if (!options_local[SPECZ_ERR_COLUMN_INDEX].empty()){
     error_column_name = getAsTable().getColumnInfo()->getName(
-        boost::any_cast<int>(options.find("spec-z-err-column-index")->second.value())-1);
-  } else if (options.find("spec-z-err-column-index")!=options.end()) {
-    error_column_name = boost::any_cast<string>(options.find("spec-z-err-column-name")->second.value());
+    boost::any_cast<int>(options_local.find(SPECZ_ERR_COLUMN_INDEX)->second.value())-1);
+    error_column_found = true;
   }
+
   // Add the row handler to parse the spectroscopic redshift
-std::shared_ptr<SourceCatalog::AttributeFromRow> handler_ptr {new SourceCatalog::SpectroscopicRedshiftAttributeFromRow {getAsTable().getColumnInfo(), column_name,error_column_name}
+  std::shared_ptr<SourceCatalog::AttributeFromRow> handler_ptr{};
+  if (error_column_found) {
+    handler_ptr.reset( new SourceCatalog::SpectroscopicRedshiftAttributeFromRow { getAsTable().getColumnInfo(), column_name, error_column_name } );
+  } else {
+    handler_ptr.reset( new SourceCatalog::SpectroscopicRedshiftAttributeFromRow { getAsTable().getColumnInfo(), column_name } );
   }
-  ;
   addAttributeHandler (std::move(handler_ptr));
-  }
+}
 
   } // end of namespace PhzConfiguration
 } // end of namespace Euclid

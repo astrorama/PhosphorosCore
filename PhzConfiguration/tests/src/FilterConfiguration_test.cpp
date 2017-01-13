@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <set>
 
 #include <boost/test/unit_test.hpp>
 
@@ -17,21 +18,26 @@
 #include "XYDataset/AsciiParser.h"
 #include "XYDataset/FileSystemProvider.h"
 #include "PhzConfiguration/FilterConfiguration.h"
-#include "CreateDirectory.h"
-
-
 
 namespace po = boost::program_options;
 namespace cf = Euclid::PhzConfiguration;
+namespace fs = boost::filesystem;
 
 struct FilterConfiguration_Fixture {
 
-  std::string group { "filter/MER" };
+  const std::string AUX_DATA_DIR {"aux-data-dir"};
+  const std::string FILTER_GROUP {"filter-group"};
+  const std::string CATALOG_TYPE {"catalog-type"};
+  const std::string FILTER_EXCLUDE {"filter-exclude"};
+  const std::string FILTER_NAME {"filter-name"};
+
+
+  std::string group { "MER" };
   // Do not forget the "/" at the end of the base directory
   Elements::TempDir temp_dir;
-  std::string base_directory { temp_dir.path().native()+"/euclid/" };
-  std::string mer_directory    = base_directory + "filter/MER";
-  std::string cosmos_directory = base_directory + "filter/COSMOS";
+  fs::path base_directory { temp_dir.path() / "euclid" };
+  fs::path mer_directory { base_directory /  "Filters" / "MER" };
+  fs::path cosmos_directory { base_directory / "Filters" / "COSMOS" };
 
   std::map<std::string, po::variable_value> options_map;
   std::map<std::string, po::variable_value> empty_map;
@@ -43,13 +49,14 @@ struct FilterConfiguration_Fixture {
 
     group_vector.push_back(group);
 
-    makeDirectory(base_directory);
-    makeDirectory(mer_directory);
-    makeDirectory(cosmos_directory);
+    fs::create_directories(base_directory);
+    fs::create_directories(mer_directory);
+    fs::create_directories(cosmos_directory);
+
     // Create files
-    std::ofstream file1_mer(mer_directory + "/file1.txt");
-    std::ofstream file2_mer(mer_directory + "/file2.txt");
-    std::ofstream file3_cos(cosmos_directory + "/file3.txt");
+    std::ofstream file1_mer((mer_directory / "file1.txt").string());
+    std::ofstream file2_mer((mer_directory / "file2.txt").string());
+    std::ofstream file3_cos((cosmos_directory / "file3.txt").string());
     // Fill up file
     file1_mer << "\n";
     file1_mer << "# Dataset_name_for_file1\n";
@@ -67,8 +74,9 @@ struct FilterConfiguration_Fixture {
     file3_cos.close();
 
     // Fill up options
-    options_map["filter-root-path"].value() = boost::any(base_directory);
-    options_map["filter-group"].value() = boost::any(group_vector);
+    options_map[AUX_DATA_DIR].value() = boost::any(base_directory.string());
+    options_map[CATALOG_TYPE].value() = boost::any(std::string{"CAT_NAME"});
+    options_map[FILTER_GROUP].value() = boost::any(group_vector);
 
   }
   ~FilterConfiguration_Fixture() {
@@ -82,7 +90,7 @@ struct FilterConfiguration_Fixture {
 BOOST_AUTO_TEST_SUITE (FilterConfiguration_test)
 
 //-----------------------------------------------------------------------------
-// Test the getProgramOptions function for filter-root-path
+// Test the getProgramOptions function
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, FilterConfiguration_Fixture) {
@@ -94,13 +102,11 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, FilterConfiguration_Fix
   auto option_desc = Euclid::PhzConfiguration::FilterConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc{};
 
-  desc = option_desc.find_nothrow("filter-root-path", false);
+  desc = option_desc.find_nothrow(FILTER_GROUP, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("filter-group", false);
+  desc = option_desc.find_nothrow(FILTER_NAME, false);
   BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("filter-name", false);
-  BOOST_CHECK(desc != nullptr);
-  desc = option_desc.find_nothrow("filter-exclude", false);
+  desc = option_desc.find_nothrow(FILTER_EXCLUDE, false);
   BOOST_CHECK(desc != nullptr);
 
 }
@@ -118,7 +124,7 @@ BOOST_FIXTURE_TEST_CASE(getFilterDatasetProvider_function_test, FilterConfigurat
   cf::FilterConfiguration fconf(options_map);
   auto fdp     = fconf.getFilterDatasetProvider();
   BOOST_CHECK(fdp != nullptr);
-  auto dataset = fdp->getDataset({"filter/MER/file2"});
+  auto dataset = fdp->getDataset({(fs::path("MER") / "file2").string()});
   BOOST_CHECK_EQUAL(2, dataset->size());
   auto iter = dataset->begin();
   BOOST_CHECK_EQUAL(111.1, iter->first);
@@ -126,22 +132,6 @@ BOOST_FIXTURE_TEST_CASE(getFilterDatasetProvider_function_test, FilterConfigurat
   ++iter;
   BOOST_CHECK_EQUAL(222.2, iter->first);
   BOOST_CHECK_EQUAL(222.2, iter->second);
-
-}
-
-//-----------------------------------------------------------------------------
-// Test the getFilterDatasetProvider function
-//-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE(getFilterDatasetProvider_exception_function_test, FilterConfiguration_Fixture) {
-
-  BOOST_TEST_MESSAGE(" ");
-  BOOST_TEST_MESSAGE("--> Testing the exception of getFilterDatasetProvider function");
-  BOOST_TEST_MESSAGE(" ");
-
-  cf::FilterConfiguration fconf(empty_map);
-
-  BOOST_CHECK_THROW(fconf.getFilterDatasetProvider(), Elements::Exception);
 
 }
 
@@ -174,15 +164,15 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_exclude_function_test, FilterConfiguration
   BOOST_TEST_MESSAGE(" ");
 
   // Filter to be excluded and a non existant filter
-  exclude_vector.push_back("filter/MER/file2");
-  exclude_vector.push_back("filter/MER/FILE_DOES_NOT_EXIST");
-  options_map["filter-exclude"].value() = boost::any(exclude_vector);
+  exclude_vector.push_back((fs::path("MER") / "file2").string());
+  exclude_vector.push_back((fs::path("MER") / "FILE_DOES_NOT_EXIST").string());
+  options_map[FILTER_EXCLUDE].value() = boost::any(exclude_vector);
 
   cf::FilterConfiguration fconf(options_map);
   auto list = fconf.getFilterList();
 
   BOOST_CHECK_EQUAL(list.size(), 1);
-  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "filter/MER/Dataset_name_for_file1");
+  BOOST_CHECK_EQUAL(list[0].qualifiedName(), (fs::path("MER") / "Dataset_name_for_file1").string());
 
 }
 
@@ -197,14 +187,15 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_add_function_test, FilterConfiguration_Fix
   BOOST_TEST_MESSAGE(" ");
 
   // Filter to be added
-  add_vector.push_back("filter/COSMOS/Dataset_name_for_file3");
-  options_map["filter-name"].value() = boost::any(add_vector);
+  fs::path fscosmos { "COSMOS/Dataset_name_for_file3" };
+  add_vector.push_back(fscosmos.string());
+  options_map[FILTER_NAME].value() = boost::any(add_vector);
 
   cf::FilterConfiguration fconf(options_map);
   auto list = fconf.getFilterList();
 
   BOOST_CHECK_EQUAL(list.size(), 3);
-  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "filter/COSMOS/Dataset_name_for_file3");
+  BOOST_CHECK_EQUAL(list[2].qualifiedName(), fscosmos.string());
 
 }
 
@@ -222,14 +213,38 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_add_twice_function_test, FilterConfigurati
   auto list = fconf.getFilterList();
 
   // Add twice the same filter
-  add_vector.push_back("filter/MER/Dataset_name_for_file1");
-  options_map["filter-name"].value() = boost::any(add_vector);
+  fs::path fsmer { "MER/Dataset_name_for_file1" };
+  add_vector.push_back(fsmer.string());
+  options_map[FILTER_NAME].value() = boost::any(add_vector);
 
   cf::FilterConfiguration fconf2(options_map);
   auto list2 = fconf2.getFilterList();
 
   BOOST_CHECK_EQUAL(list.size(), list2.size());
-  BOOST_CHECK_EQUAL(list[0].qualifiedName(), "filter/MER/Dataset_name_for_file1");
+  BOOST_CHECK_EQUAL(list[0].qualifiedName(), fsmer.string());
+
+}
+
+//-----------------------------------------------------------------------------
+// Test the getFilterList function when user don't provide parameters
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(getFilterList_noparams_function_test, FilterConfiguration_Fixture) {
+
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the getFilterList function hen user don't provide parameters");
+  BOOST_TEST_MESSAGE(" ");
+
+  options_map[FILTER_GROUP].value() = boost::any(std::vector<std::string>{});
+  options_map[CATALOG_TYPE].value() = boost::any(std::string {"MER"});
+  cf::FilterConfiguration fconf(options_map);
+  auto list = fconf.getFilterList();
+
+   BOOST_CHECK_EQUAL(list.size(), 2);
+   std::set<Euclid::XYDataset::QualifiedName> set {list.begin(), list.end()};
+
+   BOOST_CHECK_EQUAL(set.count((fs::path("MER") / "Dataset_name_for_file1").string()), 1);
+   BOOST_CHECK_EQUAL(set.count((fs::path("MER") / "file2").string()), 1);
 
 }
 

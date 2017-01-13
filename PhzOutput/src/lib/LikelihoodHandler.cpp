@@ -11,6 +11,7 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzOutput/LikelihoodHandler.h"
+#include "PhzUtils/FileUtils.h"
 
 namespace fs = boost::filesystem;
 
@@ -21,13 +22,10 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
 LikelihoodHandler::LikelihoodHandler(boost::filesystem::path out_dir)
           : m_out_dir{std::move(out_dir)} {
-  if (fs::exists(m_out_dir) && !fs::is_directory(m_out_dir)) {
-    throw Elements::Exception() << "Likelihood grid output " << m_out_dir
-                                << " is not a directory";
-  }
-  if (!fs::exists(m_out_dir)) {
-    fs::create_directories(m_out_dir);
-  }
+
+  // Check directory and write permissions
+  Euclid::PhzUtils::checkCreateDirectoryOnly(m_out_dir.string());
+
 }
           
 template <typename AxisType>
@@ -41,7 +39,8 @@ std::string convertAxisValueToString(const XYDataset::QualifiedName& value) {
 }
 
 template <int I>
-void addAxis(const string& filename, const PhzDataModel::LikelihoodGrid& grid) {
+void addAxis(const string& filename, const string& region_name,
+             const PhzDataModel::LikelihoodGrid& grid) {
   auto& axis = grid.getAxis<I>();
   
   std::vector<Table::ColumnInfo::info_type> info_list {
@@ -58,41 +57,49 @@ void addAxis(const string& filename, const PhzDataModel::LikelihoodGrid& grid) {
   
   CCfits::FITS fits {filename, CCfits::RWmode::Write};
   Table::FitsWriter writer {Table::FitsWriter::Format::BINARY};
-  writer.write(fits, axis.name(), table);
+  writer.write(fits, axis.name()+"_"+region_name, table);
 }
 
 void LikelihoodHandler::handleSourceOutput(const SourceCatalog::Source& source,
                                            const result_type& results) {
   std::string id = std::to_string(source.getId());
   std::string filename = (m_out_dir/(id+".fits")).string();
-  auto& likelihood_grid = std::get<2>(results);
+  fs::remove(filename);
+  auto& posteriors_map = std::get<2>(results);
+  auto& best_chi2_map = std::get<5>(results);
   
-  // Create the first HDU with the array. We do that in a scope so the file is
-  // created and the data are flushed into it before we continue.
-  {
-    long naxis = likelihood_grid.axisNumber();
-    auto& axes = likelihood_grid.getAxesTuple();
-    long naxes[4] = {(long)std::get<0>(axes).size(),
-                     (long)std::get<1>(axes).size(),
-                     (long)std::get<2>(axes).size(),
-                     (long)std::get<3>(axes).size()};
-    CCfits::FITS fits("!"+filename, DOUBLE_IMG, naxis, naxes);
-    fits.pHDU().addKey("ID", source.getId(), "");
-    std::valarray<double> data (likelihood_grid.size());
-    int i = 0;
-    for (auto value : likelihood_grid) {
-      data[i] = value;
-      ++i;
+  for (auto& pair : posteriors_map) {
+    // Create the first HDU with the array. We do that in a scope so the file is
+    // created and the data are flushed into it before we continue.
+    {
+      CCfits::FITS fits (filename, CCfits::Write);
+      
+      auto& axes = pair.second.getAxesTuple();
+      std::vector<long> ext_ax ={(long)std::get<0>(axes).size(),
+                                 (long)std::get<1>(axes).size(),
+                                 (long)std::get<2>(axes).size(),
+                                 (long)std::get<3>(axes).size()};
+      
+      fits.addImage(pair.first, DOUBLE_IMG, ext_ax);
+      fits.currentExtension().addKey("ID", source.getId(), "");
+      fits.currentExtension().addKey("CHI2", best_chi2_map.at(pair.first), "");
+      
+      std::valarray<double> data (pair.second.size());
+      int i = 0;
+      for (auto value : pair.second) {
+        data[i] = value;
+        ++i;
+      }
+      fits.currentExtension().write(1, pair.second.size(), data);
     }
-    fits.pHDU().write(1, likelihood_grid.size(), data);
-    logger.info() << "Created likelihood grid for source " << id << " in file " << filename;
+
+    // Now add a binary table for each axis with its values
+    addAxis<0>(filename, pair.first, pair.second);
+    addAxis<1>(filename, pair.first, pair.second);
+    addAxis<2>(filename, pair.first, pair.second);
+    addAxis<3>(filename, pair.first, pair.second);
   }
-  
-  // Now add a binary table for each axis with its values
-  addAxis<0>(filename, likelihood_grid);
-  addAxis<1>(filename, likelihood_grid);
-  addAxis<2>(filename, likelihood_grid);
-  addAxis<3>(filename, likelihood_grid);
+  logger.info() << "Created likelihood grid for source " << id << " in file " << filename;
 }
 
 } // end of namespace PhzOutput

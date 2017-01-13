@@ -15,6 +15,9 @@
 
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/PhotometryGrid.h"
+#include "PhzDataModel/PhotometryGridInfo.h"
+#include "PhzConfiguration/PhosphorosPathConfiguration.h"
+#include "PhzConfiguration/CatalogTypeConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -25,14 +28,15 @@ namespace PhzConfiguration {
  * This class defines the Photometry Grid parameter option
  * @details
  * The parameter available is :
- * - \b photometry-grid-file, string, The path and filename of the grid file"
+ * - \b model-grid-file, string, The path and filename of the grid file"
  * The getPhotometryGrid function loads a photometry grid in memory referred by the
- * photometry-grid-file parameter.
+ * model-grid-file parameter.
  * @throw Element::Exception
  * - Empty parameter option
  */
 
-class PhotometryGridConfiguration {
+class PhotometryGridConfiguration : public virtual PhosphorosPathConfiguration,
+                                    public virtual CatalogTypeConfiguration {
 
 public:
 
@@ -49,7 +53,7 @@ public:
    * This class defines the photometry grid parameter options
    * @details
    * The options are:
-   * photometry-grid-file : string, filename and path of the photometry grid file
+   * model-grid-file : string, filename and path of the photometry grid file
    * @param options
    * A map containing the options and their values.
    *
@@ -64,15 +68,31 @@ public:
 
   /**
    * @brief getPhotometryGrid
-   * This function loads in memory a photometry grid referred by \b photometry-grid-file
+   * This function loads in memory a photometry grid referred by \b model-grid-file
    * options as a PhzDataModel::PhotometryGrid object.
    * @details
-   * @throw ElementException
-   * Empty parameter option
-   * @return
+   * If the given path is relative, it is relative to the directory
+   * INTERMEDIATE_DIR/CATALOG_TYPE/ModelGrids. It it is missing completely the
+   * default is INTERMEDIATE_DIR/CATALOG_TYPE/ModelGrids/model_grid.dat
+   * 
+   * @returns
    * A PhzDataModel::PhotometryGrid object (the photometry grid)
+   * @throws Elements::Exception
+   *    If the file does not exist
    */
-   PhzDataModel::PhotometryGrid getPhotometryGrid();
+   std::map<std::string, PhzDataModel::PhotometryGrid> getPhotometryGrid();
+   
+  /**
+   * @brief
+   * This function loads in memory only the photometry grid information from the
+   * file given with the parameter model-grid-file, as a PhzDataModel::PhotometryGridInfo
+   * object.
+   * @returns
+   * A PhzDataModel::PhotometryGridInfo object (the photometry grid information)
+   * @throws Elements::Exception
+   *    If the file does not exist
+   */
+   PhzDataModel::PhotometryGridInfo getPhotometryGridInfo();
 
 private:
   /// Map containing all the filter options and their values

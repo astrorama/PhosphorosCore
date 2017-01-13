@@ -7,6 +7,8 @@
 #ifndef PHZOUTPUT_OUTPUTHANDLER_H
 #define	PHZOUTPUT_OUTPUTHANDLER_H
 
+#include <map>
+#include <string>
 #include "GridContainer/GridContainer.h"
 #include "SourceCatalog/Source.h"
 #include "PhzDataModel/PhotometryGrid.h"
@@ -24,12 +26,14 @@ public:
    * Defines the type of the PHZ results as following:
    * - An iterator pointing to the model photometry which is the best match
    * - A grid representing the 1D PDF over the redshift
-   * - A grid representing the multi dimensional likelihood
+   * - A map containing the posterios for all parameter space regions
    * - A double with the value of the alpha scale factor used for the fitting
+   * - A double with the likelihood value of the best fitted model
+   * - A map containing the best chi square for each region
    */
-  typedef std::tuple<PhzDataModel::PhotometryGrid::const_iterator,
-                     PhzDataModel::Pdf1D, PhzDataModel::LikelihoodGrid,
-                     double> result_type;
+  typedef std::tuple<PhzDataModel::PhotometryGrid::const_iterator, PhzDataModel::Pdf1D,
+                     std::map<std::string, PhzDataModel::LikelihoodGrid>,
+                     double, double, std::map<std::string, double>> result_type;
   
   virtual ~OutputHandler() {}
   

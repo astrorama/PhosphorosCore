@@ -11,10 +11,10 @@ namespace Euclid {
 namespace PhzLikelihood {
 
 CatalogHandler::CatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
-                               const PhzDataModel::PhotometryGrid& phot_grid,
+                               const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                                std::vector<PriorFunction> priors,
                                MarginalizationFunction marginalization_func)
-            : m_source_phz_func{std::move(phot_corr_map), phot_grid,
+            : m_source_phz_func{std::move(phot_corr_map), phot_grid_map,
                                 std::move(priors), marginalization_func} {
 }
 

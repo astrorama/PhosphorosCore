@@ -13,10 +13,10 @@
 
 #include <boost/program_options.hpp>
 
-#include "XYDataset/XYDatasetProvider.h"
 #include "PhzConfiguration/SedConfiguration.h"
 #include "PhzConfiguration/RedshiftConfiguration.h"
 #include "PhzConfiguration/ReddeningConfiguration.h"
+#include "PhzDataModel/PhzModel.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -55,16 +55,7 @@ public:
    * @return
    * A boost::program_options::options_description boost type
    */
-  static boost::program_options::options_description getProgramOptions()
-  {
-    boost::program_options::options_description options {"Photometric combined options"};
-
-    options.add(SedConfiguration::getProgramOptions());
-    options.add(RedshiftConfiguration::getProgramOptions());
-    options.add(ReddeningConfiguration::getProgramOptions());
-
-    return options;
-  }
+  static boost::program_options::options_description getProgramOptions();
 
   /**
    * @brief Constructor
@@ -72,14 +63,14 @@ public:
    * A map containing the options and their values.
    *
    */
-  ParameterSpaceConfiguration(const std::map<std::string, boost::program_options::variable_value>& options)
-            : SedConfiguration(options), RedshiftConfiguration(options), ReddeningConfiguration(options) {};
+  ParameterSpaceConfiguration(const std::map<std::string, boost::program_options::variable_value>& options);
   
    /**
    * @brief destructor.
    */
    virtual ~ParameterSpaceConfiguration()=default;
-
+   
+   std::map<std::string, PhzDataModel::ModelAxesTuple> getParameterSpaceRegions();
 
 };
 

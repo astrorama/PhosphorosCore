@@ -36,10 +36,13 @@ double ChiSquareFunctor::operator ()(SourceIter source, SourceIter source_end,
                                      ModelIter model, double scale) const {
     double chi_square {0.0};
     for (; source!=source_end; ++source, ++model) {
+      if ((*source).missing_photometry_flag) {
+        continue;
+      }
       double difference = scale * (*model).flux - (*source).flux;
       chi_square += difference * difference / ((*source).error * (*source).error);
     }
-    return exp(-1.0 * chi_square / 2.0);
+    return -1.0 * chi_square / 2.0;
 }
 
 } // end of namespace PhzLikelihood

@@ -9,21 +9,22 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
-#include "EnableGMock.h"
+#include "ElementsKernel/EnableGMock.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
+#include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
 #include "FluxErrorPair_boost.h"
 
 using namespace testing;
 
 namespace Euclid {
 
-class LikelihoodCalcMock {
+class LikelihoodLogarithmCalcMock {
   
 private:
   
 public:
   
-  virtual ~LikelihoodCalcMock() = default;
+  virtual ~LikelihoodLogarithmCalcMock() = default;
   
   typedef SourceCatalog::Photometry::const_iterator phot_iter;
   
@@ -41,6 +42,19 @@ public:
         }))
     )).WillOnce(Return(result));
   }
+  
+  // The following returns a lambda object, which can be copied or moved, to be
+  // used when these actions are needed (the mock instance does not support them). Note
+  // that this object is valid only as long as the mock object is not deleted.
+  PhzLikelihood::LikelihoodLogarithmAlgorithm::LikelihoodLogarithmCalc getFunctorObject() {
+    return [=](SourceCatalog::Photometry::const_iterator source_begin,
+               SourceCatalog::Photometry::const_iterator source_end,
+               SourceCatalog::Photometry::const_iterator model_begin,
+               double scale_factor) {
+      return this->FunctorCall(source_begin, source_end, model_begin, scale_factor);
+    };
+  }
+  
 };
 
 } // end of namespace Euclid

@@ -12,6 +12,7 @@
 #include "ElementsKernel/Real.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
+#include "PhzLikelihood/SumMarginalizationFunctor.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "tests/src/LikelihoodFunctionMock.h"
 #include "tests/src/BestFitFunctionMock.h"
@@ -37,8 +38,8 @@ struct SourcePhzFunctor_Fixture {
       3.3, 0. } };
   vector<SourceCatalog::FluxErrorPair> values_4 { { 4.1, 0. }, { 4.2, 0. }, {
       4.3, 0. } };
-  vector<SourceCatalog::FluxErrorPair> values_source { { 0.1, 0. }, { 0.2, 0. },
-      { 0.3, 0. } };
+  vector<SourceCatalog::FluxErrorPair> values_source { { 0.1, 0.1 }, { 0.2, 0.1 },
+      { 0.3, 0.1 } };
 
   SourceCatalog::Photometry photometry_1 { filters, values_1 };
   SourceCatalog::Photometry photometry_2 { filters, values_2 };
@@ -100,19 +101,16 @@ BOOST_AUTO_TEST_SUITE (SourcePhzFunctor_test)
 //-----------------------------------------------------------------------------
 BOOST_FIXTURE_TEST_CASE(SourcePhzFunctor_test, SourcePhzFunctor_Fixture) {
   LikelihoodFunctionMock likelihood_function;
-
-
-  likelihood_function.expectFunctorCall(photometry_corrected,ref_photo_grid.cbegin(),ref_photo_grid.cend());
+  likelihood_function.expectFunctorCall(photometry_corrected, ref_photo_grid);
   BestFitFunctionMock best_fit_function;
   best_fit_function.expectFunctorCall();
+  std::map<std::string, PhzDataModel::PhotometryGrid> photo_grid_map {};
+  photo_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
 
   // When
-  PhzLikelihood::SourcePhzFunctor functor(correctionMap, std::move(photo_grid), {},
+  PhzLikelihood::SourcePhzFunctor functor(correctionMap, photo_grid_map, {},
       PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{},
-      std::bind(&LikelihoodFunctionMock::FunctorCall, &likelihood_function, _1,
-          _2, _3, _4),
-      std::bind(&BestFitFunctionMock::FunctorCall, &best_fit_function, _1, _2));
-
+      likelihood_function.getFunctorObject(), best_fit_function.getFunctorObject());
   auto best_model = functor(photometry_source);
 
 }

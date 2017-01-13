@@ -23,56 +23,46 @@ namespace PhzPhotometricCorrection {
  * The redshift to be chosen is provided for each sources by the
  * catalog along with the photometry.
  *
- * @tparam sourceCalculatorFunctor A type of functor encoding the algorithm for
+ * @tparam SourceCalculatorFunctor A type of functor encoding the algorithm for
  * finding the best fitted model.
  * See SourcePhzFunctor::SourcePhzFunctor for the signatures.
  */
-template<typename sourceCalculatorFunctor>
+template<typename SourceCalculatorFunctor>
 class FindBestFitModels {
 public:
 
   /**
-     * @brief Map each input source to the model which is the best match,
-     * according their photometries. The results are selected from the models
-     * which correspond to the known spectroscopic redshift of the source and
-     * the models of other reshdifts are ignored.
-     *
-     * @param calibration_catalog An object of type SourceCatalog::Catalog,
-     * which contains the sources. All the sources are assumed to contain both
-     * Photometry and Spec-Z information.
-     *
-     * @param model_photometric_grid  An object of type PhzDataModel::PhotometryGrid,
-     * which contain the photometries of the models.
-     *
-     * @param photometric_correction An object of type
-     * PhzDataModel::PhotometricCorrectionMap, containing the photometric corrections
-     * for all filters.
-     *
-     * @return An object of type std::map, with keys of type int64 t,
-     * representing the IDs of the sources, and values of type
-     * PhzDataModel::PhotometryGrid::const iterator, pointing to a cell of the
-     * input Model Photometry Grid, representing the best fitted model for the source.
-     *
-     * @throws ElementsException
-     *    if any of the source is missing the Spec-Z information
-     * @throws ElementsException
-     *    if any of the source is missing the Photometry information
-     */
+   * @brief Map each input source to the model which is the best match,
+   * according their photometries. The results are selected from the models
+   * which correspond to the known spectroscopic redshift of the source and
+   * the models of other reshdifts are ignored.
+   *
+   * @param calibration_catalog An object of type SourceCatalog::Catalog,
+   * which contains the sources. All the sources are assumed to contain both
+   * Photometry and Spec-Z information.
+   *
+   * @param model_grid_map  An map containing the photometries of the models for
+   *    all the parameter space regions
+   *
+   * @param photometric_correction An object of type
+   * PhzDataModel::PhotometricCorrectionMap, containing the photometric corrections
+   * for all filters.
+   *
+   * @return An object of type std::map, with keys of type int64 t,
+   * representing the IDs of the sources, and values of type
+   * PhzDataModel::PhotometryGrid::const iterator, pointing to a cell of the
+   * input Model Photometry Grid, representing the best fitted model for the source.
+   *
+   * @throws ElementsException
+   *    if any of the source is missing the Spec-Z information
+   * @throws ElementsException
+   *    if any of the source is missing the Photometry information
+   */
   std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator> operator()(
       const SourceCatalog::Catalog& calibration_catalog,
-      const PhzDataModel::PhotometryGrid& model_photometric_grid,
+      const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
       const PhzDataModel::PhotometricCorrectionMap& photometric_correction);
-
-  /**
-   * @brief The const UNSETZ is used as an initialization vwhen looking for the redshift
-   */
-  static constexpr double UNSETZ =-1.;
-
-  /**
-   * @brief The const MAXIMALZ is used as the initialization value for the
-   * redshift difference when looking for minimal difference value.
-   */
-  static constexpr double MAXIMALZ=1100.;
+  
 };
 
 } // end of namespace PhzPhotometricCorrection

@@ -10,13 +10,13 @@ elements_depends_on_subdirs(PhzPhotometricCorrection)
 
 find_package(Boost REQUIRED COMPONENTS program_options)
 
-elements_add_executable(PhosphorosBuildTemplates src/program/BuildTemplates.cpp
+elements_add_executable(PhosphorosComputeModelGrid src/program/ComputeModelGrid.cpp
                         LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling)
 
-elements_add_executable(PhosphorosFitTemplates src/program/FitTemplates.cpp
+elements_add_executable(PhosphorosComputeRedshifts src/program/ComputeRedshifts.cpp
                         LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling PhzLikelihood PhzOutput)
 
-elements_add_executable(PhosphorosDeriveZeroPoints src/program/DeriveZeroPoints.cpp
+elements_add_executable(PhosphorosComputePhotometricCorrections src/program/ComputePhotometricCorrections.cpp
                         LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzPhotometricCorrection)
-                        
+
 elements_install_conf_files()

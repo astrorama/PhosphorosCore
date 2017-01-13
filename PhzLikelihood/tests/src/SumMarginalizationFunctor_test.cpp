@@ -48,7 +48,7 @@ BOOST_FIXTURE_TEST_CASE(ZAxisMarginalization, SumMarginalizationFunctor_Fixture)
   BOOST_CHECK_EQUAL(axis.name(), "Z");
   BOOST_CHECK_EQUAL_COLLECTIONS(axis.begin(), axis.end(), z_values.begin(), z_values.end());
   // Check that the calculated node values are correct
-  std::vector<double> expected_pdf {0., 0.8, 1.6, 3.2, 4.};
+  std::vector<double> expected_pdf {0., 2., 4., 8., 10.};
   BOOST_CHECK_EQUAL(pdf.size(), expected_pdf.size());
   for (size_t i=0; i<pdf.size(); ++i) {
     BOOST_CHECK_CLOSE(pdf(i), expected_pdf[i], tolerance);
@@ -78,8 +78,7 @@ BOOST_FIXTURE_TEST_CASE(EbvAxisMarginalization, SumMarginalizationFunctor_Fixtur
   BOOST_CHECK_EQUAL(axis.name(), "E(B-V)");
   BOOST_CHECK_EQUAL_COLLECTIONS(axis.begin(), axis.end(), ebv_values.begin(), ebv_values.end());
   // Check that the calculated node values are correct
-//  std::vector<double> expected_pdf {0., 2., 4., 8., 10.};
-  std::vector<double> expected_pdf {0., 8., 24., 32., 40.};
+  std::vector<double> expected_pdf {0., .2, .6, .8, 1.};
   BOOST_CHECK_EQUAL(pdf.size(), expected_pdf.size());
   for (size_t i=0; i<pdf.size(); ++i) {
     BOOST_CHECK_CLOSE(pdf(i), expected_pdf[i], tolerance);

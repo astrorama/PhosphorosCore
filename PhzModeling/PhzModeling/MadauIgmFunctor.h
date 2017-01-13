@@ -1,14 +1,12 @@
 /** 
- * @file IgmAbsorptionFunctor.h
- * @date March 16, 2015
+ * @file MadauNewIgmFunctor.h
+ * @date April 27, 2015
  * @author Nikolaos Apostolakos
  */
 
 #ifndef PHZMODELING_MADAUIGMFUNCTOR_H
 #define	PHZMODELING_MADAUIGMFUNCTOR_H
 
-#include <vector>
-#include <map>
 #include "XYDataset/XYDataset.h"
 
 namespace Euclid {
@@ -21,11 +19,6 @@ public:
   
   XYDataset::XYDataset operator()(const XYDataset::XYDataset& sed,
                                           double z) const;
-  
-private:
-  
-  mutable std::map<double, double> m_da_cache {};
-  mutable std::map<double, double> m_db_cache {};
   
 };
 

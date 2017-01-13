@@ -6,73 +6,124 @@
 
 #include <string>
 #include <vector>
-#include <iostream>
+#include <map>
+#include <algorithm>
+#include <unordered_set>
+
 #include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Logging.h"
+
 #include "XYDataset/AsciiParser.h"
 #include "XYDataset/FileSystemProvider.h"
 #include "PhzConfiguration/SedConfiguration.h"
+#include "PhzConfiguration/ProgramOptionsHelper.h"
+#include <iostream>
 
 namespace po = boost::program_options;
 
 namespace Euclid {
 namespace PhzConfiguration {
 
+static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
+
+static const std::string SED_GROUP {"sed-group"};
+static const std::string SED_EXCLUDE {"sed-exclude"};
+static const std::string SED_NAME {"sed-name"};
+
 po::options_description SedConfiguration::getProgramOptions() {
-  po::options_description options {"Photometric sed options"};
+  po::options_description options {"SED templates options"};
   options.add_options()
-    ("sed-root-path", po::value<std::string>(),
-        "The directory containing the sed datasets, organized in folders")
-    ("sed-group", po::value<std::vector<std::string>>(),
+    (SED_GROUP.c_str(), po::value<std::vector<std::string>>(),
         "Use all the seds in the given group and subgroups")
-    ("sed-exclude", po::value<std::vector<std::string>>(),
+    ((SED_GROUP+"-*").c_str(), po::value<std::vector<std::string>>(),
+        ("The same as "+SED_GROUP+" but for a specific parameter space region").c_str())
+    (SED_EXCLUDE.c_str(), po::value<std::vector<std::string>>(),
         "Exclude a sed name")
-    ("sed-name", po::value<std::vector<std::string>>(),
-        "A single sed name");
-  return options;
+    ((SED_EXCLUDE+"-*").c_str(), po::value<std::vector<std::string>>(),
+        ("The same as "+SED_EXCLUDE+" but for a specific parameter space region").c_str())
+    (SED_NAME.c_str(), po::value<std::vector<std::string>>(),
+        "A single sed name")
+    ((SED_NAME+"-*").c_str(), po::value<std::vector<std::string>>(),
+        ("The same as "+SED_NAME+" but for a specific parameter space region").c_str());
+  
+  return merge(options)
+              (PhosphorosPathConfiguration::getProgramOptions());
 }
 
-std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> SedConfiguration::getSedDatasetProvider() {
-  if (!m_options["sed-root-path"].empty()) {
-    std::string path = m_options["sed-root-path"].as<std::string>();
-    std::unique_ptr<Euclid::XYDataset::FileParser> file_parser {new Euclid::XYDataset::AsciiParser{}};
-    return std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> {
-      new Euclid::XYDataset::FileSystemProvider{path, std::move(file_parser)}
-    };
-  }
-  throw Elements::Exception {"Missing or unknown sed dataset provider options : <sed-root-path>"};
+SedConfiguration::SedConfiguration(const std::map<std::string, po::variable_value>& options)
+          : PhosphorosPathConfiguration(options) {
+  m_options = options;
 }
 
-std::vector<Euclid::XYDataset::QualifiedName> SedConfiguration::getSedList() {
+std::unique_ptr<XYDataset::XYDatasetProvider> SedConfiguration::getSedDatasetProvider() {
+  auto path = getAuxDataDir() / "SEDs";
+  std::unique_ptr<XYDataset::FileParser> file_parser {new XYDataset::AsciiParser{}};
+  return std::unique_ptr<XYDataset::XYDatasetProvider> {
+    new XYDataset::FileSystemProvider{path.string(), std::move(file_parser)}
+  };
+}
+
+static std::vector<XYDataset::QualifiedName> getRegionSedList(
+                       const std::string& region_name,
+                       const std::map<std::string, po::variable_value>& options,
+                       XYDataset::XYDatasetProvider& provider) {
+  // Get the postfix for the option names
+  std::string postfix = region_name.empty() ? "" : "-"+ region_name;
+  // For final result
+  std::vector<XYDataset::QualifiedName> selected {};
   // We use a set to avoid duplicate entries
-  std::set<Euclid::XYDataset::QualifiedName, XYDataset::QualifiedName::AlphabeticalComparator> selected {};
-  if (!m_options["sed-group"].empty()) {
-    auto provider = getSedDatasetProvider();
-    auto group_list = m_options["sed-group"].as<std::vector<std::string>>();
-    for (auto& group : group_list) {
-      for (auto& name : provider->listContents(group)) {
-        selected.insert(name);
+  std::unordered_set<XYDataset::QualifiedName> exclude_set {};
+
+  // Remove sed-exclude if any
+  if (options.count(SED_EXCLUDE+postfix) > 0) {
+      auto name_list = options.at(SED_EXCLUDE+postfix).as<std::vector<std::string>>();
+      for (auto& name : name_list) {
+        exclude_set.emplace(name);
+      }
+    }
+
+  if (options.count(SED_GROUP+postfix) > 0) {
+    auto group_list = options.at(SED_GROUP+postfix).as<std::vector<std::string>>();
+    for (auto& group_name : group_list) {
+      if (group_name.empty()) {
+        logger.warn() << "SED group : \"" << group_name << "\" is empty!";
+      }
+      for (auto& name : provider.listContents(group_name)) {
+        if (exclude_set.find(name) == exclude_set.end()) {
+           exclude_set.emplace(name);
+           selected.push_back(name);
+        }
       }
     }
   }
   // Add sed-name if any
-  if (!m_options["sed-name"].empty()) {
-    auto name_list    = m_options["sed-name"].as<std::vector<std::string>>();
+  if (options.count(SED_NAME+postfix) > 0) {
+    auto name_list = options.at(SED_NAME+postfix).as<std::vector<std::string>>();
     for (auto& name : name_list) {
-      selected.insert(Euclid::XYDataset::QualifiedName{name});
+      if (exclude_set.find(name) == exclude_set.end()) {
+         exclude_set.emplace(name);
+         selected.emplace_back(name);
+      }
     }
   }
-  // Remove sed-exclude if any
-  if (!m_options["sed-exclude"].empty()) {
-    auto name_list = m_options["sed-exclude"].as<std::vector<std::string>>();
-    for (auto& name : name_list) {
-      selected.erase(Euclid::XYDataset::QualifiedName{name});
-    }
-  }
+
   if (selected.empty()) {
-    throw Elements::Exception() << "Empty sed list";
+    throw Elements::Exception() << "Empty sed list for parameter space region "
+                                << "with name \"" + region_name + "\"";
   }
-  return std::vector<Euclid::XYDataset::QualifiedName> {selected.begin(), selected.end()};
+  return selected;
 }
+
+std::map<std::string, std::vector<XYDataset::QualifiedName>> SedConfiguration::getSedList() {
+  auto region_name_list = findWildcardOptions({SED_NAME, SED_GROUP, SED_EXCLUDE}, m_options);
+  std::map<std::string, std::vector<XYDataset::QualifiedName>> result {};
+  auto provider = getSedDatasetProvider();
+  for (auto& region_name : region_name_list) {
+    result[region_name] = getRegionSedList(region_name, m_options, *provider);
+  }
+  return result;
+}
+
 
 }
 }

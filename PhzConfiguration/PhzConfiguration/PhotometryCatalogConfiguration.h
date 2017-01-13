@@ -32,10 +32,10 @@ public:
    *
    * @details
    * These options include all the options defined by the CatalogConfiguration
-   * class, with the extra option \a filter-name-mapping. This option is a
-   * vector of strings with elements that do the mapping between the filter
-   * qualified names and the column names with the flux and error values,
-   * separated with spaces.
+   * class, with the extra options
+   * - missing-photometry-flag : The flux value to indicate missing photometry data
+   * - filter-mapping-file : The file containing the catalog columns mapping
+   * - exclude-filter : The photometries to ignore
    *
    * @return A boost::program_options::options_description object describing
    * the program options
@@ -48,15 +48,24 @@ public:
    * options
    *
    * @details
-   * If no filter mapping is provided or if any of the filter mapping does not
-   * follow the format of three space separated strings an exception is thrown.
+   * If the filter-mapping-file is a relative path, it is relative to the
+   * `INTERMEDIATE_DIR/CATALOG_TYPE` directory. If it is not given at all the
+   * defalut`INTERMEDIATE_DIR/CATALOG_TYPE/filter_mapping.txt` is used.
+   * 
+   * The filter-mapping-file must contain lines which contain three space
+   * separated values, the filter name, the flux column name and the flux error
+   * column name. Comments are allowed with the `#` character.
    *
    * @param options
    *    A map with the options and their values
    * @throws ElementsException
-   *    if the given options do not contain any filter mapping
+   *    if the filter-mapping-file does not exist
    * @throws ElementsException
-   *    if any filter mapping does not follow the format "filter flux_name error_name"
+   *    if the filter-mapping-file does not follow the format "filter flux_name error_name"
+   * @throws ElementsException
+   *    if any of the filters in the exclude-filter list is not in the mapping file
+   * @throws ElementsException
+   *    if the exclusion of filters leads to less than two photometries
    */
   PhotometryCatalogConfiguration(const std::map<std::string,
                               boost::program_options::variable_value>& options);
@@ -65,6 +74,20 @@ public:
   * @brief destructor.
   */
   virtual ~PhotometryCatalogConfiguration()=default;
+  
+  /**
+   * @brief
+   * Returns a list of the filter names for which the photometries will be processed
+   * @details
+   * This list depends on the mapping of the filters in the filter-mapping-file
+   * and the exclude-filter parameter.
+   * @return The list of the photometry filters in the catalog
+   */
+  const std::vector<std::string>& getPhotometryFiltersToProcess();
+  
+private:
+  
+  std::vector<std::string> m_filters;
 
 };
 

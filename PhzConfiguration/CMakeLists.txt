@@ -7,10 +7,11 @@ elements_depends_on_subdirs(PhzOutput)
 elements_depends_on_subdirs(PhzModeling)
 elements_depends_on_subdirs(PhzLikelihood)
 elements_depends_on_subdirs(PhzPhotometricCorrection)
+elements_depends_on_subdirs(PhzUtils)
 
 elements_add_library(PhzConfiguration src/lib/*.cpp
-                     LINK_LIBRARIES  XYDataset PhzDataModel PhzOutput PhzPhotometricCorrection PhzLikelihood PhzModeling
-                     INCLUDE_DIRS XYDataset PhzDataModel
+                     LINK_LIBRARIES  XYDataset PhzDataModel PhzOutput PhzPhotometricCorrection PhzLikelihood PhzModeling PhzUtils
+                     INCLUDE_DIRS XYDataset PhzDataModel PhzUtils
                      PUBLIC_HEADERS PhzConfiguration)
 
 elements_add_unit_test(FilterConfiguration_test tests/src/FilterConfiguration_test.cpp
@@ -20,7 +21,7 @@ elements_add_unit_test(SedConfiguration_test tests/src/SedConfiguration_test.cpp
                        LINK_LIBRARIES XYDataset PhzConfiguration TYPE Boost)
 
 elements_add_unit_test(RedshiftConfiguration_test tests/src/RedshiftConfiguration_test.cpp
-                       LINK_LIBRARIES XYDataset PhzConfiguration TYPE Boost)
+                       LINK_LIBRARIES XYDataset PhzConfiguration  TYPE Boost)
 
 elements_add_unit_test(ReddeningConfiguration_test tests/src/ReddeningConfiguration_test.cpp
                        LINK_LIBRARIES XYDataset PhzConfiguration TYPE Boost)
@@ -28,8 +29,11 @@ elements_add_unit_test(ReddeningConfiguration_test tests/src/ReddeningConfigurat
 elements_add_unit_test(ParameterSpaceConfiguration_test tests/src/ParameterSpaceConfiguration_test.cpp
                        LINK_LIBRARIES XYDataset PhzConfiguration TYPE Boost)
 
-elements_add_unit_test(BuildTemplatesConfiguration_test tests/src/BuildTemplatesConfiguration_test.cpp
-                       LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration TYPE Boost)
+elements_add_unit_test(ComputeModelGridConfiguration_test tests/src/ComputeModelGridConfiguration_test.cpp
+                       LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration PhzUtils TYPE Boost)
+
+elements_add_unit_test(ComputeRedshiftsConfiguration_test tests/src/ComputeRedshiftsConfiguration_test.cpp
+                       LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration PhzUtils TYPE Boost)
 
 elements_add_unit_test(PhotometryGridConfiguration_test tests/src/PhotometryGridConfiguration_test.cpp
                        LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration TYPE Boost)
@@ -40,9 +44,15 @@ elements_add_unit_test(CatalogConfiguration_test tests/src/CatalogConfiguration_
 elements_add_unit_test(SpectroscopicRedshiftCatalogConfiguration_test tests/src/SpectroscopicRedshiftCatalogConfiguration_test.cpp
                        LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration TYPE Boost)
 
-elements_add_unit_test(DeriveZeroPointsConfiguration_test tests/src/DeriveZeroPointsConfiguration_test.cpp
+elements_add_unit_test(ComputePhotometricCorrectionsConfiguration_test tests/src/ComputePhotometricCorrectionsConfiguration_test.cpp
                        LINK_LIBRARIES PhzDataModel PhzConfiguration TYPE Boost)
                        
 elements_add_unit_test(PhotometricCorrectionConfiguration_test tests/src/PhotometricCorrectionConfiguration_test.cpp
                        LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration TYPE Boost)
+                       
+elements_add_unit_test(PhosphorosPathConfiguration_test tests/src/PhosphorosPathConfiguration_test.cpp
+                       LINK_LIBRARIES PhzConfiguration TYPE Boost)
+                       
+elements_add_unit_test(CatalogTypeConfiguration_test tests/src/CatalogTypeConfiguration_test.cpp
+                       LINK_LIBRARIES PhzConfiguration TYPE Boost)
                        

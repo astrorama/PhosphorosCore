@@ -14,6 +14,8 @@
 #include "SourceCatalog/AttributeFromRow.h"
 #include "SourceCatalog/Catalog.h"
 #include "Table/Table.h"
+#include "PhzConfiguration/CatalogTypeConfiguration.h"
+#include "PhzConfiguration/PhosphorosPathConfiguration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -47,7 +49,8 @@ namespace PhzConfiguration {
  * Note that the subclasses are aware only of the Table::Table object and that
  * the actual format the catalog is stored is abstracted by the CatalogConfiguration.
  */
-class CatalogConfiguration {
+class CatalogConfiguration : public virtual PhosphorosPathConfiguration,
+                             public virtual CatalogTypeConfiguration {
 
 public:
 
@@ -72,6 +75,7 @@ public:
    * Constructs a new CatalogConfiguration instance, for the given options
    * @details
    * The option input-catalog-file is obligatory and it must be an existing file.
+   * If it is a relative path, it is relative to the CATALOGS_DIR/CATALOG_TYPE dir.
    * The option input-catalog-format is optional and defaults to automatically
    * detect the format of the file. The parameters source-id-column-name and
    * source-id-column-index are mutually exclusive and if are both missing they

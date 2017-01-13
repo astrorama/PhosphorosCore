@@ -19,6 +19,7 @@ struct ResultType {
   ResultType(const SourceCatalog::Source& source,
              SourcePhzFunctor::result_type results)
         : source(source), results(std::move(results)) { }
+  ResultType(ResultType&&) = default;
   const SourceCatalog::Source& source;
   SourcePhzFunctor::result_type results;
 };
@@ -54,18 +55,24 @@ private:
       for (size_t i=0; i<pdf.size(); ++i) {
         pdf_copy(i) = pdf(i);
       }
-      auto& likelihood = std::get<2>(results);
-      PhzDataModel::LikelihoodGrid likelihood_copy {likelihood.getAxesTuple()};
-      auto likelihood_iter = likelihood.begin();
-      auto likelihood_copy_iter = likelihood_copy.begin();
-      for (; likelihood_iter!=likelihood.end(); ++likelihood_iter, ++likelihood_copy_iter) {
-        *likelihood_copy_iter = *likelihood_iter;
+      auto& posteriors_map = std::get<2>(results);
+      std::map<std::string, PhzDataModel::LikelihoodGrid> posteriors_map_copy {};
+      for (auto& pair : posteriors_map) {
+        PhzDataModel::LikelihoodGrid posterior_copy {pair.second.getAxesTuple()};
+        auto posterior_iter = pair.second.begin();
+        auto posterior_copy_iter = posterior_copy.begin();
+        for (; posterior_iter!=pair.second.end(); ++posterior_iter, ++posterior_copy_iter) {
+          *posterior_copy_iter = *posterior_iter;
+        }
+        posteriors_map_copy.emplace(std::make_pair(pair.first, std::move(posterior_copy)));
       }
       PhzOutput::OutputHandler::result_type results_copy {
         std::get<0>(results),
         std::move(pdf_copy),
-        std::move(likelihood_copy),
-        std::get<3>(results)
+        std::move(posteriors_map_copy),
+        std::get<3>(results),
+        std::get<4>(results),
+        std::get<5>(results)
       };
       m_result_vector.push_back(ResultType{source, std::move(results_copy)});
       ++m_progress;

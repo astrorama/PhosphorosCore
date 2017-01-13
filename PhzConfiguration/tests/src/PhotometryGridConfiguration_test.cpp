@@ -20,6 +20,7 @@
 
 struct PhotometryGridConfiguration_Fixture {
 
+  const std::string MODEL_GRID_FILE {"model-grid-file"};
 
   PhotometryGridConfiguration_Fixture() {
 
@@ -48,7 +49,7 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, PhotometryGridConfigura
   auto option_desc = Euclid::PhzConfiguration::PhotometryGridConfiguration::getProgramOptions();
   const boost::program_options::option_description* desc{};
 
-  desc = option_desc.find_nothrow("photometry-grid-file", false);
+  desc = option_desc.find_nothrow(MODEL_GRID_FILE, false);
   BOOST_CHECK(desc != nullptr);
 
 }

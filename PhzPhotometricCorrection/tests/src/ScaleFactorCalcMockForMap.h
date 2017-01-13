@@ -9,8 +9,9 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
-#include "EnableGMock.h"
+#include "ElementsKernel/EnableGMock.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
+#include "PhzPhotometricCorrection/CalculateScaleFactorMap.h"
 
 using namespace testing;
 
@@ -28,7 +29,18 @@ public:
   typedef SourceCatalog::Photometry::const_iterator phot_iter;
 
   MOCK_METHOD3(FCall, double(phot_iter source_begin, phot_iter source_end, phot_iter model_begin));
-
+  
+  // The following returns a lambda object, which can be copied or moved, to be
+  // used when these actions are needed (the mock instance does not support them). Note
+  // that this object is valid only as long as the mock object is not deleted.
+  PhzPhotometricCorrection::CalculateScaleFactorMap::ScaleFactorCalc getFunctorObject() {
+    return [=](SourceCatalog::Photometry::const_iterator source_begin,
+               SourceCatalog::Photometry::const_iterator source_end,
+               SourceCatalog::Photometry::const_iterator model_begin) {
+      return this->FCall(source_begin, source_end, model_begin);
+    };
+  }
+  
 };
 
 } // end of namespace Euclid

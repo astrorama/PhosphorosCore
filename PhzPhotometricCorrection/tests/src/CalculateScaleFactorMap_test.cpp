@@ -108,9 +108,7 @@ BOOST_FIXTURE_TEST_CASE(Functional_call_test, CalculateScaleFactorMap_Fixture) {
        )).WillOnce(Return(2));
   }
 
-  CalculateScaleFactorMap::ScaleFactorCalc function =  std::bind(&ScaleFactorCalcMockForMap::FCall, &functorMock,_1,_2,_3);
-
-  auto functor = CalculateScaleFactorMap(function);
+  auto functor = CalculateScaleFactorMap(functorMock.getFunctorObject());
   auto scale = functor(m_catalog.begin(),m_catalog.end(),model_map);
 }
 

@@ -12,7 +12,9 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
+#include "PhzConfiguration/PhotometryCatalogConfiguration.h"
 #include "PhzConfiguration/PhotometricCorrectionConfiguration.h"
+#include "PhzConfiguration/ProgramOptionsHelper.h"
 
 using boost::regex;
 using boost::regex_match;
@@ -26,47 +28,70 @@ namespace PhzConfiguration {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
+static const std::string PHOTOMETRIC_CORRECTION_FILE {"photometric-correction-file"};
+static const std::string ENABLE_PHOTOMETRIC_CORRECTION {"enable-photometric-correction"};
+
 po::options_description PhotometricCorrectionConfiguration::getProgramOptions() {
   po::options_description options {"Photometric Correction options"};
   options.add_options()
-    ("photometric-correction-file", po::value<std::string>(), "The full path of the photometric correction file");
-  return options;
+    (PHOTOMETRIC_CORRECTION_FILE.c_str(), po::value<std::string>(),
+      "The path of the photometric correction file")
+    (ENABLE_PHOTOMETRIC_CORRECTION.c_str(), po::value<std::string>()->default_value("NO"),
+      "The flag to enable photometric correction usage or not. One of NO (default) or YES");
+  return merge(options)
+              (PhosphorosPathConfiguration::getProgramOptions())
+              (CatalogTypeConfiguration::getProgramOptions());
+}
+
+PhotometricCorrectionConfiguration::PhotometricCorrectionConfiguration(const std::map<std::string, po::variable_value>& options)
+            : PhosphorosPathConfiguration(options), CatalogTypeConfiguration(options) {
+  m_options = options;
+}
+
+
+static fs::path getFileFromOptions(const std::map<std::string, po::variable_value>& options,
+                                   const fs::path& intermediate_dir, const std::string& catalog_type) {
+  fs::path result = intermediate_dir / catalog_type / "photometric_corrections.txt";
+  if (options.count(PHOTOMETRIC_CORRECTION_FILE) > 0) {
+    fs::path path {options.at(PHOTOMETRIC_CORRECTION_FILE).as<std::string>()};
+    if (path.is_absolute()) {
+      result = path;
+    } else {
+      result = intermediate_dir / catalog_type / path;
+    }
+  }
+  return result;
 }
 
 PhzDataModel::PhotometricCorrectionMap PhotometricCorrectionConfiguration::getPhotometricCorrectionMap() {
 
- PhzDataModel::PhotometricCorrectionMap result {};
- std::string file_option{"photometric-correction-file"};
+  PhzDataModel::PhotometricCorrectionMap result{};
 
- // Read correction map from an ASCII file otherwise set default values
- if (!m_options[file_option].empty()) {
-	 // Check the file exist
-	 auto correction_file = m_options[file_option].as<std::string>();
-	 if (!fs::exists(correction_file)) {
-	   logger.error() << "File " << correction_file << " not found";
-	   throw Elements::Exception() << "Photometric Correction file " << correction_file << " does not exist";
-	 }
-	 // Read the correction file(ASCII type)
-	 std::ifstream in {correction_file};
-	 result = PhzDataModel::readPhotometricCorrectionMap(in);
- }
- else {
-  std::vector<std::string> filter_names {};
-  auto mapping_iter = m_options.find("filter-name-mapping");
-  if (mapping_iter != m_options.end()) {
-    for (auto& filter_mapping_option : mapping_iter->second.as<std::vector<std::string>>()) {
-      smatch match_res;
-      regex expr {"\\s*([^\\s]+)\\s+[^\\s]+\\s+[^\\s]+\\s*"};
-      if (regex_match(filter_mapping_option, match_res, expr)) {
-        filter_names.emplace_back(match_res.str(1));
-      }
+  // Read correction map from an ASCII file otherwise set default values
+  std::string flag = m_options.count(ENABLE_PHOTOMETRIC_CORRECTION) > 0
+                     ? m_options.at(ENABLE_PHOTOMETRIC_CORRECTION).as<std::string>()
+                     : "NO";
+  if (flag == "YES") {
+    // Check the file exist
+    auto correction_file = getFileFromOptions(m_options, getIntermediateDir(), getCatalogType()).string();
+    if (!fs::exists(correction_file)) {
+      logger.error() << "File " << correction_file << " not found";
+      throw Elements::Exception() << "Photometric Correction file (photometric-correction-file option) does not exist : " << correction_file;
     }
-  }
-  for (auto& filter : filter_names) {
-    result[filter] = 1.;
-  }
+    // Read the correction file(ASCII type)
+    std::ifstream in{correction_file};
+    result = PhzDataModel::readPhotometricCorrectionMap(in);
+  } else if (flag == "NO") {
+    PhotometryCatalogConfiguration phot_cat_conf{m_options};
+    auto filter_names = phot_cat_conf.getPhotometryFiltersToProcess();
+    for (auto& filter : filter_names) {
+      result[filter] = 1.;
+    }
 
- } //EndOfoption
+  } else {
+    throw Elements::Exception() << "Invalid value for option "
+                                << ENABLE_PHOTOMETRIC_CORRECTION << " : " << flag;
+  }
   return result;
 }
 
