@@ -7,6 +7,7 @@
 #ifndef _PHZCONFIGURATION_CONFIGMANAGER_FIXTURE
 #define _PHZCONFIGURATION_CONFIGMANAGER_FIXTURE
 
+#include <iostream>
 #include <chrono>
 #include "Configuration/ConfigManager.h"
 #include "Configuration/Utils.h"
@@ -17,6 +18,28 @@ struct ConfigManager_fixture {
   
   Euclid::Configuration::ConfigManager& config_manager = 
                       Euclid::Configuration::ConfigManager::getInstance(timestamp);
+  
+  template <typename T>
+  std::map<std::string, boost::program_options::variable_value> registerConfigAndGetDefaultOptionsMap(bool print_required=false) {
+    config_manager.registerConfiguration<T>();
+    auto options = config_manager.closeRegistration();
+    
+    if (print_required) {
+      std::cout << "Required options (must be set for tests):\n";
+      for (auto& o : options.options()) {
+        if (o->semantic()->is_required()) {
+          std::cout << "  " << o->long_name() << '\n';
+        }
+      }
+    }
+    
+    boost::program_options::variables_map map {};
+    auto parsed = boost::program_options::command_line_parser({0}, 0)
+                        .options(options).run();
+    boost::program_options::store(parsed, map);
+    
+    return map;
+  }
  
 };
 

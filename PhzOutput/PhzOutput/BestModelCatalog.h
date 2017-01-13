@@ -29,7 +29,7 @@ public:
   virtual ~BestModelCatalog();
   
   void handleSourceOutput(const SourceCatalog::Source& source,
-                          const result_type& results);
+                          const PhzDataModel::SourceResults& results);
   
 private:
   
@@ -43,7 +43,7 @@ private:
       Table::ColumnInfo::info_type("E(B-V)", typeid(double)),
       Table::ColumnInfo::info_type("Z", typeid(double)),
       Table::ColumnInfo::info_type("Scale", typeid(double)),
-      Table::ColumnInfo::info_type("ChiSquare", typeid(double)),
+      Table::ColumnInfo::info_type("Posterior-Log", typeid(double)),
       Table::ColumnInfo::info_type("1DPDF-Peak-Z", typeid(double))
     }}};
   std::vector<Table::Row> m_row_list;

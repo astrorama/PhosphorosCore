@@ -38,13 +38,24 @@ namespace PhzLikelihood {
 
 /**
  * @class VolumePrior
- * @brief
- *
+ * @brief Class which implements a prior for compensating the volume of the
+ * universe at a specific redshift
  */
 class VolumePrior {
 
 public:
  
+  /**
+   * @brief Constructs a new instance of VolumePrior
+   * @details
+   * This prior is implemented by using the dimensionless comoving volume element.
+   * Because this computation is expensive, this constructor receives as parameter
+   * the expected redshift values and pre-computes the prior values.
+   * @param cosmology
+   *    The cosmology to be used for distance computations
+   * @param expected_redshifts
+   *    The redshifts for which the prior will be precomputed
+   */
   VolumePrior(const PhysicsUtils::CosmologicalParameters& cosmology,
               const std::vector<double>& expected_redshifts);
 
@@ -53,10 +64,29 @@ public:
    */
   virtual ~VolumePrior() = default;
 
-void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
-                const SourceCatalog::Photometry& sourcePhotometry,
-                const PhzDataModel::PhotometryGrid& modelGrid,
-                const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const;
+  /**
+   * @brief Applies the volume prior to a likelihood grid
+   * @details
+   * The volume prior is applied by multiplying each likelihood cell with the
+   * corresponding dimensionless comoving volume element for its redshift. The
+   * values used are the ones precomputed by the constructor, which is done for
+   * optimization.
+   * @param likelihoodGrid
+   *    The grid to apply the prior on
+   * @param sourcePhotometry
+   *    This parameter is not used by this prior
+   * @param modelGrid
+   *    This parameter is not used by this prior
+   * @param scaleFactorGrid
+   *    This parameter is not used by this prior
+   * @throws std::out_of_range
+   *    If the given likelihood grid Z axis contains knots which are not included
+   *    the the expected_redshifts parameter of the constructor
+   */
+  void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
+                  const SourceCatalog::Photometry& sourcePhotometry,
+                  const PhzDataModel::PhotometryGrid& modelGrid,
+                  const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const;
 
 private:
   

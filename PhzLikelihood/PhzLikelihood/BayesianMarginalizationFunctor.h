@@ -11,6 +11,7 @@
 #include <map>
 #include <vector>
 #include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/PhzModel.h"
 #include "PhzLikelihood/NumericalAxisCorrection.h"
 #include "PhzLikelihood/GroupedAxisCorrection.h"
 #include "PhzDataModel/Pdf1D.h"
@@ -18,47 +19,31 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
-class BayesianMarginalizationFunctor_ {
+class BayesianMarginalizationFunctor {
   
 public:
   
   using AxisCorrection = std::function<void(PhzDataModel::LikelihoodGrid& likelihood_grid)>;
   
+  BayesianMarginalizationFunctor();
+  
   template <int I>
-  void setAsNumericalAxis() {
-    m_numerical_axes_corr[I] = NumericalAxisCorrection<I> {};
+  void setArithmeticAxisAsNotNumerical() {
+    m_numerical_axes_corr.erase(I);
   }
   
-  void addCorrection(AxisCorrection correction) {
-    m_other_axes_corr.emplace_back(std::move(correction));
+  void addCorrection(int axis, AxisCorrection correction) {
+    m_custom_axes_corr[axis].emplace_back(std::move(correction));
   }
 
-  PhzDataModel::Pdf1D operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const;
+  PhzDataModel::Pdf1DZ operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const;
   
 private:
   
   // For the numerical corrections we use a map to guarantee that we do it only
   // once per axis
   std::map<int, AxisCorrection> m_numerical_axes_corr;
-  std::vector<AxisCorrection> m_other_axes_corr;
-  
-};
-
-class BayesianMarginalizationFunctor {
-
-public:
-  
-  using SedAxisCorrection = GroupedAxisCorrection<PhzDataModel::ModelParameter::SED>;
-
-  BayesianMarginalizationFunctor(){};
-
-  BayesianMarginalizationFunctor(std::shared_ptr<SedAxisCorrection> sed_correction_ptr);
-
-  PhzDataModel::Pdf1D operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const;
-  
-private:
-  
-  std::shared_ptr<SedAxisCorrection> m_sed_correction_ptr = nullptr;
+  std::map<int, std::vector<AxisCorrection>> m_custom_axes_corr;
 
 };
 

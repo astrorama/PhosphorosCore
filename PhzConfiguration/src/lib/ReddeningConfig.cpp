@@ -30,6 +30,7 @@
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/ProgramOptionsHelper.h"
 #include "CheckString.h"
+#include "RangeHelper.h"
 
 
 namespace po = boost::program_options;
@@ -135,32 +136,39 @@ static std::vector<double> getRegionEbvList(const std::string& region_name,
   // A set is used to avoid duplicates and to order the different entries
   std::set<double> selected {};
   if (options.count(EBV_RANGE+postfix) > 0) {
-    auto ranges_list =options.at(EBV_RANGE+postfix).as<std::vector<std::string>>();
-    for (auto& range_string : ranges_list) {
-      checkRangeString(EBV_RANGE+postfix, range_string);
-      std::stringstream range_stream {range_string};
+    std::vector<std::tuple<double, double, double>> ranges_list {};
+    try {
+      ranges_list = parseRanges(options.at(EBV_RANGE+postfix).as<std::vector<std::string>>());
+    } catch (Elements::Exception ex) {
+      throw Elements::Exception() << "Invalid " << (EBV_RANGE+postfix) << " option : " << ex.what();
+    }
+    
+    for (auto& range : ranges_list) {
       double min {};
       double max {};
       double step {};
-      std::string dummy{};
-      range_stream >> min >> max >> step >> dummy;
-      if (!dummy.empty()) {
-        throw Elements::Exception() <<"Invalid character(s) for the " << (EBV_RANGE+postfix) << " "
-                                    << "option from here : " << dummy;
+      std::tie(min, max,step) = range;
+      
+      if (!selected.empty() && *selected.rbegin() > min) {
+        throw Elements::Exception() << "Overlapping range for " << (EBV_RANGE+postfix)
+                                    << " option : " << min << ' ' << max << ' ' << step;
       }
-      // Check the range is allowed before inserting
-      if ( (max < min) || (!selected.empty() && (*--selected.end() > min))) {
-        throw Elements::Exception()<< "Invalid range(s) for " << (EBV_RANGE+postfix) << " option : \""
-                                  <<range_stream.str()<<"\"";
-      }
-      // Insert value in the set
+      
       for (double value=min; value<=max; value+=step) {
         selected.insert(value);
+      }
+      // If the last value we reached using the step is less than 1% of the step
+      // away from the max, we remove it, because we add the max value anyways
+      auto last_iter = selected.end();
+      --last_iter;
+      if (max - *last_iter < step/100) {
+        selected.erase(last_iter);
       }
       // We always add the max, for the case the step was not reaching it exactly
       selected.insert(max);
     }
   }
+  
   // Add the ebv-value option
   if (options.count(EBV_VALUE+postfix) > 0) {
     auto values_list =options.at(EBV_VALUE+postfix).as<std::vector<std::string>>();

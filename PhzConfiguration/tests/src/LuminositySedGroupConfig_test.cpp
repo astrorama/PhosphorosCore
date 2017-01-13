@@ -22,28 +22,65 @@
  * @author Pierre Dubath
  */
 
+#include <fstream>
 #include <boost/test/unit_test.hpp>
-
+#include <boost/filesystem.hpp>
 #include "PhzConfiguration/LuminositySedGroupConfig.h"
-
+#include "PhzDataModel/PhotometryGridInfo.h"
+#include "PhzDataModel/serialization/PhotometryGridInfo.h"
+#include "ElementsKernel/Temporary.h"
 #include "ElementsKernel/Exception.h"
-
 #include "ConfigManager_fixture.h"
 
-
+using namespace Euclid;
 using namespace Euclid::PhzConfiguration;
 using namespace Euclid::Configuration;
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
+static const std::string CATALOG_TYPE { "catalog-type" };
+static const std::string MODEL_GRID_FILE { "model-grid-file" };
 static const std::string LUMINOSITY_SED_GROUP { "luminosity-sed-group" };
 
 struct LuminositySedGroupConfig_fixture: public ConfigManager_fixture {
-
+  
+  Elements::TempDir temp_dir {};
+  fs::path model_grid_file = temp_dir.path() / "model_grid.dat";
+  
+  std::vector<double> zs {0.};
+  std::vector<double> ebvs {0.};
+  std::vector<Euclid::XYDataset::QualifiedName> red_curves {{"red_curve"}};
+  std::vector<Euclid::XYDataset::QualifiedName> seds {
+    {"sed1"}, {"sed2"}, {"sed3"}, {"group/sed4"}, {"group/sed5"}
+  };
+  PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, red_curves, seds);
+  
+  XYDataset::QualifiedName filter {"filter"};
+  
+  std::map<std::string, PhzDataModel::PhotometryGrid> model_grid_map {};
+  
+  std::map<std::string, po::variable_value> options_map {};
+  
   LuminositySedGroupConfig_fixture() {
-
-  }
-
-  ~LuminositySedGroupConfig_fixture() {
+    
+    options_map = registerConfigAndGetDefaultOptionsMap<LuminositySedGroupConfig>();
+    options_map[CATALOG_TYPE].value() = boost::any{std::string{"CatalogType"}};
+    options_map[MODEL_GRID_FILE].value() = boost::any{model_grid_file.string()};
+    
+    PhzDataModel::PhotometryGrid model_grid {axes};
+    auto filter_ptr = std::make_shared<std::vector<std::string>>();
+    filter_ptr->emplace_back(filter.qualifiedName());
+    for (auto& m : model_grid) {
+      m = Euclid::SourceCatalog::Photometry {filter_ptr, {{0., 0.}}};
+    }
+    model_grid_map.emplace("", std::move(model_grid));
+    
+    std::ofstream out {model_grid_file.string()};
+    boost::archive::binary_oarchive boa {out};
+    PhzDataModel::PhotometryGridInfo info {model_grid_map, "OFF", {}};
+    boa << info;
+    GridContainer::gridBinaryExport(out, model_grid_map.at(""));
+    
   }
 
 };
@@ -54,70 +91,39 @@ BOOST_AUTO_TEST_SUITE (LuminositySedGroupConfig_test)
 
 BOOST_FIXTURE_TEST_CASE(getProgramOptions_function_test, LuminositySedGroupConfig_fixture) {
 
-  // Given
-    config_manager.registerConfiguration<LuminositySedGroupConfig>();
+  // When
+  auto options = config_manager.closeRegistration();
 
-    // When
-    auto options = config_manager.closeRegistration();
-
-    BOOST_CHECK_NO_THROW(options.find((LUMINOSITY_SED_GROUP+"-*").c_str(), false));
+  // Then
+  BOOST_CHECK_NO_THROW(options.find((LUMINOSITY_SED_GROUP+"-*").c_str(), false));
 }
 
+//-----------------------------------------------------------------------------
+
 BOOST_FIXTURE_TEST_CASE(no_option_test, LuminositySedGroupConfig_fixture) {
-
-  // Given
-  config_manager.registerConfiguration<LuminositySedGroupConfig>();
-  config_manager.closeRegistration();
-
-  std::map<std::string, po::variable_value> options_map { };
-
-  // No option: Error
+  
+  // Then
   BOOST_CHECK_THROW(config_manager.initialize(options_map), Elements::Exception);
 }
 
+//-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE(SedGroupManager_test, LuminositySedGroupConfig_fixture) {
-
+  
   // Given
-   config_manager.registerConfiguration<LuminositySedGroupConfig>();
-   config_manager.closeRegistration();
-
-
-  std::map<std::string, po::variable_value> options_map { };
-
-  // 1 Group
-  const std::string name_1 = "name1";
-  const std::string sed_1 = "folder/SED1";
-  const std::string sed_2 = "folder/SED2";
-  const std::string sed_3 = "folder/SED3";
-
-  options_map[LUMINOSITY_SED_GROUP +"-"+ name_1].value() = boost::any(
-      std::string { sed_1 + "," + sed_2 + "," + sed_3 });
-
+  options_map[LUMINOSITY_SED_GROUP +"-name1"].value() = boost::any {std::string{"sed1,sed2"}};
+  options_map[LUMINOSITY_SED_GROUP +"-name2"].value() = boost::any {std::string{"sed3,group"}};
+  
+  // When
   config_manager.initialize(options_map);
   auto& lum_sed_group_manager = config_manager.getConfiguration<LuminositySedGroupConfig>().getLuminositySedGroupManager();
-
-  BOOST_CHECK_EQUAL(lum_sed_group_manager.findGroupContaining(sed_1).first, name_1);
-  BOOST_CHECK_EQUAL(lum_sed_group_manager.findGroupContaining(sed_2).first, name_1);
-  BOOST_CHECK_EQUAL(lum_sed_group_manager.findGroupContaining(sed_3).first, name_1);
-
-  // 2 Group
-  const std::string name_2 = "name2";
-  const std::string sed_4 = "folder/SED4";
-  const std::string sed_5 = "folder/SED5";
-
-  options_map[LUMINOSITY_SED_GROUP  +"-"+  name_2].value() = boost::any(
-      std::string { sed_4 + "," + sed_5 });
-  config_manager.initialize(options_map);
-
-  auto& lum_sed_group_manager2 = config_manager.getConfiguration<LuminositySedGroupConfig>().getLuminositySedGroupManager();
-
-  BOOST_CHECK_EQUAL(lum_sed_group_manager2.findGroupContaining(sed_1).first, name_1);
-  BOOST_CHECK_EQUAL(lum_sed_group_manager2.findGroupContaining(sed_2).first, name_1);
-  BOOST_CHECK_EQUAL(lum_sed_group_manager2.findGroupContaining(sed_3).first, name_1);
-
-  BOOST_CHECK_EQUAL(lum_sed_group_manager2.findGroupContaining(sed_4).first, name_2);
-  BOOST_CHECK_EQUAL(lum_sed_group_manager2.findGroupContaining(sed_5).first, name_2);
+  
+  // Then
+  BOOST_CHECK_EQUAL(lum_sed_group_manager.findGroupContaining({"sed1"}).first, "name1");
+  BOOST_CHECK_EQUAL(lum_sed_group_manager.findGroupContaining({"sed2"}).first, "name1");
+  BOOST_CHECK_EQUAL(lum_sed_group_manager.findGroupContaining({"sed3"}).first, "name2");
+  BOOST_CHECK_EQUAL(lum_sed_group_manager.findGroupContaining({"group/sed4"}).first, "name2");
+  BOOST_CHECK_EQUAL(lum_sed_group_manager.findGroupContaining({"group/sed5"}).first, "name2");
 
 }
 

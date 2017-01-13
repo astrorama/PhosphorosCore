@@ -35,10 +35,10 @@ public:
       }
 
   MOCK_METHOD1(FunctorCall,
-      PhzLikelihood::SourcePhzFunctor::result_type*(const SourceCatalog::Photometry& source_phot));
+      PhzDataModel::SourceResults*(const SourceCatalog::Photometry& source_phot));
 
-  PhzLikelihood::SourcePhzFunctor::result_type operator()(const SourceCatalog::Photometry& source_phot){
-    std::unique_ptr< PhzLikelihood::SourcePhzFunctor::result_type> res(FunctorCall(source_phot));
+  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot){
+    std::unique_ptr< PhzDataModel::SourceResults> res(FunctorCall(source_phot));
     return std::move(*res);
   }
 
@@ -49,14 +49,16 @@ public:
     std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
     posterior_map.emplace(std::make_pair(std::string(""),
               PhzDataModel::LikelihoodGrid(PhzDataModel::createAxesTuple({},{},{},{}))));
+    PhzDataModel::SourceResults result {};
+    result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(m_phot_grid.begin());
+    result.setResult<PhzDataModel::SourceResultType::Z_1D_PDF>(PhzDataModel::Pdf1DZ{GridContainer::GridAxis<double>{"Axis",{}}});
+    result.setResult<PhzDataModel::SourceResultType::REGION_LIKELIHOOD>(std::move(likelihood_map));
+    result.setResult<PhzDataModel::SourceResultType::REGION_POSTERIOR>(std::move(posterior_map));
+    result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>(0);
+    result.setResult<PhzDataModel::SourceResultType::BEST_MODEL_POSTERIOR_LOG>(0);
+    result.setResult<PhzDataModel::SourceResultType::REGION_POSTERIOR_NORM_LOG>(std::map<std::string, double>{});
     EXPECT_CALL(*this, FunctorCall(_)).WillOnce(Return(
-        new PhzLikelihood::SourcePhzFunctor::result_type{
-          m_phot_grid.begin(),
-          PhzDataModel::Pdf1D{GridContainer::GridAxis<double>{"Axis",{}}},
-          std::move(likelihood_map), std::move(posterior_map),
-          0, 0, std::map<std::string, double>{}
-
-        }
+        new PhzDataModel::SourceResults {result}
     ));
   };
 

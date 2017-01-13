@@ -46,7 +46,7 @@ CatalogDirConfig::CatalogDirConfig(long manager_id) : Configuration(manager_id) 
 }
 
 auto CatalogDirConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Phosphoros path options", {
+  return {{"Directory options", {
     {CATALOGS_DIR.c_str(), po::value<std::string>(),
         "The directory containing the catalog files"}
   }}};

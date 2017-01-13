@@ -17,7 +17,7 @@ void ModelFluxAlgorithm::operator()(const XYDataset::XYDataset& model,
     auto filtered_model = m_apply_filter_function(model, filter_info.getRange(), filter_info.getFilter());
 
     flux_iterator->flux = m_integrate_dataset_function(filtered_model, filter_info.getRange()) / filter_info.getNormalization();
-    flux_iterator->flux *= 1E17; // convert erg/s/cm^2 to micro-Jansky
+    flux_iterator->flux *= 1E29; // convert erg/s/cm^2/Hz to micro-Jansky
     flux_iterator->error = 0.;
 
     ++filter_iterator_begin;

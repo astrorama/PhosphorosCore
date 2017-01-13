@@ -44,6 +44,9 @@
 #include "PhzConfiguration/MarginalizationConfig.h"
 #include "PhzConfiguration/VolumePriorConfig.h"
 #include "PhzConfiguration/MultithreadConfig.h"
+#include "PhzConfiguration/AxisFunctionPriorConfig.h"
+#include "PhzConfiguration/AxisWeightPriorConfig.h"
+#include "PhzConfiguration/GenericGridPriorConfig.h"
 #include "PhzOutput/BestModelCatalog.h"
 
 #include "PhzOutput/BestModelCatalog.h"
@@ -90,6 +93,9 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<MarginalizationConfig>();
   declareDependency<VolumePriorConfig>();
   declareDependency<MultithreadConfig>();
+  declareDependency<AxisFunctionPriorConfig>();
+  declareDependency<AxisWeightPriorConfig>();
+  declareDependency<GenericGridPriorConfig>();
 }
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -132,7 +138,7 @@ public:
     m_handlers.emplace_back(std::move(handler));
   }
   void handleSourceOutput(const SourceCatalog::Source& source,
-                                    const result_type& results) override {
+                          const PhzDataModel::SourceResults& results) override {
     for (auto& handler : m_handlers) {
       handler->handleSourceOutput(source, results);
     }
@@ -278,11 +284,17 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
   }
   if (m_likelihood_flag) {
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::LikelihoodHandler<2> {m_out_likelihood_dir.string()}});
+        new PhzOutput::LikelihoodHandler<
+                PhzDataModel::SourceResultType::REGION_LIKELIHOOD,
+                PhzDataModel::SourceResultType::REGION_LIKELIHOOD_NORM_LOG
+        > {m_out_likelihood_dir}});
   }
   if (m_posterior_flag) {
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::LikelihoodHandler<3> {m_out_posterior_dir}});
+        new PhzOutput::LikelihoodHandler<
+                PhzDataModel::SourceResultType::REGION_POSTERIOR,
+                PhzDataModel::SourceResultType::REGION_POSTERIOR_NORM_LOG
+        > {m_out_posterior_dir}});
   }
             
   return output_handler;

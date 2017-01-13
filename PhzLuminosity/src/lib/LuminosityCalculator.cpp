@@ -63,7 +63,7 @@ LuminosityCalculator::LuminosityCalculator(XYDataset::QualifiedName luminosity_f
 double LuminosityCalculator::getLuminosityFromModel(
                       const PhzDataModel::PhotometryGrid::const_iterator& model,
                       double scale_factor, double z) const {
-  
+
   auto band = model->begin();
   std::advance(band, m_luminosity_filter_index);
 
@@ -71,13 +71,17 @@ double LuminosityCalculator::getLuminosityFromModel(
 
   // The flux of the model is scaled according the scale factor and scaled according
   // the zero-point of 3631 Jansky (our flux is in microJansky)
-  double flux = (*band).flux * scale_factor / 3631E6;
+  // The division with (1+z) is done to correct the fact that the flux is expressed
+  // in energy
+  double flux = (*band).flux * scale_factor / 3631E6 / (1+z);
   if (m_in_mag){
     result= -2.5 * std::log10(flux) - m_distance_modulus_map.at(z);
 
   } else {
-    double luminous_distance = m_luminosity_distance_map.at(z)/10.;
-    result= flux * luminous_distance * luminous_distance;
+    double luminous_distance = m_luminosity_distance_map.at(z);// in [pc]
+    // 1[muJy] = 10e-29 [erg/s cm^-2 1/Hz] = 9.521e7 [erg/s pc^⁻2 1/Hz]
+    // 4*Pi[erg/s 1/Hz pc^⁻2]/[muJy] = 1.1965e9
+    result= flux * luminous_distance * luminous_distance * 1.1965e9; // in [erg/s 1/Hz]
   }
 
   return result;

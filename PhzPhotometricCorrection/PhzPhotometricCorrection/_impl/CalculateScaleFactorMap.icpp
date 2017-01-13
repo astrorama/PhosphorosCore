@@ -27,8 +27,12 @@ ScaleFactorMap CalculateScaleFactorMap::operator()(
     const std::map<int64_t, ModelPhotPtr>& model_phot_map) const{
     auto result_map= ScaleFactorMap();
 
-    while (source_begin!=source_end){
+    for (; source_begin!=source_end; ++source_begin) {
       auto source_id = source_begin->getId();
+      // Check that the source is one of the sources we have the best fit models for
+      if (model_phot_map.count(source_id) == 0) {
+        continue;
+      }
       auto source_photometry = source_begin->template getAttribute<SourceCatalog::Photometry>();
       auto model_iterator = model_phot_map.at(source_id)->begin();
 
@@ -38,7 +42,6 @@ ScaleFactorMap CalculateScaleFactorMap::operator()(
           std::move(model_iterator));
 
       result_map.emplace(std::make_pair(source_id, alpha));
-      ++source_begin;
     }
 
     return std::move(result_map);

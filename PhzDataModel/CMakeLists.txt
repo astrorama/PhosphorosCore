@@ -4,12 +4,13 @@ elements_depends_on_subdirs(ElementsKernel)
 elements_depends_on_subdirs(MathUtils)
 elements_depends_on_subdirs(SourceCatalog)
 elements_depends_on_subdirs(XYDataset)
+elements_depends_on_subdirs(GridContainer)
 
 find_package(Boost REQUIRED COMPONENTS serialization)
 
 #===== Libraries ===============================================================
 elements_add_library(PhzDataModel src/lib/*.cpp
-                     LINK_LIBRARIES ${CMAKE_DL_LIBS} Boost ElementsKernel MathUtils XYDataset SourceCatalog
+                     LINK_LIBRARIES ${CMAKE_DL_LIBS} Boost ElementsKernel MathUtils XYDataset SourceCatalog GridContainer
                      INCLUDE_DIRS Boost ElementsKernel MathUtils XYDataset SourceCatalog
                      PUBLIC_HEADERS PhzDataModel)
 
@@ -34,6 +35,9 @@ elements_add_unit_test(QualifiedNameSerialization_test tests/src/serialization/Q
                      LINK_LIBRARIES PhzDataModel
                      TYPE Boost)
 elements_add_unit_test(QualifiedNameGroupManager_test tests/src/QualifiedNameGroupManager_test.cpp 
+                     LINK_LIBRARIES PhzDataModel
+                     TYPE Boost)
+elements_add_unit_test(SourceResults_test tests/src/SourceResults_test.cpp 
                      LINK_LIBRARIES PhzDataModel
                      TYPE Boost)
 

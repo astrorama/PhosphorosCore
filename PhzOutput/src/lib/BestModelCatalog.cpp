@@ -37,18 +37,18 @@ BestModelCatalog::~BestModelCatalog() {
 }
 
 void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
-                                          const result_type& results) {
-  auto& best_model = std::get<0>(results);
+                                          const PhzDataModel::SourceResults& results) {
+  auto& best_model = results.getResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
   auto sed = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
   int64_t sed_index = best_model.axisIndex<PhzDataModel::ModelParameter::SED>() + 1;
   auto reddening_curve = best_model.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>().qualifiedName();
   auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
   auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
-  auto scale = std::get<4>(results);
-  auto likelihood = std::get<5>(results);
-  auto& pdf_1d = std::get<1>(results);
+  auto scale = results.getResult<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>();
+  auto posterior_log = results.getResult<PhzDataModel::SourceResultType::BEST_MODEL_POSTERIOR_LOG>();
+  auto& pdf_1d = results.getResult<PhzDataModel::SourceResultType::Z_1D_PDF>();
   auto pdf_1d_peak_z = std::max_element(pdf_1d.begin(), pdf_1d.end()).axisValue<0>();
-  m_row_list.push_back(Table::Row{{source.getId(), sed, sed_index, reddening_curve, ebv, z, scale, likelihood, pdf_1d_peak_z}, m_column_info});
+  m_row_list.push_back(Table::Row{{source.getId(), sed, sed_index, reddening_curve, ebv, z, scale, posterior_log, pdf_1d_peak_z}, m_column_info});
 }
 
 } // end of namespace PhzOutput

@@ -8,12 +8,13 @@
 #define	PHZOUTPUT_LIKELIHOODHANDLER_H
 
 #include <boost/filesystem.hpp>
+#include "PhzDataModel/SourceResults.h"
 #include "PhzOutput/OutputHandler.h"
 
 namespace Euclid {
 namespace PhzOutput {
 
-template<int TupleIndex>
+template<PhzDataModel::SourceResultType GridMap, PhzDataModel::SourceResultType NormLogMap>
 class LikelihoodHandler : public OutputHandler {
 
 public:
@@ -23,7 +24,7 @@ public:
   virtual ~LikelihoodHandler() = default;
 
   void handleSourceOutput(const SourceCatalog::Source& source,
-                          const result_type& results) override;
+                          const PhzDataModel::SourceResults& results) override;
 
 
 private:

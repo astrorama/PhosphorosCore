@@ -1,0 +1,64 @@
+/*
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment    
+ *  
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free 
+ * Software Foundation; either version 3.0 of the License, or (at your option)  
+ * any later version.  
+ *  
+ * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
+ * details.  
+ *  
+ * You should have received a copy of the GNU Lesser General Public License 
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
+ */
+
+/* 
+ * @file SourceResults.icpp
+ * @author nikoapos
+ */
+
+#include <type_traits>
+#include "ElementsKernel/Exception.h"
+
+namespace Euclid {
+namespace PhzDataModel {
+
+template<SourceResultType T, typename... Args>
+typename SourceResultTypeTraits<T>::type& SourceResults::setResult(Args&&... args) {
+  if (result_map.find(T) != result_map.end()) {
+    throw Elements::Exception() << "SourceResults instance already contains the "
+                  << "result with SourceResultType = " 
+                  << static_cast<std::underlying_type<SourceResultType>::type>(T);
+  }
+  result_map[T] = std::make_shared<typename SourceResultTypeTraits<T>::type>(std::forward<Args>(args)...);
+  return getResult<T>();
+}
+
+template<SourceResultType T>
+const typename SourceResultTypeTraits<T>::type& SourceResults::getResult() const {
+  auto result_iter = result_map.find(T);
+  if (result_iter == result_map.end()) {
+    throw Elements::Exception() << "SourceResults instance does not contain the "
+                  << "result with SourceResultType = " 
+                  << static_cast<std::underlying_type<SourceResultType>::type>(T);
+  }
+  return *boost::any_cast<std::shared_ptr<typename SourceResultTypeTraits<T>::type>>(result_iter->second);
+}
+
+template<SourceResultType T>
+typename SourceResultTypeTraits<T>::type& SourceResults::getResult() {
+  auto result_iter = result_map.find(T);
+  if (result_iter == result_map.end()) {
+    throw Elements::Exception() << "SourceResults instance does not contain the "
+                  << "result with SourceResultType = " 
+                  << static_cast<std::underlying_type<SourceResultType>::type>(T);
+  }
+  return *boost::any_cast<std::shared_ptr<typename SourceResultTypeTraits<T>::type>>(result_iter->second);
+}
+
+} /* namespace PhzDataModel */
+} /* namespace Euclid */

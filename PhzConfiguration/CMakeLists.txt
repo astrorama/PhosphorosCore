@@ -93,9 +93,6 @@ elements_add_unit_test(LikelihoodGridFuncConfig_test tests/src/LikelihoodGridFun
 elements_add_unit_test(LuminosityBandConfig_test tests/src/LuminosityBandConfig_test.cpp 
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
-elements_add_unit_test(ComputeLuminosityModelGridConfig_test tests/src/ComputeLuminosityModelGridConfig_test.cpp 
-                     LINK_LIBRARIES PhzConfiguration
-                     TYPE Boost)
 elements_add_unit_test(LuminosityFunctionConfig_test tests/src/LuminosityFunctionConfig_test.cpp 
                      LINK_LIBRARIES XYDataset MathUtils PhzDataModel PhzLuminosity PhzConfiguration
                      TYPE Boost)
@@ -112,5 +109,17 @@ elements_add_unit_test(VolumePriorConfig_test tests/src/VolumePriorConfig_test.c
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
 elements_add_unit_test(MultithreadConfig_test tests/src/MultithreadConfig_test.cpp 
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
+elements_add_unit_test(AxisFunctionPriorConfig_test tests/src/AxisFunctionPriorConfig_test.cpp 
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
+elements_add_unit_test(AxisFunctionPriorProviderConfig_test tests/src/AxisFunctionPriorProviderConfig_test.cpp 
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
+elements_add_unit_test(AxisWeightPriorConfig_test tests/src/AxisWeightPriorConfig_test.cpp 
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
+elements_add_unit_test(GenericGridPriorConfig_test tests/src/GenericGridPriorConfig_test.cpp 
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)

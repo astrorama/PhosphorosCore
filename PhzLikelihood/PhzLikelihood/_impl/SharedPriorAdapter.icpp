@@ -4,11 +4,16 @@
  * @author Florian Dubath
  */
 
+#include <utility>
 
 namespace Euclid {
 namespace PhzLikelihood {
 
-
+  template<typename Prior>
+  template <typename... PriorArgs>
+  SharedPriorAdapter<Prior> SharedPriorAdapter<Prior>::factory(PriorArgs&&... prior_args) {
+    return std::make_shared<Prior>(std::forward<PriorArgs>(prior_args)...);
+  }
 
   template<typename Prior>
   SharedPriorAdapter<Prior>::SharedPriorAdapter(std::shared_ptr<Prior> prior):m_prior{prior}{}

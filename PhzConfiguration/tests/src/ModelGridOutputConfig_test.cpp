@@ -34,11 +34,13 @@
 
 
 #include "ElementsKernel/Temporary.h"
+#include "GridContainer/serialize.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzConfiguration/ModelGridOutputConfig.h"
 #include "ConfigManager_fixture.h"
 
+using namespace Euclid;
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -189,7 +191,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, ModelGridOutputConfig_fixture) {
   boost::archive::binary_iarchive ia(ifs);
   Euclid::PhzDataModel::PhotometryGridInfo info;
   ia >> info;
-  auto retrieved_grid = Euclid::PhzDataModel::phzGridBinaryImport<Euclid::PhzDataModel::PhotometryCellManager>(ifs);
+  auto retrieved_grid = GridContainer::gridBinaryImport<PhzDataModel::PhotometryGrid>(ifs);
 
   // Then
   BOOST_CHECK_EQUAL("MADAU", info.igm_method);
@@ -237,7 +239,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionRelative_test, ModelGridOutputConfig_fi
   boost::archive::binary_iarchive ia(ifs);
   Euclid::PhzDataModel::PhotometryGridInfo info;
   ia >> info;
-  auto retrieved_grid = Euclid::PhzDataModel::phzGridBinaryImport<Euclid::PhzDataModel::PhotometryCellManager>(ifs);
+  auto retrieved_grid = GridContainer::gridBinaryImport<PhzDataModel::PhotometryGrid>(ifs);
 
   // Then
   BOOST_CHECK_EQUAL("MADAU", info.igm_method);
@@ -283,7 +285,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionDefault_test, ModelGridOutputConfig_fix
   boost::archive::binary_iarchive ia(ifs);
   Euclid::PhzDataModel::PhotometryGridInfo info;
   ia >> info;
-  auto retrieved_grid = Euclid::PhzDataModel::phzGridBinaryImport<Euclid::PhzDataModel::PhotometryCellManager>(ifs);
+  auto retrieved_grid = GridContainer::gridBinaryImport<PhzDataModel::PhotometryGrid>(ifs);
 
   // Then
   BOOST_CHECK_EQUAL("MADAU", info.igm_method);

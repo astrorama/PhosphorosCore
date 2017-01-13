@@ -23,10 +23,32 @@
  */
 
 #include <boost/test/unit_test.hpp>
-
+#include <thread>
+#include "PhzUtils/Multithreading.h"
 #include "PhzConfiguration/MultithreadConfig.h"
+#include "ConfigManager_fixture.h"
 
+using namespace Euclid;
 using namespace Euclid::PhzConfiguration;
+namespace po = boost::program_options;
+
+namespace {
+
+const std::string THREAD_NO {"thread-no"};
+
+}
+
+struct MultithreadConfig_fixture : public ConfigManager_fixture {
+  
+  std::map<std::string, po::variable_value> options_map {};
+  
+  MultithreadConfig_fixture() {
+    
+    options_map = registerConfigAndGetDefaultOptionsMap<MultithreadConfig>();
+    
+  }
+  
+};
 
 //-----------------------------------------------------------------------------
 
@@ -34,9 +56,40 @@ BOOST_AUTO_TEST_SUITE (MultithreadConfig_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( example_test ) {
+BOOST_FIXTURE_TEST_CASE(check_options, MultithreadConfig_fixture) {
+  
+  // When
+  auto options = config_manager.closeRegistration();
+  
+  // Then
+  BOOST_CHECK_NO_THROW(options.find(THREAD_NO, false));
 
-  BOOST_FAIL("!!!! Please implement your tests !!!!");
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(default_value, MultithreadConfig_fixture) {
+  
+  // When
+  config_manager.initialize(options_map);
+  
+  // Then
+  BOOST_CHECK_EQUAL(PhzUtils::getThreadNumber(), std::thread::hardware_concurrency());
+
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(user_value, MultithreadConfig_fixture) {
+  
+  // Given
+  options_map[THREAD_NO].value() = boost::any{2};
+  
+  // When
+  config_manager.initialize(options_map);
+  
+  // Then
+  BOOST_CHECK_EQUAL(PhzUtils::getThreadNumber(), 2);
 
 }
 

@@ -17,23 +17,43 @@
  */  
 
 /**
- * @file tests/src/ComputeLuminosityModelGridConfig_test.cpp
- * @date 11/12/15
+ * @file PhzConfiguration/GenericGridPriorConfig.h
+ * @date 01/22/16
  * @author nikoapos
  */
 
-#include <boost/test/unit_test.hpp>
+#ifndef _PHZCONFIGURATION_GENERICGRIDPRIORCONFIG_H
+#define _PHZCONFIGURATION_GENERICGRIDPRIORCONFIG_H
 
-#include "PhzConfiguration/ComputeLuminosityModelGridConfig.h"
+#include "Configuration/Configuration.h"
 
-using namespace Euclid::PhzConfiguration;
+namespace Euclid {
+namespace PhzConfiguration {
 
-//-----------------------------------------------------------------------------
+/**
+ * @class GenericGridPriorConfig
+ * @brief
+ *
+ */
+class GenericGridPriorConfig : public Configuration::Configuration {
 
-BOOST_AUTO_TEST_SUITE (ComputeLuminosityModelGridConfig_test)
+public:
+  
+  GenericGridPriorConfig(long manager_id);
 
-//-----------------------------------------------------------------------------
+  /**
+   * @brief Destructor
+   */
+  virtual ~GenericGridPriorConfig() = default;
+  
+  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
-BOOST_AUTO_TEST_SUITE_END ()
+  void initialize(const UserValues& args) override;
+
+}; /* End of GenericGridPriorConfig class */
+
+} /* namespace PhzConfiguration */
+} /* namespace Euclid */
 
 
+#endif
