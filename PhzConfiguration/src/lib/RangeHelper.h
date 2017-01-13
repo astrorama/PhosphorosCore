@@ -28,7 +28,14 @@
 #include <tuple>
 #include <string>
 #include <sstream>
-#include <regex>
+//#include <regex>
+//using std::regex;
+//using std::regex_match;
+//using std::smatch;
+#include <boost/regex.hpp>
+using boost::regex;
+using boost::regex_match;
+using boost::smatch;
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -58,7 +65,7 @@ static std::vector<std::tuple<double, double, double>> parseRanges(const std::ve
   for (auto& range_string : ranges_list) {
     
     // Check that the format of the range is correct, using a regular expression
-    if (!std::regex_match(range_string, std::regex{"((-?(\\d+(\\.\\d*)?)|(-?\\.\\d+))($|\\s+)){3}"})) {
+    if (!regex_match(range_string, regex{"((-?(\\d+(\\.\\d*)?)|(-?\\.\\d+))($|\\s+)){3}"})) {
       throw Elements::Exception() << range_string << " (wrong format)";
     }
     

@@ -25,16 +25,15 @@
 #include <boost/test/unit_test.hpp>
 #include "ElementsKernel/Temporary.h"
 #include "GridContainer/serialize.h"
-#include "PhzDataModel/PriorGrid.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzConfiguration/GenericGridPriorConfig.h"
 #include "ConfigManager_fixture.h"
 #include "PhzLikelihood/GenericGridPrior.h"
 
 using namespace Euclid;
+using namespace Euclid::PhzDataModel;
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
 
@@ -49,29 +48,25 @@ struct GenericGridPriorConfig_fixture : public ConfigManager_fixture {
   Elements::TempDir temp_dir {};
   std::string prior_file = (temp_dir.path()/"prior_grid.fits").string();
   
+  RegionResults results {};
+  
   std::vector<double> zs {0.0, 1.};
   std::vector<double> ebvs {0.0, 1.};
   std::vector<XYDataset::QualifiedName> reddeing_curves {{"red_curve1"}, {"red_curve2"}, {"red_curve3"}};
   std::vector<XYDataset::QualifiedName> seds {{"sed1"}, {"sed2"}, {"sed3"}};
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
   
-  PhzDataModel::LikelihoodGrid likelihood_grid {axes};
-  PhzDataModel::PhotometryGrid model_grid {axes};
-  PhzDataModel::ScaleFactordGrid scale_grid {axes};
-  
-  std::shared_ptr<std::vector<std::string>> filters {new std::vector<std::string> {"filter"}};
-  std::vector<SourceCatalog::FluxErrorPair> phot_values {{1.1, 0.}};
-  SourceCatalog::Photometry photometry {filters, phot_values};
+  PhzDataModel::DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(axes);
   
   std::map<std::string, po::variable_value> options_map {};
   
   GenericGridPriorConfig_fixture() {
     
-    for (auto& l : likelihood_grid) {
+    for (auto& l : posterior_grid) {
       l = 1.;
     }
     
-    PhzDataModel::PriorGrid prior_grid {axes};
+    PhzDataModel::DoubleGrid prior_grid {axes};
     for (auto it = prior_grid.begin(); it != prior_grid.end(); ++it) {
       *it = it.axisIndex<PhzDataModel::ModelParameter::SED>() *
               it.axisIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>() *
@@ -114,12 +109,12 @@ BOOST_FIXTURE_TEST_CASE(single_prior, GenericGridPriorConfig_fixture) {
   // When
   auto prior_list = config_manager.getConfiguration<PriorConfig>().getPriors();
   for (auto& prior : prior_list) {
-    prior(likelihood_grid, photometry, model_grid, scale_grid);
+    prior(results);
   }
   
   // Then
   BOOST_CHECK_EQUAL(prior_list.size(), 1);
-  for (auto it = likelihood_grid.begin(); it != likelihood_grid.end(); ++it) {
+  for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
     BOOST_CHECK_EQUAL(*it, it.axisIndex<PhzDataModel::ModelParameter::SED>() *
                            it.axisIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>() *
                            it.axisIndex<PhzDataModel::ModelParameter::EBV>() *
@@ -139,12 +134,12 @@ BOOST_FIXTURE_TEST_CASE(two_priors, GenericGridPriorConfig_fixture) {
   // When
   auto prior_list = config_manager.getConfiguration<PriorConfig>().getPriors();
   for (auto& prior : prior_list) {
-    prior(likelihood_grid, photometry, model_grid, scale_grid);
+    prior(results);
   }
   
   // Then
   BOOST_CHECK_EQUAL(prior_list.size(), 2);
-  for (auto it = likelihood_grid.begin(); it != likelihood_grid.end(); ++it) {
+  for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
     BOOST_CHECK_EQUAL(*it, std::pow(it.axisIndex<PhzDataModel::ModelParameter::SED>() *
                                     it.axisIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>() *
                                     it.axisIndex<PhzDataModel::ModelParameter::EBV>() *

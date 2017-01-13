@@ -28,10 +28,7 @@
 #include <map>
 #include <string>
 #include "XYDataset/QualifiedName.h"
-#include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/LikelihoodGrid.h"
-#include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
+#include "PhzDataModel/RegionResults.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -58,23 +55,14 @@ public:
   virtual ~AxisWeightPrior() = default;
 
   /**
-   * @brief Applies the axis weight prior to a likelihood grid
-   * @param likelihoodGrid
-   *    The grid to apply the prior on
-   * @param sourcePhotometry
-   *    This parameter is not used by this prior
-   * @param modelGrid
-   *    This parameter is not used by this prior
-   * @param scaleFactorGrid
-   *    This parameter is not used by this prior
+   * @brief Applies the axis weight prior to a posterior grid
+   * @param results
+   *    The results object containing the posterior to apply the prior to
    * @throws std::out_of_range
    *    If the given grid contains a knot for which there was no weight given
    *    during construction
    */
-  void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
-                  const SourceCatalog::Photometry& sourcePhotometry,
-                  const PhzDataModel::PhotometryGrid& modelGrid,
-                  const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const;
+  void operator()(PhzDataModel::RegionResults& results) const;
   
 private:
   
@@ -85,6 +73,6 @@ private:
 } /* namespace PhzLikelihood */
 } /* namespace Euclid */
 
-#include "_impl/AxisWeightPrior.icpp"
+#include "PhzLikelihood/_impl/AxisWeightPrior.icpp"
 
 #endif

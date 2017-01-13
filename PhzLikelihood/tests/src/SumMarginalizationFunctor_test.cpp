@@ -19,7 +19,9 @@ struct SumMarginalizationFunctor_Fixture {
   std::vector<XYDataset::QualifiedName> reddening_curves {{"Curve1"}, {"Curve2"}};
   std::vector<XYDataset::QualifiedName> seds {{"Sed1"}, {"Sed2"}};
   
-  PhzDataModel::LikelihoodGrid likelihood_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
+  PhzDataModel::DoubleGrid likelihood_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
+  
+  PhzDataModel::RegionResults reg_results {};
   
 };
 
@@ -38,9 +40,11 @@ BOOST_FIXTURE_TEST_CASE(ZAxisMarginalization, SumMarginalizationFunctor_Fixture)
       (*iter) = z;
     }
   }
+  reg_results.set<PhzDataModel::RegionResultType::POSTERIOR_GRID>(std::move(likelihood_grid));
   
   // When
-  auto pdf = PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>()(likelihood_grid);
+  PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{}(reg_results);
+  auto& pdf = reg_results.get<PhzDataModel::RegionResultType::Z_1D_PDF>();
   auto& axis = pdf.getAxis<0>();
   
   // Then
@@ -67,9 +71,11 @@ BOOST_FIXTURE_TEST_CASE(EbvAxisMarginalization, SumMarginalizationFunctor_Fixtur
       (*iter) = ebv;
     }
   }
+  reg_results.set<PhzDataModel::RegionResultType::POSTERIOR_GRID>(std::move(likelihood_grid));
   
   // When
-  auto pdf = PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::EBV>()(likelihood_grid);
+  PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::EBV>()(reg_results);
+  auto& pdf = reg_results.get<PhzDataModel::RegionResultType::EBV_1D_PDF>();
   auto& axis = pdf.getAxis<0>();
   
   

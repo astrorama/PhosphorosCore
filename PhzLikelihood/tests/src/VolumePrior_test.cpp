@@ -28,26 +28,23 @@
 
 using namespace Euclid;
 using namespace Euclid::PhzLikelihood;
+using namespace Euclid::PhzDataModel;
 
 struct VolumePrior_Fixture {
+  
+  RegionResults results {};
   
   std::vector<double> zs {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.0};
   std::vector<double> ebvs {0.0, 0.1};
   std::vector<XYDataset::QualifiedName> reddeing_curves {{"red_curve1"}, {"red_curve2"}};
   std::vector<XYDataset::QualifiedName> seds {{"sed1"}, {"sed2"}};
-  PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
+  ModelAxesTuple axes = createAxesTuple(zs, ebvs, reddeing_curves, seds);
   
-  PhzDataModel::LikelihoodGrid likelihood_grid {axes};
-  PhzDataModel::PhotometryGrid model_grid {axes};
-  PhzDataModel::ScaleFactordGrid scale_grid {axes};
-  
-  std::shared_ptr<std::vector<std::string>> filters {new std::vector<std::string> {"filter"}};
-  std::vector<SourceCatalog::FluxErrorPair> phot_values {{1.1, 0.}};
-  SourceCatalog::Photometry photometry {filters, phot_values};
+  PhzDataModel::DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(axes);
   
   PhysicsUtils::CosmologicalParameters cosmology {0.286, 0.714, 69.6};
   
-  std::vector<double> expectedPriorValues {9.991416307985487e-07, 0.00914332259898, 0.0332202347077, 0.0675354463092, 0.108050038809, 0.151512430003, 0.195460729452, 0.238142556305, 0.278395203394, 0.315517382349, 0.349151121492, 0.379182369262, 0.405662336749, 0.428748058045, 0.448659126008, 0.465647236325, 0.479975448578, 0.491904583753, 0.501684725523, 0.509550285813, 0.51571750151, 0.520383546556, 0.523726682958, 0.525907050209, 0.527067819503, 0.527336529357, 0.526826482504, 0.525638127777, 0.523860380687, 0.521571856685, 0.518842004523, 0.515732135841, 0.512296352619, 0.508582377419, 0.504632293136, 0.500483199862, 0.49616779665, 0.491714895822, 0.487149877054, 0.482495087931, 0.477770197114, 0.472992505621, 0.468177221211, 0.463337700246, 0.458485660962, 0.453631371597, 0.448783816411, 0.44395084228, 0.439139288207, 0.43435509981, 0.429603430606, 0.424888731652, 0.420214830953, 0.415585003839, 0.411002035384, 0.406468275802, 0.401985689642, 0.397555899499, 0.393180224878, 0.388859716769, 0.384595188418};
+  std::vector<double> expectedPriorValues {-17.420766547, -3.0556805104, -1.76550678247, -1.05597276653, -0.585988754551, -0.247870746635, 0.00686113960873, 0.204412477873, 0.360627629108, 0.485839986547, 0.587170951836, 0.669721738173, 0.737263185033, 0.792646826717, 0.838077807275, 0.875278078446, 0.905618696819, 0.930201864087, 0.949921711078, 0.965509768782, 0.977572011045, 0.986610570098, 0.993043466739, 0.997228130876, 0.999461784815, 1.0, 0.999061726033, 0.996830978586, 0.993470731583, 0.989120896061, 0.983899483561, 0.977914905055, 0.97125689418, 0.96400643703, 0.956236004099, 0.948005652188, 0.939370878465, 0.930380627048, 0.921079221518, 0.911502141375, 0.901686139712, 0.891660929909, 0.881451010196, 0.871086201182, 0.860582344444, 0.84996258184, 0.83924217854, 0.82843934025, 0.817564001973, 0.80663345722, 0.795656489931, 0.784644640125, 0.773607597727, 0.762550686392, 0.751484326959, 0.740416946943, 0.729349890215, 0.718292079231, 0.707245200564, 0.696218694685, 0.685214609774};
   
 };
 
@@ -60,20 +57,20 @@ BOOST_AUTO_TEST_SUITE (VolumePrior_test)
 BOOST_FIXTURE_TEST_CASE(priorValues, VolumePrior_Fixture) {
 
   // Given
-  for (auto& l : likelihood_grid) {
+  for (auto& l : posterior_grid) {
     l = 1.;
   }
   VolumePrior prior {cosmology, zs};
   
   // When
-  prior(likelihood_grid, photometry, model_grid, scale_grid);
+  prior(results);
   
   // Then
   for (std::size_t i = 0; i < zs.size(); ++i) {
     auto z = zs.at(i);
     auto expected = expectedPriorValues.at(i);
-    for (auto it = likelihood_grid.begin().fixAxisByValue<PhzDataModel::ModelParameter::Z>(z); it != likelihood_grid.end(); ++it) {
-      BOOST_CHECK_CLOSE_FRACTION(*it, expected, 1E-2);
+    for (auto it = posterior_grid.begin().fixAxisByValue<ModelParameter::Z>(z); it != posterior_grid.end(); ++it) {
+      BOOST_CHECK_CLOSE_FRACTION(*it, expected, 1E-4);
     }
   }
   
@@ -88,7 +85,7 @@ BOOST_FIXTURE_TEST_CASE(throwsForUnknownRedshift, VolumePrior_Fixture) {
   VolumePrior prior {cosmology, other_zs};
   
   // Then
-  BOOST_CHECK_THROW(prior(likelihood_grid, photometry, model_grid, scale_grid), std::out_of_range);
+  BOOST_CHECK_THROW(prior(results), std::out_of_range);
 
 }
 

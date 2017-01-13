@@ -28,20 +28,18 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
-GenericGridPrior::GenericGridPrior(std::vector<PhzDataModel::PriorGrid> prior_grid_list)
+GenericGridPrior::GenericGridPrior(std::vector<PhzDataModel::DoubleGrid> prior_grid_list)
         : m_prior_grid_list{std::move(prior_grid_list)} {
 }
 
-void GenericGridPrior::operator()(PhzDataModel::LikelihoodGrid& likelihood_grid,
-                                  const SourceCatalog::Photometry&,
-                                  const PhzDataModel::PhotometryGrid&,
-                                  const PhzDataModel::ScaleFactordGrid&) const {
+void GenericGridPrior::operator()(PhzDataModel::RegionResults& results) const {
+  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
   for (auto& prior_grid : m_prior_grid_list) {
-    if (prior_grid.getAxesTuple() == likelihood_grid.getAxesTuple()) {
+    if (prior_grid.getAxesTuple() == posterior_grid.getAxesTuple()) {
       auto prior_it = prior_grid.begin();
-      auto like_it = likelihood_grid.begin();
-      for (; like_it != likelihood_grid.end(); ++prior_it, ++like_it) {
-        *like_it *= *prior_it;
+      auto post_it = posterior_grid.begin();
+      for (; post_it != posterior_grid.end(); ++prior_it, ++post_it) {
+        *post_it *= *prior_it;
       }
       return;
     }

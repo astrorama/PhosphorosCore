@@ -19,7 +19,9 @@ struct MaxMarginalizationFunctor_Fixture {
   std::vector<XYDataset::QualifiedName> reddening_curves {{"Curve1"}, {"Curve2"}};
   std::vector<XYDataset::QualifiedName> seds {{"Sed1"}, {"Sed2"}};
   
-  PhzDataModel::LikelihoodGrid likelihood_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
+  PhzDataModel::DoubleGrid likelihood_grid {PhzDataModel::createAxesTuple(z_values, ebv_values, reddening_curves, seds)};
+  
+  PhzDataModel::RegionResults reg_results {};
   
 };
 
@@ -41,9 +43,11 @@ BOOST_FIXTURE_TEST_CASE(ZAxisMarginalization, MaxMarginalizationFunctor_Fixture)
   likelihood_grid(3,2,0,1) = .35;
   likelihood_grid(4,1,0,1) = .44;
   likelihood_grid(4,2,0,1) = .5;
+  reg_results.set<PhzDataModel::RegionResultType::POSTERIOR_GRID>(std::move(likelihood_grid));
   
   // When
-  auto pdf = PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::Z>()(likelihood_grid);
+  PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{}(reg_results);
+  auto& pdf = reg_results.get<PhzDataModel::RegionResultType::Z_1D_PDF>();
   auto& axis = pdf.getAxis<0>();
   
   // Then
@@ -74,9 +78,11 @@ BOOST_FIXTURE_TEST_CASE(EbvAxisMarginalization, MaxMarginalizationFunctor_Fixtur
   likelihood_grid(2,3,0,1) = .035;
   likelihood_grid(1,4,0,1) = .044;
   likelihood_grid(2,4,0,1) = .05;
+  reg_results.set<PhzDataModel::RegionResultType::POSTERIOR_GRID>(std::move(likelihood_grid));
   
   // When
-  auto pdf = PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::EBV>()(likelihood_grid);
+  PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::EBV>{}(reg_results);
+  auto& pdf = reg_results.get<PhzDataModel::RegionResultType::EBV_1D_PDF>();
   auto& axis = pdf.getAxis<0>();
   
   

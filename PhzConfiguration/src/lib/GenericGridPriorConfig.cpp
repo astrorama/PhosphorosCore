@@ -26,7 +26,7 @@
 #include <CCfits/CCfits>
 #include "ElementsKernel/Logging.h"
 #include "GridContainer/serialize.h"
-#include "PhzDataModel/PriorGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzLikelihood/GenericGridPrior.h"
 #include "PhzLikelihood/SharedPriorAdapter.h"
 #include "PhzConfiguration/AuxDataDirConfig.h"
@@ -57,15 +57,15 @@ auto GenericGridPriorConfig::getProgramOptions() -> std::map<std::string, Option
 
 namespace {
 
-std::vector<PhzDataModel::PriorGrid> readGridsFromFile(const fs::path& filename) {
+std::vector<PhzDataModel::DoubleGrid> readGridsFromFile(const fs::path& filename) {
   int hdu_count = 0;
   {
     CCfits::FITS fits {filename.string(), CCfits::RWmode::Read};
     hdu_count = fits.extension().size();
   }
-  std::vector<PhzDataModel::PriorGrid> grids {};
-  for (int i = 1; i <= hdu_count; i += PhzDataModel::PriorGrid::axisNumber()+1) {
-    grids.emplace_back(GridContainer::gridFitsImport<PhzDataModel::PriorGrid>(filename, i));
+  std::vector<PhzDataModel::DoubleGrid> grids {};
+  for (int i = 1; i <= hdu_count; i += PhzDataModel::DoubleGrid::axisNumber()+1) {
+    grids.emplace_back(GridContainer::gridFitsImport<PhzDataModel::DoubleGrid>(filename, i));
   }
   return grids;
 }
@@ -82,7 +82,7 @@ void GenericGridPriorConfig::initialize(const UserValues& args) {
         auto& aux_dir = getDependency<AuxDataDirConfig>().getAuxDataDir();
         filename = aux_dir / "GenericPriors" / filename;
       }
-      std::vector<PhzDataModel::PriorGrid> grids = readGridsFromFile(filename);
+      std::vector<PhzDataModel::DoubleGrid> grids = readGridsFromFile(filename);
       getDependency<PriorConfig>().addPrior(SharedPriorAdapter<GenericGridPrior>::factory(std::move(grids)));
     }
   }

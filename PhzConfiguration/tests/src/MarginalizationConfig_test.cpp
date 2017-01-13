@@ -37,6 +37,8 @@ namespace {
 
 const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
 
+const std::string CREATE_OUTPUT_PDF {"create-output-pdf"};
+
 }
 
 struct MarginalizationConfig_fixture : public ConfigManager_fixture {
@@ -47,7 +49,7 @@ struct MarginalizationConfig_fixture : public ConfigManager_fixture {
   std::vector<Euclid::XYDataset::QualifiedName> seds {{"sed1"}, {"sed2"}};
   ModelAxesTuple axes = createAxesTuple(zs, ebvs, red_curves, seds);
   
-  LikelihoodGrid likelihood_grid {axes};
+  DoubleGrid likelihood_grid {axes};
   
   std::map<std::string, po::variable_value> options_map {};
   
@@ -61,9 +63,9 @@ struct MarginalizationConfig_fixture : public ConfigManager_fixture {
       TestConfig(long id) : Configuration(id) {
         declareDependency<MarginalizationConfig>();
       }
-      void preInitialize(const UserValues&) {
+      void preInitialize(const UserValues&) override {
         getDependency<MarginalizationConfig>().addMarginalizationCorrection(ModelParameter::SED, 
-                [](PhzDataModel::LikelihoodGrid& grid) {
+                [](PhzDataModel::DoubleGrid& grid) {
                   for (auto& cell : grid.fixAxisByIndex<ModelParameter::Z>(0)) {
                     cell = cell * 2;
                   }
@@ -73,6 +75,7 @@ struct MarginalizationConfig_fixture : public ConfigManager_fixture {
     config_manager.registerConfiguration<TestConfig>();
     
     options_map = registerConfigAndGetDefaultOptionsMap<MarginalizationConfig>();
+    options_map[CREATE_OUTPUT_PDF].as<std::vector<std::string>>().push_back("Z");
     
   }
   
@@ -103,10 +106,10 @@ BOOST_FIXTURE_TEST_CASE(sum_type, MarginalizationConfig_fixture) {
   
   // When
   config_manager.initialize(options_map);
-  auto& marginalize_func = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFunc();
+  auto& marginalize_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
   
   // Then
-  BOOST_CHECK_EQUAL(marginalize_func.target_type().name(), typeid(const PhzLikelihood::SumMarginalizationFunctor<ModelParameter::Z>&).name());
+  BOOST_CHECK_EQUAL(marginalize_func_list[0].target_type().name(), typeid(const PhzLikelihood::SumMarginalizationFunctor<ModelParameter::Z>&).name());
 
 }
 
@@ -119,10 +122,10 @@ BOOST_FIXTURE_TEST_CASE(max_type, MarginalizationConfig_fixture) {
   
   // When
   config_manager.initialize(options_map);
-  auto& marginalize_func = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFunc();
+  auto& marginalize_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
   
   // Then
-  BOOST_CHECK_EQUAL(marginalize_func.target_type().name(), typeid(const PhzLikelihood::MaxMarginalizationFunctor<ModelParameter::Z>&).name());
+  BOOST_CHECK_EQUAL(marginalize_func_list[0].target_type().name(), typeid(const PhzLikelihood::MaxMarginalizationFunctor<ModelParameter::Z>&).name());
 
 }
 
@@ -135,10 +138,10 @@ BOOST_FIXTURE_TEST_CASE(bayesian_type, MarginalizationConfig_fixture) {
   
   // When
   config_manager.initialize(options_map);
-  auto& marginalize_func = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFunc();
+  auto& marginalize_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
   
   // Then
-  BOOST_CHECK_EQUAL(marginalize_func.target_type().name(), typeid(const PhzLikelihood::BayesianMarginalizationFunctor&).name());
+  BOOST_CHECK_EQUAL(marginalize_func_list[0].target_type().name(), typeid(const PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>&).name());
 
 }
 
@@ -148,11 +151,14 @@ BOOST_FIXTURE_TEST_CASE(marginalizationCorrection, MarginalizationConfig_fixture
 
   // Given
   options_map[AXES_COLLAPSE_TYPE].value() = boost::any{std::string{"BAYESIAN"}};
+  PhzDataModel::RegionResults reg_results {};
+  reg_results.set<PhzDataModel::RegionResultType::POSTERIOR_GRID>(std::move(likelihood_grid));
   
   // When
   config_manager.initialize(options_map);
-  auto& marginalize_func = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFunc();
-  auto pdf = marginalize_func(likelihood_grid);
+  auto& marginalize_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
+  marginalize_func_list[0](reg_results);
+  auto& pdf = reg_results.get<PhzDataModel::RegionResultType::Z_1D_PDF>();
   
   // Then
   BOOST_CHECK_EQUAL(pdf(0), 2*pdf(1));

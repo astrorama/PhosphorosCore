@@ -25,7 +25,7 @@
 #include <fstream>
 #include <boost/test/unit_test.hpp>
 #include "ElementsKernel/Temporary.h"
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzConfiguration/AxisFunctionPriorConfig.h"
 #include "ConfigManager_fixture.h"
 #include "PhzConfiguration/PriorConfig.h"
@@ -47,25 +47,21 @@ struct AxisFunctionPriorConfig_fixture : public ConfigManager_fixture {
   
   Elements::TempDir temp_dir {};
   
+  RegionResults results {};
+  
   std::vector<double> zs {0.0, 0.5, 1.};
   std::vector<double> ebvs {0.0, 0.5, 1.};
   std::vector<XYDataset::QualifiedName> reddeing_curves {{"red_curve1"}, {"red_curve2"}};
   std::vector<XYDataset::QualifiedName> seds {{"sed1"}, {"sed2"}};
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
   
-  PhzDataModel::LikelihoodGrid likelihood_grid {axes};
-  PhzDataModel::PhotometryGrid model_grid {axes};
-  PhzDataModel::ScaleFactordGrid scale_grid {axes};
-  
-  std::shared_ptr<std::vector<std::string>> filters {new std::vector<std::string> {"filter"}};
-  std::vector<SourceCatalog::FluxErrorPair> phot_values {{1.1, 0.}};
-  SourceCatalog::Photometry photometry {filters, phot_values};
+  PhzDataModel::DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(axes);
   
   std::map<std::string, po::variable_value> options_map {};
   
   AxisFunctionPriorConfig_fixture() {
     
-    for (auto& l : likelihood_grid) {
+    for (auto& l : posterior_grid) {
       l = 1.;
     }
 
@@ -123,13 +119,13 @@ BOOST_FIXTURE_TEST_CASE(z_prior, AxisFunctionPriorConfig_fixture) {
   // When
   auto prior_list = config_manager.getConfiguration<PriorConfig>().getPriors();
   for (auto& prior : prior_list) {
-    prior(likelihood_grid, photometry, model_grid, scale_grid);
+    prior(results);
   }
   
   // Then
   BOOST_CHECK_EQUAL(prior_list.size(), 1);
   BOOST_CHECK_EQUAL(prior_list[0].target_type().name(), typeid(PhzLikelihood::AxisFunctionPrior<ModelParameter::Z>).name());
-  for (auto it = likelihood_grid.begin(); it != likelihood_grid.end(); ++it) {
+  for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
     BOOST_CHECK_EQUAL(*it, it.axisValue<ModelParameter::Z>());
   }
   
@@ -146,14 +142,14 @@ BOOST_FIXTURE_TEST_CASE(two_z_priors, AxisFunctionPriorConfig_fixture) {
   // When
   auto prior_list = config_manager.getConfiguration<PriorConfig>().getPriors();
   for (auto& prior : prior_list) {
-    prior(likelihood_grid, photometry, model_grid, scale_grid);
+    prior(results);
   }
   
   // Then
   BOOST_CHECK_EQUAL(prior_list.size(), 2);
   BOOST_CHECK_EQUAL(prior_list[0].target_type().name(), typeid(PhzLikelihood::AxisFunctionPrior<ModelParameter::Z>).name());
   BOOST_CHECK_EQUAL(prior_list[1].target_type().name(), typeid(PhzLikelihood::AxisFunctionPrior<ModelParameter::Z>).name());
-  for (auto it = likelihood_grid.begin(); it != likelihood_grid.end(); ++it) {
+  for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
     BOOST_CHECK_EQUAL(*it, it.axisValue<ModelParameter::Z>() * (1 - it.axisValue<ModelParameter::Z>()));
   }
   
@@ -170,13 +166,13 @@ BOOST_FIXTURE_TEST_CASE(ebv_prior, AxisFunctionPriorConfig_fixture) {
   // When
   auto prior_list = config_manager.getConfiguration<PriorConfig>().getPriors();
   for (auto& prior : prior_list) {
-    prior(likelihood_grid, photometry, model_grid, scale_grid);
+    prior(results);
   }
   
   // Then
   BOOST_CHECK_EQUAL(prior_list.size(), 1);
   BOOST_CHECK_EQUAL(prior_list[0].target_type().name(), typeid(PhzLikelihood::AxisFunctionPrior<ModelParameter::EBV>).name());
-  for (auto it = likelihood_grid.begin(); it != likelihood_grid.end(); ++it) {
+  for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
     BOOST_CHECK_EQUAL(*it, 1 - it.axisValue<ModelParameter::EBV>());
   }
   
@@ -194,7 +190,7 @@ BOOST_FIXTURE_TEST_CASE(z_ebv_prior, AxisFunctionPriorConfig_fixture) {
   // When
   auto prior_list = config_manager.getConfiguration<PriorConfig>().getPriors();
   for (auto& prior : prior_list) {
-    prior(likelihood_grid, photometry, model_grid, scale_grid);
+    prior(results);
   }
   
   // Then
@@ -211,7 +207,7 @@ BOOST_FIXTURE_TEST_CASE(z_ebv_prior, AxisFunctionPriorConfig_fixture) {
   }
   BOOST_CHECK(found_z);
   BOOST_CHECK(found_ebv);
-  for (auto it = likelihood_grid.begin(); it != likelihood_grid.end(); ++it) {
+  for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
     BOOST_CHECK_EQUAL(*it, it.axisValue<ModelParameter::Z>() * (1 - it.axisValue<ModelParameter::EBV>()));
   }
   

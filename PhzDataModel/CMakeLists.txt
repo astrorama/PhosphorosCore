@@ -9,7 +9,7 @@ elements_depends_on_subdirs(GridContainer)
 find_package(Boost REQUIRED COMPONENTS serialization)
 
 #===== Libraries ===============================================================
-elements_add_library(PhzDataModel src/lib/*.cpp
+elements_add_library(PhzDataModel src/lib/*.cpp src/lib/CatalogAttributes/*.cpp
                      LINK_LIBRARIES ${CMAKE_DL_LIBS} Boost ElementsKernel MathUtils XYDataset SourceCatalog GridContainer
                      INCLUDE_DIRS Boost ElementsKernel MathUtils XYDataset SourceCatalog
                      PUBLIC_HEADERS PhzDataModel)

@@ -29,114 +29,40 @@
 #include <map>
 #include <boost/any.hpp>
 
+#include "PhzDataModel/TypedEnumMap.h"
+
 namespace Euclid {
 namespace PhzDataModel {
 
 
 /// An enumeration representing the available PHZ source results
 enum class SourceResultType {
-  /// The names of the parameter space regions
-  REGION_NAMES,
-  /// An map containing the the iterators to the best match model photometries
-  /// for each parameter space region
-  REGION_BEST_MODEL_ITERATOR,
-  /// An iterator pointing to the model photometry which is the overall best match
+  /// An posterior grid iterator pointing to the overall best match
   BEST_MODEL_ITERATOR,
-  /// A map containing the grids representing the 1D PDF over the redshift for
-  /// each parameter space region
-  REGION_Z_1D_PDF,
+  /// The 1D PDF over the SED
+  SED_1D_PDF,
+  /// The 1D PDF over the reddening curve
+  RED_CURVE_1D_PDF,
+  /// The 1D PDF over the E(B-V)
+  EBV_1D_PDF,
   /// A grid representing the 1D PDF over the redshift
   Z_1D_PDF,
-  /// A map containing the likelihood (before priors) for each parameter space region
-  REGION_LIKELIHOOD,
-  /// A map containing the posterior for each parameter space region
-  REGION_POSTERIOR,
-  /// A map containing the scale factor of the best match model photometry
-  /// for each parameter space region
-  REGION_BEST_MODEL_SCALE_FACTOR,
+  /// The logarithm of the normalization of the 1D PDFs
+  LOG_1D_PDF_NORM,
   /// A double with the value of the scale factor of the overall best match
   /// model photometry
   BEST_MODEL_SCALE_FACTOR,
-  /// A map containing the natural logarithm of the normalization of the likelihood
-  /// grid for each parameter space region
-  REGION_LIKELIHOOD_NORM_LOG,
-  /// A map containing the natural logarithm of the normalization of the posterior
-  /// grid for each parameter space region
-  REGION_POSTERIOR_NORM_LOG,
   /// The natural logarithm of the posterior of the overall best fitted model
-  BEST_MODEL_POSTERIOR_LOG
+  BEST_MODEL_POSTERIOR_LOG,
+  // A map containing the results of all regions
+  REGION_RESULTS_MAP
 };
 
-
-/**
- * @class SourceResultTypeTraits
- * @brief
- * Traits class used for defining the type of each source result
- * @details
- * When a new result type is added, a specialization of this class must be
- * defined for declaring its type. For examples see the already defined
- * specializations in PhzDataModel/_impl/SourceResultTypeTraits.icpp
- */
-template <SourceResultType T, typename=void>
-struct SourceResultTypeTraits;
-
-
-/**
- * @class SourceResults
- * @brief
- * Keeps the PHZ related results from the Phosphoros computation for a single
- * source
- * @details
- * This class is agnostic on the type of the results it keeps. The possible
- * results are defined by the enumeration SourceResultType. When a SourceResults
- * object is copied, the resulted object points to the same underlying results.
- * Any modifications done to the result objects themselves are visible to all
- * SourceResults.
- */
-class SourceResults {
-
-public:
-
-  /**
-   * @brief Destructor
-   */
-  virtual ~SourceResults() = default;
-  
-  /**
-   * @brief Adds a new result instance to the SourceResults
-   * @details
-   * The new result object is constructed by forwarding the given arguments to
-   * its constructor.
-   * @tparam T
-   *    The result to add
-   * @param args
-   *    The arguments to construct the result with
-   * @return 
-   *    A reference to the newly added result
-   */
-  template <SourceResultType T, typename... Args>
-  typename SourceResultTypeTraits<T>::type& setResult(Args&&... args);
-  
-  /// Returns a reference to the requested result or throws Elements::Exception
-  /// if the SourceResults does not contain this result type
-  template <SourceResultType T>
-  const typename SourceResultTypeTraits<T>::type& getResult() const;
-  
-  /// Returns a reference to the requested result or throws Elements::Exception
-  /// if the SourceResults does not contain this result type
-  template <SourceResultType T>
-  typename SourceResultTypeTraits<T>::type& getResult();
-
-private:
-  
-  std::map<SourceResultType, boost::any> result_map {};
-
-}; /* End of SourceResults class */
+using SourceResults = TypedEnumMap<SourceResultType>;
 
 } /* namespace PhzDataModel */
 } /* namespace Euclid */
 
-#include "_impl/SourceResults.icpp"
-#include "_impl/SourceResultTypeTraits.icpp"
+#include "PhzDataModel/_impl/SourceResultTypeTraits.icpp"
 
 #endif

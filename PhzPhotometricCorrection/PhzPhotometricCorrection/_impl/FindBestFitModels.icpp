@@ -107,7 +107,7 @@ std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator> FindBestFitModel
     // We must return an iterator to the correct input grid, not to the slice, so we
     // create a new iterator and we fix its axes
     const PhzDataModel::SourceResults& slice_res = source_phz_calculator(*photometry_ptr);
-    auto slice_iter = slice_res.getResult<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
+    auto slice_iter = slice_res.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
     for (auto& pair : model_grid_map) {
       auto grid_iter = pair.second.begin();
       try {

@@ -289,11 +289,11 @@ public:
 #pragma GCC diagnostic pop
         continue;
       }
-      step += (*s).flux / (*m).flux;
+      step += std::abs((*s).flux / (*m).flux);
       ++c;
     }
     step /= c;
-    double acc = step * 1E-5;
+    double acc = step* 1E-5;
     double step_factor = .5;
     bool dir_right = true;
     double chi_a = -2 * LikelihoodLogarithmFunc{}(source, source_end, model, a);

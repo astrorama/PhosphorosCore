@@ -1,4 +1,4 @@
-/*
+/*  
  * Copyright (C) 2012-2020 Euclid Science Ground Segment    
  *  
  * This library is free software; you can redistribute it and/or modify it under
@@ -14,28 +14,36 @@
  * You should have received a copy of the GNU Lesser General Public License 
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
- */
+ */  
 
 /* 
- * @file PriorGrid.h
+ * @file BestModelOnlyZ.cpp
  * @author nikoapos
  */
 
-#ifndef PHZDATAMODEL_PRIORGRID_H
-#define	PHZDATAMODEL_PRIORGRID_H
-
-#include <vector>
-#include "PhzDataModel/PhzModel.h"
+#include "PhzOutput/PhzColumnHandlers/BestModelOnlyZ.h"
 
 namespace Euclid {
-namespace PhzDataModel {
+namespace PhzOutput {
+namespace ColumnHandlers {
 
-typedef std::vector<double> PriorGridCellManager;
+std::vector<Table::ColumnInfo::info_type> BestModelOnlyZ::getColumnInfoList() const {
+  
+  return std::vector<Table::ColumnInfo::info_type> {
+    Table::ColumnInfo::info_type("Z", typeid(double))
+  };
+}
 
-typedef PhzGrid<PriorGridCellManager> PriorGrid;
+std::vector<Table::Row::cell_type> BestModelOnlyZ::convertResults(
+                      const SourceCatalog::Source&,
+                      const PhzDataModel::SourceResults& results) const {
+  
+  auto& best_model = results.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
+  auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
+  
+  return std::vector<Table::Row::cell_type> {z};
+}
 
-} // end of namespace PhzDataModel
-} // end of namespace Euclid
-
-#endif	/* PHZDATAMODEL_PRIORGRID_H */
-
+} /* namespace ColumnHandlers */
+} /* namespace PhzOutput */
+} /* namespace Euclid */

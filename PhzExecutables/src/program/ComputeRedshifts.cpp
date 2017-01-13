@@ -69,13 +69,13 @@ class ComputeRedshifts : public Elements::Program {
     config_manager.initialize(args);
 
     auto& model_phot_grid = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
-    auto& marginalization_func = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFunc();
+    auto& marginalization_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
     auto& likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
     auto& phot_corr_map = config_manager.getConfiguration<PhotometricCorrectionConfig>().getPhotometricCorrectionMap();
     auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();
     
     PhzLikelihood::ParallelCatalogHandler handler {phot_corr_map, model_phot_grid, likelihood_grid_func,
-                                                   priors, marginalization_func};
+                                                   priors, marginalization_func_list};
 
     auto& catalog = config_manager.getConfiguration<CatalogConfig>().getCatalog();
     auto out_ptr = config_manager.getConfiguration<ComputeRedshiftsConfig>().getOutputHandler();

@@ -9,13 +9,11 @@
 
 #include <vector>
 #include <functional>
-#include <algorithm>
 #include "SourceCatalog/SourceAttributes/Photometry.h"
+#include "PhzDataModel/RegionResults.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/Pdf1D.h"
-#include "PhzDataModel/LikelihoodGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
-#include "PhzOutput/OutputHandler.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzLikelihood/LikelihoodGridFunctor.h"
 #include "PhzLikelihood/BayesianMarginalizationFunctor.h"
 
@@ -32,91 +30,99 @@ public:
   
   /**
    * Definition of the functor for calculating the likelihood grid. It is a
-   * function which gets a source photometry and a grid with model photometries,
-   * and returns the likelihood grid, the scale factor grid and the minimum
-   * chi square value.
+   * function which uses the given results objects both for its input and output.
+   * When the function is called, the results is guaranteed to contain the
+   * following:
+   * 
+   * - MODEL_GRID_REFERENCE
+   * - SOURCE_PHOTOMETRY_REFERENCE
+   * 
+   * The given functors must populate the results with the following:
+   * 
+   * - LIKELIHOOD_GRID
+   * - SCALE_FACTOR_GRID
    */
-  typedef std::function<LikelihoodGridFunctor::result_type(
-                                const SourceCatalog::Photometry& source_phot,      
-                                const PhzDataModel::PhotometryGrid& phot_grid)
-                       > LikelihoodGridFunction;
-
-  /**
-   * Definition of the STL-like algorithm for finding the best fitted model. It
-   * gets as parameters the iterator over the likelihood grid and it returns an
-   * iterator pointing to the best fitted model.
-   */
-  typedef std::function<PhzDataModel::LikelihoodGrid::iterator(
-                              PhzDataModel::LikelihoodGrid::iterator likelihood_begin,
-                              PhzDataModel::LikelihoodGrid::iterator likelihood_end)
-                       > BestFitSearchFunction;
-
-  /**
-   * Definition of the function signature for performing the marginalization. It
-   * gets as parameter a LikelihoodGrid and it returns a one dimensional grid with only
-   * axis the redshift. It should not perform any normalization.
-   */
-  typedef std::function<PhzDataModel::Pdf1DZ(const PhzDataModel::LikelihoodGrid&)> MarginalizationFunction;
+  typedef std::function<void(PhzDataModel::RegionResults& results)> LikelihoodGridFunction;
   
   /**
-   * Definition of the function signature for applying a prior to a likelihood grid.
+   * Definition of the function signature for performing the marginalization. It
+   * is a function which uses the given result object both for its input and
+   * output. When it is called, the passed object is guaranteed to contain the
+   * POSTERIOR_GRID result. The different marginalization implementations
+   * should produce marginalized versions of this grid, without performing any
+   * normalization, and store them to the following results:
+   * - SED_1D_PDF
+   * - RED_CURVE_1D_PDF
+   * - EBV_1D_PDF
+   * - Z_1D_PDF
    */
-  typedef std::function<void(PhzDataModel::LikelihoodGrid&,
-                             const SourceCatalog::Photometry&,
-                             const PhzDataModel::PhotometryGrid&,
-                             const PhzDataModel::ScaleFactordGrid&)> PriorFunction;
+  typedef std::function<void(PhzDataModel::RegionResults& results)> MarginalizationFunction;
+  
+  /**
+   * Definition of the function signature for applying a prior to the posterior
+   * grid. It is a function which uses the given results objects both for its
+   * input and output. It requires that the given object already contains the
+   * POSTERIOR_GRID result, on which it applies the prior directly. The different
+   * prior implementations are free to use also the following results:
+   * - MODEL_GRID_REFERENCE
+   * - SOURCE_PHOTOMETRY_REFERENCE
+   * - SCALE_FACTOR_GRID
+   * - LIKELIHOOD_GRID
+   * - POSTERIOR_GRID
+   */
+  typedef std::function<void(PhzDataModel::RegionResults& results)> PriorFunction;
 
   /**
-   * Constructs a new SingleGridPhzFunctor instance. It gets as parameters a
-   * const reference to the grid with the model photometries, the algorithm to
-   * use for calculating the likelihood grid, the algorithm for finding the best
+   * Constructs a new SingleGridPhzFunctor instance. It gets as parameters the
+   * algorithms to use for calculating the likelihood grid, for finding the best
    * fitted model and the algorithm for performing the PDF marginalization. Note
    * that the algorithms can be ommitted which will result to the default chi^2
    * for the likelihood calculation, the maximum likelihood value for the best
    * fitted model and Bayesian for the marginalization.
    *
-   * @param region_name
-   *    The name of the parameter space region the given model grid represents
-   * @param phot_grid
-   *    The const reference to the grid with the model photometries
    * @param priors
    *    The priors to apply to the likelihood
    * @param likelihood_func
    *    The STL-like algorithm for calculating the likelihood grid
-   * @param best_fit_search_func
-   *    The STL-like algorithm for finding the best fitted model
    * @param marginalization_func
    *    The functor to use for performing the PDF marginalization
    */
-  SingleGridPhzFunctor(const std::string& region_name,
-                       const PhzDataModel::PhotometryGrid& phot_grid,
-                       std::vector<PriorFunction> priors = {},
-                       MarginalizationFunction marginalization_func = BayesianMarginalizationFunctor{},
-                       LikelihoodGridFunction likelihood_func = LikelihoodGridFunctor{LikelihoodLogarithmAlgorithm{ScaleFactorFunctorSimple{}, ChiSquareLikelihoodLogarithmSimple{}}},
-                       BestFitSearchFunction best_fit_search_func = std::max_element<PhzDataModel::LikelihoodGrid::iterator>);
+  SingleGridPhzFunctor(std::vector<PriorFunction> priors = {},
+                       std::vector<MarginalizationFunction> marginalization_func_list = {BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{}},
+                       LikelihoodGridFunction likelihood_func = LikelihoodGridFunctor{LikelihoodLogarithmAlgorithm{ScaleFactorFunctorSimple{}, ChiSquareLikelihoodLogarithmSimple{}}});
 
   /**
-   * Calculates the PHZ results for the given source photometry. The likelihood
-   * grid is calculated by using the likelihood algorithm (as given at the
-   * constructor). The results are added to the given SourceResults object (result
-   * types starting with REGION_).
+   * Calculates the PHZ results for a single model grid of the parameter space.
+   * The given results object must already have set the following:
+   * - MODEL_GRID_REFERENCE
+   * - SOURCE_PHOTOMETRY_REFERENCE
+   * - FIXED_REDSHIFT (if the redshift should be fixed)
+   * 
+   * The likelihood grid is calculated by using the likelihood algorithm (as
+   * given at the constructor). Then, all the priors are applied for computing
+   * the posterior. The best matched model is computed based on the posterior.
+   * Then, the posterior is used for computing the 1D PDF of the redshift.
+   * 
+   * The SingleGridPhzFunctor does not directly add results to the given object,
+   * but it validates that the functions it used have added the following
+   * results:
+   * - BEST_MODEL_ITERATOR
+   * - SCALE_FACTOR_GRID
+   * - LIKELIHOOD_GRID
+   * - POSTERIOR_GRID
+   * - Z_1D_PDF
+   * - Z_1D_PDF_NORM_LOG
    *
-   * @param source_phot
-   *    The photometry of the source
    * @param results
-   *    The SourceResults object to add the results for the specific region
+   *    The RegionResults object to add the results
    */
-  void operator()(const SourceCatalog::Photometry& source_phot,
-                  PhzDataModel::SourceResults& results) const;
+  void operator()(PhzDataModel::RegionResults& results) const;
   
 private:
   
-  std::string m_region_name;
-  const PhzDataModel::PhotometryGrid& m_phot_grid;
   std::vector<PriorFunction> m_priors;
-  MarginalizationFunction m_marginalization_func;
+  std::vector<MarginalizationFunction> m_marginalization_func_list;
   LikelihoodGridFunction m_likelihood_func;
-  BestFitSearchFunction m_best_fit_search_func;
   
 };
 

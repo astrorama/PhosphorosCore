@@ -24,7 +24,7 @@ ReddenedLuminosityCalculator::ReddenedLuminosityCalculator(
     in_mag) { }
 
 const PhzDataModel::PhotometryGrid::const_iterator ReddenedLuminosityCalculator::fixIterator(
-       const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor) const {
+       const PhzDataModel::DoubleGrid::const_iterator& scale_factor) const {
 
   auto model_iter = m_model_photometry_grid->cbegin();
   model_iter.fixAxisByIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>(

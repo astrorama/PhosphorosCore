@@ -27,10 +27,7 @@
 
 #include <memory>
 #include "MathUtils/function/Function.h"
-#include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/LikelihoodGrid.h"
-#include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
+#include "PhzDataModel/RegionResults.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -58,20 +55,11 @@ public:
   virtual ~AxisFunctionPrior() = default;
   
   /**
-   * @brief Applies the axis function prior to a likelihood grid
-   * @param likelihoodGrid
-   *    The grid to apply the prior on
-   * @param sourcePhotometry
-   *    This parameter is not used by this prior
-   * @param modelGrid
-   *    This parameter is not used by this prior
-   * @param scaleFactorGrid
-   *    This parameter is not used by this prior
+   * @brief Applies the axis function prior to a posterior grid
+   * @param results
+   *    The results object containing the posterior to apply the prior to
    */
-  void operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
-                  const SourceCatalog::Photometry& sourcePhotometry,
-                  const PhzDataModel::PhotometryGrid& modelGrid,
-                  const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const;
+  void operator()(PhzDataModel::RegionResults& results) const;
 
 private:
   
@@ -82,6 +70,6 @@ private:
 } /* namespace PhzLikelihood */
 } /* namespace Euclid */
 
-#include "_impl/AxisFunctionPrior.icpp"
+#include "PhzLikelihood/_impl/AxisFunctionPrior.icpp"
 
 #endif

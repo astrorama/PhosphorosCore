@@ -67,7 +67,7 @@ namespace fs = boost::filesystem;
 
 static Elements::Logging logger = Elements::Logging::getLogger("MagnitudeForComparison");
 
-
+using ResType = PhzDataModel::RegionResultType;
 
 static long config_manager_id = getUniqueManagerId();
 
@@ -176,9 +176,13 @@ public:
       if (source_photometry==nullptr){
         logger.info() << "null photometry";
       }
+      
       //  compute the scale factor grid
-      auto likelihood_res = likelihood_func(*source_photometry, model_single_grid);
-      PhzDataModel::ScaleFactordGrid scale_factor_grid {std::move(std::get<1>(likelihood_res))};
+      PhzDataModel::RegionResults results {};
+      results.set<ResType::SOURCE_PHOTOMETRY_REFERENCE>(*source_photometry);
+      results.set<ResType::MODEL_GRID_REFERENCE>(model_single_grid);
+      likelihood_func(results);
+      auto& scale_factor_grid = results.get<ResType::SCALE_FACTOR_GRID>();
 
 
       //  fix the iterator on the scale factor grid
@@ -225,7 +229,7 @@ public:
     return Elements::ExitCode::OK;
   }
 
-  double adjustZAxis(const PhzDataModel::ScaleFactordGrid& grid, double z_val){
+  double adjustZAxis(const PhzDataModel::DoubleGrid& grid, double z_val){
     auto axis= grid.getAxis<PhzDataModel::ModelParameter::Z>();
     for (auto& z_axis : axis){
       if (abs(z_axis-z_val)<0.00001){
@@ -236,7 +240,7 @@ public:
     return z_val;
   }
 
-  double adjustEBVAxis(const PhzDataModel::ScaleFactordGrid& grid, double ebv_val){
+  double adjustEBVAxis(const PhzDataModel::DoubleGrid& grid, double ebv_val){
       for (auto& ebv_axis : grid.getAxis<PhzDataModel::ModelParameter::EBV>()){
         if (abs(ebv_axis-ebv_val)<0.00001){
           return ebv_axis;
@@ -252,11 +256,11 @@ public:
   }
 
   double computeApparentMagFromModel(
-      const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor,
+      const PhzDataModel::DoubleGrid::const_iterator& scale_factor,
       std::shared_ptr<PhzDataModel::PhotometryGrid> model_photometry_grid,
       std::shared_ptr<PhzTest::ModelFixingAttribute> model_fixing,
       XYDataset::QualifiedName filter,
-      const PhzDataModel::ScaleFactordGrid& scale_factor_grid) {
+      const PhzDataModel::DoubleGrid& scale_factor_grid) {
 
     auto model_iter = model_photometry_grid->cbegin();
     model_iter.fixAxisByValue < PhzDataModel::ModelParameter::Z> (adjustZAxis(scale_factor_grid, model_fixing->getZ()));

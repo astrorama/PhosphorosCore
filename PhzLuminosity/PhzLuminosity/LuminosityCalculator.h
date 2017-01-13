@@ -11,7 +11,7 @@
 #include "XYDataset/QualifiedName.h"
 #include "PhysicsUtils/CosmologicalParameters.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
@@ -66,7 +66,7 @@ public:
    *
    * @return The luminosity.
    */
-   double operator()(const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor) const;
+   double operator()(const PhzDataModel::DoubleGrid::const_iterator& scale_factor) const;
 
   /**
    * @brief Select the Luminosity Model Grid iterator based on the scale_factor
@@ -80,7 +80,7 @@ public:
    * @return the iterator on the luminosity model the luminosity has to be computed for.
    */
    virtual const PhzDataModel::PhotometryGrid::const_iterator fixIterator(
-       const PhzDataModel::ScaleFactordGrid::const_iterator& scale_factor) const = 0;
+       const PhzDataModel::DoubleGrid::const_iterator& scale_factor) const = 0;
 
    const XYDataset::QualifiedName& getLuminosityFilter(){
        return m_luminosity_filter;

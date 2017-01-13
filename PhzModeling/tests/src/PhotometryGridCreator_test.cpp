@@ -27,7 +27,7 @@ struct PhotometryGridCreator_Fixture {
 
     DatasetProvider(std::map<Euclid::XYDataset::QualifiedName,Euclid::XYDataset::XYDataset>&& storage):m_storage(std::move(storage)){}
 
-    std::unique_ptr<Euclid::XYDataset::XYDataset> getDataset(const Euclid::XYDataset::QualifiedName& qualified_name){
+    std::unique_ptr<Euclid::XYDataset::XYDataset> getDataset(const Euclid::XYDataset::QualifiedName& qualified_name) override {
       std::vector<std::pair<double, double>> copied_values {};
       try {
         for (auto& sed_pair : m_storage.at(qualified_name)) {
@@ -39,7 +39,7 @@ struct PhotometryGridCreator_Fixture {
       return std::unique_ptr<Euclid::XYDataset::XYDataset>{new Euclid::XYDataset::XYDataset(std::move(copied_values))};
     }
 
-    std::vector<Euclid::XYDataset::QualifiedName> listContents(const std::string&){
+    std::vector<Euclid::XYDataset::QualifiedName> listContents(const std::string&) override {
       std::vector<Euclid::XYDataset::QualifiedName> content{};
       for (auto& pair : m_storage) {
         content.push_back(pair.first);

@@ -69,8 +69,8 @@ struct PhotometricCorrectionConfig_fixture: public ConfigManager_fixture {
     {
       std::ofstream out { (temp_dir.path() / catalog_type / photometric_corrections_file_name).string() };
       out <<
-          "# Filter Correction\n" <<
-          "# string     double\n" <<
+          "# Column: Filter string\n" <<
+          "# Column: Correction double\n" <<
           "    \n" <<
           "Filter1 1.01996\n" <<
           "Filter2 0.943029\n";

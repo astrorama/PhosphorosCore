@@ -30,7 +30,6 @@
 #include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzOutput/OutputHandler.h"
-#include "PhzOutput/BestModelCatalog.h"
 #include "PhzLikelihood/CatalogHandler.h"
 
 namespace Euclid {
@@ -76,10 +75,6 @@ public:
 private:
 
   bool m_cat_flag = false;
-  PhzOutput::BestModelCatalog::Format m_format;
-  boost::filesystem::path m_out_catalog_file;
-  bool m_pdf_flag = false;
-  boost::filesystem::path m_out_pdf_file;
   bool m_likelihood_flag = false;
   boost::filesystem::path m_out_likelihood_dir;
   bool m_posterior_flag = false;

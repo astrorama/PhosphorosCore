@@ -8,13 +8,13 @@
 #define	PHZOUTPUT_LIKELIHOODHANDLER_H
 
 #include <boost/filesystem.hpp>
-#include "PhzDataModel/SourceResults.h"
+#include "PhzDataModel/RegionResults.h"
 #include "PhzOutput/OutputHandler.h"
 
 namespace Euclid {
 namespace PhzOutput {
 
-template<PhzDataModel::SourceResultType GridMap, PhzDataModel::SourceResultType NormLogMap>
+template<PhzDataModel::RegionResultType GridType>
 class LikelihoodHandler : public OutputHandler {
 
 public:

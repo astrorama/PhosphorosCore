@@ -26,11 +26,8 @@
 #define _PHZLIKELIHOOD_GENERICGRIDPRIOR_H
 
 #include <vector>
-#include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/LikelihoodGrid.h"
-#include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
-#include "PhzDataModel/PriorGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/RegionResults.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -39,7 +36,7 @@ namespace PhzLikelihood {
  * @class GenericGridPrior
  * @brief Class which applies a user defined prior
  * @details
- * This prior can be used only for likelihood grids which have the exact same
+ * This prior can be used only for posterior grids which have the exact same
  * coordinates with the prior grid given by the user. For convenience, the user
  * can give a set of grids to this class, so the class can be reused for many
  * different likelihood grids (in the case of sparse likelihood grid for example).
@@ -50,7 +47,7 @@ public:
   
   /// Constructs a new GenericGridPrior, which can handle likelihood grids with
   /// the same axes as the given prior grid list
-  GenericGridPrior(std::vector<PhzDataModel::PriorGrid> prior_grid_list);
+  GenericGridPrior(std::vector<PhzDataModel::DoubleGrid> prior_grid_list);
 
   /**
    * @brief Destructor
@@ -58,31 +55,22 @@ public:
   virtual ~GenericGridPrior() = default;
 
   /**
-   * @brief Applies the prior to the given likelihood grid
+   * @brief Applies the prior to the given posterior grid
    * @details
    * This call assumes that the user gave to the constructor a prior grid with
-   * the same axes as the likelihood grid. It applies the prior by multiplying
-   * all the cells of the likelihood grid with the corresponding ones of the
+   * the same axes as the posterior grid. It applies the prior by multiplying
+   * all the cells of the posterior grid with the corresponding ones of the
    * prior grid.
-   * @param likelihoodGrid
-   *    The grid to apply the prior on
-   * @param sourcePhotometry
-   *    This parameter is not used by this prior
-   * @param modelGrid
-   *    This parameter is not used by this prior
-   * @param scaleFactorGrid
-   *    This parameter is not used by this prior
+   * @param results
+   *    The results object containing the posterior to apply the prior to
    * @throws Elements::Exception
    *    If there was no prior grid with the same axes given during construction
    */
-  void operator()(PhzDataModel::LikelihoodGrid& likelihood_grid,
-                  const SourceCatalog::Photometry&,
-                  const PhzDataModel::PhotometryGrid&,
-                  const PhzDataModel::ScaleFactordGrid&) const;
+  void operator()(PhzDataModel::RegionResults& results) const;
 
 private:
   
-  std::vector<PhzDataModel::PriorGrid> m_prior_grid_list;
+  std::vector<PhzDataModel::DoubleGrid> m_prior_grid_list;
 
 }; /* End of GenericGridPrior class */
 

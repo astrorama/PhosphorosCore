@@ -21,11 +21,11 @@ struct FilterInfo_Fixture {
 
       virtual ~squareFunction() = default;
 
-      double operator()(const double x) const {
+      double operator()(const double x) const override {
         return x*x;
       }
 
-      std::unique_ptr<Function> clone() const{
+      std::unique_ptr<Function> clone() const override {
          return std::unique_ptr<Function>{new squareFunction()};
       }
     };

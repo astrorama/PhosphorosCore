@@ -1,0 +1,135 @@
+/*
+ * PdfOutput.icpp
+ *
+ *  Created on: Feb 4, 2015
+ *      Author: Nicolas Morisset
+ */
+
+#include <fstream>
+#include <string>
+#include <vector>
+#include <type_traits>
+#include "ElementsKernel/Logging.h"
+#include "PhzDataModel/PhzModel.h"
+#include "Table/Table.h"
+#include "Table/FitsWriter.h"
+#include "PhzOutput/PdfOutput.h"
+#include "PhzUtils/FileUtils.h"
+
+
+namespace Euclid {
+namespace PhzOutput {
+
+namespace PdfOutput_impl {
+
+template <int Parameter>
+struct PdfOutputTraits;
+
+template <>
+struct PdfOutputTraits<PhzDataModel::ModelParameter::SED> {
+  static std::string filename() {return "sed";}
+  static std::string column_name() {return "SED";}
+  static constexpr auto result_type = PhzDataModel::SourceResultType::SED_1D_PDF;
+  using column_type = std::string;
+  static column_type convertToColumnType(const XYDataset::QualifiedName& value) {
+    return value.qualifiedName();
+  }
+};
+
+template <>
+struct PdfOutputTraits<PhzDataModel::ModelParameter::REDDENING_CURVE> {
+  static std::string filename() {return "red_curve";}
+  static constexpr auto result_type = PhzDataModel::SourceResultType::RED_CURVE_1D_PDF;
+  static std::string column_name() {return "ReddeningCurve";}
+  using column_type = std::string;
+  static column_type convertToColumnType(const XYDataset::QualifiedName& value) {
+    return value.qualifiedName();
+  }
+};
+
+template <>
+struct PdfOutputTraits<PhzDataModel::ModelParameter::EBV> {
+  static std::string filename() {return "ebv";}
+  static constexpr auto result_type = PhzDataModel::SourceResultType::EBV_1D_PDF;
+  using axis_type = PhzDataModel::ModelParameterTraits<PhzDataModel::ModelParameter::EBV>::type;
+  static std::string column_name() {return "E(B-V)";}
+  using column_type = axis_type;
+  static column_type convertToColumnType(axis_type value) {
+    return value;
+  }
+};
+
+template <>
+struct PdfOutputTraits<PhzDataModel::ModelParameter::Z> {
+  static std::string filename() {return "z";}
+  static constexpr auto result_type = PhzDataModel::SourceResultType::Z_1D_PDF;
+  using axis_type = PhzDataModel::ModelParameterTraits<PhzDataModel::ModelParameter::Z>::type;
+  static std::string column_name() {return "Z";}
+  using column_type = axis_type;
+  static column_type convertToColumnType(axis_type value) {
+    return value;
+  }
+};
+
+} // end of namespace PdfOutput_impl
+
+template <int Parameter>
+PdfOutput<Parameter>::PdfOutput(boost::filesystem::path out_dir): m_counter (0) {
+
+  m_out_file = out_dir / (std::string{"pdf_"}+PdfOutput_impl::PdfOutputTraits<Parameter>::filename()+".fits");
+  
+  // Check directory and write permissions
+  Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
+
+  m_fits_file.reset(new CCfits::FITS{"!"+m_out_file.string(), CCfits::RWmode::Write});
+
+}
+
+
+template <int Parameter>
+PdfOutput<Parameter>::~PdfOutput() {
+  auto logger = Elements::Logging::getLogger("PhzOutput");
+  logger.info() << "Created " << PhzDataModel::ModelParameterTraits<Parameter>::name() << " 1D PDFs in file " << m_out_file.string();
+}
+
+
+template <int Parameter>
+void PdfOutput<Parameter>::handleSourceOutput(const SourceCatalog::Source& source,
+                                   const PhzDataModel::SourceResults& results) {
+  // Count the number of sources saved
+  ++m_counter;
+
+  // Create the columnInfo object
+  std::shared_ptr<Euclid::Table::ColumnInfo> column_info {new Euclid::Table::ColumnInfo {{
+	  Euclid::Table::ColumnInfo::info_type(PdfOutput_impl::PdfOutputTraits<Parameter>::column_name(),
+                                           typeid(typename PdfOutput_impl::PdfOutputTraits<Parameter>::column_type)),
+	  Euclid::Table::ColumnInfo::info_type("Probability", typeid(double))
+  }}};
+
+  // Transfer pdf data to rows
+  std::vector<Table::Row> row_list {};
+  auto& pdf = results.get<PdfOutput_impl::PdfOutputTraits<Parameter>::result_type>();
+  for (auto iter=pdf.begin(); iter!=pdf.end(); ++iter) {
+    auto axis_value = PdfOutput_impl::PdfOutputTraits<Parameter>::convertToColumnType(iter.template axisValue<0>());
+	  row_list.push_back(Table::Row{{axis_value, *iter}, column_info});
+  }
+
+  Table::Table pdf_table{row_list};
+
+  // Store pdf data into fits file
+  Table::FitsWriter fits_writer {Table::FitsWriter::Format::BINARY};
+
+  // Close and reopen the FITS object for efficiency reason
+	if (m_counter % 5000 == 0) {
+		m_fits_file->destroy();
+		m_fits_file.reset( new CCfits::FITS {m_out_file.string(), CCfits::RWmode::Write});
+		m_counter = 0;
+	}
+
+  fits_writer.write(*m_fits_file, std::to_string(source.getId()), pdf_table);
+}
+
+} // end of namespace PhzOutput
+} // end of namespace Euclid
+
+

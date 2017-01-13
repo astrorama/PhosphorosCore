@@ -7,7 +7,7 @@
 #ifndef PHZLIKELIHOOD_NUMERICALAXISCORRECTION_H
 #define	PHZLIKELIHOOD_NUMERICALAXISCORRECTION_H
 
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -17,7 +17,7 @@ class NumericalAxisCorrection {
   
 public:
   
-  void operator()(PhzDataModel::LikelihoodGrid& likelihood_grid);
+  void operator()(PhzDataModel::DoubleGrid& likelihood_grid);
   
 };
 

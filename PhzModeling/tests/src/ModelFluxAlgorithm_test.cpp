@@ -22,11 +22,11 @@ struct ModelFluxAlgorithm_Fixture {
 
     virtual ~DummyFilterFunction() = default;
 
-    double operator()(const double) const {
+    double operator()(const double) const override {
       return 1.;
     }
 
-    std::unique_ptr<Function> clone() const{
+    std::unique_ptr<Function> clone() const override{
        return std::unique_ptr<Function>{new DummyFilterFunction()};
     }
   };

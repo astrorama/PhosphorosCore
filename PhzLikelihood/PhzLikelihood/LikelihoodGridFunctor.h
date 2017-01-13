@@ -10,8 +10,8 @@
 #include <tuple>
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/LikelihoodGrid.h"
-#include "PhzDataModel/ScaleFactorGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/RegionResults.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -20,26 +20,12 @@ namespace PhzLikelihood {
  * @class LikelihoodGridFunctor
  *
  * @brief
- * Calculates the likelihood grid of a source over a model photometry grid
- *
- * @details
- * The computed likelihood grids are normalized in such way, so their pick value
- * always has the value 1.
+ * Calculates the grid with the likelihood logarithm of a source over a model
+ * photometry grid
  */
 class LikelihoodGridFunctor {
 
 public:
-
-  /**
-   * The result type of the LikelihoodGridFunctor. It contains the following:
-   * - A grid containing the Likelihood of each model, normalized so the maximum
-   *   likelihood is 1
-   * - A grid containing the scale factor of each model
-   * - A double with the natural logarithm of the normalization of the likelihood grid
-   */
-  using result_type = std::tuple<PhzDataModel::LikelihoodGrid,
-                                 PhzDataModel::ScaleFactordGrid,
-                                 double>;
 
   /**
    * Definition of the STL-like algorithm for calculating the grid containing
@@ -51,8 +37,8 @@ public:
   typedef std::function<void(const SourceCatalog::Photometry& source_photometry,
                              PhzDataModel::PhotometryGrid::const_iterator model_begin,
                              PhzDataModel::PhotometryGrid::const_iterator model_end,
-                             PhzDataModel::LikelihoodGrid::iterator likelihood_log_begin,
-                             PhzDataModel::ScaleFactordGrid::iterator scale_factor_begin)
+                             PhzDataModel::DoubleGrid::iterator likelihood_log_begin,
+                             PhzDataModel::DoubleGrid::iterator scale_factor_begin)
                        > LikelihoodLogarithmFunction;
 
   /**
@@ -61,19 +47,15 @@ public:
   LikelihoodGridFunctor(LikelihoodLogarithmFunction likelihood_log_func);
 
   /**
-   * Computes the likelihood of the given source photometry over the given
-   * photometry grid.
+   * Computes the log likelihood of the given source photometry over the given
+   * photometry grid. The given results object must already contain the
+   * MODEL_GRID_REFERENCE and SOURCE_PHOTOMETRY_REFERENCE objects. After the
+   * call, the results will contain the LIKELIHOOD_GRID and SCALE_FACTOR_GRID.
    *
-   * @param source_phot
-   *    The photometry of the source
-   * @param phot_grid
-   *    The grid containing the model photometries
-   * @return
-   *    The results of the likelihood calculation
-   * \see result_type
+   * @param results
+   *    The results object to get the input and set the output
    */
-  result_type operator()(const SourceCatalog::Photometry& source_phot,
-                         const PhzDataModel::PhotometryGrid& phot_grid);
+  void operator()(PhzDataModel::RegionResults& results);
 
 private:
 

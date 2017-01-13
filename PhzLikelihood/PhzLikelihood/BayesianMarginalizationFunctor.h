@@ -10,20 +10,21 @@
 #include <functional>
 #include <map>
 #include <vector>
-#include "PhzDataModel/LikelihoodGrid.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhzModel.h"
+#include "PhzDataModel/RegionResults.h"
 #include "PhzLikelihood/NumericalAxisCorrection.h"
 #include "PhzLikelihood/GroupedAxisCorrection.h"
-#include "PhzDataModel/Pdf1D.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
 
+template <int FinalAxis>
 class BayesianMarginalizationFunctor {
   
 public:
   
-  using AxisCorrection = std::function<void(PhzDataModel::LikelihoodGrid& likelihood_grid)>;
+  using AxisCorrection = std::function<void(PhzDataModel::DoubleGrid& likelihood_grid)>;
   
   BayesianMarginalizationFunctor();
   
@@ -36,7 +37,7 @@ public:
     m_custom_axes_corr[axis].emplace_back(std::move(correction));
   }
 
-  PhzDataModel::Pdf1DZ operator()(const PhzDataModel::LikelihoodGrid& likelihood_grid) const;
+  void operator()(PhzDataModel::RegionResults& results) const;
   
 private:
   
@@ -49,6 +50,8 @@ private:
 
 } // end of namespace PhzLikelihood
 } // end of namespace Euclid
+
+#include "PhzLikelihood/_impl/BayesianMarginalizationFunctor.icpp"
 
 #endif	/* PHZLIKELIHOOD_BAYESIANMARGINALIZATIONFUNCTOR_H */
 

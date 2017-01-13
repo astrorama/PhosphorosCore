@@ -50,9 +50,9 @@ public:
    *    The function to use for computing the likelihood grid for a single source
    * @param priors
    *    The priors to apply on the likelihood grid
-   * @param marginalization_func
-   *    The function to use for marginalizing the multi-dimensional likelihood
-   *    grid to a 1D PDF
+   * @param marginalization_func_list
+   *    The functions to use for marginalizing the multi-dimensional likelihood
+   *    grid to a 1D PDFs
    * @throws ElementsException
    *    If the phot_corr_map does not contain photometric corrections for all
    *    the filters of the model photometries
@@ -61,7 +61,7 @@ public:
                  const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                  LikelihoodGridFunction likelihood_grid_func,
                  std::vector<PriorFunction> priors,
-                 MarginalizationFunction marginalization_func);
+                 std::vector<MarginalizationFunction> marginalization_func_list);
   
   /**
    * Iterates through a set of sources and calculates the PHZ parameters for

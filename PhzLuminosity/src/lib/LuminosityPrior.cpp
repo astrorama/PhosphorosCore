@@ -9,6 +9,8 @@
 #include <functional>
 #include "MathUtils/function/Function.h"
 #include "PhzLuminosity/LuminosityPrior.h"
+#include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/RegionResults.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
@@ -18,19 +20,33 @@ static Elements::Logging logger = Elements::Logging::getLogger("LuminosityPrior"
 LuminosityPrior::LuminosityPrior(
     std::unique_ptr<const LuminosityCalculator> luminosityCalculator,
     PhzDataModel::QualifiedNameGroupManager sedGroupManager,
-    LuminosityFunctionSet luminosityFunctionSet ):
+    LuminosityFunctionSet luminosityFunctionSet,
+    const PhysicsUtils::CosmologicalParameters& cosmology,
+    double effectiveness):
 m_luminosity_calculator{std::move(luminosityCalculator)},
 m_sed_group_manager(std::move(sedGroupManager)),
-m_luminosity_function_set{std::move(luminosityFunctionSet)}{
+m_luminosity_function_set{std::move(luminosityFunctionSet)},
+m_mag_shift{-5. * std::log10(cosmology.getHubbleConstant() / 100.)},
+m_effectiveness{effectiveness} {
 
 }
 
-void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
-    const SourceCatalog::Photometry&, const PhzDataModel::PhotometryGrid&,
-    const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const {
+void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
+  
+  // Get from the results the input
+  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
+  const auto& scale_factor_grid = results.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
 
-  auto& z_axis = likelihoodGrid.getAxis<PhzDataModel::ModelParameter::Z>();
-  auto& sed_axis = likelihoodGrid.getAxis<PhzDataModel::ModelParameter::SED>();
+  // We first create a grid that contains only the prior, so we can normalize
+  // it and apply the efficiency
+  PhzDataModel::DoubleGrid prior_grid {posterior_grid.getAxesTuple()};
+  for (auto& cell : prior_grid) {
+    cell = 1.;
+  }
+  double max = 0;
+  
+  auto& z_axis = posterior_grid.getAxis<PhzDataModel::ModelParameter::Z>();
+  auto& sed_axis = posterior_grid.getAxis<PhzDataModel::ModelParameter::SED>();
 
   std::function<double(double)> luminosity_function {};
   std::string current_sed_group {};
@@ -57,25 +73,40 @@ void LuminosityPrior::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
             std::placeholders::_1);
       }
       
-      auto likelihood_iter = likelihoodGrid.begin();
-      likelihood_iter.fixAxisByIndex<PhzDataModel::ModelParameter::SED>(sed_index);
-      likelihood_iter.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(z_index);
+      auto prior_iter = prior_grid.begin();
+      prior_iter.fixAxisByIndex<PhzDataModel::ModelParameter::SED>(sed_index);
+      prior_iter.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(z_index);
 
-      auto scal_iter = scaleFactorGrid.begin();
+      auto scal_iter = scale_factor_grid.begin();
       scal_iter.fixAxisByIndex<PhzDataModel::ModelParameter::SED>(sed_index);
       scal_iter.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(z_index);
 
-      while (likelihood_iter != likelihoodGrid.end()) {
+      while (prior_iter != prior_grid.end()) {
         double luminosity = (*m_luminosity_calculator)(scal_iter);
 
-        double prior = luminosity_function(luminosity);
-        *likelihood_iter *= prior;
+        *prior_iter = luminosity_function(luminosity + m_mag_shift);
+        if (*prior_iter > max) {
+          max = *prior_iter;
+        }
 
-        ++likelihood_iter;
+        ++prior_iter;
         ++scal_iter;
       }
     }
   }
+  
+  // Apply the effectiveness to the prior. WARNING: At the moment we do not
+  // normalize the prior yet, as the max value might be different between the
+  // parameter space regions.
+  for (auto& v : prior_grid) {
+    v = max * (1 - m_effectiveness) + m_effectiveness * v;
+  }
+  
+  // Apply the prior to the likelihood
+  for (auto l_it=posterior_grid.begin(), p_it=prior_grid.begin(); l_it!=posterior_grid.end(); ++l_it, ++p_it) {
+    *l_it += std::log(*p_it);
+  }
+  
 }
 
 }

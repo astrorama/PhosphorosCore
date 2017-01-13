@@ -26,7 +26,7 @@ struct LuminosityCalculator_Fixture {
   public:
 
     const PhzDataModel::PhotometryGrid::const_iterator fixIterator(
-           const PhzDataModel::ScaleFactordGrid::const_iterator&) const override{
+           const PhzDataModel::DoubleGrid::const_iterator&) const override{
       return m_model_photometry_grid->cbegin();
     }
 
@@ -55,7 +55,7 @@ struct LuminosityCalculator_Fixture {
   Euclid::PhzDataModel::ModelAxesTuple parameter_space= Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);
 
   // Create the scale factor Grid
-  PhzDataModel::ScaleFactordGrid scale_factor_grid{parameter_space};
+  PhzDataModel::DoubleGrid scale_factor_grid{parameter_space};
 
   std::vector<double> zs_mod{0.0};
   Euclid::PhzDataModel::ModelAxesTuple parameter_space_slice= Euclid::PhzDataModel::createAxesTuple(zs_mod,ebvs,reddeing_curves,seds);
@@ -84,19 +84,22 @@ struct LuminosityCalculator_Fixture {
      *
      *  the grid is filled with photometries values with the first photometrie
      *  matching the luminosityFilterName
-     *  {{1.7,0.1}{0.1,0.3}}
-     *  {{2.7,0.1}{0.1,0.3}}
-     *  {{3.7,0.1}{0.1,0.3}}
-     *  {{4.7,0.1}{0.1,0.3}}
-     *  {{5.7,0.1}{0.1,0.3}}
+     *  {{1.7,0.1}{0.1,0.3}}     ebv=0 SED=curve_1
+     *  {{2.7,0.1}{0.1,0.3}}     ebv=0.1 SED=curve_1
+     *  {{3.7,0.1}{0.1,0.3}}     ebv=0.2 SED=curve_1
+     *
+     *  {{4.7,0.1}{0.1,0.3}}     ebv=0 SED=curve_2
+     *  {{5.7,0.1}{0.1,0.3}}     ...
      *  {{6.7,0.1}{0.1,0.3}}
-     *  {{7.7,0.1}{0.1,0.3}}
+     *
+     *  {{7.7,0.1}{0.1,0.3}}     ebv=0 SED=curve_3
      *  {{8.7,0.1}{0.1,0.3}}
      *  {{9.7,0.1}{0.1,0.3}}
      *
      *  the scale factor grid has the same axis but the z which
      *  contains {0.0,0.2,0.6,1.0}and is filled with values
      *  1.3, 2.3, 3.3, 4.3, ...
+     *  Z=0 values are thus 1.3, 5.3,...
      *
      */
 
@@ -132,14 +135,14 @@ BOOST_FIXTURE_TEST_CASE(test_flux, LuminosityCalculator_Fixture) {
        new PhzDataModel::PhotometryGrid { std::move(model_grid) } };
 
 std::map<double,double> distance_correction{{0.0,0.},{0.2,100.},{0.6,1000000.},{1.0,10000000000.}};
-std::map<double,double> flux_values{{0.0,7.2825e-1},{0.2,1.07367},{0.6,1.15537},{1.0,1.2044}};
+std::map<double,double> flux_values{{0.0,2644265000.0},{0.2,3898595833.33},{0.6,4195228125.0},{1.0,4373207500.0}};
 
 
 TestLuminosityCalculator lum_comp_funct {
    luminosityFilterName,
    model_grid_ptr,
    distance_correction,
-   {},
+   std::map<double,double>{},
    false };
 auto scale_iter = scale_factor_grid.cbegin();
 int loop=0;
@@ -170,7 +173,7 @@ BOOST_FIXTURE_TEST_CASE(test_mag, LuminosityCalculator_Fixture) {
   TestLuminosityCalculator lum_comp_funct {
       luminosityFilterName,
       model_grid_ptr,
-      {},
+      std::map<double,double>{},
       modulus_correction,
       true };
   auto scale_iter = scale_factor_grid.cbegin();

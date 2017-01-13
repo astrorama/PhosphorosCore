@@ -5,6 +5,7 @@ elements_depends_on_subdirs(GridContainer)
 elements_depends_on_subdirs(SourceCatalog)
 elements_depends_on_subdirs(MathUtils)
 elements_depends_on_subdirs(PhzDataModel)
+elements_depends_on_subdirs(PhzUtils)
 
 find_package(Boost REQUIRED COMPONENTS serialization)
 

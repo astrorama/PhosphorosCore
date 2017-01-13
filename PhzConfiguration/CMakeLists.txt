@@ -123,3 +123,6 @@ elements_add_unit_test(AxisWeightPriorConfig_test tests/src/AxisWeightPriorConfi
 elements_add_unit_test(GenericGridPriorConfig_test tests/src/GenericGridPriorConfig_test.cpp 
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(PdfOutputFlagsConfig_test tests/src/PdfOutputFlagsConfig_test.cpp 
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)

@@ -60,6 +60,7 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 static const std::string LUMINOSITY_PRIOR {"luminosity-prior"};
+static const std::string LUMINOSITY_PRIOR_EFFECTIVENESS {"luminosity-prior-effectiveness"};
 static const std::string LUMINOSITY_MODEL_GRID_FILE {"luminosity-model-grid-file"};
 
 
@@ -81,6 +82,8 @@ auto LuminosityPriorConfig::getProgramOptions() -> std::map<std::string, OptionD
   return {{"Luminosity Prior options", {
       {LUMINOSITY_PRIOR.c_str(), po::value<std::string>()->default_value("NO"),
           "If added, turn Luminosity Prior on  (YES/NO, default: NO)"},
+    {LUMINOSITY_PRIOR_EFFECTIVENESS.c_str(), po::value<double>()->default_value(1.),
+          "A value in the range [0,1] showing how strongly to apply the prior"},
       {LUMINOSITY_MODEL_GRID_FILE.c_str(), po::value<std::string>(),
           "The grid containing the model photometry for the Luminosity computation."}
     }}};
@@ -91,6 +94,11 @@ void LuminosityPriorConfig::preInitialize(const UserValues& args) {
       && args.at(LUMINOSITY_PRIOR).as<std::string>() != "YES") {
     throw Elements::Exception() << "Invalid " + LUMINOSITY_PRIOR + " value: "
         << args.at(LUMINOSITY_PRIOR).as<std::string>() << " (allowed values: YES, NO)"; 
+  }
+  auto eff = args.at(LUMINOSITY_PRIOR_EFFECTIVENESS).as<double>();
+  if (eff < 0 || eff > 1) {
+    throw Elements::Exception() << "Invalid " + LUMINOSITY_PRIOR_EFFECTIVENESS + " value: "
+        << eff << " (must be in range [0,1])"; 
   }
   if (args.at(LUMINOSITY_PRIOR).as<std::string>() == "YES") {
     getDependency<LuminosityBandConfig>().setEnabled(true);
@@ -176,12 +184,12 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
            std::unique_ptr<MathUtils::Function>>{pair.first,pair.second->clone()});
      }
 
-
+     double effectiveness = args.at(LUMINOSITY_PRIOR_EFFECTIVENESS).as<double>();
      std::shared_ptr<PhzLuminosity::LuminosityPrior> prior_ptr{new PhzLuminosity::LuminosityPrior{
        std::move(luminosityCalculator),
        getDependency<LuminositySedGroupConfig>().getLuminositySedGroupManager(),
-       PhzLuminosity::LuminosityFunctionSet{std::move(lum_function_vector)}
-       }};
+       PhzLuminosity::LuminosityFunctionSet{std::move(lum_function_vector)},
+       cosmological_param, effectiveness}};
 
      PhzLikelihood::SharedPriorAdapter<PhzLuminosity::LuminosityPrior> prior{prior_ptr};
 

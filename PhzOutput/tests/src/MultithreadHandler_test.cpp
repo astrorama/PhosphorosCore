@@ -50,7 +50,7 @@ public:
     BOOST_CHECK(current < order.size());
     BOOST_CHECK(current < groups.size());
     BOOST_CHECK_EQUAL(source.getId(), order[current]);
-    BOOST_CHECK_EQUAL(results.getResult<PhzDataModel::SourceResultType::REGION_NAMES>().at(0), groups[current]);
+    BOOST_CHECK_EQUAL(results.get<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>(), source.getId());
     ++current;
   }
   
@@ -72,8 +72,7 @@ struct MultithreadHandler_fixture {
       groups.emplace_back(std::to_string(id));
       source_list.emplace_back(SourceCatalog::Source {id, {}});
       result_list.emplace_back();
-      result_list.back().setResult<PhzDataModel::SourceResultType::REGION_NAMES>(
-                std::vector<std::string>{std::to_string(id)});
+      result_list.back().set<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>(id);
     }
     check_order_handler.order = order;
     check_order_handler.groups = std::move(groups);

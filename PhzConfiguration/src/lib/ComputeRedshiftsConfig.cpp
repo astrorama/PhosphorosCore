@@ -47,11 +47,20 @@
 #include "PhzConfiguration/AxisFunctionPriorConfig.h"
 #include "PhzConfiguration/AxisWeightPriorConfig.h"
 #include "PhzConfiguration/GenericGridPriorConfig.h"
-#include "PhzOutput/BestModelCatalog.h"
+#include "PhzConfiguration/FixedRedshiftConfig.h"
+#include "PhzConfiguration/OutputCatalogConfig.h"
+#include "PhzConfiguration/PhzOutputDirConfig.h"
+#include "PhzConfiguration/BestModelOutputConfig.h"
+#include "PhzConfiguration/PdfOutputConfig.h"
+#include "PhzConfiguration/OutputStatisticsConfig.h"
 
-#include "PhzOutput/BestModelCatalog.h"
 #include "PhzOutput/PdfOutput.h"
 #include "PhzOutput/LikelihoodHandler.h"
+#include "PhzOutput/LikelihoodHandler.h"
+#include "PhzOutput/PhzCatalog.h"
+#include "PhzOutput/PhzColumnHandlers/Id.h"
+#include "PhzOutput/PhzColumnHandlers/BestModel.h"
+#include "PhzOutput/PhzColumnHandlers/Pdf.h"
 
 #include "Configuration/PhotometricBandMappingConfig.h"
 #include "CheckLuminosityParameter.h"
@@ -66,10 +75,6 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string OUTPUT_CATALOG_FORMAT {"output-catalog-format"};
-static const std::string PHZ_OUTPUT_DIR {"phz-output-dir"};
-static const std::string CREATE_OUTPUT_CATALOG_FLAG {"create-output-catalog"};
-static const std::string CREATE_OUTPUT_PDF_FLAG {"create-output-pdf"};
 static const std::string CREATE_OUTPUT_LIKELIHOODS_FLAG {"create-output-likelihoods"};
 static const std::string CREATE_OUTPUT_POSTERIORS_FLAG {"create-output-posteriors"};
 
@@ -96,18 +101,16 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<AxisFunctionPriorConfig>();
   declareDependency<AxisWeightPriorConfig>();
   declareDependency<GenericGridPriorConfig>();
+  declareDependency<FixedRedshiftConfig>();
+  declareDependency<OutputCatalogConfig>();
+  declareDependency<PhzOutputDirConfig>();
+  declareDependency<BestModelOutputConfig>();
+  declareDependency<PdfOutputConfig>();
+  declareDependency<OutputStatisticsConfig>();
 }
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Compute Redshifts options", {
-    {OUTPUT_CATALOG_FORMAT.c_str(), po::value<std::string>()->default_value("ASCII"),
-        "The format of the PHZ catalog file (one of ASCII (default), FITS)"},
-    {PHZ_OUTPUT_DIR.c_str(), po::value<std::string>(),
-        "The output directory of the PHZ results"},
-    {CREATE_OUTPUT_CATALOG_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
-        "The output catalog flag for creating the file (YES/NO, default: NO)"},
-    {CREATE_OUTPUT_PDF_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
-        "The output pdf flag for creating the file (YES/NO, default: NO)"},
+  return {{"Output options", {
     {CREATE_OUTPUT_LIKELIHOODS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
         "The output likelihoods flag for creating the file (YES/NO, default: NO)"},
     {CREATE_OUTPUT_POSTERIORS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
@@ -115,27 +118,13 @@ auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, Option
   }}};
 }
 
-static fs::path getOutputPathFromOptions(const std::map<std::string, po::variable_value>& options,
-                                         const fs::path& result_dir, const std::string& catalog_type,
-                                         const fs::path& input_catalog_name) {
-  auto input_filename = input_catalog_name.filename().stem();
-  fs::path result = result_dir / catalog_type / input_filename;
-  if (options.count(PHZ_OUTPUT_DIR) > 0) {
-    fs::path path = options.find(PHZ_OUTPUT_DIR)->second.as<std::string>();
-    if (path.is_absolute()) {
-      result = path;
-    } else {
-      result = result_dir / catalog_type / input_filename / path;
-    }
-  }
-  return result;
-}
-
 class MultiOutputHandler : public PhzOutput::OutputHandler {
 public:
   virtual ~MultiOutputHandler() = default;
   void addHandler(std::unique_ptr<PhzOutput::OutputHandler> handler) {
-    m_handlers.emplace_back(std::move(handler));
+    if (handler != nullptr) {
+      m_handlers.emplace_back(std::move(handler));
+    }
   }
   void handleSourceOutput(const SourceCatalog::Source& source,
                           const PhzDataModel::SourceResults& results) override {
@@ -148,21 +137,7 @@ private:
 };
 
 void ComputeRedshiftsConfig::preInitialize(const UserValues& args) {
-  if (args.at(CREATE_OUTPUT_CATALOG_FLAG).as<std::string>() != "YES" &&
-      args.at(CREATE_OUTPUT_CATALOG_FLAG).as<std::string>() != "NO") {
-    throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_CATALOG_FLAG
-        << ": " << args.at(CREATE_OUTPUT_CATALOG_FLAG).as<std::string>();
-  }
-  if (args.at(OUTPUT_CATALOG_FORMAT).as<std::string>() != "ASCII" &&
-      args.at(OUTPUT_CATALOG_FORMAT).as<std::string>() != "FITS") {
-    throw Elements::Exception() << "Invalid value for option " << OUTPUT_CATALOG_FORMAT
-        << ": " << args.at(OUTPUT_CATALOG_FORMAT).as<std::string>();
-  }
-  if (args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() != "YES" &&
-      args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() != "NO") {
-    throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_PDF_FLAG
-        << ": " << args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>();
-  }
+
   if (args.at(CREATE_OUTPUT_LIKELIHOODS_FLAG).as<std::string>() != "YES" &&
       args.at(CREATE_OUTPUT_LIKELIHOODS_FLAG).as<std::string>() != "NO") {
     throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_LIKELIHOODS_FLAG
@@ -173,28 +148,14 @@ void ComputeRedshiftsConfig::preInitialize(const UserValues& args) {
     throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_POSTERIORS_FLAG
         << ": " << args.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>();
   }
-  if (args.at(CREATE_OUTPUT_CATALOG_FLAG).as<std::string>() == "NO" &&
-      args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() == "NO" &&
-      args.at(CREATE_OUTPUT_LIKELIHOODS_FLAG).as<std::string>() == "NO" &&
-      args.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>() == "NO") {
-    throw Elements::Exception() << "At least one of the options "
-        << CREATE_OUTPUT_CATALOG_FLAG << ", " << CREATE_OUTPUT_PDF_FLAG << ", "
-        << CREATE_OUTPUT_LIKELIHOODS_FLAG << ", "
-        << CREATE_OUTPUT_POSTERIORS_FLAG << " must be set to YES";
-  }
+
 }
 
 
 void ComputeRedshiftsConfig::initialize(const UserValues& args) {
 
 
-  auto output_dir = getOutputPathFromOptions(args,
-      getDependency<ResultsDirConfig>().getResultsDir(),
-      getDependency<CatalogTypeConfig>().getCatalogType(),
-      getDependency<Euclid::Configuration::CatalogConfig>().getFilename());
-
-  // Check directory and write permissions
-  Euclid::PhzUtils::checkCreateDirectoryOnly(output_dir.string());
+  auto output_dir = getDependency<PhzOutputDirConfig>().getPhzOutputDir();
 
   //get the filter to process
   std::vector<std::string> filter_to_process_list{};
@@ -237,22 +198,6 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
     }
   }
 
-  m_cat_flag = (args.at(CREATE_OUTPUT_CATALOG_FLAG).as<std::string>() == "YES");
-  if (m_cat_flag) {
-    if (args.at(OUTPUT_CATALOG_FORMAT).as<std::string>() == "ASCII") {
-      m_format = PhzOutput::BestModelCatalog::Format::ASCII;
-      m_out_catalog_file = output_dir / "phz_cat.txt";
-    } else {
-      m_format = PhzOutput::BestModelCatalog::Format::FITS;
-      m_out_catalog_file = output_dir / "phz_cat.fits";
-    }
-  }
-
-  m_pdf_flag = (args.at(CREATE_OUTPUT_PDF_FLAG).as<std::string>() == "YES");
-  if (m_pdf_flag) {
-    m_out_pdf_file = output_dir / "pdf.fits";
-  }
-
   m_likelihood_flag = (args.at(CREATE_OUTPUT_LIKELIHOODS_FLAG).as<std::string>() == "YES");
   if (m_likelihood_flag) {
     m_out_likelihood_dir = output_dir / "likelihoods";
@@ -274,29 +219,26 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
   std::unique_ptr<PhzOutput::OutputHandler> output_handler {new MultiOutputHandler{}};
   MultiOutputHandler& result = static_cast<MultiOutputHandler&>(*output_handler);
 
-  if (m_cat_flag) {
-    result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
-            new PhzOutput::BestModelCatalog {m_out_catalog_file.string(), m_format}});
+  result.addHandler(getDependency<OutputCatalogConfig>().getOutputHandler());
+
+  for (auto& handler : getDependency<PdfOutputConfig>().getOutputHandlers()) {
+    result.addHandler(std::move(handler));
   }
-  if (m_pdf_flag) {
-    result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
-            new PhzOutput::PdfOutput {m_out_pdf_file}});
-  }
+
   if (m_likelihood_flag) {
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
         new PhzOutput::LikelihoodHandler<
-                PhzDataModel::SourceResultType::REGION_LIKELIHOOD,
-                PhzDataModel::SourceResultType::REGION_LIKELIHOOD_NORM_LOG
+                PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID
         > {m_out_likelihood_dir}});
   }
+
   if (m_posterior_flag) {
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
         new PhzOutput::LikelihoodHandler<
-                PhzDataModel::SourceResultType::REGION_POSTERIOR,
-                PhzDataModel::SourceResultType::REGION_POSTERIOR_NORM_LOG
+                PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID
         > {m_out_posterior_dir}});
   }
-            
+
   return output_handler;
 }
 

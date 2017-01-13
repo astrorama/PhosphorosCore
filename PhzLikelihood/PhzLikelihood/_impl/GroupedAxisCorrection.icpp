@@ -15,7 +15,7 @@ GroupedAxisCorrection<I>::GroupedAxisCorrection(PhzDataModel::QualifiedNameGroup
 }
 
 template<int I>
-void GroupedAxisCorrection<I>::operator()(PhzDataModel::LikelihoodGrid& likelihood_grid) {
+void GroupedAxisCorrection<I>::operator()(PhzDataModel::DoubleGrid& likelihood_grid) {
   // The following lines guarantee that the template cannot be instantiated for
   // axes which are not of type QualifiedName
   using axis_type = decltype(likelihood_grid.getAxis<I>().operator[](0));
