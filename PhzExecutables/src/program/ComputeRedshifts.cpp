@@ -8,18 +8,30 @@
 #include <memory>
 #include <chrono>
 #include "ElementsKernel/ProgramHeaders.h"
+#include "Configuration/ConfigManager.h"
+#include "Configuration/CatalogConfig.h"
+#include "Configuration/Utils.h"
 #include "PhzLikelihood/ParallelCatalogHandler.h"
-#include "PhzConfiguration/ComputeRedshiftsConfiguration.h"
+#include "PhzConfiguration/ComputeRedshiftsConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
+#include "PhzConfiguration/LikelihoodGridFuncConfig.h"
+#include "PhzConfiguration/PhotometricCorrectionConfig.h"
+#include "PhzConfiguration/PriorConfig.h"
 
 #include <fstream>
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/Pdf1D.h"
+#include "PhzConfiguration/MarginalizationConfig.h"
 
 using namespace std;
 using namespace Euclid;
+using namespace Euclid::Configuration;
+using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhosphorosComputeRedshifts");
+
+static long config_manager_id = getUniqueManagerId();
 
 class ProgressReporter {
 
@@ -46,21 +58,27 @@ private:
 class ComputeRedshifts : public Elements::Program {
 
   po::options_description defineSpecificProgramOptions() override {
-    return PhzConfiguration::ComputeRedshiftsConfiguration::getProgramOptions();
+    auto& config_manager = ConfigManager::getInstance(config_manager_id);
+    config_manager.registerConfiguration<ComputeRedshiftsConfig>();
+    return config_manager.closeRegistration();
   }
 
   Elements::ExitCode mainMethod(map<string, po::variable_value>& args) override {
-    PhzConfiguration::ComputeRedshiftsConfiguration conf {args};
 
-    auto model_phot_grid = conf.getPhotometryGrid();
-    auto marginalization_func = conf.getMarginalizationFunc();
+    auto& config_manager = ConfigManager::getInstance(config_manager_id);
+    config_manager.initialize(args);
 
-    PhzLikelihood::ParallelCatalogHandler handler {conf.getPhotometricCorrectionMap(),
-                                                   model_phot_grid, conf.getPriors(),
-                                                   marginalization_func};
+    auto& model_phot_grid = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
+    auto& marginalization_func = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFunc();
+    auto& likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
+    auto& phot_corr_map = config_manager.getConfiguration<PhotometricCorrectionConfig>().getPhotometricCorrectionMap();
+    auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();
+    
+    PhzLikelihood::ParallelCatalogHandler handler {phot_corr_map, model_phot_grid, likelihood_grid_func,
+                                                   priors, marginalization_func};
 
-    auto catalog = conf.getCatalog();
-    auto out_ptr = conf.getOutputHandler();
+    auto& catalog = config_manager.getConfiguration<CatalogConfig>().getCatalog();
+    auto out_ptr = config_manager.getConfiguration<ComputeRedshiftsConfig>().getOutputHandler();
 
     handler.handleSources(catalog.begin(), catalog.end(), *out_ptr, ProgressReporter{});
 

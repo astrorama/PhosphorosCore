@@ -5,13 +5,15 @@
  */
 
 #ifndef SCALEFACTORCALCMOCK_H
-#define	SCALEFACTORCALCMOCK_H
+#define SCALEFACTORCALCMOCK_H
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
 #include "ElementsKernel/EnableGMock.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
+
+#include "FluxErrorPair_boost.h"
 
 using namespace testing;
 

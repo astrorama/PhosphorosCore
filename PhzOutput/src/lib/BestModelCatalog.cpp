@@ -21,17 +21,19 @@ namespace PhzOutput {
 static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
 BestModelCatalog::~BestModelCatalog() {
-  Table::Table out_table {std::move(m_row_list)};
-  // Check directory and write permissions
-  Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
-  if (m_format == Format::ASCII) {
-    std::ofstream out {m_out_file.string()};
-    Table::AsciiWriter().write(out, out_table, false);
-  } else {
-    CCfits::FITS fits {"!"+m_out_file.string(), CCfits::RWmode::Write};
-    Table::FitsWriter().write(fits, "Best Model Catalog", out_table);
+  if (!m_row_list.empty()) {
+    Table::Table out_table {std::move(m_row_list)};
+    // Check directory and write permissions
+    Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
+    if (m_format == Format::ASCII) {
+      std::ofstream out {m_out_file.string()};
+      Table::AsciiWriter().write(out, out_table, false);
+    } else {
+      CCfits::FITS fits {"!"+m_out_file.string(), CCfits::RWmode::Write};
+      Table::FitsWriter().write(fits, "Best Model Catalog", out_table);
+    }
+    logger.info() << "Created best fit model catalog in file " << m_out_file.string();
   }
-  logger.info() << "Created best fit model catalog in file " << m_out_file.string();
 }
 
 void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
@@ -42,9 +44,11 @@ void BestModelCatalog::handleSourceOutput(const SourceCatalog::Source& source,
   auto reddening_curve = best_model.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>().qualifiedName();
   auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
   auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
-  auto scale = std::get<3>(results);
-  auto likelihood = std::get<4>(results);
-  m_row_list.push_back(Table::Row{{source.getId(), sed, sed_index, reddening_curve, ebv, z, scale, likelihood}, m_column_info});
+  auto scale = std::get<4>(results);
+  auto likelihood = std::get<5>(results);
+  auto& pdf_1d = std::get<1>(results);
+  auto pdf_1d_peak_z = std::max_element(pdf_1d.begin(), pdf_1d.end()).axisValue<0>();
+  m_row_list.push_back(Table::Row{{source.getId(), sed, sed_index, reddening_curve, ebv, z, scale, likelihood, pdf_1d_peak_z}, m_column_info});
 }
 
 } // end of namespace PhzOutput

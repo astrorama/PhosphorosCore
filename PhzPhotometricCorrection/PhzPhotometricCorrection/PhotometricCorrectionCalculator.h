@@ -53,6 +53,8 @@ public:
                                   CalculateScaleFactorsMapFunction calculate_scale_factors_map,
                                   CalculatePhotometricCorrectionFunction calculate_photometric_correction);
   
+  virtual ~PhotometricCorrectionCalculator();
+  
   PhzDataModel::PhotometricCorrectionMap operator()(
           const SourceCatalog::Catalog& catalog,
           const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,

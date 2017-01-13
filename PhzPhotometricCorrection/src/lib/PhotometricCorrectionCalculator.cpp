@@ -4,7 +4,9 @@
  * @author Nikolaos Apostolakos
  */
 
+#include "ElementsKernel/Exception.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
+#include "PhzUtils/Multithreading.h"
 #include "PhzPhotometricCorrection/PhotometricCorrectionCalculator.h"
 
 namespace Euclid {
@@ -18,7 +20,11 @@ PhotometricCorrectionCalculator::PhotometricCorrectionCalculator(
           m_calculate_scale_factors_map{std::move(calculate_scale_factors_map)},
           m_calculate_photometric_correction{std::move(calculate_photometric_correction)} {
 }
-          
+
+PhotometricCorrectionCalculator::~PhotometricCorrectionCalculator() {
+  PhzUtils::getStopThreadsFlag() = false;
+}
+
 PhzDataModel::PhotometricCorrectionMap createInitialPhotCorr(const SourceCatalog::Catalog& catalog) {
   PhzDataModel::PhotometricCorrectionMap phot_corr {};
   auto source_phot = catalog.begin()->getAttribute<SourceCatalog::Photometry>();
@@ -37,6 +43,9 @@ PhzDataModel::PhotometricCorrectionMap PhotometricCorrectionCalculator::operator
   PhzDataModel::PhotometricCorrectionMap phot_corr = createInitialPhotCorr(catalog);
   size_t counter {0};
   while(!stop_criteria_func(phot_corr)) {
+    if (PhzUtils::getStopThreadsFlag()) {
+      throw Elements::Exception() << "Stopped by the user";
+    }
     auto best_fit_model_map = m_find_best_fit_models(
                                             catalog, model_grid_map, phot_corr);
     auto scale_factor_map = m_calculate_scale_factors_map(

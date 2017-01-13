@@ -13,6 +13,9 @@ find_package(Boost REQUIRED COMPONENTS program_options)
 elements_add_executable(PhosphorosComputeModelGrid src/program/ComputeModelGrid.cpp
                         LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling)
 
+elements_add_executable(PhosphorosComputeLuminosityModelGrid src/program/ComputeLuminosityModelGrid.cpp
+                        LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling)
+
 elements_add_executable(PhosphorosComputeRedshifts src/program/ComputeRedshifts.cpp
                         LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling PhzLikelihood PhzOutput)
 

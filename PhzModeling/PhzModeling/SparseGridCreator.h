@@ -45,22 +45,22 @@ public:
    * Instanciate and initialize a PhotometryGridCreator.
    *
    * @param sed_provider
-   * A unique_ptr<XYDatasetProvider> allowing to access to the SEDs
+   * A shared_ptr<XYDatasetProvider> allowing to access to the SEDs
    *
    * @param reddening_curve_provider
-   * A unique_ptr<XYDatasetProvider> allowing to access to the Reddening curves
+   * A shared_ptr<XYDatasetProvider> allowing to access to the Reddening curves
    *
    * @param filter_provider
-   * A unique_ptr<XYDatasetProvider> allowing to access to the Filters
+   * A shared_ptr<XYDatasetProvider> allowing to access to the Filters
    *
    * @param igm_absorption_function
    * The function to use for applying the IGM absorption to the redshifted SED
    *
    */
   SparseGridCreator(
-      std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
-      std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
-      std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
+      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
+      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
       IgmAbsorptionFunction igm_absorption_function);
   /**
    * @brief destructor.
@@ -94,9 +94,9 @@ public:
               ProgressListener progress_listener=ProgressListener{});
 
 private:
-  std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> m_sed_provider;
-  std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
-  std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
+  std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_sed_provider;
+  std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
+  std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
   IgmAbsorptionFunction m_igm_absorption_function;
 
 };

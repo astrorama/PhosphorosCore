@@ -7,6 +7,8 @@
 #ifndef PHZDATAMODEL_PDF1D_H
 #define	PHZDATAMODEL_PDF1D_H
 
+#include "GridContainer/GridContainer.h"
+
 namespace Euclid {
 namespace PhzDataModel {
 

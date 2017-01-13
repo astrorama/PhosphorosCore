@@ -9,6 +9,7 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <iterator>
 #include "ElementsKernel/Logging.h"
 #include "MathUtils/interpolation/interpolation.h"
 
@@ -24,6 +25,7 @@
 #include "PhzModeling/PhotometryAlgorithm.h"
 
 #include "PhzModeling/PhotometryGridCreator.h"
+#include "PhzUtils/Multithreading.h"
 
 
 namespace Euclid {
@@ -57,37 +59,51 @@ std::map<XYDataset::QualifiedName, std::unique_ptr<Euclid::MathUtils::Function>>
 }
 
 PhotometryGridCreator::PhotometryGridCreator(
-              std::unique_ptr<XYDataset::XYDatasetProvider> sed_provider,
-              std::unique_ptr<XYDataset::XYDatasetProvider> reddening_curve_provider,
-              std::unique_ptr<XYDataset::XYDatasetProvider> filter_provider,
+              std::shared_ptr<XYDataset::XYDatasetProvider> sed_provider,
+              std::shared_ptr<XYDataset::XYDatasetProvider> reddening_curve_provider,
+              std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider,
               IgmAbsorptionFunction igm_absorption_function)
-      : m_sed_provider{std::move(sed_provider)},
-        m_reddening_curve_provider{std::move(reddening_curve_provider)},
-        m_filter_provider(std::move(filter_provider)),
-        m_igm_absorption_function{std::move(igm_absorption_function)} {
+      : m_sed_provider {sed_provider}, m_reddening_curve_provider {reddening_curve_provider},
+        m_filter_provider(filter_provider), m_igm_absorption_function {igm_absorption_function} {
 }
-        
+
+PhotometryGridCreator::~PhotometryGridCreator() {
+  // The multithreaded job is done, so reset the stop threads flag
+  PhzUtils::getStopThreadsFlag() = false;
+}
+   
 class ParallelJob {
   
 public:
 
   ParallelJob(PhotometryAlgorithm<ModelFluxAlgorithm>& m_photometry_algo,
               ModelDatasetGrid::iterator model_begin, ModelDatasetGrid::iterator model_end, 
-              PhzDataModel::PhotometryGrid::iterator photometry_begin, std::atomic<size_t>& m_progress)
+              PhzDataModel::PhotometryGrid::iterator photometry_begin, std::atomic<size_t>& m_progress,
+              std::atomic<uint>& done_counter)
         : m_photometry_algo(m_photometry_algo), m_model_begin(model_begin), m_model_end(model_end),
-          m_photometry_begin(photometry_begin), m_progress(m_progress) { }
+          m_photometry_begin(photometry_begin), m_progress(m_progress), m_done_counter(done_counter) { }
         
   void operator()() {
+    DoneUpdater done_updater {m_done_counter};
     m_photometry_algo(m_model_begin, m_model_end, m_photometry_begin, m_progress);
   }
 
 private:
+  
+  class DoneUpdater {
+  public:
+    DoneUpdater(std::atomic<uint>& m_done_counter) : m_done_counter(m_done_counter) { }
+    virtual ~DoneUpdater() {++m_done_counter;}
+  private:
+    std::atomic<uint>& m_done_counter;
+  };
   
   PhotometryAlgorithm<ModelFluxAlgorithm>& m_photometry_algo;
   ModelDatasetGrid::iterator m_model_begin;
   ModelDatasetGrid::iterator m_model_end;
   PhzDataModel::PhotometryGrid::iterator m_photometry_begin;
   std::atomic<size_t>& m_progress;
+  std::atomic<uint>& m_done_counter;
   
 };
 
@@ -124,21 +140,35 @@ PhzDataModel::PhotometryGrid PhotometryGridCreator::createGrid(
   // Here we keep the futures for the threads we start so we can wait for them
   std::vector<std::future<void>> futures;
   std::atomic<size_t> progress {0};
+  std::atomic<uint> done_counter {0};
+  uint threads = PhzUtils::getThreadNumber();
   size_t total_models = model_grid.size();
   logger.info() << "Creating photometries for " << total_models << " models";
-  for (auto& sed : std::get<PhzDataModel::ModelParameter::SED>(parameter_space)) {
-    // We start a new thread to handle this SED
-    auto model_iter = model_grid.begin();
-    model_iter.fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
-    auto photometry_iter = photometry_grid.begin();
-    photometry_iter.fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
-
-    futures.push_back(std::async(std::launch::async, ParallelJob{photometry_algo, model_iter, model_grid.end(), photometry_iter, progress}));
+  if (total_models < threads) {
+    threads = total_models;
   }
+  logger.info() << "Using " << threads << " threads";
+  
+  auto model_iter = model_grid.begin();
+  auto end_model_iter = model_grid.begin();
+  auto photometry_iter = photometry_grid.begin();
+  std::size_t step = total_models / threads;
+  for (uint i = 0; i < threads; ++i) {
+    std::advance(end_model_iter, step);
+    futures.push_back(std::async(std::launch::async, ParallelJob {
+      photometry_algo, model_iter, end_model_iter, photometry_iter, progress, done_counter
+    }));
+    model_iter = end_model_iter;
+    std::advance(photometry_iter, step);
+  }
+  futures.push_back(std::async(std::launch::async, ParallelJob {
+    photometry_algo, model_iter, model_grid.end(), photometry_iter, progress, done_counter
+  }));
+  
   // If we have a progress listener we create a thread to update it every .1 sec
   if (progress_listener) {
     progress_listener(0, total_models);
-    while (progress < total_models) {
+    while (done_counter < threads+1) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       progress_listener(progress, total_models);
     }

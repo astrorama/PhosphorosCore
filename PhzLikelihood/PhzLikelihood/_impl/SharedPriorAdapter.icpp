@@ -1,0 +1,28 @@
+/**
+ * @file PhzLikelihood/SharedPriorAdapter.h
+ * @date Nov 4, 2015
+ * @author Florian Dubath
+ */
+
+
+namespace Euclid {
+namespace PhzLikelihood {
+
+
+
+  template<typename Prior>
+  SharedPriorAdapter<Prior>::SharedPriorAdapter(std::shared_ptr<Prior> prior):m_prior{prior}{}
+
+  template<typename Prior>
+  void SharedPriorAdapter<Prior>::operator()(PhzDataModel::LikelihoodGrid& likelihoodGrid,
+        const SourceCatalog::Photometry& sourcePhotometry,
+        const PhzDataModel::PhotometryGrid& modelGrid,
+        const PhzDataModel::ScaleFactordGrid& scaleFactorGrid) const{
+    (*m_prior)(likelihoodGrid,sourcePhotometry,modelGrid,scaleFactorGrid);
+  }
+
+
+}
+}
+
+

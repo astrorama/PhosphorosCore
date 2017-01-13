@@ -26,6 +26,8 @@ public:
   
   typedef CatalogHandler::PriorFunction StaticPriorFunction;
   
+  typedef CatalogHandler::LikelihoodGridFunction LikelihoodGridFunction;
+  
   /**
    * Defines the signature of the functions which can be used as listeners for
    * the progress of the catalog handling. The first parameter is the
@@ -43,6 +45,8 @@ public:
    * @param phot_grid_map
    *    The const reference to the map containing the grids with the model
    *    photometries for all the parameter space regions
+   * @param likelihood_grid_func
+   *    The function to use for computing the likelihood grid for a single source
    * @param static_priors
    *    The static priors to apply on the likelihood grid
    * @param marginalization_func
@@ -54,8 +58,12 @@ public:
    */
   ParallelCatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                          const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
+                         LikelihoodGridFunction likelihood_grid_func,
                          std::vector<StaticPriorFunction> static_priors,
                          MarginalizationFunction marginalization_func);
+  
+  virtual ~ParallelCatalogHandler();
+
   
   /**
    * Iterates through a set of sources and calculates the PHZ parameters for

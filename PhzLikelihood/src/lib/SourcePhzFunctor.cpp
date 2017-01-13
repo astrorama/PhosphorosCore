@@ -26,9 +26,9 @@ static Elements::Logging logger = Elements::Logging::getLogger("PhzLikelihood");
 
 SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
+                                   LikelihoodGridFunction likelihood_func,
                                    std::vector<PriorFunction> priors,
                                    MarginalizationFunction marginalization_func,
-                                   LikelihoodGridFunction likelihood_func,
                                    BestFitSearchFunction best_fit_search_func)
         : m_phot_corr_map{std::move(phot_corr_map)} {
   for (auto& pair : phot_grid_map) {
@@ -66,7 +66,7 @@ static PhzDataModel::Pdf1D combine1DPdfs(const std::map<std::string, SourcePhzFu
   std::map<std::string, double> factor_map {};
   double min_chi_square = std::numeric_limits<double>::max();
   for (auto& pair : result_map) {
-    double chi_square = std::get<4>(pair.second);
+    double chi_square = std::get<5>(pair.second);
     factor_map[pair.first] = chi_square;
     if (chi_square < min_chi_square) {
       min_chi_square = chi_square;
@@ -138,26 +138,36 @@ auto SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot) 
   auto best_result_pair = std::min_element(result_map.begin(), result_map.end(),
                            [](const std::pair<const std::string, result_type>& first,
                               const std::pair<const std::string, result_type>& second) {
-                                  return std::get<4>(first.second) < std::get<4>(second.second);
+                                  return std::get<5>(first.second) < std::get<5>(second.second);
                            });
                            
   auto final_1D_pdf = combine1DPdfs(result_map);
   
-  // Create the map with all the posterior grids
-  std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
+  // Create the map with all the likelihood grids
+  std::map<std::string, PhzDataModel::LikelihoodGrid> likelihood_map {};
   for (auto& pair : result_map) {
-    posterior_map.emplace(std::make_pair(pair.first, std::move(std::get<2>(pair.second).at(""))));
+    likelihood_map.emplace(std::make_pair(pair.first, std::move(std::get<2>(pair.second).at(""))));
   }
   
-  // Create te map with the best chi square per region
+  // Create the map with all the posterior grids
+    std::map<std::string, PhzDataModel::LikelihoodGrid> posterior_map {};
+    for (auto& pair : result_map) {
+      posterior_map.emplace(std::make_pair(pair.first, std::move(std::get<3>(pair.second).at(""))));
+    }
+
+  // Create the map with the best chi square per region
   std::map<std::string, double> best_chi2_map {};
   for (auto& pair : result_map) {
-    best_chi2_map.emplace(std::make_pair(pair.first, std::get<4>(pair.second)));
+    best_chi2_map.emplace(std::make_pair(pair.first, std::get<5>(pair.second)));
   }
   
-  return result_type {std::get<0>(best_result_pair->second), std::move(final_1D_pdf),
-                      std::move(posterior_map), std::get<3>(best_result_pair->second),
-                      std::get<4>(best_result_pair->second), std::move(best_chi2_map)};
+  return result_type {std::get<0>(best_result_pair->second),
+                      std::move(final_1D_pdf),
+                      std::move(likelihood_map),
+                      std::move(posterior_map),
+                      std::get<4>(best_result_pair->second),
+                      std::get<5>(best_result_pair->second),
+                      std::move(best_chi2_map)};
 }
 
 } // end of namespace PhzLikelihood
