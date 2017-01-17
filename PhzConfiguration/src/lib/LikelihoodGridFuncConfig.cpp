@@ -125,7 +125,7 @@ const PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction & LikelihoodGridFu
     bool enable_upper_limit = false;
     if (m_missing_data_flag || m_upper_limit_flag) {
       auto catalog =
-          getDependency<Euclid::Configuration::CatalogConfig>().getCatalog();
+          getDependency<Euclid::Configuration::CatalogConfig>().readAsCatalog();
       for (auto& source : catalog) {
         auto photo = source.getAttribute<SourceCatalog::Photometry>();
         if (photo != nullptr) {

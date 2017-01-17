@@ -46,7 +46,7 @@ public:
     auto& config_manager = ConfigManager::getInstance(config_manager_id);
     config_manager.initialize(args);
     
-    auto& catalog = config_manager.getConfiguration<CatalogConfig>().getCatalog();
+    auto catalog = config_manager.getConfiguration<CatalogConfig>().readAsCatalog();
     auto& model_phot_grid = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
     auto& output_func = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getOutputFunction();
     auto& stop_criteria = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getStopCriteria();

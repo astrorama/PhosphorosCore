@@ -53,7 +53,7 @@ public:
   virtual ~ModelFixingCatalogConfig() = default;
 
   void initialize(const UserValues&) override{
-    auto column_info = getDependency<Euclid::Configuration::CatalogConfig>().getAsTable().getColumnInfo();
+    auto column_info = getDependency<Euclid::Configuration::CatalogConfig>().getColumnInfo();
     std::shared_ptr<Euclid::SourceCatalog::AttributeFromRow> handler_ptr{ new PhzTest::ModelFixingAttributeFromRow{column_info}};
 
     getDependency<Euclid::Configuration::CatalogConfig>().addAttributeHandler(std::move(handler_ptr));

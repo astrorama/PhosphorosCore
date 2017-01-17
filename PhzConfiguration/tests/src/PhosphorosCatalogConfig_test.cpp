@@ -90,7 +90,7 @@ BOOST_FIXTURE_TEST_CASE( nominal_test, PhosphorosCatalogConfig_fixture ) {
   
   // When
   config_manager.initialize(options_map);
-  auto& catalog = config_manager.getConfiguration<CatalogConfig>().getCatalog();
+  auto catalog = config_manager.getConfiguration<CatalogConfig>().readAsCatalog();
   auto& mapping = config_manager.getConfiguration<PhotometricBandMappingConfig>().getPhotometricBandMapping();
   
   // Then
