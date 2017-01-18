@@ -71,6 +71,8 @@ public:
   void initialize(const UserValues& args) override;
 
   std::unique_ptr<PhzOutput::OutputHandler> getOutputHandler() const;
+  
+  std::size_t getInputBufferSize() const;
 
 private:
 
@@ -79,6 +81,7 @@ private:
   boost::filesystem::path m_out_likelihood_dir;
   bool m_posterior_flag = false;
   boost::filesystem::path m_out_posterior_dir;
+  std::size_t m_input_buffer_size;
 
 }; /* End of ComputeRedshiftsConfig class */
 
