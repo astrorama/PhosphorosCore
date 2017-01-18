@@ -76,11 +76,28 @@ class ComputeRedshifts : public Elements::Program {
     
     PhzLikelihood::ParallelCatalogHandler handler {phot_corr_map, model_phot_grid, likelihood_grid_func,
                                                    priors, marginalization_func_list};
+                                
+    auto table_reader = config_manager.getConfiguration<CatalogConfig>().getTableReader();
+    auto catalog_converter = config_manager.getConfiguration<CatalogConfig>().getTableToCatalogConverter();
 
-    auto catalog = config_manager.getConfiguration<CatalogConfig>().readAsCatalog();
     auto out_ptr = config_manager.getConfiguration<ComputeRedshiftsConfig>().getOutputHandler();
 
-    handler.handleSources(catalog.begin(), catalog.end(), *out_ptr, ProgressReporter{});
+    std::size_t chunk_size = config_manager.getConfiguration<ComputeRedshiftsConfig>().getInputBufferSize();
+    auto total_size = table_reader->rowsLeft();
+    logger.info() << "Total input catalog size: " << total_size;
+    if (total_size > chunk_size) {
+      logger.info() << "Processing the input catalog in chunks of " << chunk_size << " sources";
+    }
+    int chunk_counter = 0;
+    ProgressReporter progress_reporter {};
+    while (table_reader->hasMoreRows()) {
+      auto catalog = catalog_converter(table_reader->read(chunk_size));
+      handler.handleSources(catalog.begin(), catalog.end(), *out_ptr,
+              [total_size, chunk_size, &chunk_counter, &progress_reporter](size_t step, size_t) {
+                progress_reporter(chunk_counter*chunk_size+step, total_size);
+              });
+      ++chunk_counter;
+    }
 
     return Elements::ExitCode::OK;
   }
