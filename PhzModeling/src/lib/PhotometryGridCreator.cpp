@@ -52,8 +52,13 @@ std::map<XYDataset::QualifiedName, std::unique_ptr<Euclid::MathUtils::Function>>
     convertToFunction(const std::map<XYDataset::QualifiedName, XYDataset::XYDataset>& dataset_map) {
   std::map<XYDataset::QualifiedName, std::unique_ptr<Euclid::MathUtils::Function>> result {};
   for (auto& pair : dataset_map) {
-    auto function_ptr = MathUtils::interpolate(pair.second, MathUtils::InterpolationType::LINEAR);
-    result.emplace(pair.first, std::move(function_ptr));
+    try {
+      auto function_ptr = MathUtils::interpolate(pair.second, MathUtils::InterpolationType::LINEAR);
+      result.emplace(pair.first, std::move(function_ptr));
+    } catch (const Elements::Exception& ex) {
+      throw Elements::Exception() << "Failed to interpolate " << pair.first.qualifiedName()
+              << ": " << ex.what();
+    }
   }
   return result;
 }

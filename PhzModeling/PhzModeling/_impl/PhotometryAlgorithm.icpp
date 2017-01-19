@@ -21,7 +21,10 @@ std::vector<PhzDataModel::FilterInfo> manageFilters (
     try{
       const XYDataset::XYDataset& reference_filter=filter_map.at(name);
       vector.push_back(BuildFilterInfoFunctor{}(reference_filter));
-    } catch(std::out_of_range& err){
+    } catch(const Elements::Exception& ex) {
+      throw Elements::Exception() << "Failed to interpolate filter " << name.qualifiedName()
+              << ": " << ex.what();
+    } catch(const std::out_of_range& err){
       throw Elements::Exception()
       << "The The provided filter map do not contains a filter named :"<<name.qualifiedName();
     }
