@@ -55,32 +55,6 @@ public:
    */
   virtual ~LikelihoodGridFuncConfig() = default;
 
-  /**
-   * @details
-   * Add the "enable-missing-data" and "enable-upper-limit" options to
-   * the "Likelihood Grid Function options" group.
-   *
-   * The action is as follow:
-   * - "enable-missing-data" If set to "ON"(default) photometries with value
-   *    matching the missing data flag will be excluded of the likelihood
-   *    computation.
-   * - "enable-upper-limit" If set to "ON" or "FAST" photometries identified as
-   * upper limit enter in a different way in the computation of the likelihood.
-   */
-  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
-
-  /**
-   * @details
-   * Check that the "enable-missing-data" and "enable-upper-limit" options,
-   * if present, match the values "ON" or "OFF" (and "FAST" for the upper limit).
-   */
-  void preInitialize(const UserValues& args) override;
-
-  /**
-   * @details
-   * Set flags for the computations of the Likelihood Grid Function.
-   */
-  void initialize(const UserValues& args) override;
 
 
   /**
@@ -94,10 +68,6 @@ public:
 private:
 
   PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction m_grid_function;
-
-  bool m_fast_upper_limit = false;
-  bool m_missing_data_flag = true;
-  bool m_upper_limit_flag = true;
 
 }; /* End of LikelihoodGridFuncConfig class */
 
