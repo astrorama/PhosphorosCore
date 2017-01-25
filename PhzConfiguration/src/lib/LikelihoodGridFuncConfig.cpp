@@ -67,8 +67,8 @@ const PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction & LikelihoodGridFu
 
     PhzLikelihood::LikelihoodLogarithmAlgorithm::ScaleFactorCalc scale_factor { };
     PhzLikelihood::LikelihoodLogarithmAlgorithm::LikelihoodLogarithmCalc likelihood_logarithm { };
-    if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().hasMissingPhotometry()) {
-      if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().hasUpperLimit()) {
+    if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isMissingPhotometryEnabled()) {
+      if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled()) {
         scale_factor = PhzLikelihood::ScaleFactorFunctorUpperLimitMissingData { };
         likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmUpperLimitMissingData { };
       } else {
@@ -76,7 +76,7 @@ const PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction & LikelihoodGridFu
         likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmMissingData { };
       }
     } else {
-      if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().hasUpperLimit()) {
+      if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled()) {
         scale_factor = PhzLikelihood::ScaleFactorFunctorUpperLimit { };
         likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmUpperLimit { };
       } else {
