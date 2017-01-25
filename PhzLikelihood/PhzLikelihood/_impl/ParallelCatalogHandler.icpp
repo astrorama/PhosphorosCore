@@ -90,14 +90,15 @@ void ParallelCatalogHandler::handleSources(SourceIter source_begin, SourceIter s
 
   if (progress_listener) {
     progress_listener(0, total_sources);
-    while (done_counter < total_sources) {
+    while (done_counter < total_sources && !pool.checkForException()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       progress_listener(progress, total_sources);
     }
     progress_listener(total_sources, total_sources);
   }
   
-  // Wait until all the tasks in the pool are finished
+  // Wait until all the tasks in the pool are finished. This will also throw any
+  // exception of the tasks.
   pool.block();
 
 }
