@@ -37,19 +37,7 @@ BOOST_AUTO_TEST_SUITE (LikelihoodGridFuncConfig_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
 
-  // Given
-  config_manager.registerConfiguration<LikelihoodGridFuncConfig>();
-
-  // When
-  auto options = config_manager.closeRegistration();
-
-  // Then
-  BOOST_CHECK_NO_THROW(options.find("enable-missing-data", false));
-  BOOST_CHECK_NO_THROW(options.find("enable-upper-limit", false));
-
-}
 
 //-----------------------------------------------------------------------------
 

@@ -34,7 +34,7 @@ class PdfOutput : public OutputHandler {
 
 public:
   
-  PdfOutput(boost::filesystem::path out_dir);
+  PdfOutput(boost::filesystem::path out_dir, uint flush_chunk_size=500);
 
   virtual ~PdfOutput();
 
@@ -52,8 +52,9 @@ public:
 private:
 
   boost::filesystem::path       m_out_file;  // Filename of the output fits file
-  std::unique_ptr<CCfits::FITS> m_fits_file; // Unique pointer to the FITS file object
+  std::shared_ptr<CCfits::FITS> m_fits_file; // Pointer to the FITS file object
   int64_t                       m_counter;   // Counting the number of sources
+  uint m_flush_chunk_size;
 
 };
 

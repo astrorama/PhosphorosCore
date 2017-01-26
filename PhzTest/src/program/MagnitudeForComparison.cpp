@@ -151,7 +151,7 @@ public:
     //logger.info() << model_single_grid.size();
 
     // read the catalog
-    auto& catalog = config_manager.getConfiguration<CatalogConfig>().getCatalog();
+    auto catalog = config_manager.getConfiguration<CatalogConfig>().readAsCatalog();
 
     PhzLikelihood::SingleGridPhzFunctor::LikelihoodGridFunction likelihood_func =
         PhzLikelihood::LikelihoodGridFunctor{

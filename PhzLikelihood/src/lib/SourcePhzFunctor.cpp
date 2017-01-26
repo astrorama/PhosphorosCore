@@ -82,6 +82,7 @@ std::unique_ptr<MathUtils::Function> pdf_to_func(const PhzDataModel::Pdf1D<AxisT
   // If we have a single value we return a dirac function
   if (pdf.size() == 1) {
     double single_x = pdf.template getAxis<0>()[0];
+    x_set.insert(single_x);
     double single_y = factor * pdf.at(0);
     return std::unique_ptr<MathUtils::Function>{new MathUtils::FunctionAdapter{[single_x, single_y](double x){return (x == single_x) ? single_y : 0;}}};
   }

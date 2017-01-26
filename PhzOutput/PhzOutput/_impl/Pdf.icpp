@@ -91,6 +91,10 @@ std::vector<Table::Row::cell_type> Pdf<Parameter>::convertResults(
   auto& pdf_1d = results.get<Pdf_impl::PdfColumnTraits<Parameter>::res_type>();
   std::vector<double> data {pdf_1d.begin(), pdf_1d.end()};
   
+  // Note to developers:
+  // We get the knots of the 1D PDF from the first source which is handled. All
+  // the rest of the sources are assumed to have the same knots. NO TEST IS
+  // CURRENTLY DONE TO CHECK THAT THIS IS TRUE.
   if (m_knots_comment.empty()) {
     std::stringstream comment {};
     comment << Pdf_impl::PdfColumnTraits<Parameter>::name_prefix() << "-BINS : {";

@@ -61,11 +61,14 @@ public:
   void initialize(const UserValues& args) override;
   
   std::unique_ptr<PhzOutput::OutputHandler> getOutputHandler() const;
+  
+  uint getFlushSize() const;
 
 private:
   
   boost::filesystem::path m_out_catalog_file;
   PhzOutput::PhzCatalog::Format m_format;
+  uint m_flush_size;
   std::vector<std::shared_ptr<PhzOutput::ColumnHandler>> m_column_handler_list {};
   std::vector<std::string> m_comments {};
 

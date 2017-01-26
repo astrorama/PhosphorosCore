@@ -47,7 +47,7 @@ auto FixedRedshiftConfig::getProgramOptions() -> std::map<std::string, OptionDes
 void FixedRedshiftConfig::initialize(const UserValues& args) {
   if (args.find(FIXED_REDSHIFT_COLUMN) != args.end()) {
     auto& catalog_conf = getDependency<Euclid::Configuration::CatalogConfig>();
-    auto column_info = catalog_conf.getAsTable().getColumnInfo();
+    auto column_info = catalog_conf.getColumnInfo();
     auto fixed_z_column = args.at(FIXED_REDSHIFT_COLUMN).as<std::string>();
     auto handler = std::make_shared<PhzDataModel::FixedRedshiftFromRow>(column_info, fixed_z_column);
     catalog_conf.addAttributeHandler(handler);

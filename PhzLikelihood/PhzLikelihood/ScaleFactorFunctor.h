@@ -350,14 +350,6 @@ using ScaleFactorFunctorUpperLimit = _Impl::ScaleFactorUpperLimit<_Impl::NormalF
 /// support for upper limit and missing data
 using ScaleFactorFunctorUpperLimitMissingData = _Impl::ScaleFactorUpperLimit<_Impl::MissingDataFractionAdder, ChiSquareLikelihoodLogarithmUpperLimitMissingData>;
 
-/// Functor for computing the scale factor which optimizes the chi square, with
-/// support for upper limit (faster less accurate)
-using ScaleFactorFunctorUpperLimitFast = _Impl::ScaleFactorUpperLimit<_Impl::NormalFractionAdder, ChiSquareLikelihoodLogarithmUpperLimitFast>;
-
-/// Functor for computing the scale factor which optimizes the chi square, with
-/// support for upper limit and missing data (faster less accurate)
-using ScaleFactorFunctorUpperLimitFastMissingData = _Impl::ScaleFactorUpperLimit<_Impl::MissingDataFractionAdder, ChiSquareLikelihoodLogarithmUpperLimitFastMissingData>;
-
 } // end of namespace PhzLikelihood
 } // end of namespace Euclid
 

@@ -209,64 +209,6 @@ public:
 }; // end of class ChiSquareUpperLimit
 
 
-/// Functor class which returns the residuals following the chi square, with
-/// support for upper limit in a fast (and less accurate) way.
-class ChiSquareUpperLimitFast {
-  
-public:
-  
-  /**
-   * @brief
-   * Computes the chi square residual between the source and the model, taking
-   * into account photometries flagged as upper limits in a fast way
-   * 
-   * @details
-   * If the source photometry is not flagged as upper limit, the residual is the
-   * same with the one returned by the ChiSquareNormal functor. If it is, the
-   * residual is computed as following:
-   * \f[
-   *   Res = \left\{\begin{matrix}
-   *   0 & \text{, if\space\space} \alpha*F_m\leq F_{lim} \\
-   *   1416.7928370645282 &  \text{, if\space\space} \alpha*F_m>F_{lim}
-   *   \end{matrix}\right.
-   * \f]
-   * where:
-   * - \f$ \alpha \f$ : is the scale factor
-   * - \f$ F_m \f$ : is the flux of the model photometry
-   * - \f$ F_{lim} \f$ : is the upper limit value
-   * 
-   * The value 1416.7928370645282 is the result of -2*math.log(sys.float_info.min)
-   * which is the biggest number that is not infinity and results to a likelihood 
-   * equal to zero.
-   * 
-   * Note that the flux value of the given source FluxErrorPair is expected to
-   * be set as the upper limit value and that the error is ignored.
-   * 
-   * @param source
-   *    The source photometry information
-   * @param model
-   *    The model photometry information
-   * @param scale
-   *    The scale factor to multiply the model with
-   * @return 
-   *    The chi square residual
-   */
-  double operator() (const SourceCatalog::FluxErrorPair& source,
-                     const SourceCatalog::FluxErrorPair& model,
-                     double scale) const {
-    if (source.upper_limit_flag) {
-      if (scale * model.flux <= source.flux) {
-        return 0.;
-      } else {
-        return -2.0 * std::log(std::numeric_limits<double>::min());
-      }
-    } else {
-      return ChiSquareNormal{}(source, model, scale);
-    }
-  }
-  
-}; // end of class ChiSquareUpperLimit
-
 
 /// Functor class which returns the residuals following the chi square, with
 /// support for missing data
@@ -322,14 +264,6 @@ using ChiSquareLikelihoodLogarithmUpperLimit = _Impl::ChiSquareLikelihoodLogarit
 /// Functor for computing the likelihood logarithm using the chi square, with support
 /// for upper limit and missing data
 using ChiSquareLikelihoodLogarithmUpperLimitMissingData = _Impl::ChiSquareLikelihoodLogarithm_Impl<_Impl::ChiSquareMissingData<_Impl::ChiSquareUpperLimit>>;
-
-/// Functor for computing the likelihood logarithm using the chi square, with support
-/// for upper limit (faster less accurate)
-using ChiSquareLikelihoodLogarithmUpperLimitFast = _Impl::ChiSquareLikelihoodLogarithm_Impl<_Impl::ChiSquareUpperLimitFast>;
-
-/// Functor for computing the likelihood logarithm using the chi square, with support
-/// for upper limit (faster less accurate) and missing data
-using ChiSquareLikelihoodLogarithmUpperLimitFastMissingData = _Impl::ChiSquareLikelihoodLogarithm_Impl<_Impl::ChiSquareMissingData<_Impl::ChiSquareUpperLimitFast>>;
 
 
 } // end of namespce PhzLikelihood

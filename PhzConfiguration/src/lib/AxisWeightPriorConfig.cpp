@@ -22,7 +22,6 @@
  * @author nikoapos
  */
 
-#include <fstream>
 #include <boost/filesystem.hpp>
 #include "ElementsKernel/Logging.h"
 #include "Table/AsciiReader.h"
@@ -77,8 +76,7 @@ PhzLikelihood::AxisWeightPrior<I> createPrior(const std::string& axis_name,
     if (it->path().filename().stem().string() == table_name) {
       logger.info() << "Reading weights for axis " << axis_name << "from file "
               << it->path().string();
-      std::fstream in_stream {it->path().string()};
-      auto table = Table::AsciiReader{{typeid(std::string), typeid(double)}}.read(in_stream);
+      auto table = Table::AsciiReader{it->path().string()}.fixColumnTypes({typeid(std::string), typeid(double)}).read();
       std::map<XYDataset::QualifiedName, double> weights {};
       for (auto& row : table) {
         XYDataset::QualifiedName name = boost::get<std::string>(row[0]);

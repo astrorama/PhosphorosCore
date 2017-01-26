@@ -49,7 +49,7 @@ public:
   
   PhzCatalog(boost::filesystem::path out_file, Format format,
              std::vector<std::shared_ptr<ColumnHandler>> handler_list,
-             std::vector<std::string> comments={});
+             std::vector<std::string> comments={}, uint flush_chunk_size=500);
 
   /**
    * @brief Destructor
@@ -58,17 +58,18 @@ public:
   
   void handleSourceOutput(const SourceCatalog::Source& source,
                           const PhzDataModel::SourceResults& results) override;
-
-  void addComment(std::string comment);
   
 private:
   
+  void writeData();
+  
   boost::filesystem::path m_out_file;
-  Format m_format;
   std::shared_ptr<Table::ColumnInfo> m_column_info {nullptr};
   std::vector<Table::Row> m_row_list {};
   std::vector<std::shared_ptr<ColumnHandler>> m_handler_list;
-  std::vector<std::string> m_comments;
+  std::unique_ptr<Table::TableWriter> m_writer {};
+  bool m_writing_started = false;
+  uint m_flush_chunk_size;
 
 }; /* End of PhzCatalog class */
 

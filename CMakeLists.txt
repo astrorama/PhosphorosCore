@@ -12,4 +12,4 @@ set(CXX_SUGGEST_OVERRIDE ON
 
 
 # Declare project name and version
-elements_project(PhosphorosCore 0.6 USE Alexandria 2.6 Elements 4.0)
+elements_project(PhosphorosCore 0.7 USE Alexandria 2.7 Elements 4.1)

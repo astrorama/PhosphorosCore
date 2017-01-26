@@ -32,13 +32,11 @@ void writePhotometricCorrectionMap(std::ostream& out,
 
   auto table_representation = Euclid::Table::Table { std::move(row_list) };
 
-  auto writer = Table::AsciiWriter { };
-  writer.write(out, table_representation);
+  Table::AsciiWriter{out}.addData(table_representation);
 }
 
 PhotometricCorrectionMap readPhotometricCorrectionMap(std::istream& in) {
-  Euclid::Table::AsciiReader reader { };
-  Euclid::Table::Table table = reader.read(in);
+  auto table = Table::AsciiReader{in}.read();
   auto column_info = table.getColumnInfo();
 
   if (column_info->find("Filter")==nullptr || column_info->find("Correction")==nullptr){
