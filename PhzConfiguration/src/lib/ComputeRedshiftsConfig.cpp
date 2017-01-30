@@ -176,7 +176,7 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
 
   // Check that at least two filters are selected.
   if (filter_to_process_list.size()<2){
-    throw Elements::Exception() << "You need to select at least 2 filters in order to apply the template fitting algorythm and compute the redshifts.";
+    throw Elements::Exception() << "You need to select at least 2 filters in order to apply the template fitting algorithm and compute the redshifts.";
 
   }
 
