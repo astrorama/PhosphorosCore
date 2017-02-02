@@ -29,12 +29,8 @@ namespace PhzLikelihood {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzLikelihood");
 
-namespace {
-
 using ResType = PhzDataModel::SourceResultType;
 using RegResType = PhzDataModel::RegionResultType;
-  
-} // end of anonymous namespace
 
 SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
