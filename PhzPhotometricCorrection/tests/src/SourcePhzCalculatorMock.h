@@ -37,7 +37,7 @@ public:
   MOCK_METHOD1(FunctorCall,
       PhzDataModel::SourceResults*(const SourceCatalog::Photometry& source_phot));
 
-  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot){
+  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot, double fixed_z=-99){
     std::unique_ptr< PhzDataModel::SourceResults> res(FunctorCall(source_phot));
     return std::move(*res);
   }

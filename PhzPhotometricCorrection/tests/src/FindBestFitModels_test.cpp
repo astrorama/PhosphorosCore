@@ -89,7 +89,7 @@ struct FindBestFitModels_Fixture {
 
    vector<shared_ptr<SourceCatalog::Attribute>> source_attr_6 =
            vector<shared_ptr<SourceCatalog::Attribute>>{
-        shared_ptr<SourceCatalog::Attribute>{new SourceCatalog::SpectroscopicRedshift(0.15,0.001)}};
+        shared_ptr<SourceCatalog::Attribute>{new SourceCatalog::SpectroscopicRedshift(0.05,0.001)}};
 
    SourceCatalog::Catalog sources {{
      {1, source_attr_1},
@@ -144,6 +144,7 @@ struct FindBestFitModels_Fixture {
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE (FindBestFitModels_test)
+
 BOOST_FIXTURE_TEST_CASE(Functional_call_test, FindBestFitModels_Fixture) {
   auto test_object = FindBestFitModels<PhzLikelihood::SourcePhzFunctor>();
   std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
