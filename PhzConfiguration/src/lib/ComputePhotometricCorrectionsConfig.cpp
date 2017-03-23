@@ -42,6 +42,13 @@
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PhosphorosCatalogConfig.h"
+#include "PhzConfiguration/LikelihoodGridFuncConfig.h"
+#include "PhzConfiguration/PriorConfig.h"
+#include "PhzConfiguration/LuminosityPriorConfig.h"
+#include "PhzConfiguration/VolumePriorConfig.h"
+#include "PhzConfiguration/AxisFunctionPriorConfig.h"
+#include "PhzConfiguration/AxisWeightPriorConfig.h"
+#include "PhzConfiguration/GenericGridPriorConfig.h"
 
 #include "PhzConfiguration/ComputePhotometricCorrectionsConfig.h"
 #include "CheckPhotometries.h"
@@ -69,6 +76,13 @@ ComputePhotometricCorrectionsConfig::ComputePhotometricCorrectionsConfig(long ma
   declareDependency<PhotometricBandMappingConfig>();
   declareDependency<SpecZCatalogConfig>();
   declareDependency<PhotometryCatalogConfig>();
+  declareDependency<LikelihoodGridFuncConfig>();
+  declareDependency<PriorConfig>();
+  declareDependency<LuminosityPriorConfig>();
+  declareDependency<VolumePriorConfig>();
+  declareDependency<AxisFunctionPriorConfig>();
+  declareDependency<AxisWeightPriorConfig>();
+  declareDependency<GenericGridPriorConfig>();
 }
 
 auto ComputePhotometricCorrectionsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {

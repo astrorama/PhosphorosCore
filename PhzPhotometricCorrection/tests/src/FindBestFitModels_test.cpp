@@ -128,6 +128,14 @@ struct FindBestFitModels_Fixture {
      }
      return move(result);
    }
+   
+   PhzLikelihood::LikelihoodGridFunctor likelihood_func {
+     PhzLikelihood::LikelihoodLogarithmAlgorithm {
+       PhzLikelihood::ScaleFactorFunctorUpperLimitMissingData {},
+       PhzLikelihood::ChiSquareLikelihoodLogarithmUpperLimitMissingData {}
+     }
+   };
+   
    FindBestFitModels_Fixture(){
      photo_grid(0, 0, 0, 0) = photometry_1;
      photo_grid(1, 0, 0, 0) = photometry_2;
@@ -146,21 +154,21 @@ struct FindBestFitModels_Fixture {
 BOOST_AUTO_TEST_SUITE (FindBestFitModels_test)
 
 BOOST_FIXTURE_TEST_CASE(Functional_call_test, FindBestFitModels_Fixture) {
-  auto test_object = FindBestFitModels<PhzLikelihood::SourcePhzFunctor>();
+  auto test_object = FindBestFitModels<PhzLikelihood::SourcePhzFunctor>(likelihood_func);
   std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
   model_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
   auto result_map = test_object(sources,model_grid_map,correctionMap);
 }
 
 BOOST_FIXTURE_TEST_CASE(Functional_call_mock_test, FindBestFitModels_Fixture) {
-  auto test_object = FindBestFitModels<SourcePhzCalculatorMock>();
+  auto test_object = FindBestFitModels<SourcePhzCalculatorMock>(likelihood_func);
   std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
   model_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
   auto result_map = test_object(sources,model_grid_map,correctionMap);
 }
 
 BOOST_FIXTURE_TEST_CASE(Functional_call_throw_test, FindBestFitModels_Fixture) {
-  auto test_object = FindBestFitModels<SourcePhzCalculatorMock>();
+  auto test_object = FindBestFitModels<SourcePhzCalculatorMock>(likelihood_func);
   std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
   model_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
 

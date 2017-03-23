@@ -26,6 +26,8 @@
 #include "Configuration/CatalogConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/ComputePhotometricCorrectionsConfig.h"
+#include "PhzConfiguration/LikelihoodGridFuncConfig.h"
+#include "PhzConfiguration/PriorConfig.h"
 
 #include "PhzPhotometricCorrection/FindBestFitModels.h"
 #include "PhzPhotometricCorrection/CalculateScaleFactorMap.h"
@@ -63,23 +65,25 @@ ComputePhotometricCorrections::ComputePhotometricCorrections(ProgressListener pr
 }
 
 void ComputePhotometricCorrections::run(ConfigManager& config_manager) {
-    
-    auto catalog = config_manager.getConfiguration<CatalogConfig>().readAsCatalog();
-    auto& model_phot_grid = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
-    auto& output_func = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getOutputFunction();
-    auto& stop_criteria = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getStopCriteria();
+  
+  auto catalog = config_manager.getConfiguration<CatalogConfig>().readAsCatalog();
+  auto& model_phot_grid = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
+  auto& likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
+  auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();
+  auto& output_func = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getOutputFunction();
+  auto& stop_criteria = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getStopCriteria();
 
-    FindBestFitModels<PhzLikelihood::SourcePhzFunctor> find_best_fit_models {};
-    CalculateScaleFactorMap calculate_scale_factor_map {};
-    PhotometricCorrectionAlgorithm phot_corr_algorighm {};
-    auto selector = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getPhotometricCorrectionSelector();
+  FindBestFitModels<PhzLikelihood::SourcePhzFunctor> find_best_fit_models {likelihood_grid_func, priors};
+  CalculateScaleFactorMap calculate_scale_factor_map {};
+  PhotometricCorrectionAlgorithm phot_corr_algorighm {};
+  auto selector = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getPhotometricCorrectionSelector();
 
-    PhotometricCorrectionCalculator calculator {find_best_fit_models,
-                                calculate_scale_factor_map, phot_corr_algorighm};
-                                
-    auto phot_corr_map = calculator(catalog, model_phot_grid, stop_criteria, selector, m_progress_listener);
+  PhotometricCorrectionCalculator calculator {find_best_fit_models,
+                              calculate_scale_factor_map, phot_corr_algorighm};
 
-    output_func(phot_corr_map);
+  auto phot_corr_map = calculator(catalog, model_phot_grid, stop_criteria, selector, m_progress_listener);
+
+  output_func(phot_corr_map);
 }
 
 } // PhzExecutables namespace

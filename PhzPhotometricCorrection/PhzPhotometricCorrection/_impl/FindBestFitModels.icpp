@@ -31,6 +31,13 @@ static constexpr double UNSETZ =-1.;
 static constexpr double MAXIMALZ=1100.;
 
 template<typename SourceCalculatorFunctor>
+FindBestFitModels<SourceCalculatorFunctor>::FindBestFitModels(
+                                        LikelihoodGridFunction likelihood_func,
+                                        std::vector<PriorFunction> priors)
+        : m_likelihood_func(likelihood_func), m_priors(priors) {
+}
+
+template<typename SourceCalculatorFunctor>
 std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator> FindBestFitModels<SourceCalculatorFunctor>::operator()(
     const SourceCatalog::Catalog& calibration_catalog,
     const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
@@ -89,17 +96,9 @@ std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator> FindBestFitModel
     }
 
     SourceCalculatorFunctor source_phz_calculator (
-        photometric_correction, model_grid_map,
-        PhzLikelihood::LikelihoodGridFunctor {
-          PhzLikelihood::LikelihoodLogarithmAlgorithm {
-            PhzLikelihood::ScaleFactorFunctorUpperLimitMissingData {},
-            PhzLikelihood::ChiSquareLikelihoodLogarithmUpperLimitMissingData {}
-          }
-        }
+        photometric_correction, model_grid_map, m_likelihood_func, m_priors
     );
 
-    // We must return an iterator to the correct input grid, not to the slice, so we
-    // create a new iterator and we fix its axes
     const PhzDataModel::SourceResults& res = source_phz_calculator(*photometry_ptr, expected_redshift);
     best_fit_map.emplace(source_id, res.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>());
   }
