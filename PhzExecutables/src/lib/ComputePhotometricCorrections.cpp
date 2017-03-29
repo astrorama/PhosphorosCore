@@ -69,12 +69,13 @@ void ComputePhotometricCorrections::run(ConfigManager& config_manager) {
   auto catalog = config_manager.getConfiguration<CatalogConfig>().readAsCatalog();
   auto& model_phot_grid = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
   auto& likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
+  auto scale_factor_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getScaleFactorFunction();
   auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();
   auto& output_func = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getOutputFunction();
   auto& stop_criteria = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getStopCriteria();
 
   FindBestFitModels<PhzLikelihood::SourcePhzFunctor> find_best_fit_models {likelihood_grid_func, priors};
-  CalculateScaleFactorMap calculate_scale_factor_map {};
+  CalculateScaleFactorMap calculate_scale_factor_map {scale_factor_func};
   PhotometricCorrectionAlgorithm phot_corr_algorighm {};
   auto selector = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getPhotometricCorrectionSelector();
 
