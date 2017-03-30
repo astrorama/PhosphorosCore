@@ -215,7 +215,7 @@ std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixe
   auto& z_axis = grid.getAxis<PhzDataModel::ModelParameter::Z>();
   int i = 0;
   for (auto& z : z_axis) {
-    if (z > fixed_z) {
+    if (z >= fixed_z) {
       break;
     }
     ++i;

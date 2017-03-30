@@ -64,23 +64,18 @@ const PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction & LikelihoodGridFu
 
   if (!m_grid_function) {
 
-
-    PhzLikelihood::LikelihoodLogarithmAlgorithm::ScaleFactorCalc scale_factor { };
+    auto scale_factor = getScaleFactorFunction();
     PhzLikelihood::LikelihoodLogarithmAlgorithm::LikelihoodLogarithmCalc likelihood_logarithm { };
     if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isMissingPhotometryEnabled()) {
       if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled()) {
-        scale_factor = PhzLikelihood::ScaleFactorFunctorUpperLimitMissingData { };
         likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmUpperLimitMissingData { };
       } else {
-        scale_factor = PhzLikelihood::ScaleFactorFunctorMissingData { };
         likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmMissingData { };
       }
     } else {
       if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled()) {
-        scale_factor = PhzLikelihood::ScaleFactorFunctorUpperLimit { };
         likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmUpperLimit { };
       } else {
-        scale_factor = PhzLikelihood::ScaleFactorFunctorSimple { };
         likelihood_logarithm = PhzLikelihood::ChiSquareLikelihoodLogarithmSimple { };
       }
     }
@@ -92,6 +87,28 @@ const PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction & LikelihoodGridFu
 
   return m_grid_function;
 }
+
+
+PhzLikelihood::LikelihoodLogarithmAlgorithm::ScaleFactorCalc LikelihoodGridFuncConfig::getScaleFactorFunction() {
+  PhzLikelihood::LikelihoodLogarithmAlgorithm::ScaleFactorCalc scale_factor { };
+  
+  if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isMissingPhotometryEnabled()) {
+    if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled()) {
+      scale_factor = PhzLikelihood::ScaleFactorFunctorUpperLimitMissingData { };
+    } else {
+      scale_factor = PhzLikelihood::ScaleFactorFunctorMissingData { };
+    }
+  } else {
+    if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled()) {
+      scale_factor = PhzLikelihood::ScaleFactorFunctorUpperLimit { };
+    } else {
+      scale_factor = PhzLikelihood::ScaleFactorFunctorSimple { };
+    }
+  }
+  
+  return scale_factor;
+}
+
 
 } // PhzConfiguration namespace
 } // Euclid namespace

@@ -26,7 +26,8 @@ public:
 
   SourcePhzCalculatorMock(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
      const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
-     PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction):
+     PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction,
+     std::vector<PhzLikelihood::SourcePhzFunctor::PriorFunction>):
        m_phot_corr_map{std::move(phot_corr_map)},
        m_phot_grid(model_grid_map.at("")){
         expectFunctorCall();
@@ -37,7 +38,7 @@ public:
   MOCK_METHOD1(FunctorCall,
       PhzDataModel::SourceResults*(const SourceCatalog::Photometry& source_phot));
 
-  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot){
+  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot, double fixed_z=-99){
     std::unique_ptr< PhzDataModel::SourceResults> res(FunctorCall(source_phot));
     return std::move(*res);
   }
