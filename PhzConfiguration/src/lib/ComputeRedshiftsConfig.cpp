@@ -53,6 +53,7 @@
 #include "PhzConfiguration/BestModelOutputConfig.h"
 #include "PhzConfiguration/PdfOutputConfig.h"
 #include "PhzConfiguration/OutputStatisticsConfig.h"
+#include "PhzConfiguration/CopyColumnsConfig.h"
 
 #include "PhzOutput/PdfOutput.h"
 #include "PhzOutput/LikelihoodHandler.h"
@@ -108,6 +109,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<BestModelOutputConfig>();
   declareDependency<PdfOutputConfig>();
   declareDependency<OutputStatisticsConfig>();
+  declareDependency<CopyColumnsConfig>();
 }
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
