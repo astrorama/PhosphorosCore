@@ -65,6 +65,9 @@ void CopyColumnsConfig::initialize(const UserValues& args) {
   
   // Parse each token to get the input and output names
   for (auto& token : column_tokens) {
+    if (token == "") {
+      continue;
+    }
     auto sep = token.find(':');
     if (sep != std::string::npos) {
       columns_to_copy.emplace_back(token.substr(0, sep), token.substr(sep+1, std::string::npos));
