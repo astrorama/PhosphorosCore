@@ -50,6 +50,7 @@
 #include "PhzConfiguration/FixedRedshiftConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
 #include "PhzConfiguration/PhzOutputDirConfig.h"
+#include "PhzConfiguration/BestLikelihoodModelOutputConfig.h"
 #include "PhzConfiguration/BestModelOutputConfig.h"
 #include "PhzConfiguration/PdfOutputConfig.h"
 #include "PhzConfiguration/OutputStatisticsConfig.h"
@@ -106,6 +107,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<FixedRedshiftConfig>();
   declareDependency<OutputCatalogConfig>();
   declareDependency<PhzOutputDirConfig>();
+  declareDependency<BestLikelihoodModelOutputConfig>();
   declareDependency<BestModelOutputConfig>();
   declareDependency<PdfOutputConfig>();
   declareDependency<OutputStatisticsConfig>();

@@ -1,4 +1,4 @@
-/** 
+/**
  * @file SingleGridPhzFunctor.cpp
  * @date June 2, 2015
  * @author Nikolaos Apostolakos
@@ -19,29 +19,33 @@ SingleGridPhzFunctor::SingleGridPhzFunctor(std::vector<PriorFunction> priors,
           m_marginalization_func_list{std::move(marginalization_func_list)},
           m_likelihood_func{std::move(likelihood_func)} {
 }
-  
+
 
 void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) const {
 
   using ResType = PhzDataModel::RegionResultType;
-  
+
   // Calculate the likelihood over all the models
   m_likelihood_func(results);
-  
+
   // Create the posterior grid as a copy of the likelihood grid
   auto& likelihood_grid = results.get<ResType::LIKELIHOOD_LOG_GRID>();
   auto& posterior_grid = results.set<ResType::POSTERIOR_LOG_GRID>(likelihood_grid.getAxesTuple());
   std::copy(likelihood_grid.begin(), likelihood_grid.end(), posterior_grid.begin());
 
+  // Find the likelihood best fitted model
+  auto best_likelihood_fit = std::max_element(likelihood_grid.begin(), likelihood_grid.end());
+  results.set<ResType::BEST_LIKELIHOOD_MODEL_ITERATOR>(best_likelihood_fit);
+
   // Apply all the priors to the posterior
   for (auto& prior : m_priors) {
     prior(results);
   }
-  
+
   // Find the best fitted model
   auto best_fit = std::max_element(posterior_grid.begin(), posterior_grid.end());
   results.set<ResType::BEST_MODEL_ITERATOR>(best_fit);
-  
+
   // Calculate the 1D PDFs
   // First we have to produce a grid with the posterior not in log and
   // scaled to have peak = 1
@@ -56,9 +60,9 @@ void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) cons
   for (auto& marginalization_func : m_marginalization_func_list) {
     marginalization_func(results);
   }
-  
+
 }
 
-  
+
 } // end of namespace PhzLikelihood
 } // end of namespace Euclid
