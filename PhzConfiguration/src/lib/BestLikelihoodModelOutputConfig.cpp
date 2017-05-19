@@ -40,7 +40,7 @@ BestLikelihoodModelOutputConfig::BestLikelihoodModelOutputConfig(long manager_id
 auto BestLikelihoodModelOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Output options", {
     {CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG.c_str(), po::value<std::string>()->default_value("YES"),
-        "Enables or disables the best model info in the output (YES/NO, default: YES)"}
+        "Enables or disables the best likelihood model info in the output (YES/NO, default: YES)"}
   }}};
 }
 
