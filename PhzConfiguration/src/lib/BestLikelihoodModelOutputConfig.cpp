@@ -22,6 +22,7 @@
  * @author dubathf
  */
 
+#include "AlexandriaKernel/memory_tools.h"
 #include <PhzOutput/PhzColumnHandlers/BestModel.h>
 #include "PhzConfiguration/BestLikelihoodModelOutputConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
@@ -51,14 +52,12 @@ void BestLikelihoodModelOutputConfig::preInitialize(const UserValues& args) {
     throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG
         << ": " << args.at(CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG).as<std::string>();
   }
-
 }
 
 void BestLikelihoodModelOutputConfig::initialize(const UserValues& args) {
-
   if (args.at(CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG).as<std::string>() == "YES") {
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::BestModel<PhzOutput::ColumnHandlers::BestModelType::LIKELIHOOD>{}}
+        make_unique<PhzOutput::ColumnHandlers::BestModel<PhzOutput::ColumnHandlers::BestModelType::LIKELIHOOD>>()
     );
   }
 }

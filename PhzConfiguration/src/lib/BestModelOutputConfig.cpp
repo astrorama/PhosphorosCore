@@ -22,6 +22,7 @@
  * @author nikoapos
  */
 
+#include "AlexandriaKernel/memory_tools.h"
 #include <PhzOutput/PhzColumnHandlers/BestModel.h>
 #include "PhzConfiguration/BestModelOutputConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
@@ -52,20 +53,19 @@ void BestModelOutputConfig::preInitialize(const UserValues& args) {
     throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_BEST_MODEL_FLAG
         << ": " << args.at(CREATE_OUTPUT_BEST_MODEL_FLAG).as<std::string>();
   }
-  
 }
 
 void BestModelOutputConfig::initialize(const UserValues& args) {
   
   if (args.at(CREATE_OUTPUT_BEST_MODEL_FLAG).as<std::string>() == "YES") {
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::BestModel<PhzOutput::ColumnHandlers::BestModelType::POSTERIOR>{}}
+        make_unique<PhzOutput::ColumnHandlers::BestModel<PhzOutput::ColumnHandlers::BestModelType::POSTERIOR>>()
     );
   } else {
     // If the user does not want the full best model information we still give
     // the redshift as output
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::BestModelOnlyZ{}}
+        make_unique<PhzOutput::ColumnHandlers::BestModelOnlyZ>()
     );
   }
 }
