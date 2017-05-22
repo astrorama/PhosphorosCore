@@ -51,6 +51,9 @@ enum class SourceResultType {
   Z_1D_PDF,
   /// The logarithm of the normalization of the 1D PDFs
   LOG_1D_PDF_NORM,
+  /// A double with the value of the scale factor of the overall likelihood best
+  /// match model photometry
+  BEST_LIKELIHOOD_MODEL_SCALE_FACTOR,
   /// A double with the value of the scale factor of the overall best match
   /// model photometry
   BEST_MODEL_SCALE_FACTOR,

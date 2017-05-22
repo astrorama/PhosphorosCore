@@ -296,6 +296,10 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
   likelihood_model_it.fixAllAxes(likelihood_post_it);
   results.set<ResType::BEST_LIKELIHOOD_MODEL_ITERATOR>(likelihood_model_it);
 
+  auto likelihood_scale_it = best_likelihood_region_results.get<RegResType::SCALE_FACTOR_GRID>().begin();
+  likelihood_scale_it.fixAllAxes(likelihood_post_it);
+  results.set<ResType::BEST_LIKELIHOOD_MODEL_SCALE_FACTOR>(*likelihood_scale_it);
+
   // Find the result region which contains the model with the best posterior
   std::string best_region;
   double best_region_posterior = std::numeric_limits<double>::lowest();
@@ -327,6 +331,8 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
   if (first_region_results.contains<RegResType::Z_1D_PDF>()) {
     results.set<ResType::Z_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>()));
   }
+
+
 
   auto scale_it = best_region_results.get<RegResType::SCALE_FACTOR_GRID>().begin();
   scale_it.fixAllAxes(post_it);

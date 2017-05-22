@@ -1,0 +1,92 @@
+/*
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+/**
+ * @file PhzOutput/PhzColumnHandlers/BestLikelihoodModel.h
+ * @date 19/05/17
+ * @author dubathf
+ */
+
+namespace Euclid {
+namespace PhzOutput {
+namespace ColumnHandlers {
+
+
+namespace BestModel_impl {
+  template <BestModelType T>
+  struct BestModelTraits;
+
+  template <>
+  struct BestModelTraits<BestModelType::LIKELIHOOD> {
+    static std::string name_prefix() {return "LIKELIHOOD-";}
+    static PhzDataModel::PhotometryGrid::const_iterator getModelIt(const PhzDataModel::SourceResults& results){
+      return results.get<PhzDataModel::SourceResultType::BEST_LIKELIHOOD_MODEL_ITERATOR>();
+    }
+    static constexpr auto scale_type = PhzDataModel::SourceResultType::BEST_LIKELIHOOD_MODEL_SCALE_FACTOR;
+  };
+
+  template <>
+  struct BestModelTraits<BestModelType::POSTERIOR> {
+    static std::string name_prefix() {return "";}
+    static PhzDataModel::PhotometryGrid::const_iterator getModelIt(const PhzDataModel::SourceResults& results){
+        return results.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
+      }
+    static constexpr auto scale_type = PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR;
+  };
+}
+
+template <BestModelType T>
+std::vector<Table::ColumnInfo::info_type> BestModel<T>::getColumnInfoList() const {
+   std::string col_name = BestModel_impl::BestModelTraits<T>::name_prefix();
+    return std::vector<Table::ColumnInfo::info_type> {
+      Table::ColumnInfo::info_type(col_name+"SED", typeid(std::string)),
+      Table::ColumnInfo::info_type(col_name+"SED-Index", typeid(int64_t)),
+      Table::ColumnInfo::info_type(col_name+"ReddeningCurve", typeid(std::string)),
+      Table::ColumnInfo::info_type(col_name+"E(B-V)", typeid(double)),
+      Table::ColumnInfo::info_type(col_name+"Z", typeid(double)),
+      Table::ColumnInfo::info_type(col_name+"Scale", typeid(double))
+    };
+  }
+
+template <BestModelType T>
+std::vector<Table::Row::cell_type> BestModel<T>::convertResults(
+                        const SourceCatalog::Source&,
+                        const PhzDataModel::SourceResults& results) const {
+
+    PhzDataModel::PhotometryGrid::const_iterator best_model = BestModel_impl::BestModelTraits<T>::getModelIt(results);
+    auto sed = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
+    int64_t sed_index = best_model.axisIndex<PhzDataModel::ModelParameter::SED>() + 1;
+    auto reddening_curve = best_model.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>().qualifiedName();
+    auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
+    auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
+    auto scale = results.get<BestModel_impl::BestModelTraits<T>::scale_type>();
+
+    return std::vector<Table::Row::cell_type> {
+      sed, sed_index, reddening_curve, ebv, z, scale
+    };
+  }
+
+
+
+
+
+} /* namespace ColumnHandlers */
+} /* namespace PhzOutput */
+} /* namespace Euclid */
+
+

@@ -22,9 +22,9 @@
  * @author dubathf
  */
 
+#include <PhzOutput/PhzColumnHandlers/BestModel.h>
 #include "PhzConfiguration/BestLikelihoodModelOutputConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
-#include "PhzOutput/PhzColumnHandlers/BestLikelihoodModel.h"
 
 namespace po = boost::program_options;
 
@@ -58,7 +58,7 @@ void BestLikelihoodModelOutputConfig::initialize(const UserValues& args) {
 
   if (args.at(CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG).as<std::string>() == "YES") {
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::BestLikelihoodModel{}}
+        std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::BestModel<PhzOutput::ColumnHandlers::BestModelType::LIKELIHOOD>{}}
     );
   }
 }

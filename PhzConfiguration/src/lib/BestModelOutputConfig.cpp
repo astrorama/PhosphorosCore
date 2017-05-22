@@ -22,9 +22,9 @@
  * @author nikoapos
  */
 
+#include <PhzOutput/PhzColumnHandlers/BestModel.h>
 #include "PhzConfiguration/BestModelOutputConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
-#include "PhzOutput/PhzColumnHandlers/BestModel.h"
 #include "PhzOutput/PhzColumnHandlers/BestModelOnlyZ.h"
 
 namespace po = boost::program_options;
@@ -59,7 +59,7 @@ void BestModelOutputConfig::initialize(const UserValues& args) {
   
   if (args.at(CREATE_OUTPUT_BEST_MODEL_FLAG).as<std::string>() == "YES") {
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::BestModel{}}
+        std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::BestModel<PhzOutput::ColumnHandlers::BestModelType::POSTERIOR>{}}
     );
   } else {
     // If the user does not want the full best model information we still give

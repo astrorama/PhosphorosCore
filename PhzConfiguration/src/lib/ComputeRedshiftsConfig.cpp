@@ -22,6 +22,7 @@
  * @author Florian Dubath
  */
 
+#include <PhzOutput/PhzColumnHandlers/BestModel.h>
 #include <cstdlib>
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
@@ -61,7 +62,6 @@
 #include "PhzOutput/LikelihoodHandler.h"
 #include "PhzOutput/PhzCatalog.h"
 #include "PhzOutput/PhzColumnHandlers/Id.h"
-#include "PhzOutput/PhzColumnHandlers/BestModel.h"
 #include "PhzOutput/PhzColumnHandlers/Pdf.h"
 
 #include "Configuration/PhotometricBandMappingConfig.h"
