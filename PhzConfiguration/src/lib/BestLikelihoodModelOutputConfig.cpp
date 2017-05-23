@@ -24,6 +24,7 @@
 
 #include "AlexandriaKernel/memory_tools.h"
 #include <PhzOutput/PhzColumnHandlers/BestModel.h>
+#include <PhzOutput/PhzColumnHandlers/BestModelFactory.h>
 #include "PhzConfiguration/BestLikelihoodModelOutputConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
 
@@ -57,7 +58,7 @@ void BestLikelihoodModelOutputConfig::preInitialize(const UserValues& args) {
 void BestLikelihoodModelOutputConfig::initialize(const UserValues& args) {
   if (args.at(CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG).as<std::string>() == "YES") {
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        make_unique<PhzOutput::ColumnHandlers::BestModel<PhzOutput::ColumnHandlers::BestModelType::LIKELIHOOD>>()
+        PhzOutput::ColumnHandlers::BestModelFactory<PhzOutput::ColumnHandlers::BestModelType::LIKELIHOOD>::getBestModel()
     );
   }
 }

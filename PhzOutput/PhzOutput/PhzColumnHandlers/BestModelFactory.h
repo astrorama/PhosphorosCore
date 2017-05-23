@@ -17,16 +17,18 @@
  */
 
 /**
- * @file PhzOutput/PhzColumnHandlers/BestModel.h
+ * @file PhzOutput/PhzColumnHandlers/BestModelFactory.h
  * @date 19/05/17
  * @author dubathf
  */
 
-#ifndef _PHZOUTPUT_PHZCOLUMNHANDLERS_BESTMODEL_H
-#define _PHZOUTPUT_PHZCOLUMNHANDLERS_BESTMODEL_H
+#ifndef _PHZOUTPUT_PHZCOLUMNHANDLERS_BESTMODELFACTORY_H
+#define _PHZOUTPUT_PHZCOLUMNHANDLERS_BESTMODELFACTORY_H
 
 #include <functional>
+#include "AlexandriaKernel/memory_tools.h"
 #include "PhzOutput/PhzColumnHandlers/ColumnHandler.h"
+#include "PhzOutput/PhzColumnHandlers/BestModel.h"
 #include "PhzDataModel/PhotometryGrid.h"
 
 namespace Euclid {
@@ -34,43 +36,16 @@ namespace PhzOutput {
 namespace ColumnHandlers {
 
 
+enum BestModelType{
+  LIKELIHOOD,POSTERIOR
+};
 
 
-
-/**
- * @class BestModel
- * @brief
- *
- */
-class BestModel : public ColumnHandler {
-
+template <BestModelType T>
+class BestModelFactory{
 public:
-
-  using ModelIteratorFunctor = std::function<PhzDataModel::PhotometryGrid::const_iterator(const PhzDataModel::SourceResults&)>;
-  using ScaleFunctor = std::function<double(const PhzDataModel::SourceResults&)>;
-
-  BestModel(std::string column_prefix, ModelIteratorFunctor model_iterator_functor, ScaleFunctor scale_functor);
-
-  /**
-   * @brief Destructor
-   */
-  virtual ~BestModel() = default;
-
-
-  std::vector<Table::ColumnInfo::info_type> getColumnInfoList() const override;
-
-  std::vector<Table::Row::cell_type> convertResults(
-                    const SourceCatalog::Source& source,
-                    const PhzDataModel::SourceResults& results) const override;
-
-private:
-  std::string m_column_prefix;
-  ModelIteratorFunctor m_model_iterator_functor;
-  ScaleFunctor m_scale_functor;
-
-
-}; /* End of BestModel class */
-
+  static std::unique_ptr<BestModel> getBestModel();
+};
 
 
 } /* namespace ColumnHandlers */
@@ -78,4 +53,5 @@ private:
 } /* namespace Euclid */
 
 
+#include "PhzOutput/_impl/BestModelFactory.icpp"
 #endif
