@@ -59,6 +59,8 @@ enum class SourceResultType {
   BEST_MODEL_SCALE_FACTOR,
   /// The natural logarithm of the posterior of the overall best fitted model
   BEST_MODEL_POSTERIOR_LOG,
+  /// The natural logarithm of the likelihood of the overall best fitted model on the posterior
+  BEST_MODEL_LIKELIHOOD_LOG,
   // A map containing the results of all regions
   REGION_RESULTS_MAP
 };

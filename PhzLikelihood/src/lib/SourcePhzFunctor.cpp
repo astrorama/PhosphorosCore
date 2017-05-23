@@ -340,6 +340,10 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
 
   results.set<ResType::BEST_MODEL_POSTERIOR_LOG>(*post_it);
 
+  auto likelihood_grid_it =  best_region_results.get<RegResType::LIKELIHOOD_LOG_GRID>().begin();
+  likelihood_grid_it.fixAllAxes(post_it);
+  results.set<ResType::BEST_MODEL_LIKELIHOOD_LOG>(*likelihood_grid_it);
+
   return results;
 }
 

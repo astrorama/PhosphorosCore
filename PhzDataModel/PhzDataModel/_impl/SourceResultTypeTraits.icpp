@@ -46,7 +46,8 @@ struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
                                     T == SourceResultType::LOG_1D_PDF_NORM ||
                                     T == SourceResultType::BEST_LIKELIHOOD_MODEL_SCALE_FACTOR ||
                                     T == SourceResultType::BEST_MODEL_SCALE_FACTOR ||
-                                    T == SourceResultType::BEST_MODEL_POSTERIOR_LOG
+                                    T == SourceResultType::BEST_MODEL_POSTERIOR_LOG ||
+                                    T == SourceResultType::BEST_MODEL_LIKELIHOOD_LOG
                              >::type> {
   using type = double;
 };
