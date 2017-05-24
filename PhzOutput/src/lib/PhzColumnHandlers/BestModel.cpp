@@ -65,6 +65,27 @@ std::vector<Table::Row::cell_type> BestModel::convertResults(
     };
   }
 
+template <>
+std::unique_ptr<BestModel> BestModel::bestModelFactory<GridType::LIKELIHOOD>(){
+     std::string name_prefix = "LIKELIHOOD-";
+     // Cannot use the make_unique due to private constructor
+     return std::unique_ptr<BestModel>( new BestModel(
+         name_prefix,
+         [](const PhzDataModel::SourceResults& results){return results.get<PhzDataModel::SourceResultType::BEST_LIKELIHOOD_MODEL_ITERATOR>();},
+         [](const PhzDataModel::SourceResults& results){return results.get<PhzDataModel::SourceResultType::BEST_LIKELIHOOD_MODEL_SCALE_FACTOR>();}
+     ));
+}
+
+template <>
+std::unique_ptr<BestModel> BestModel::bestModelFactory<GridType::POSTERIOR>(){
+     std::string name_prefix = "";
+     return std::unique_ptr<BestModel>( new BestModel(
+         name_prefix,
+         [](const PhzDataModel::SourceResults& results){return results.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();},
+         [](const PhzDataModel::SourceResults& results){return results.get<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>();}
+     ));
+}
+
 } // ColumnHandlers namespace
 } // PhzOutput namespace
 } // Euclid namespace

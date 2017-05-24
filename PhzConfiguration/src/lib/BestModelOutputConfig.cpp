@@ -24,7 +24,6 @@
 
 #include "AlexandriaKernel/memory_tools.h"
 #include <PhzOutput/PhzColumnHandlers/BestModel.h>
-#include <PhzOutput/PhzColumnHandlers/BestModelFactory.h>
 #include "PhzConfiguration/BestModelOutputConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
 #include "PhzOutput/PhzColumnHandlers/BestModelOnlyZ.h"
@@ -60,7 +59,8 @@ void BestModelOutputConfig::initialize(const UserValues& args) {
   
   if (args.at(CREATE_OUTPUT_BEST_MODEL_FLAG).as<std::string>() == "YES") {
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        PhzOutput::ColumnHandlers::BestModelFactory<PhzOutput::ColumnHandlers::BestModelType::POSTERIOR>::getBestModel()
+
+        PhzOutput::ColumnHandlers::BestModel::bestModelFactory<PhzOutput::GridType::POSTERIOR>()
     );
   } else {
     // If the user does not want the full best model information we still give
