@@ -14,13 +14,7 @@
 using namespace Euclid;
 using namespace Euclid::PhzDataModel;
 
-// This enables the BOOST testing framework to use QualifiedNames in output messages
-namespace std {
-  std::ostream& operator<<(std::ostream& stream, const XYDataset::QualifiedName& name) {
-    stream << name.qualifiedName();
-    return stream;
-  }
-}
+
 
 //-----------------------------------------------------------------------------
 
