@@ -52,7 +52,6 @@ template <>
 struct PdfColumnTraits<PhzDataModel::ModelParameter::EBV> {
   static std::string name_prefix() {return "EBV";}
   static constexpr auto res_type = PhzDataModel::SourceResultType::EBV_1D_PDF;
-  using axis_type = PhzDataModel::ModelParameterTraits<PhzDataModel::ModelParameter::EBV>::type;
 
 };
 
@@ -60,7 +59,6 @@ template <>
 struct PdfColumnTraits<PhzDataModel::ModelParameter::Z> {
   static std::string name_prefix() {return "Z";}
   static constexpr auto res_type = PhzDataModel::SourceResultType::Z_1D_PDF;
-  using axis_type = PhzDataModel::ModelParameterTraits<PhzDataModel::ModelParameter::Z>::type;
 
 };
 
