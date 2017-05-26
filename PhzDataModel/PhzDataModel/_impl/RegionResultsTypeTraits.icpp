@@ -89,7 +89,8 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
-                                    T == RegionResultType::SED_1D_PDF
+                                    T == RegionResultType::SED_1D_PDF ||
+                                    T == RegionResultType::LIKELIHOOD_SED_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::SED>;
 };
@@ -97,7 +98,8 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
-                                    T == RegionResultType::RED_CURVE_1D_PDF
+                                    T == RegionResultType::RED_CURVE_1D_PDF ||
+                                    T == RegionResultType::LIKELIHOOD_RED_CURVE_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::REDDENING_CURVE>;
 };
@@ -105,7 +107,8 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
-                                    T == RegionResultType::EBV_1D_PDF
+                                    T == RegionResultType::EBV_1D_PDF ||
+                                    T == RegionResultType::LIKELIHOOD_EBV_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::EBV>;
 };
@@ -113,7 +116,8 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
-                                    T == RegionResultType::Z_1D_PDF
+                                    T == RegionResultType::Z_1D_PDF ||
+                                    T == RegionResultType::LIKELIHOOD_Z_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::Z>;
 };

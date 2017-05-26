@@ -49,6 +49,14 @@ enum class SourceResultType {
   EBV_1D_PDF,
   /// A grid representing the 1D PDF over the redshift
   Z_1D_PDF,
+  /// The 1D PDF over the SED
+  LIKELIHOOD_SED_1D_PDF,
+  /// The 1D PDF over the reddening curve
+  LIKELIHOOD_RED_CURVE_1D_PDF,
+  /// The 1D PDF over the E(B-V)
+  LIKELIHOOD_EBV_1D_PDF,
+  /// A grid representing the 1D PDF over the redshift
+  LIKELIHOOD_Z_1D_PDF,
   /// The logarithm of the normalization of the 1D PDFs
   LOG_1D_PDF_NORM,
   /// A double with the value of the scale factor of the overall likelihood best

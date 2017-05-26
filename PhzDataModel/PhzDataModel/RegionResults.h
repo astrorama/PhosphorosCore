@@ -58,6 +58,14 @@ enum class RegionResultType {
   EBV_1D_PDF,
   /// The 1D PDF over the redshift
   Z_1D_PDF,
+  /// The 1D PDF over the SED
+  LIKELIHOOD_SED_1D_PDF,
+  /// The 1D PDF over the reddening curve
+  LIKELIHOOD_RED_CURVE_1D_PDF,
+  /// The 1D PDF over the E(B-V)
+  LIKELIHOOD_EBV_1D_PDF,
+  /// The 1D PDF over the redshift
+  LIKELIHOOD_Z_1D_PDF,
   /// The logarithm of the normalization of the posterior grid and the 1D PDFs
   NORMALIZATION_LOG
 };

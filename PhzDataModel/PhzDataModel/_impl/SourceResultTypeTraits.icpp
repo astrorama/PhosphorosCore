@@ -55,6 +55,7 @@ struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
 
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::LIKELIHOOD_SED_1D_PDF ||
                                     T == SourceResultType::SED_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::SED>;
@@ -63,6 +64,7 @@ struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
 
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::LIKELIHOOD_RED_CURVE_1D_PDF ||
                                     T == SourceResultType::RED_CURVE_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::REDDENING_CURVE>;
@@ -71,6 +73,7 @@ struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
 
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::LIKELIHOOD_EBV_1D_PDF ||
                                     T == SourceResultType::EBV_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::EBV>;
@@ -79,6 +82,7 @@ struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
 
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::LIKELIHOOD_Z_1D_PDF ||
                                     T == SourceResultType::Z_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::Z>;
