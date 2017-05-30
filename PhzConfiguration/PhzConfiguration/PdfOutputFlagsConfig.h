@@ -38,7 +38,7 @@ namespace PhzConfiguration {
 class PdfOutputFlagsConfig : public Configuration::Configuration {
 
 public:
-  
+
   PdfOutputFlagsConfig(long manager_id);
 
   /**
@@ -60,12 +60,25 @@ public:
 
   bool pdfZFlag() const;
 
+  bool likelihoodPdfSedFlag() const;
+
+  bool likelihoodPdfRedCurveFlag() const;
+
+  bool likelihoodPdfEbvFlag() const;
+
+  bool likelihoodPdfZFlag() const;
+
 private:
-  
+
   bool m_pdf_sed_flag = false;
   bool m_pdf_red_curve_flag = false;
   bool m_pdf_ebv_flag = false;
   bool m_pdf_z_flag = false;
+
+  bool m_likelihood_pdf_sed_flag = false;
+  bool m_likelihood_pdf_red_curve_flag = false;
+  bool m_likelihood_pdf_ebv_flag = false;
+  bool m_likelihood_pdf_z_flag = false;
 
 }; /* End of PdfOutputFlagsConfig class */
 

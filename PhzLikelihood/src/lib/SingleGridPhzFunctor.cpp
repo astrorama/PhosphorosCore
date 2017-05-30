@@ -55,7 +55,18 @@ void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) cons
           log_it!=posterior_grid.end(); ++log_it, ++norm_it) {
     *norm_it = std::exp(*log_it - norm_log);
   }
+
   results.set<ResType::NORMALIZATION_LOG>(norm_log);
+
+  double norm_likelihood_log = *std::max_element(likelihood_grid.begin(), likelihood_grid.end());
+  auto& likelihood_grid_normalized = results.set<ResType::LIKELIHOOD_GRID>(likelihood_grid.getAxesTuple());
+  for (auto log_it=likelihood_grid.begin(), norm_it=likelihood_grid_normalized.begin();
+            log_it!=likelihood_grid.end(); ++log_it, ++norm_it) {
+      *norm_it = std::exp(*log_it - norm_likelihood_log);
+  }
+
+  results.set<ResType::LIKELIHOOD_NORMALIZATION_LOG>(norm_likelihood_log);
+
   // Now we can compute the 1D PDFs
   for (auto& marginalization_func : m_marginalization_func_list) {
     marginalization_func(results);

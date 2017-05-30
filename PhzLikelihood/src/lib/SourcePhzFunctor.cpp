@@ -23,6 +23,7 @@
 #include "PhzDataModel/Pdf1D.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
 #include "PhzLikelihood/Pdf1DTraits.h"
+#include "PhzLikelihood/LikelihoodPdf1DTraits.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -211,6 +212,42 @@ typename PhzDataModel::Pdf1DParam<FixedAxis> combine1DPdfs(const std::map<std::s
   return combined_pdf;
 }
 
+
+template <int FixedAxis>
+typename PhzDataModel::Pdf1DParam<FixedAxis> combineLikelihood1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map) {
+
+  // All the 1D PDFs were normalized. We compute factors for each PDF
+  // in such way so the region with the smallest normalization log will have the
+  // multiplier 1, and the rest region factors will rescale them to match this
+  // normalization
+  std::map<std::string, double> factor_map {};
+  double min_norm_log = std::numeric_limits<double>::lowest();
+  for (auto& pair : reg_result_map) {
+    double norm_log = pair.second.get<RegResType::LIKELIHOOD_NORMALIZATION_LOG>();
+    factor_map[pair.first] = norm_log;
+    if (norm_log > min_norm_log) {
+      min_norm_log = norm_log;
+    }
+  }
+  for (auto& factor : factor_map) {
+    factor.second = std::exp(factor.second - min_norm_log);
+  }
+
+  // We combine all the PDFs from the regions, one by one, starting with an emtpy one
+  typename PhzDataModel::Pdf1DParam<FixedAxis> combined_pdf {{PhzDataModel::ModelParameterTraits<FixedAxis>::name(), {}}};
+  for (auto& pair : reg_result_map) {
+    double factor = factor_map.at(pair.first);
+    auto& reg_pdf = pair.second.get<LikelihoodPdf1DTraits<FixedAxis>::PdfRes>();
+    combined_pdf = combineTwoPdfs(combined_pdf, 1., reg_pdf, factor);
+  }
+
+  // Normalize the final PDF
+  normalizePdf(combined_pdf);
+
+  return combined_pdf;
+}
+
+
 std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixed_z) {
   auto& z_axis = grid.getAxis<PhzDataModel::ModelParameter::Z>();
   int i = 0;
@@ -331,6 +368,22 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
   if (first_region_results.contains<RegResType::Z_1D_PDF>()) {
     results.set<ResType::Z_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>()));
   }
+
+
+  // We add the combined Likelihood 1D PDFs only if they are computed for the regions
+  if (first_region_results.contains<RegResType::LIKELIHOOD_SED_1D_PDF>()) {
+    results.set<ResType::LIKELIHOOD_SED_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::SED>(results.get<ResType::REGION_RESULTS_MAP>()));
+  }
+  if (first_region_results.contains<RegResType::LIKELIHOOD_RED_CURVE_1D_PDF>()) {
+    results.set<ResType::LIKELIHOOD_RED_CURVE_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::REDDENING_CURVE>(results.get<ResType::REGION_RESULTS_MAP>()));
+  }
+  if (first_region_results.contains<RegResType::LIKELIHOOD_EBV_1D_PDF>()) {
+    results.set<ResType::LIKELIHOOD_EBV_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::EBV>(results.get<ResType::REGION_RESULTS_MAP>()));
+  }
+  if (first_region_results.contains<RegResType::LIKELIHOOD_Z_1D_PDF>()) {
+    results.set<ResType::LIKELIHOOD_Z_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>()));
+  }
+
 
 
 

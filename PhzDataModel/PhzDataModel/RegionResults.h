@@ -48,6 +48,8 @@ enum class RegionResultType {
   LIKELIHOOD_LOG_GRID,
   /// The grid containing the logarithm of the posterior for all models
   POSTERIOR_LOG_GRID,
+  /// The grid containing the normalized likelihood for all models
+  LIKELIHOOD_GRID,
   /// The grid containing the normalized posterior for all models
   POSTERIOR_GRID,
   /// The 1D PDF over the SED
@@ -66,6 +68,8 @@ enum class RegionResultType {
   LIKELIHOOD_EBV_1D_PDF,
   /// The 1D PDF over the redshift
   LIKELIHOOD_Z_1D_PDF,
+  /// The logarithm of the normalization of the likelihood grid and the 1D PDFs
+  LIKELIHOOD_NORMALIZATION_LOG,
   /// The logarithm of the normalization of the posterior grid and the 1D PDFs
   NORMALIZATION_LOG
 };

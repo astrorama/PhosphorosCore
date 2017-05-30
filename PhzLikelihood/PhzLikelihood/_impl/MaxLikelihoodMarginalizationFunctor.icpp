@@ -1,31 +1,33 @@
-/** 
+/**
  * @file MaxMarginalizationFunctor.icpp
  * @date February 5, 2015
  * @author Nikolaos Apostolakos
  */
 
 #include <algorithm>
-#include "PhzLikelihood/Pdf1DTraits.h"
+#include "PhzLikelihood/LikelihoodPdf1DTraits.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
 
 template <int FinalAxis>
-void MaxMarginalizationFunctor<FinalAxis>::operator()(PhzDataModel::RegionResults& results) const {
+void MaxLikelihoodMarginalizationFunctor<FinalAxis>::operator()(PhzDataModel::RegionResults& results) const {
 
   // Get the posterior grid from the passed object
-  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_GRID>();
-  
+  auto& likelihood_grid = results.get<PhzDataModel::RegionResultType::LIKELIHOOD_GRID>();
+
+
+
   // Generate the result 1D PDF
-  auto& pdf = results.set<Pdf1DTraits<FinalAxis>::PdfRes>(posterior_grid.getAxis<FinalAxis>());
-  
+  auto& pdf = results.set<LikelihoodPdf1DTraits<FinalAxis>::PdfRes>(likelihood_grid.getAxis<FinalAxis>());
+
   // Calculate the result as maximum of the rest axes
   for (auto iter = pdf.begin(); iter != pdf.end(); ++iter) {
     *iter = *std::max_element(
-          posterior_grid.begin().fixAxisByValue<FinalAxis>(iter.template axisValue<0>()),
-          posterior_grid.end());
+        likelihood_grid.begin().fixAxisByValue<FinalAxis>(iter.template axisValue<0>()),
+        likelihood_grid.end());
   }
-  
+
 }
 
 } // end of namespace PhzLikelihood

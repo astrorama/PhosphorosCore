@@ -5,8 +5,8 @@
  *      Author: Nicolas Morisset
  */
 
-#ifndef PHZOUTPUT_PHZOUTPUT_PDFOUTPUT_H_
-#define PHZOUTPUT_PHZOUTPUT_PDFOUTPUT_H_
+#ifndef PHZOUTPUT_LIKELIHOODPDFOUTPUT_H_
+#define PHZOUTPUT_LIKELIHOODPDFOUTPUT_H_
 
 
 #include <boost/filesystem.hpp>
@@ -30,13 +30,13 @@ namespace PhzOutput {
  *
  */
 template <int Parameter>
-class PdfOutput : public OutputHandler {
+class LikelihoodPdfOutput : public OutputHandler {
 
 public:
-  
-  PdfOutput(boost::filesystem::path out_dir, uint flush_chunk_size=500);
 
-  virtual ~PdfOutput();
+  LikelihoodPdfOutput(boost::filesystem::path out_dir, uint flush_chunk_size=500);
+
+  virtual ~LikelihoodPdfOutput();
 
   /**
    * @brief
@@ -61,6 +61,6 @@ private:
 } // end of namespace PhzOutput
 } // end of namespace Euclid
 
-#include <PhzOutput/_impl/PdfOutput.icpp>
+#include <PhzOutput/_impl/LikelihoodPdfOutput.icpp>
 
-#endif /* PHZOUTPUT_PHZOUTPUT_PDFOUTPUT_H_ */
+#endif /* PHZOUTPUT_LIKELIHOODPDFOUTPUT_H_ */
