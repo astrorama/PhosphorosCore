@@ -37,8 +37,9 @@ SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_c
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                                    LikelihoodGridFunction likelihood_func,
                                    std::vector<PriorFunction> priors,
-                                   std::vector<MarginalizationFunction> marginalization_func_list)
-        : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid_map(phot_grid_map) {
+                                   std::vector<MarginalizationFunction> marginalization_func_list,
+                                   bool doNormalizePdf)
+        : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid_map(phot_grid_map),m_do_normalize_pdf{doNormalizePdf} {
   for (auto& pair : phot_grid_map) {
     m_single_grid_functor_map.emplace(std::piecewise_construct,
             std::forward_as_tuple(pair.first),
@@ -177,9 +178,16 @@ void normalizePdf(PhzDataModel::Pdf1D<AxisType>& pdf) {
   }
 }
 
+template <typename AxisType>
+void scalePdf( PhzDataModel::Pdf1D<AxisType>& pdf, double scale) {
+  for (auto& cell : pdf) {
+    cell *= scale;
+  }
+}
+
 
 template <int FixedAxis>
-typename PhzDataModel::Pdf1DParam<FixedAxis> combine1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map) {
+typename PhzDataModel::Pdf1DParam<FixedAxis> combine1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map, bool do_normalize_pdf) {
 
   // All the 1D PDFs were normalized. We compute factors for each PDF
   // in such way so the region with the smallest normalization log will have the
@@ -207,14 +215,18 @@ typename PhzDataModel::Pdf1DParam<FixedAxis> combine1DPdfs(const std::map<std::s
   }
 
   // Normalize the final PDF
-  normalizePdf(combined_pdf);
+  if (do_normalize_pdf){
+    normalizePdf(combined_pdf);
+  } else {
+    scalePdf(combined_pdf, std::exp(min_norm_log));
+  }
 
   return combined_pdf;
 }
 
 
 template <int FixedAxis>
-typename PhzDataModel::Pdf1DParam<FixedAxis> combineLikelihood1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map) {
+typename PhzDataModel::Pdf1DParam<FixedAxis> combineLikelihood1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map, bool do_normalize_pdf) {
 
   // All the 1D PDFs were normalized. We compute factors for each PDF
   // in such way so the region with the smallest normalization log will have the
@@ -242,7 +254,11 @@ typename PhzDataModel::Pdf1DParam<FixedAxis> combineLikelihood1DPdfs(const std::
   }
 
   // Normalize the final PDF
-  normalizePdf(combined_pdf);
+  if (do_normalize_pdf){
+     normalizePdf(combined_pdf);
+   } else {
+     scalePdf(combined_pdf, std::exp(min_norm_log));
+   }
 
   return combined_pdf;
 }
@@ -357,31 +373,31 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
   // We add the combined 1D PDFs only if they are computed for the regions
   auto& first_region_results = results.get<ResType::REGION_RESULTS_MAP>().begin()->second;
   if (first_region_results.contains<RegResType::SED_1D_PDF>()) {
-    results.set<ResType::SED_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::SED>(results.get<ResType::REGION_RESULTS_MAP>()));
+    results.set<ResType::SED_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::SED>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::RED_CURVE_1D_PDF>()) {
-    results.set<ResType::RED_CURVE_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::REDDENING_CURVE>(results.get<ResType::REGION_RESULTS_MAP>()));
+    results.set<ResType::RED_CURVE_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::REDDENING_CURVE>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::EBV_1D_PDF>()) {
-    results.set<ResType::EBV_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::EBV>(results.get<ResType::REGION_RESULTS_MAP>()));
+    results.set<ResType::EBV_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::EBV>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::Z_1D_PDF>()) {
-    results.set<ResType::Z_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>()));
+    results.set<ResType::Z_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
 
 
   // We add the combined Likelihood 1D PDFs only if they are computed for the regions
   if (first_region_results.contains<RegResType::LIKELIHOOD_SED_1D_PDF>()) {
-    results.set<ResType::LIKELIHOOD_SED_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::SED>(results.get<ResType::REGION_RESULTS_MAP>()));
+    results.set<ResType::LIKELIHOOD_SED_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::SED>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::LIKELIHOOD_RED_CURVE_1D_PDF>()) {
-    results.set<ResType::LIKELIHOOD_RED_CURVE_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::REDDENING_CURVE>(results.get<ResType::REGION_RESULTS_MAP>()));
+    results.set<ResType::LIKELIHOOD_RED_CURVE_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::REDDENING_CURVE>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::LIKELIHOOD_EBV_1D_PDF>()) {
-    results.set<ResType::LIKELIHOOD_EBV_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::EBV>(results.get<ResType::REGION_RESULTS_MAP>()));
+    results.set<ResType::LIKELIHOOD_EBV_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::EBV>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::LIKELIHOOD_Z_1D_PDF>()) {
-    results.set<ResType::LIKELIHOOD_Z_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>()));
+    results.set<ResType::LIKELIHOOD_Z_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
 
 

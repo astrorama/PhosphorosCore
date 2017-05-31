@@ -1,4 +1,4 @@
-/** 
+/**
  * @file CatalogHandler.h
  * @date December 3, 2014
  * @author Nikolaos Apostolakos
@@ -17,30 +17,30 @@ namespace PhzLikelihood {
 
 /**
  * @class CatalogHandler
- * 
+ *
  * @brief Class responsible for organizing the PHZ calculation for a set of
  * sources
- * 
+ *
  * @details
  * This class is using for this a fitting algorithm between the source photometries
  * and a set of model photometries. It also applies photometric correction for
  * the filter zeroset to the photometries of the sources.
  */
 class CatalogHandler {
-  
+
 public:
-  
+
   typedef SourcePhzFunctor::MarginalizationFunction MarginalizationFunction;
-  
+
   typedef SourcePhzFunctor::PriorFunction PriorFunction;
-  
+
   typedef SourcePhzFunctor::LikelihoodGridFunction LikelihoodGridFunction;
-  
+
   /**
    * Constructs a new CatalogHandler instance. If the given photometric
    * correction map does not contain corrections for all the filters of the
    * given model photometries an exception is thrown.
-   * 
+   *
    * @param phot_corr_map
    *    A map with the photometric corrections to be applied for each filter
    * @param phot_grid_map
@@ -61,14 +61,15 @@ public:
                  const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                  LikelihoodGridFunction likelihood_grid_func,
                  std::vector<PriorFunction> priors,
-                 std::vector<MarginalizationFunction> marginalization_func_list);
-  
+                 std::vector<MarginalizationFunction> marginalization_func_list,
+                 bool doNormalizePdf);
+
   /**
    * Iterates through a set of sources and calculates the PHZ parameters for
    * each of them. The CatalogHandler makes the assumption that all the sources
    * contain the Photometry attribute. The output is provided by calls to the
    * given OutputHandler. There is one call performed for each source.
-   * 
+   *
    * @tparam SourceIter
    *    The type of iterator over the sources. It must be an iterator over
    *    objects of type SourceCatalog::Source
@@ -83,11 +84,11 @@ public:
   template<typename SourceIter>
   void handleSources(SourceIter source_begin, SourceIter source_end,
                      PhzOutput::OutputHandler& out_handler) const;
-  
+
 private:
-  
+
   SourcePhzFunctor m_source_phz_func;
-  
+
 };
 
 } // end of namespace PhzLikelihood

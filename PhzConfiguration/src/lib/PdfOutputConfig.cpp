@@ -39,6 +39,7 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 static const std::string OUTPUT_PDF_FORMAT {"output-pdf-format"};
+static const std::string OUTPUT_PDF_NORMALIZED {"output-pdf-normalized"};
 
 PdfOutputConfig::PdfOutputConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PhzOutputDirConfig>();
@@ -50,7 +51,9 @@ PdfOutputConfig::PdfOutputConfig(long manager_id) : Configuration(manager_id) {
 auto PdfOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Output options", {
     {OUTPUT_PDF_FORMAT.c_str(), po::value<std::string>()->default_value("VECTOR-COLUMN"),
-        "The format of the 1D PDF. One of VECTOR-COLUMN (default) or INDIVIDUAL-HDUS"}
+        "The format of the 1D PDF. One of VECTOR-COLUMN (default) or INDIVIDUAL-HDUS"},
+    {OUTPUT_PDF_NORMALIZED.c_str(), po::value<std::string>()->default_value("YES"),
+        "Flag allowing to turn off the 1D PDF normalization (YES/NO, default: YES)"}
   }}};
 }
 
@@ -61,6 +64,13 @@ void PdfOutputConfig::preInitialize(const UserValues& args) {
     throw Elements::Exception() << "Invalid value for option " << OUTPUT_PDF_FORMAT
         << ": " << args.at(OUTPUT_PDF_FORMAT).as<std::string>();
   }
+
+  if (args.at(OUTPUT_PDF_NORMALIZED).as<std::string>() != "NO"
+       && args.at(OUTPUT_PDF_NORMALIZED).as<std::string>() != "YES") {
+     throw Elements::Exception() << "Invalid " + OUTPUT_PDF_NORMALIZED + " value: "
+         << args.at(OUTPUT_PDF_NORMALIZED).as<std::string>() << " (allowed values: YES, NO)";
+   }
+
 }
 
 void PdfOutputConfig::initialize(const UserValues& args) {
@@ -115,6 +125,18 @@ void PdfOutputConfig::initialize(const UserValues& args) {
   if (m_format == "INDIVIDUAL-HDUS") {
     m_out_pdf_dir = getDependency<PhzOutputDirConfig>().getPhzOutputDir();
   }
+
+  auto normalized_flag = args.at(OUTPUT_PDF_NORMALIZED).as<std::string>();
+  m_pdf_normalized = normalized_flag == "YES";
+
+}
+
+bool PdfOutputConfig::doNormalizePDFs() const{
+  if (getCurrentState() < Configuration::Configuration::State::FINAL) {
+    throw Elements::Exception()
+        << "Call to doNormalizePDFs() on a not initialized instance.";
+  }
+  return m_pdf_normalized;
 }
 
 std::vector<std::unique_ptr<PhzOutput::OutputHandler>> PdfOutputConfig::getOutputHandlers() const {

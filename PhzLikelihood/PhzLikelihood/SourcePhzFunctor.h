@@ -41,7 +41,7 @@ public:
   using LikelihoodGridFunction = SingleGridPhzFunctor::LikelihoodGridFunction;
   using MarginalizationFunction = SingleGridPhzFunctor::MarginalizationFunction;
   using PriorFunction = SingleGridPhzFunctor::PriorFunction;
-  
+
   /**
    * Constructs a new SourcePhzFunctor instance. It gets as parameters a map
    * containing the photometric corrections,a map with the grids with the model
@@ -68,7 +68,8 @@ public:
                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                    LikelihoodGridFunction likelihood_grid_func,
                    std::vector<PriorFunction> priors = {},
-                   std::vector<MarginalizationFunction> marginalization_func_list = {BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{}});
+                   std::vector<MarginalizationFunction> marginalization_func_list = {BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{}},
+                   bool doNormalizePdf = true);
 
   /**
    * Calculates the PHZ results for the given source photometry. The given
@@ -86,9 +87,9 @@ public:
   PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot, double fixed_z=-99) const;
 
 private:
-
   PhzDataModel::PhotometricCorrectionMap m_phot_corr_map;
   const std::map<std::string, PhzDataModel::PhotometryGrid>& m_phot_grid_map;
+  bool m_do_normalize_pdf;
   std::map<std::string, SingleGridPhzFunctor> m_single_grid_functor_map {};
 
 };
