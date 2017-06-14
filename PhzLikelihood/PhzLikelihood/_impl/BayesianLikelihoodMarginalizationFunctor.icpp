@@ -6,7 +6,7 @@
 
 #include <algorithm>
 #include "PhzLikelihood/NumericalAxisCorrection.h"
-#include "PhzLikelihood/SumLikelihoodMarginalizationFunctor.h"
+#include "PhzLikelihood/SumMarginalizationFunctor.h"
 #include "PhzLikelihood/LikelihoodPdf1DTraits.h"
 
 namespace Euclid {
@@ -86,7 +86,7 @@ void BayesianLikelihoodMarginalizationFunctor<FinalAxis>::operator()(PhzDataMode
   }
 
   // Calculate the 1D PDF as a simple SUM using a SumMarginalizationFunctor
-  SumLikelihoodMarginalizationFunctor<FinalAxis> sum_marg {};
+  SumMarginalizationFunctor<FinalAxis> sum_marg {PhzDataModel::GridType::LIKELIHOOD};
   sum_marg(temp_results);
 
   // Copy the 1D PDF to our results

@@ -8,7 +8,11 @@
 #define	PHZLIKELIHOOD_SUMMARGINALIZATIONFUNCTOR_H
 
 #include <numeric>
+#include <functional>
+#include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/GridType.h"
 #include "PhzDataModel/RegionResults.h"
+#include "PhzDataModel/Pdf1D.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -32,6 +36,8 @@ class SumMarginalizationFunctor {
   
 public:
   
+  SumMarginalizationFunctor(PhzDataModel::GridType grid_type);
+
   /**
    * @brief Computes the marginalized 1D PDF of the given likelihood grid
    * @details
@@ -42,6 +48,15 @@ public:
    *    The results object containing the posterior to marginalize
    */
   void operator()(PhzDataModel::RegionResults& results) const;
+  
+private:
+  
+  using GridFunctor = std::function<PhzDataModel::DoubleGrid&(PhzDataModel::RegionResults&)>;
+  using PdfFunctor = std::function<PhzDataModel::Pdf1DParam<FinalAxis>&(
+                        PhzDataModel::RegionResults&, PhzDataModel::DoubleGrid&)>;
+    
+  GridFunctor m_grid_functor;
+  PdfFunctor m_pdf_functor;
   
 };
 

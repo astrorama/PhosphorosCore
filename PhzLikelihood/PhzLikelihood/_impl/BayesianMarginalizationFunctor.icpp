@@ -86,7 +86,7 @@ void BayesianMarginalizationFunctor<FinalAxis>::operator()(PhzDataModel::RegionR
   }
 
   // Calculate the 1D PDF as a simple SUM using a SumMarginalizationFunctor
-  SumMarginalizationFunctor<FinalAxis> sum_marg {};
+  SumMarginalizationFunctor<FinalAxis> sum_marg {PhzDataModel::GridType::POSTERIOR};
   sum_marg(temp_results);
   
   // Copy the 1D PDF to our results
