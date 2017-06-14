@@ -28,7 +28,7 @@
 #include <functional>
 #include "PhzOutput/PhzColumnHandlers/ColumnHandler.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzOutput/GridType.h"
+#include "PhzDataModel/GridType.h"
 
 namespace Euclid {
 namespace PhzOutput {
@@ -50,7 +50,7 @@ public:
   using ModelIteratorFunctor = std::function<PhzDataModel::PhotometryGrid::const_iterator(const PhzDataModel::SourceResults&)>;
   using ScaleFunctor = std::function<double(const PhzDataModel::SourceResults&)>;
 
-  template <GridType T>
+  template <PhzDataModel::GridType T>
   static std::unique_ptr<BestModel> bestModelFactory();
 
 

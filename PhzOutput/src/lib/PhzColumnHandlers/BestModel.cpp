@@ -66,7 +66,7 @@ std::vector<Table::Row::cell_type> BestModel::convertResults(
   }
 
 template <>
-std::unique_ptr<BestModel> BestModel::bestModelFactory<GridType::LIKELIHOOD>(){
+std::unique_ptr<BestModel> BestModel::bestModelFactory<PhzDataModel::GridType::LIKELIHOOD>(){
      std::string name_prefix = "LIKELIHOOD-";
      // Cannot use the make_unique due to private constructor
      return std::unique_ptr<BestModel>( new BestModel(
@@ -77,7 +77,7 @@ std::unique_ptr<BestModel> BestModel::bestModelFactory<GridType::LIKELIHOOD>(){
 }
 
 template <>
-std::unique_ptr<BestModel> BestModel::bestModelFactory<GridType::POSTERIOR>(){
+std::unique_ptr<BestModel> BestModel::bestModelFactory<PhzDataModel::GridType::POSTERIOR>(){
      std::string name_prefix = "";
      return std::unique_ptr<BestModel>( new BestModel(
          name_prefix,
