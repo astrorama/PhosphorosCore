@@ -26,7 +26,7 @@
 #include "PhzLikelihood/SumMarginalizationFunctor.h"
 #include "PhzLikelihood/MaxMarginalizationFunctor.h"
 #include "PhzLikelihood/BayesianMarginalizationFunctor.h"
-#include "PhzLikelihood/MaxLikelihoodMarginalizationFunctor.h"
+#include "PhzLikelihood/MaxMarginalizationFunctor.h"
 #include "PhzLikelihood/BayesianLikelihoodMarginalizationFunctor.h"
 #include "PhzDataModel/PhzModel.h"
 #include "PhzConfiguration/PdfOutputFlagsConfig.h"
@@ -50,7 +50,7 @@ void addFunctorsToList(std::vector<PhzLikelihood::CatalogHandler::Marginalizatio
   if (collapse_type == "SUM") {
     func_list.emplace_back(SumMarginalizationFunctor<Parameter> { PhzDataModel::GridType::POSTERIOR });
   } else if (collapse_type == "MAX") {
-    func_list.emplace_back(MaxMarginalizationFunctor<Parameter> { });
+    func_list.emplace_back(MaxMarginalizationFunctor<Parameter> { PhzDataModel::GridType::POSTERIOR });
   } else {
     BayesianMarginalizationFunctor<Parameter> func {};
     for (auto& pair : corrections) {
@@ -73,7 +73,7 @@ void addLikelihoodFunctorsToList(std::vector<PhzLikelihood::CatalogHandler::Marg
   if (collapse_type == "SUM") {
     func_list.emplace_back(SumMarginalizationFunctor<Parameter> { PhzDataModel::GridType::LIKELIHOOD });
   } else if (collapse_type == "MAX") {
-    func_list.emplace_back(MaxLikelihoodMarginalizationFunctor<Parameter> { });
+    func_list.emplace_back(MaxMarginalizationFunctor<Parameter> { PhzDataModel::GridType::LIKELIHOOD });
 
   } else {
     BayesianLikelihoodMarginalizationFunctor<Parameter> func {};
