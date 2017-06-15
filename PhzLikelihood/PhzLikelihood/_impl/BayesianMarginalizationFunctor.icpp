@@ -8,6 +8,7 @@
 #include "PhzLikelihood/NumericalAxisCorrection.h"
 #include "PhzLikelihood/SumMarginalizationFunctor.h"
 #include "PhzLikelihood/Pdf1DTraits.h"
+#include "PhzLikelihood/LikelihoodPdf1DTraits.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -47,8 +48,33 @@ struct NumercalAxisCorrectionAdder<FinalAxis, PhzDataModel::DoubleGrid::axisNumb
 
 
 template <int FinalAxis>
-BayesianMarginalizationFunctor<FinalAxis>::BayesianMarginalizationFunctor() {
+BayesianMarginalizationFunctor<FinalAxis>::BayesianMarginalizationFunctor(PhzDataModel::GridType grid_type) {
+  // Create the internal functors based on the grid type
+  switch (grid_type) {
+    case PhzDataModel::GridType::LIKELIHOOD:
+      m_grid_functor = [](PhzDataModel::RegionResults& results) -> PhzDataModel::DoubleGrid& {
+        return results.get<PhzDataModel::RegionResultType::LIKELIHOOD_GRID>();
+      };
+      m_result_setter = [](PhzDataModel::RegionResults& results, PhzDataModel::Pdf1DParam<FinalAxis>& temp_pdf) {
+        results.set<Pdf1DTraits<FinalAxis>::PdfRes>(std::move(temp_pdf));
+      };
+      break;
+    case PhzDataModel::GridType::POSTERIOR:
+      m_grid_functor = [](PhzDataModel::RegionResults& results) -> PhzDataModel::DoubleGrid& {
+        return results.get<PhzDataModel::RegionResultType::POSTERIOR_GRID>();
+      };
+      m_result_setter = [](PhzDataModel::RegionResults& results, PhzDataModel::Pdf1DParam<FinalAxis>& temp_pdf) {
+        results.set<LikelihoodPdf1DTraits<FinalAxis>::PdfRes>(std::move(temp_pdf));
+      };
+      break;
+    default:
+      throw Elements::Exception("Marginalization can only be done for Likelihood and Posterior grids");
+  }
+  
+  // Add the corrections which convert the simple summing of the numerical axes
+  // to proper integration
   BayesianMarginalizationFunctor_impl::NumercalAxisCorrectionAdder<FinalAxis>::addCorrections(m_numerical_axes_corr);
+  
   for (size_t i = 0; i < PhzDataModel::DoubleGrid::axisNumber(); ++i) {
     m_custom_axes_corr[i].clear();
   }
@@ -58,22 +84,25 @@ BayesianMarginalizationFunctor<FinalAxis>::BayesianMarginalizationFunctor() {
 template <int FinalAxis>
 void BayesianMarginalizationFunctor<FinalAxis>::operator()(PhzDataModel::RegionResults& results) const {
   
-  // Get the posterior grid from the passed object
-  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_GRID>();
+  // Get the grid from the passed object
+  auto& grid = m_grid_functor(results);
   
-  // Make a copy of the posterior grid in a new results object, which will be
+  // Make a copy of the grid in a new results object, which will be
   // passed to a SumMarginalizationFunctor. We need a copy anyways, because we
-  // will modify it.
+  // will modify it. Note that we do not care if we use the posterior or the
+  // likelihood of the temporary results (the functionality is the same as long
+  // we create the SumMarginalizationFunctor accordingly), so we
+  // just use the posterior.
   PhzDataModel::RegionResults temp_results {};
-  auto& posterior_copy = temp_results.set<PhzDataModel::RegionResultType::POSTERIOR_GRID>(posterior_grid.getAxesTuple());
-  std::copy(posterior_grid.begin(), posterior_grid.end(), posterior_copy.begin());
+  auto& grid_copy = temp_results.set<PhzDataModel::RegionResultType::POSTERIOR_GRID>(grid.getAxesTuple());
+  std::copy(grid.begin(), grid.end(), grid_copy.begin());
   
   // Apply all the axes corrections
   for (auto& pair : m_numerical_axes_corr) {
     if (pair.first == FinalAxis) {
       continue;
     }
-    pair.second(posterior_copy);
+    pair.second(grid_copy);
   }
   
   for (size_t i = 0; i < PhzDataModel::DoubleGrid::axisNumber(); ++i) {
@@ -81,7 +110,7 @@ void BayesianMarginalizationFunctor<FinalAxis>::operator()(PhzDataModel::RegionR
       continue;
     }
     for (auto& corr : m_custom_axes_corr.at(i)) {
-      corr(posterior_copy);
+      corr(grid_copy);
     }
   }
 
@@ -91,7 +120,7 @@ void BayesianMarginalizationFunctor<FinalAxis>::operator()(PhzDataModel::RegionR
   
   // Copy the 1D PDF to our results
   auto& temp_pdf = temp_results.get<Pdf1DTraits<FinalAxis>::PdfRes>();
-  results.set<Pdf1DTraits<FinalAxis>::PdfRes>(std::move(temp_pdf));
+  m_result_setter(results, temp_pdf);
 }
 
 

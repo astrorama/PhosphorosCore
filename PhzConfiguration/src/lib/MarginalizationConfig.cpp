@@ -26,8 +26,6 @@
 #include "PhzLikelihood/SumMarginalizationFunctor.h"
 #include "PhzLikelihood/MaxMarginalizationFunctor.h"
 #include "PhzLikelihood/BayesianMarginalizationFunctor.h"
-#include "PhzLikelihood/MaxMarginalizationFunctor.h"
-#include "PhzLikelihood/BayesianLikelihoodMarginalizationFunctor.h"
 #include "PhzDataModel/PhzModel.h"
 #include "PhzConfiguration/PdfOutputFlagsConfig.h"
 #include "PhzConfiguration/MarginalizationConfig.h"
@@ -52,7 +50,7 @@ void addFunctorsToList(std::vector<PhzLikelihood::CatalogHandler::Marginalizatio
   } else if (collapse_type == "MAX") {
     func_list.emplace_back(MaxMarginalizationFunctor<Parameter> { PhzDataModel::GridType::POSTERIOR });
   } else {
-    BayesianMarginalizationFunctor<Parameter> func {};
+    BayesianMarginalizationFunctor<Parameter> func {PhzDataModel::GridType::POSTERIOR};
     for (auto& pair : corrections) {
       for (auto& corr : pair.second) {
         func.addCorrection(pair.first, corr);
@@ -64,19 +62,14 @@ void addFunctorsToList(std::vector<PhzLikelihood::CatalogHandler::Marginalizatio
 
 template <int Parameter>
 void addLikelihoodFunctorsToList(std::vector<PhzLikelihood::CatalogHandler::MarginalizationFunction>& func_list, const std::string& collapse_type,
-                       const std::map<int, std::vector<PhzLikelihood::BayesianLikelihoodMarginalizationFunctor<PhzDataModel::ModelParameter::Z>::AxisCorrection>>& corrections) {
-
-
-
-
-
+                       const std::map<int, std::vector<PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>::AxisCorrection>>& corrections) {
   if (collapse_type == "SUM") {
     func_list.emplace_back(SumMarginalizationFunctor<Parameter> { PhzDataModel::GridType::LIKELIHOOD });
   } else if (collapse_type == "MAX") {
     func_list.emplace_back(MaxMarginalizationFunctor<Parameter> { PhzDataModel::GridType::LIKELIHOOD });
 
   } else {
-    BayesianLikelihoodMarginalizationFunctor<Parameter> func {};
+    BayesianMarginalizationFunctor<Parameter> func {PhzDataModel::GridType::LIKELIHOOD};
     for (auto& pair : corrections) {
       for (auto& corr : pair.second) {
         func.addCorrection(pair.first, corr);
