@@ -30,7 +30,6 @@
 #include "PhzConfiguration/PdfOutputFlagsConfig.h"
 #include "PhzOutput/PhzColumnHandlers/Pdf.h"
 #include "PhzOutput/PdfOutput.h"
-#include "PhzOutput/LikelihoodPdfOutput.h"
 
 namespace po = boost::program_options;
 
@@ -137,36 +136,36 @@ std::vector<std::unique_ptr<PhzOutput::OutputHandler>> PdfOutputConfig::getOutpu
     auto& flags = getDependency<PdfOutputFlagsConfig>();
     if (flags.pdfSedFlag()) {
       handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::SED> {m_out_pdf_dir, flush_size}});
+        new PhzOutput::PdfOutput<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::SED> {m_out_pdf_dir, flush_size}});
     }
     if (flags.pdfRedCurveFlag()) {
       handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::REDDENING_CURVE> {m_out_pdf_dir, flush_size}});
+        new PhzOutput::PdfOutput<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::REDDENING_CURVE> {m_out_pdf_dir, flush_size}});
     }
     if (flags.pdfEbvFlag()) {
       handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::EBV> {m_out_pdf_dir, flush_size}});
+        new PhzOutput::PdfOutput<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::EBV> {m_out_pdf_dir, flush_size}});
     }
     if (flags.pdfZFlag()) {
       handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::ModelParameter::Z> {m_out_pdf_dir, flush_size}});
+        new PhzOutput::PdfOutput<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::Z> {m_out_pdf_dir, flush_size}});
     }
 
     if (flags.likelihoodPdfSedFlag()) {
       handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::LikelihoodPdfOutput<PhzDataModel::ModelParameter::SED> {m_out_pdf_dir, flush_size}});
+        new PhzOutput::PdfOutput<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::SED> {m_out_pdf_dir, flush_size}});
     }
     if (flags.likelihoodPdfRedCurveFlag()) {
       handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::LikelihoodPdfOutput<PhzDataModel::ModelParameter::REDDENING_CURVE> {m_out_pdf_dir, flush_size}});
+        new PhzOutput::PdfOutput<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::REDDENING_CURVE> {m_out_pdf_dir, flush_size}});
     }
     if (flags.likelihoodPdfEbvFlag()) {
       handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::LikelihoodPdfOutput<PhzDataModel::ModelParameter::EBV> {m_out_pdf_dir, flush_size}});
+        new PhzOutput::PdfOutput<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::EBV> {m_out_pdf_dir, flush_size}});
     }
     if (flags.likelihoodPdfZFlag()) {
       handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::LikelihoodPdfOutput<PhzDataModel::ModelParameter::Z> {m_out_pdf_dir, flush_size}});
+        new PhzOutput::PdfOutput<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::Z> {m_out_pdf_dir, flush_size}});
     }
 
   }
