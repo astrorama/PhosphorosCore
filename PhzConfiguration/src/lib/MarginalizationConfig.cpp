@@ -43,33 +43,14 @@ const std::string AXES_COLLAPSE_TYPE {"axes-collapse-type"};
 const std::string LIKELIHOOD_AXES_COLLAPSE_TYPE {"likelihood-axes-collapse-type"};
 
 template <int Parameter>
-void addFunctorsToList(std::vector<PhzLikelihood::CatalogHandler::MarginalizationFunction>& func_list, const std::string& collapse_type,
+void addFunctorsToList(PhzDataModel::GridType grid_type, std::vector<PhzLikelihood::CatalogHandler::MarginalizationFunction>& func_list, const std::string& collapse_type,
                        const std::map<int, std::vector<PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>::AxisCorrection>>& corrections) {
   if (collapse_type == "SUM") {
-    func_list.emplace_back(SumMarginalizationFunctor<Parameter> { PhzDataModel::GridType::POSTERIOR });
+    func_list.emplace_back(SumMarginalizationFunctor<Parameter> { grid_type });
   } else if (collapse_type == "MAX") {
-    func_list.emplace_back(MaxMarginalizationFunctor<Parameter> { PhzDataModel::GridType::POSTERIOR });
+    func_list.emplace_back(MaxMarginalizationFunctor<Parameter> { grid_type });
   } else {
-    BayesianMarginalizationFunctor<Parameter> func {PhzDataModel::GridType::POSTERIOR};
-    for (auto& pair : corrections) {
-      for (auto& corr : pair.second) {
-        func.addCorrection(pair.first, corr);
-      }
-    }
-    func_list.emplace_back(std::move(func));
-  }
-}
-
-template <int Parameter>
-void addLikelihoodFunctorsToList(std::vector<PhzLikelihood::CatalogHandler::MarginalizationFunction>& func_list, const std::string& collapse_type,
-                       const std::map<int, std::vector<PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>::AxisCorrection>>& corrections) {
-  if (collapse_type == "SUM") {
-    func_list.emplace_back(SumMarginalizationFunctor<Parameter> { PhzDataModel::GridType::LIKELIHOOD });
-  } else if (collapse_type == "MAX") {
-    func_list.emplace_back(MaxMarginalizationFunctor<Parameter> { PhzDataModel::GridType::LIKELIHOOD });
-
-  } else {
-    BayesianMarginalizationFunctor<Parameter> func {PhzDataModel::GridType::LIKELIHOOD};
+    BayesianMarginalizationFunctor<Parameter> func {grid_type};
     for (auto& pair : corrections) {
       for (auto& corr : pair.second) {
         func.addCorrection(pair.first, corr);
@@ -116,29 +97,29 @@ void MarginalizationConfig::initialize(const UserValues& args) {
 
   auto& flags = getDependency<PdfOutputFlagsConfig>();
   if (flags.pdfSedFlag()) {
-    addFunctorsToList<ModelParameter::SED>(m_marginalization_func_list, collapse_type, m_corrections);
+    addFunctorsToList<ModelParameter::SED>(PhzDataModel::GridType::POSTERIOR, m_marginalization_func_list, collapse_type, m_corrections);
   }
   if (flags.pdfRedCurveFlag()) {
-    addFunctorsToList<ModelParameter::REDDENING_CURVE>(m_marginalization_func_list, collapse_type, m_corrections);
+    addFunctorsToList<ModelParameter::REDDENING_CURVE>(PhzDataModel::GridType::POSTERIOR, m_marginalization_func_list, collapse_type, m_corrections);
   }
   if (flags.pdfEbvFlag()) {
-    addFunctorsToList<ModelParameter::EBV>(m_marginalization_func_list, collapse_type, m_corrections);
+    addFunctorsToList<ModelParameter::EBV>(PhzDataModel::GridType::POSTERIOR, m_marginalization_func_list, collapse_type, m_corrections);
   }
   // We always compute the redshift 1D PDF even if it is not requested as
   // output, because we perform statistics on it
-  addFunctorsToList<ModelParameter::Z>(m_marginalization_func_list, collapse_type, m_corrections);
+  addFunctorsToList<ModelParameter::Z>(PhzDataModel::GridType::POSTERIOR, m_marginalization_func_list, collapse_type, m_corrections);
 
   if (flags.likelihoodPdfSedFlag()) {
-     addLikelihoodFunctorsToList<ModelParameter::SED>(m_marginalization_func_list, likelihood_collapse_type, m_corrections);
+     addFunctorsToList<ModelParameter::SED>(PhzDataModel::GridType::LIKELIHOOD, m_marginalization_func_list, likelihood_collapse_type, m_corrections);
   }
   if (flags.likelihoodPdfRedCurveFlag()) {
-     addLikelihoodFunctorsToList<ModelParameter::REDDENING_CURVE>(m_marginalization_func_list, likelihood_collapse_type, m_corrections);
+     addFunctorsToList<ModelParameter::REDDENING_CURVE>(PhzDataModel::GridType::LIKELIHOOD, m_marginalization_func_list, likelihood_collapse_type, m_corrections);
   }
   if (flags.likelihoodPdfEbvFlag()) {
-     addLikelihoodFunctorsToList<ModelParameter::EBV>(m_marginalization_func_list, likelihood_collapse_type, m_corrections);
+     addFunctorsToList<ModelParameter::EBV>(PhzDataModel::GridType::LIKELIHOOD, m_marginalization_func_list, likelihood_collapse_type, m_corrections);
   }
   if (flags.likelihoodPdfZFlag()) {
-     addLikelihoodFunctorsToList<ModelParameter::Z>(m_marginalization_func_list, likelihood_collapse_type, m_corrections);
+     addFunctorsToList<ModelParameter::Z>(PhzDataModel::GridType::LIKELIHOOD, m_marginalization_func_list, likelihood_collapse_type, m_corrections);
   }
 }
 
