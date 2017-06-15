@@ -30,7 +30,6 @@
 #include "PhzConfiguration/PdfOutputFlagsConfig.h"
 #include "PhzOutput/PhzColumnHandlers/Pdf.h"
 #include "PhzOutput/PdfOutput.h"
-#include "PhzOutput/PhzColumnHandlers/LikelihoodPdf.h"
 #include "PhzOutput/LikelihoodPdfOutput.h"
 
 namespace po = boost::program_options;
@@ -71,43 +70,51 @@ void PdfOutputConfig::initialize(const UserValues& args) {
   if (m_format == "VECTOR-COLUMN") {
     if (flags.pdfSedFlag()) {
       getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::ModelParameter::SED>{}}
+          std::unique_ptr<PhzOutput::ColumnHandler> {new PhzOutput::ColumnHandlers::Pdf<
+                      PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::SED>{}}
       );
     }
     if (flags.pdfRedCurveFlag()) {
       getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::ModelParameter::REDDENING_CURVE>{}}
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
+                      PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::REDDENING_CURVE>{}}
       );
     }
     if (flags.pdfEbvFlag()) {
       getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::ModelParameter::EBV>{}}
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
+                      PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::EBV>{}}
       );
     }
     if (flags.pdfZFlag()) {
       getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::ModelParameter::Z>{}}
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
+                      PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::Z>{}}
       );
     }
 
     if (flags.likelihoodPdfSedFlag()) {
       getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::LikelihoodPdf<PhzDataModel::ModelParameter::SED>{}}
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
+                      PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::SED>{}}
       );
     }
     if (flags.likelihoodPdfRedCurveFlag()) {
       getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::LikelihoodPdf<PhzDataModel::ModelParameter::REDDENING_CURVE>{}}
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
+                      PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::REDDENING_CURVE>{}}
       );
     }
     if (flags.likelihoodPdfEbvFlag()) {
       getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::LikelihoodPdf<PhzDataModel::ModelParameter::EBV>{}}
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
+                      PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::EBV>{}}
       );
     }
     if (flags.likelihoodPdfZFlag()) {
       getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::LikelihoodPdf<PhzDataModel::ModelParameter::Z>{}}
+          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
+                      PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::Z>{}}
       );
     }
   }
