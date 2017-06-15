@@ -56,7 +56,7 @@ BayesianMarginalizationFunctor<FinalAxis>::BayesianMarginalizationFunctor(PhzDat
         return results.get<PhzDataModel::RegionResultType::LIKELIHOOD_GRID>();
       };
       m_result_setter = [](PhzDataModel::RegionResults& results, PhzDataModel::Pdf1DParam<FinalAxis>& temp_pdf) {
-        results.set<Pdf1DTraits<FinalAxis>::PdfRes>(std::move(temp_pdf));
+        results.set<LikelihoodPdf1DTraits<FinalAxis>::PdfRes>(std::move(temp_pdf));
       };
       break;
     case PhzDataModel::GridType::POSTERIOR:
@@ -64,7 +64,7 @@ BayesianMarginalizationFunctor<FinalAxis>::BayesianMarginalizationFunctor(PhzDat
         return results.get<PhzDataModel::RegionResultType::POSTERIOR_GRID>();
       };
       m_result_setter = [](PhzDataModel::RegionResults& results, PhzDataModel::Pdf1DParam<FinalAxis>& temp_pdf) {
-        results.set<LikelihoodPdf1DTraits<FinalAxis>::PdfRes>(std::move(temp_pdf));
+        results.set<Pdf1DTraits<FinalAxis>::PdfRes>(std::move(temp_pdf));
       };
       break;
     default:
