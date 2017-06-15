@@ -31,11 +31,6 @@ namespace Euclid {
 namespace PhzOutput {
 namespace ColumnHandlers {
 
-BestModel::BestModel(std::string column_prefix, ModelIteratorFunctor model_iterator_functor, ScaleFunctor scale_functor):
-  m_column_prefix(std::move(column_prefix)),
-  m_model_iterator_functor(std::move(model_iterator_functor)),
-  m_scale_functor(std::move(scale_functor)){}
-
 
 std::vector<Table::ColumnInfo::info_type> BestModel::getColumnInfoList() const {
     return std::vector<Table::ColumnInfo::info_type> {
@@ -65,25 +60,29 @@ std::vector<Table::Row::cell_type> BestModel::convertResults(
     };
   }
 
-template <>
-std::unique_ptr<BestModel> BestModel::bestModelFactory<PhzDataModel::GridType::LIKELIHOOD>(){
-     std::string name_prefix = "LIKELIHOOD-";
-     // Cannot use the make_unique due to private constructor
-     return std::unique_ptr<BestModel>( new BestModel(
-         name_prefix,
-         [](const PhzDataModel::SourceResults& results){return results.get<PhzDataModel::SourceResultType::BEST_LIKELIHOOD_MODEL_ITERATOR>();},
-         [](const PhzDataModel::SourceResults& results){return results.get<PhzDataModel::SourceResultType::BEST_LIKELIHOOD_MODEL_SCALE_FACTOR>();}
-     ));
-}
-
-template <>
-std::unique_ptr<BestModel> BestModel::bestModelFactory<PhzDataModel::GridType::POSTERIOR>(){
-     std::string name_prefix = "";
-     return std::unique_ptr<BestModel>( new BestModel(
-         name_prefix,
-         [](const PhzDataModel::SourceResults& results){return results.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();},
-         [](const PhzDataModel::SourceResults& results){return results.get<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>();}
-     ));
+BestModel::BestModel(PhzDataModel::GridType grid_type) {
+  switch (grid_type) {
+    case PhzDataModel::GridType::LIKELIHOOD:
+      m_column_prefix = "LIKELIHOOD-";
+      m_model_iterator_functor = [](const PhzDataModel::SourceResults& results){
+        return results.get<PhzDataModel::SourceResultType::BEST_LIKELIHOOD_MODEL_ITERATOR>();
+      };
+      m_scale_functor = [](const PhzDataModel::SourceResults& results){
+        return results.get<PhzDataModel::SourceResultType::BEST_LIKELIHOOD_MODEL_SCALE_FACTOR>();
+      };
+      break;
+    case PhzDataModel::GridType::POSTERIOR:
+      m_column_prefix = "";
+      m_model_iterator_functor = [](const PhzDataModel::SourceResults& results){
+        return results.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
+      };
+      m_scale_functor = [](const PhzDataModel::SourceResults& results){
+        return results.get<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>();
+      };
+      break;
+    default:
+      throw Elements::Exception() << "BestModel can only be used with likelihood or posterior grids";
+  }
 }
 
 } // ColumnHandlers namespace
