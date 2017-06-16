@@ -57,7 +57,7 @@ void BestLikelihoodModelOutputConfig::preInitialize(const UserValues& args) {
 void BestLikelihoodModelOutputConfig::initialize(const UserValues& args) {
   if (args.at(CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG).as<std::string>() == "YES") {
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        PhzOutput::ColumnHandlers::BestModel::bestModelFactory<PhzOutput::GridType::LIKELIHOOD>()
+        make_unique<PhzOutput::ColumnHandlers::BestModel>(PhzDataModel::GridType::LIKELIHOOD)
     );
   }
 }

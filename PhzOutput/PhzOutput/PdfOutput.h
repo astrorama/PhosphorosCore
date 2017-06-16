@@ -12,6 +12,7 @@
 #include <boost/filesystem.hpp>
 #include <CCfits/CCfits>
 #include "Table/Row.h"
+#include "PhzDataModel/GridType.h"
 #include "PhzOutput/OutputHandler.h"
 
 namespace Euclid {
@@ -29,7 +30,7 @@ namespace PhzOutput {
  * every 5000 sources. For the moment, this number is hard coded.
  *
  */
-template <int Parameter>
+template <PhzDataModel::GridType GT, int Parameter>
 class PdfOutput : public OutputHandler {
 
 public:

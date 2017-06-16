@@ -22,18 +22,18 @@
  * @author dubathf
  */
 
-#ifndef _PHZOUTPUT_GRIDTYPE_H
-#define _PHZOUTPUT_GRIDTYPE_H
+#ifndef _PHZDATAMODEL_GRIDTYPE_H
+#define _PHZDATAMODEL_GRIDTYPE_H
 
 
 namespace Euclid {
-namespace PhzOutput {
+namespace PhzDataModel {
 
-enum class GridType{
-  LIKELIHOOD,POSTERIOR
+enum class GridType {
+  PHOTOMETRY, LIKELIHOOD, POSTERIOR
 };
 
-} /* namespace PhzOutput */
+} /* namespace PhzDataModel */
 } /* namespace Euclid */
 
 
