@@ -17,13 +17,13 @@
  */
 
 /**
- * @file PhzConfiguration/PdfOutputFlagsConfig.h
- * @date 11/02/16
- * @author Nikolaos Apostolakos
+ * @file PhzConfiguration/BestLikelihoodModelOutputConfig.h
+ * @date 19/05/17
+ * @author dubathf
  */
 
-#ifndef _PHZCONFIGURATION_PDFOUTPUTFLAGSCONFIG_H
-#define _PHZCONFIGURATION_PDFOUTPUTFLAGSCONFIG_H
+#ifndef _PHZCONFIGURATION_BESTLIKELIHOODMODELOUTPUTCONFIG_H
+#define _PHZCONFIGURATION_BESTLIKELIHOODMODELOUTPUTCONFIG_H
 
 #include "Configuration/Configuration.h"
 
@@ -31,20 +31,20 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 /**
- * @class PdfOutputFlagsConfig
+ * @class BestLikelihoodModelOutputConfig
  * @brief
  *
  */
-class PdfOutputFlagsConfig : public Configuration::Configuration {
+class BestLikelihoodModelOutputConfig : public Configuration::Configuration {
 
 public:
 
-  PdfOutputFlagsConfig(long manager_id);
+  BestLikelihoodModelOutputConfig(long manager_id);
 
   /**
    * @brief Destructor
    */
-  virtual ~PdfOutputFlagsConfig() = default;
+  virtual ~BestLikelihoodModelOutputConfig() = default;
 
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
@@ -52,35 +52,7 @@ public:
 
   void initialize(const UserValues& args) override;
 
-  bool pdfSedFlag() const;
-
-  bool pdfRedCurveFlag() const;
-
-  bool pdfEbvFlag() const;
-
-  bool pdfZFlag() const;
-
-  bool likelihoodPdfSedFlag() const;
-
-  bool likelihoodPdfRedCurveFlag() const;
-
-  bool likelihoodPdfEbvFlag() const;
-
-  bool likelihoodPdfZFlag() const;
-
-private:
-
-  bool m_pdf_sed_flag = false;
-  bool m_pdf_red_curve_flag = false;
-  bool m_pdf_ebv_flag = false;
-  bool m_pdf_z_flag = false;
-
-  bool m_likelihood_pdf_sed_flag = false;
-  bool m_likelihood_pdf_red_curve_flag = false;
-  bool m_likelihood_pdf_ebv_flag = false;
-  bool m_likelihood_pdf_z_flag = false;
-
-}; /* End of PdfOutputFlagsConfig class */
+}; /* End of BestLikelihoodModelOutputConfig class */
 
 } /* namespace PhzConfiguration */
 } /* namespace Euclid */

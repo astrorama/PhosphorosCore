@@ -1,4 +1,4 @@
-/** 
+/**
  * @file CatalogHandler.cpp
  * @date December 3, 2014
  * @author Nikolaos Apostolakos
@@ -14,9 +14,10 @@ CatalogHandler::CatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_
                                const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                                LikelihoodGridFunction likelihood_grid_func,
                                std::vector<PriorFunction> priors,
-                               std::vector<MarginalizationFunction> marginalization_func_list)
+                               std::vector<MarginalizationFunction> marginalization_func_list,
+                               bool doNormalizePdf)
             : m_source_phz_func{std::move(phot_corr_map), phot_grid_map, std::move(likelihood_grid_func),
-                                std::move(priors), std::move(marginalization_func_list)} {
+                                std::move(priors), std::move(marginalization_func_list), doNormalizePdf} {
 }
 
 } // end of namespace PhzLikelihood

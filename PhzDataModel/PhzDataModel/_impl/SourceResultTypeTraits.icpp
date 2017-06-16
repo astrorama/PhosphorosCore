@@ -1,22 +1,22 @@
 /*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment    
- *  
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ *
  * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 3.0 of the License, or (at your option)  
- * any later version.  
- *  
- * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
- * details.  
- *  
- * You should have received a copy of the GNU Lesser General Public License 
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* 
+/*
  * @file SourceResultTypeTraits.icpp
  * @author nikoapos
  */
@@ -34,6 +34,7 @@ namespace PhzDataModel {
 
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::BEST_LIKELIHOOD_MODEL_ITERATOR ||
                                     T == SourceResultType::BEST_MODEL_ITERATOR
                              >::type> {
   using type = PhotometryGrid::const_iterator;
@@ -43,8 +44,10 @@ struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
                                     T == SourceResultType::LOG_1D_PDF_NORM ||
+                                    T == SourceResultType::BEST_LIKELIHOOD_MODEL_SCALE_FACTOR ||
                                     T == SourceResultType::BEST_MODEL_SCALE_FACTOR ||
-                                    T == SourceResultType::BEST_MODEL_POSTERIOR_LOG
+                                    T == SourceResultType::BEST_MODEL_POSTERIOR_LOG ||
+                                    T == SourceResultType::BEST_MODEL_LIKELIHOOD_LOG
                              >::type> {
   using type = double;
 };
@@ -52,6 +55,7 @@ struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
 
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::LIKELIHOOD_SED_1D_PDF ||
                                     T == SourceResultType::SED_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::SED>;
@@ -60,6 +64,7 @@ struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
 
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::LIKELIHOOD_RED_CURVE_1D_PDF ||
                                     T == SourceResultType::RED_CURVE_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::REDDENING_CURVE>;
@@ -68,6 +73,7 @@ struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
 
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::LIKELIHOOD_EBV_1D_PDF ||
                                     T == SourceResultType::EBV_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::EBV>;
@@ -76,6 +82,7 @@ struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
 
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::LIKELIHOOD_Z_1D_PDF ||
                                     T == SourceResultType::Z_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::Z>;

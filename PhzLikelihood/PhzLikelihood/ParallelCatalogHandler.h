@@ -1,4 +1,4 @@
-/** 
+/**
  * @file ParallelCatalogHandler.h
  * @date February 27, 2015
  * @author Nikolaos Apostolakos
@@ -14,32 +14,32 @@ namespace PhzLikelihood {
 
 /**
  * @class ParallelCatalogHandler
- * 
+ *
  * @brief Wrapper class around the CatalogHandler class, which enables parallel
  * processing of the sources.
  */
 class ParallelCatalogHandler {
-  
+
 public:
-  
+
   typedef CatalogHandler::MarginalizationFunction MarginalizationFunction;
-  
+
   typedef CatalogHandler::PriorFunction StaticPriorFunction;
-  
+
   typedef CatalogHandler::LikelihoodGridFunction LikelihoodGridFunction;
-  
+
   /**
    * Defines the signature of the functions which can be used as listeners for
    * the progress of the catalog handling. The first parameter is the
    * number of the current step and the second is the total number of steps.
    */
   typedef std::function<void(size_t step, size_t total)> ProgressListener;
-  
+
   /**
    * Constructs a new ParallelCatalogHandler instance. If the given photometric
    * correction map does not contain corrections for all the filters of the
    * given model photometries an exception is thrown.
-   * 
+   *
    * @param phot_corr_map
    *    A map with the photometric corrections to be applied for each filter
    * @param phot_grid_map
@@ -60,11 +60,12 @@ public:
                          const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                          LikelihoodGridFunction likelihood_grid_func,
                          std::vector<StaticPriorFunction> static_priors,
-                         std::vector<MarginalizationFunction> marginalization_func_list);
-  
+                         std::vector<MarginalizationFunction> marginalization_func_list,
+                         bool doNormalizePdf = true);
+
   virtual ~ParallelCatalogHandler();
 
-  
+
   /**
    * Iterates through a set of sources and calculates the PHZ parameters for
    * each of them, using all the available threads in parallel. The assumption
@@ -75,7 +76,7 @@ public:
    * order of the calls is the same as the order of the sources in the input
    * catalog. For this reason, these calls are executed after all threads have
    * finished their jobs.
-   * 
+   *
    * @tparam SourceIter
    *    The type of iterator over the sources. It must be an iterator over
    *    objects of type SourceCatalog::Source
@@ -94,11 +95,11 @@ public:
   void handleSources(SourceIter source_begin, SourceIter source_end,
                      PhzOutput::OutputHandler& out_handler,
                      ProgressListener progress_listener=ProgressListener{}) const;
-                     
+
 private:
-  
+
   CatalogHandler m_catalog_handler;
-  
+
 };
 
 }

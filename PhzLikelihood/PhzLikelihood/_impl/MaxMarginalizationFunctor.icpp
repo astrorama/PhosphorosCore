@@ -5,25 +5,51 @@
  */
 
 #include <algorithm>
+#include "ElementsKernel/Exception.h"
 #include "PhzLikelihood/Pdf1DTraits.h"
+#include "PhzLikelihood/LikelihoodPdf1DTraits.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
 
 template <int FinalAxis>
+MaxMarginalizationFunctor<FinalAxis>::MaxMarginalizationFunctor(PhzDataModel::GridType grid_type) {
+  switch (grid_type) {
+    case PhzDataModel::GridType::LIKELIHOOD:
+      m_grid_functor = [](PhzDataModel::RegionResults& results) -> PhzDataModel::DoubleGrid& {
+        return results.get<PhzDataModel::RegionResultType::LIKELIHOOD_GRID>();
+      };
+      m_pdf_functor = [](PhzDataModel::RegionResults& results, PhzDataModel::DoubleGrid& grid) -> PhzDataModel::Pdf1DParam<FinalAxis>& {
+        return results.set<LikelihoodPdf1DTraits<FinalAxis>::PdfRes>(grid.getAxis<FinalAxis>());
+      };
+      break;
+    case PhzDataModel::GridType::POSTERIOR:
+      m_grid_functor = [](PhzDataModel::RegionResults& results) -> PhzDataModel::DoubleGrid& {
+        return results.get<PhzDataModel::RegionResultType::POSTERIOR_GRID>();
+      };
+      m_pdf_functor = [](PhzDataModel::RegionResults& results, PhzDataModel::DoubleGrid& grid) -> PhzDataModel::Pdf1DParam<FinalAxis>& {
+        return results.set<Pdf1DTraits<FinalAxis>::PdfRes>(grid.getAxis<FinalAxis>());
+      };
+      break;
+    default:
+      throw Elements::Exception("Marginalization can only be done for Likelihood and Posterior grids");
+  }
+}
+
+template <int FinalAxis>
 void MaxMarginalizationFunctor<FinalAxis>::operator()(PhzDataModel::RegionResults& results) const {
   
-  // Get the posterior grid from the passed object
-  auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_GRID>();
+  // Get the grid from the passed object
+  auto& grid = m_grid_functor(results);
   
   // Generate the result 1D PDF
-  auto& pdf = results.set<Pdf1DTraits<FinalAxis>::PdfRes>(posterior_grid.getAxis<FinalAxis>());
+  auto& pdf =m_pdf_functor(results, grid);
   
   // Calculate the result as maximum of the rest axes
   for (auto iter = pdf.begin(); iter != pdf.end(); ++iter) {
     *iter = *std::max_element(
-          posterior_grid.begin().fixAxisByValue<FinalAxis>(iter.template axisValue<0>()),
-          posterior_grid.end());
+          grid.begin().template fixAxisByValue<FinalAxis>(iter.template axisValue<0>()),
+          grid.end());
   }
   
 }

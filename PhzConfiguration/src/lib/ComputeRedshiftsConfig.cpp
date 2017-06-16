@@ -22,6 +22,7 @@
  * @author Florian Dubath
  */
 
+#include <PhzOutput/PhzColumnHandlers/BestModel.h>
 #include <cstdlib>
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
@@ -50,6 +51,7 @@
 #include "PhzConfiguration/FixedRedshiftConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
 #include "PhzConfiguration/PhzOutputDirConfig.h"
+#include "PhzConfiguration/BestLikelihoodModelOutputConfig.h"
 #include "PhzConfiguration/BestModelOutputConfig.h"
 #include "PhzConfiguration/PdfOutputConfig.h"
 #include "PhzConfiguration/OutputStatisticsConfig.h"
@@ -60,7 +62,6 @@
 #include "PhzOutput/LikelihoodHandler.h"
 #include "PhzOutput/PhzCatalog.h"
 #include "PhzOutput/PhzColumnHandlers/Id.h"
-#include "PhzOutput/PhzColumnHandlers/BestModel.h"
 #include "PhzOutput/PhzColumnHandlers/Pdf.h"
 
 #include "Configuration/PhotometricBandMappingConfig.h"
@@ -106,6 +107,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<FixedRedshiftConfig>();
   declareDependency<OutputCatalogConfig>();
   declareDependency<PhzOutputDirConfig>();
+  declareDependency<BestLikelihoodModelOutputConfig>();
   declareDependency<BestModelOutputConfig>();
   declareDependency<PdfOutputConfig>();
   declareDependency<OutputStatisticsConfig>();

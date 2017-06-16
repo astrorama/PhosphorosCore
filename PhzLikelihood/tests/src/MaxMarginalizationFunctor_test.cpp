@@ -46,7 +46,7 @@ BOOST_FIXTURE_TEST_CASE(ZAxisMarginalization, MaxMarginalizationFunctor_Fixture)
   reg_results.set<PhzDataModel::RegionResultType::POSTERIOR_GRID>(std::move(likelihood_grid));
   
   // When
-  PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{}(reg_results);
+  PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}(reg_results);
   auto& pdf = reg_results.get<PhzDataModel::RegionResultType::Z_1D_PDF>();
   auto& axis = pdf.getAxis<0>();
   
@@ -81,7 +81,7 @@ BOOST_FIXTURE_TEST_CASE(EbvAxisMarginalization, MaxMarginalizationFunctor_Fixtur
   reg_results.set<PhzDataModel::RegionResultType::POSTERIOR_GRID>(std::move(likelihood_grid));
   
   // When
-  PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::EBV>{}(reg_results);
+  PhzLikelihood::MaxMarginalizationFunctor<PhzDataModel::ModelParameter::EBV>{PhzDataModel::GridType::POSTERIOR}(reg_results);
   auto& pdf = reg_results.get<PhzDataModel::RegionResultType::EBV_1D_PDF>();
   auto& axis = pdf.getAxis<0>();
   

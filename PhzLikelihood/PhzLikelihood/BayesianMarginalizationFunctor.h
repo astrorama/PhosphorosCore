@@ -13,6 +13,8 @@
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/RegionResults.h"
+#include "PhzDataModel/Pdf1D.h"
+#include "PhzDataModel/GridType.h"
 #include "PhzLikelihood/NumericalAxisCorrection.h"
 #include "PhzLikelihood/GroupedAxisCorrection.h"
 
@@ -26,7 +28,7 @@ public:
   
   using AxisCorrection = std::function<void(PhzDataModel::DoubleGrid& likelihood_grid)>;
   
-  BayesianMarginalizationFunctor();
+  BayesianMarginalizationFunctor(PhzDataModel::GridType grid_type);
   
   template <int I>
   void setArithmeticAxisAsNotNumerical() {
@@ -40,6 +42,12 @@ public:
   void operator()(PhzDataModel::RegionResults& results) const;
   
 private:
+  
+  using GridFunctor = std::function<PhzDataModel::DoubleGrid&(PhzDataModel::RegionResults&)>;
+  using ResultSetter = std::function<void(PhzDataModel::RegionResults&, PhzDataModel::Pdf1DParam<FinalAxis>&)>;
+  
+  GridFunctor m_grid_functor;
+  ResultSetter m_result_setter;
   
   // For the numerical corrections we use a map to guarantee that we do it only
   // once per axis
