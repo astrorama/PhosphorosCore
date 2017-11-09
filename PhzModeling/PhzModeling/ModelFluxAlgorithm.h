@@ -7,6 +7,7 @@
 #ifndef PHZMODELING_MODELFLUXALGORITHM_H
 #define PHZMODELING_MODELFLUXALGORITHM_H
 
+#include <functional>
 #include "PhzModeling/IntegrateDatasetFunctor.h"
 
 namespace Euclid {
