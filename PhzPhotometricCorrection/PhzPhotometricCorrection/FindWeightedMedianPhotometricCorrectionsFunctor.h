@@ -40,7 +40,9 @@ public:
      */
   template <typename SourceIter>
   PhzDataModel::PhotometricCorrectionMap operator()(
-      const std::map<int64_t, PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
+      const std::map<
+          decltype(std::declval<typename SourceIter::value_type>().getId()),
+          PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
       SourceIter source_begin,
       SourceIter source_end
   );

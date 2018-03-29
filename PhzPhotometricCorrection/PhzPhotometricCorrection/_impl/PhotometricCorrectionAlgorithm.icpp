@@ -16,14 +16,14 @@
 namespace Euclid {
 namespace PhzPhotometricCorrection {
 
-template <typename SourceIter, typename ModelPhotPtr>
-static std::map<int64_t, PhzDataModel::PhotometricCorrectionMap> createSourcePhotCorrMap(
+template <typename SourceIter, typename ModelPhotPtr, typename IdType = decltype(std::declval<typename SourceIter::value_type>().getId())>
+static std::map<IdType, PhzDataModel::PhotometricCorrectionMap> createSourcePhotCorrMap(
                                   SourceIter source, SourceIter source_end,
-                                  const std::map<int64_t,double>& scale_factor_map,
-                                  const std::map<int64_t, ModelPhotPtr>& model_phot_map) {
+                                  const std::map<IdType, double>& scale_factor_map,
+                                  const std::map<IdType, ModelPhotPtr>& model_phot_map) {
 
   // Iterate through the sources and calcualte their optimal photometric corerctions
-  std::map<int64_t, PhzDataModel::PhotometricCorrectionMap> result {};
+  std::map<IdType, PhzDataModel::PhotometricCorrectionMap> result {};
   for (; source != source_end; ++source) {
       auto source_id = source->getId();
       // Check that the source is one of the sources we have the best fit models and
@@ -82,8 +82,12 @@ static PhzDataModel::PhotometricCorrectionMap normalizePhotCorr(const PhzDataMod
 template <typename SourceIter, typename ModelPhotPtr>
 PhzDataModel::PhotometricCorrectionMap PhotometricCorrectionAlgorithm::operator ()(
                                   SourceIter source_begin, SourceIter source_end,
-                                  const std::map<int64_t,double>& scale_factor_map,
-                                  const std::map<int64_t, ModelPhotPtr>& model_phot_map,
+                                  const std::map<
+                                      decltype(std::declval<typename SourceIter::value_type>().getId()),
+                                      double>& scale_factor_map,
+                                  const std::map<
+                                      decltype(std::declval<typename SourceIter::value_type>().getId()),
+                                      ModelPhotPtr>& model_phot_map,
                                   PhotometricCorrectionSelector<SourceIter> selector) {
 
   // Check that we have some sources

@@ -27,7 +27,9 @@ public:
 
   template <typename SourceIter>
   using PhotometricCorrectionSelector = std::function<PhzDataModel::PhotometricCorrectionMap(
-      const std::map<int64_t, PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
+      const std::map<
+          decltype(std::declval<typename SourceIter::value_type>().getId()),
+          PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
       SourceIter source_begin, SourceIter source_end)>;
 
   /**
@@ -62,8 +64,10 @@ public:
   template <typename SourceIter, typename ModelPhotPtr>
   PhzDataModel::PhotometricCorrectionMap operator()(
                     SourceIter source_begin, SourceIter source_end,
-                    const std::map<int64_t, double>& scale_factor_map,
-                    const std::map<int64_t, ModelPhotPtr>& model_phot_map,
+                    const std::map<
+                        decltype(std::declval<typename SourceIter::value_type>().getId()), double>& scale_factor_map,
+                    const std::map<
+                        decltype(std::declval<typename SourceIter::value_type>().getId()), ModelPhotPtr>& model_phot_map,
                     PhotometricCorrectionSelector<SourceIter> selector=FindMedianPhotometricCorrectionsFunctor{});
                     
 };

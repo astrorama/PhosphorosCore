@@ -38,8 +38,8 @@ class CheckOrderOutputHandler : public OutputHandler {
 public:
   
   std::size_t current = 0;
-  std::vector<std::int64_t> order;
-  std::vector<std::string> groups;
+  std::vector<decltype(std::declval<SourceCatalog::Source>().getId())> order;
+  std::vector<decltype(std::declval<SourceCatalog::Source>().getId())> groups;
   std::atomic<size_t>& progress;
   
   CheckOrderOutputHandler(std::atomic<size_t>& progress) : progress(progress) {}
@@ -50,7 +50,7 @@ public:
     BOOST_CHECK(current < order.size());
     BOOST_CHECK(current < groups.size());
     BOOST_CHECK_EQUAL(source.getId(), order[current]);
-    BOOST_CHECK_EQUAL(results.get<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>(), source.getId());
+    BOOST_CHECK_EQUAL(results.get<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>(), boost::get<int64_t>(source.getId()));
     ++current;
   }
   
@@ -62,10 +62,10 @@ struct MultithreadHandler_fixture {
   CheckOrderOutputHandler check_order_handler {progress};
   std::vector<SourceCatalog::Source> source_list {};
   std::vector<PhzDataModel::SourceResults> result_list {};
-  std::vector<std::int64_t> order {};
+  std::vector<decltype(std::declval<SourceCatalog::Source>().getId())> order {};
   
   MultithreadHandler_fixture() {
-    std::vector<std::string> groups {};
+    std::vector<decltype(std::declval<SourceCatalog::Source>().getId())> groups;
     for (std::int64_t i = 0; i < 10000; ++i) {
       std::int64_t id = i * 10;
       order.emplace_back(id);
@@ -137,7 +137,7 @@ BOOST_FIXTURE_TEST_CASE(orderIsRespected, MultithreadHandler_fixture) {
   std::random_shuffle(order.begin(), order.end());
   check_order_handler.order = order;
   for (std::size_t i = 0; i < order.size(); ++i) {
-    check_order_handler.groups.at(i) = std::to_string(order.at(i));
+    check_order_handler.groups.at(i) = order.at(i);
   }
   MultithreadHandler handler {check_order_handler, progress, order};
   

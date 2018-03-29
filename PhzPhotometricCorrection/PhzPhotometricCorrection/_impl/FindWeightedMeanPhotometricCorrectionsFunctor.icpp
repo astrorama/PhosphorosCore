@@ -11,10 +11,13 @@ namespace PhzPhotometricCorrection {
 
 template <typename SourceIter>
   PhzDataModel::PhotometricCorrectionMap FindWeightedMeanPhotometricCorrectionsFunctor::operator()(
-            const std::map<int64_t, PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
+            const std::map<
+                decltype(std::declval<typename SourceIter::value_type>().getId()),
+                PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
             SourceIter source_begin, SourceIter source_end) {
-  
-  std::map<int64_t, PhzDataModel::PhotometricCorrectionMap> source_weights_map {};
+  typedef decltype(std::declval<typename SourceIter::value_type>().getId()) id_type;
+  std::map<id_type, PhzDataModel::PhotometricCorrectionMap> source_weights_map {};
+
   for (auto source = source_begin; source != source_end; ++source) {
     auto source_phot_ptr = source->template getAttribute<SourceCatalog::Photometry>();
     PhzDataModel::PhotometricCorrectionMap source_weights {};

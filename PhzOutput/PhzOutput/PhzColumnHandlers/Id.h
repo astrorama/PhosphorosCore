@@ -40,6 +40,8 @@ class Id : public ColumnHandler {
 
 public:
 
+  Id(std::type_index type);
+
   /**
    * @brief Destructor
    */
@@ -51,6 +53,8 @@ public:
                     const SourceCatalog::Source& source,
                     const PhzDataModel::SourceResults& results) const override;
 
+private:
+    std::type_index m_id_type;
 
 }; /* End of Id class */
 

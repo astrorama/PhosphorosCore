@@ -13,9 +13,6 @@
 namespace Euclid {
 namespace PhzPhotometricCorrection {
 
-typedef std::map<int64_t, double> ScaleFactorMap;
-
-
 
 /**
  * @class CalculateScaleFactorMap
@@ -63,10 +60,12 @@ public:
     * its best fitted model.
     */
   template<typename SourceIter,typename ModelPhotPtr>
-  ScaleFactorMap operator()(
+  std::map<decltype(std::declval<typename SourceIter::value_type>().getId()), double> operator()(
       SourceIter source_begin,
       SourceIter source_end,
-      const std::map<int64_t, ModelPhotPtr>& model_phot_map) const;
+      const std::map<
+          decltype(std::declval<typename SourceIter::value_type>().getId()),
+          ModelPhotPtr>& model_phot_map) const;
 private:
   ScaleFactorCalc m_scale_factor_function;
 };
