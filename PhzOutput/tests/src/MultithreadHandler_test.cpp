@@ -38,8 +38,8 @@ class CheckOrderOutputHandler : public OutputHandler {
 public:
   
   std::size_t current = 0;
-  std::vector<decltype(std::declval<SourceCatalog::Source>().getId())> order;
-  std::vector<decltype(std::declval<SourceCatalog::Source>().getId())> groups;
+  std::vector<SourceCatalog::Source::id_type> order;
+  std::vector<SourceCatalog::Source::id_type> groups;
   std::atomic<size_t>& progress;
   
   CheckOrderOutputHandler(std::atomic<size_t>& progress) : progress(progress) {}
@@ -62,10 +62,10 @@ struct MultithreadHandler_fixture {
   CheckOrderOutputHandler check_order_handler {progress};
   std::vector<SourceCatalog::Source> source_list {};
   std::vector<PhzDataModel::SourceResults> result_list {};
-  std::vector<decltype(std::declval<SourceCatalog::Source>().getId())> order {};
+  std::vector<SourceCatalog::Source::id_type> order {};
   
   MultithreadHandler_fixture() {
-    std::vector<decltype(std::declval<SourceCatalog::Source>().getId())> groups;
+    std::vector<SourceCatalog::Source::id_type> groups;
     for (std::int64_t i = 0; i < 10000; ++i) {
       std::int64_t id = i * 10;
       order.emplace_back(id);

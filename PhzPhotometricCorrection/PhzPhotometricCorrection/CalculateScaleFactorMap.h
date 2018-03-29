@@ -60,12 +60,10 @@ public:
     * its best fitted model.
     */
   template<typename SourceIter,typename ModelPhotPtr>
-  std::map<decltype(std::declval<typename SourceIter::value_type>().getId()), double> operator()(
+  std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, double> operator()(
       SourceIter source_begin,
       SourceIter source_end,
-      const std::map<
-          decltype(std::declval<typename SourceIter::value_type>().getId()),
-          ModelPhotPtr>& model_phot_map) const;
+      const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhotPtr>& model_phot_map) const;
 private:
   ScaleFactorCalc m_scale_factor_function;
 };

@@ -10,6 +10,7 @@
 
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
+#include "../../PhzUtils/PhzUtils/SourceTraits.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
@@ -41,9 +42,7 @@ public:
     */
   template <typename SourceIter>
   PhzDataModel::PhotometricCorrectionMap operator()(
-      const std::map<
-          decltype(std::declval<typename SourceIter::value_type>().getId()),
-          PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
+      const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
       SourceIter source_begin,
       SourceIter source_end
   );
