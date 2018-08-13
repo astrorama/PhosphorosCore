@@ -7,9 +7,11 @@ elements_depends_on_subdirs(PhzDataModel)
 elements_depends_on_subdirs(PhzLikelihood)
 elements_depends_on_subdirs(PhzOutput)
 elements_depends_on_subdirs(PhzPhotometricCorrection)
-
+elements_depends_on_subdirs(PhzReferenceSample)
 elements_add_library(PhzExecutables src/lib/*.cpp
-                     LINK_LIBRARIES ElementsKernel PhzConfiguration PhzDataModel PhzModeling PhzLikelihood PhzOutput PhzPhotometricCorrection
+                     LINK_LIBRARIES
+                        ElementsKernel PhzConfiguration PhzDataModel PhzModeling PhzLikelihood PhzOutput
+                        PhzPhotometricCorrection PhzReferenceSample
                      PUBLIC_HEADERS PhzExecutables)
 
 find_package(Boost REQUIRED COMPONENTS program_options)
@@ -23,5 +25,12 @@ elements_add_executable(PhosphorosComputePhotometricCorrections src/program/Comp
                      LINK_LIBRARIES ElementsKernel Boost PhzExecutables)
 elements_add_executable(PhosphorosComputeModelSed src/program/ComputeModelSed.cpp
                      LINK_LIBRARIES ElementsKernel Boost MathUtils PhzModeling PhzExecutables)
+elements_add_executable(BuildReferenceSample src/program/BuildReferenceSample.cpp
+                     LINK_LIBRARIES ElementsKernel PhzExecutables)
 
 elements_install_conf_files()
+
+elements_add_unit_test(ComputeReferenceSample tests/src/ComputeReferenceSample_test.cpp 
+                     EXECUTABLE PhzExecutables_ComputeReferenceSample_test
+                     LINK_LIBRARIES PhzExecutables
+                     TYPE Boost)
