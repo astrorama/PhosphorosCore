@@ -29,6 +29,10 @@
 #include <functional>
 #include "Configuration/ConfigManager.h"
 
+#include "MathUtils/function/Function.h"
+#include "XYDataset/QualifiedName.h"
+#include "XYDataset/XYDataset.h"
+
 namespace Euclid {
 namespace PhzExecutables {
 
@@ -56,6 +60,11 @@ public:
 
 private:
   ProgressListener m_progress_listener;
+  std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> m_reddening_cache;
+
+  std::unique_ptr<MathUtils::Function> interpolatedReddeningCurve(
+    const XYDataset::QualifiedName &curve_name, const XYDataset::XYDataset &curve_data
+  );
 
 };  // End of ComputeReferenceSample class
 

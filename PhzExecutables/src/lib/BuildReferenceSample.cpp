@@ -125,7 +125,6 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
   logger.info() << "Creating Reference Sample dir";
   auto ref_sample = ReferenceSample::create(ref_sample_config.getReferenceSamplePath());
 
-
   int64_t i = 0, total = phosphoros_table.size();
   for (auto object : phosphoros_table) {
     auto obj_id = boost::get<int64_t>(object["ID"]);
@@ -135,28 +134,25 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
     XYDataset::QualifiedName red_curve_name{boost::get<std::string>(object["ReddeningCurve"])};
     XYDataset::QualifiedName sed_name{boost::get<std::string>(object["SED"])};
 
+    std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> reddening_curve_map;
+    std::map<XYDataset::QualifiedName, XYDataset::XYDataset> sed_map;
+
+    auto sed = sed_provider.getDataset(sed_name);
+    if (!sed) {
+      throw Elements::Exception() << "Could not load the SED " << sed_name;
+    }
+    sed_map.emplace(std::make_pair(sed_name, std::move(*sed)));
 
     auto red_curve = reddening_provider.getDataset(red_curve_name);
     if (!red_curve) {
       throw Elements::Exception() << "Could not load the reddening curve " << red_curve_name;
     }
 
-    auto sed = sed_provider.getDataset(sed_name);
-    if (!sed) {
-      throw Elements::Exception() << "Could not load the SED " << sed_name;
-    }
-
-    ModelAxesTuple grid_axes {createAxesTuple({z}, {ebv}, {red_curve_name}, {sed_name})};
-
-    std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> reddening_curve_map;
-    std::map<XYDataset::QualifiedName, XYDataset::XYDataset> sed_map;
-
-    sed_map.emplace(std::make_pair(sed_name, std::move(*sed)));
-
     reddening_curve_map.emplace(
-      std::make_pair(red_curve_name, interpolate(*red_curve, MathUtils::InterpolationType::LINEAR))
+      std::make_pair(red_curve_name, interpolatedReddeningCurve(red_curve_name, *red_curve))
     );
 
+    ModelAxesTuple grid_axes {createAxesTuple({z}, {ebv}, {red_curve_name}, {sed_name})};
     ModelDatasetGrid grid {grid_axes, std::move(sed_map), std::move(reddening_curve_map),
                            ExtinctionFunctor{}, RedshiftFunctor{}, igm_function};
 
@@ -171,6 +167,17 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
   }
 }
 
+
+std::unique_ptr<MathUtils::Function> BuildReferenceSample::interpolatedReddeningCurve(
+  const Euclid::XYDataset::QualifiedName &curve_name, const Euclid::XYDataset::XYDataset &curve_data) {
+  auto i = m_reddening_cache.find(curve_name);
+  if (i == m_reddening_cache.end()) {
+    i = m_reddening_cache.emplace(
+      curve_name, std::move(interpolate(curve_data, MathUtils::InterpolationType::LINEAR))
+    ).first;
+  }
+  return i->second->clone();
+}
 
 }  // namespace PhzExecutables
 }  // namespace Euclid
