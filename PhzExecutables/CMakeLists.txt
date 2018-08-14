@@ -25,7 +25,7 @@ elements_add_executable(PhosphorosComputePhotometricCorrections src/program/Comp
                      LINK_LIBRARIES ElementsKernel Boost PhzExecutables)
 elements_add_executable(PhosphorosComputeModelSed src/program/ComputeModelSed.cpp
                      LINK_LIBRARIES ElementsKernel Boost MathUtils PhzModeling PhzExecutables)
-elements_add_executable(BuildReferenceSample src/program/BuildReferenceSample.cpp
+elements_add_executable(PhosphorosBuildReferenceSample src/program/BuildReferenceSample.cpp
                      LINK_LIBRARIES ElementsKernel PhzExecutables)
 
 elements_install_conf_files()
