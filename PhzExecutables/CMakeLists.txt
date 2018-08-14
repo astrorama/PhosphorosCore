@@ -29,8 +29,3 @@ elements_add_executable(BuildReferenceSample src/program/BuildReferenceSample.cp
                      LINK_LIBRARIES ElementsKernel PhzExecutables)
 
 elements_install_conf_files()
-
-elements_add_unit_test(ComputeReferenceSample tests/src/ComputeReferenceSample_test.cpp 
-                     EXECUTABLE PhzExecutables_ComputeReferenceSample_test
-                     LINK_LIBRARIES PhzExecutables
-                     TYPE Boost)
