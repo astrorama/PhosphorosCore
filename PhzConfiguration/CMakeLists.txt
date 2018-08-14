@@ -127,7 +127,7 @@ elements_add_unit_test(GenericGridPriorConfig_test tests/src/GenericGridPriorCon
 elements_add_unit_test(PdfOutputFlagsConfig_test tests/src/PdfOutputFlagsConfig_test.cpp 
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
-elements_add_unit_test(ComputeReferenceSampleConfig tests/src/ComputeReferenceSampleConfig_test.cpp 
+elements_add_unit_test(ComputeReferenceSampleConfig tests/src/BuildReferenceSampleConfig_test.cpp
                      EXECUTABLE PhzConfiguration_ComputeReferenceSampleConfig_test
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
