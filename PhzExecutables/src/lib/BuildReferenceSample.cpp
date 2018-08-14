@@ -36,6 +36,7 @@
 #include "PhzModeling/RedshiftFunctor.h"
 
 #include "MathUtils/interpolation/interpolation.h"
+#include "XYDataset/CachedProvider.h"
 
 namespace Euclid {
 namespace PhzExecutables {
@@ -102,8 +103,13 @@ BuildReferenceSample::BuildReferenceSample(ProgressListener progress_listener)
 
 void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_manager) {
   auto& igm_function = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
-  auto& reddening_provider = config_manager.getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider();
-  auto& sed_provider = config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider();
+
+  XYDataset::CachedProvider reddening_provider {
+    config_manager.getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider()
+  };
+  XYDataset::CachedProvider sed_provider {
+    config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider()
+  };
 
   auto ref_sample_config = config_manager.getConfiguration<BuildReferenceSampleConfig>();
 
@@ -130,12 +136,12 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
     XYDataset::QualifiedName sed_name{boost::get<std::string>(object["SED"])};
 
 
-    auto red_curve = reddening_provider->getDataset(red_curve_name);
+    auto red_curve = reddening_provider.getDataset(red_curve_name);
     if (!red_curve) {
       throw Elements::Exception() << "Could not load the reddening curve " << red_curve_name;
     }
 
-    auto sed = sed_provider->getDataset(sed_name);
+    auto sed = sed_provider.getDataset(sed_name);
     if (!sed) {
       throw Elements::Exception() << "Could not load the SED " << sed_name;
     }
