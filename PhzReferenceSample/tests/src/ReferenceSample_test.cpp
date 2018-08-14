@@ -22,6 +22,7 @@
  */
 
 #include <boost/test/unit_test.hpp>
+#include <boost/math//special_functions/relative_difference.hpp>
 #include <ElementsKernel/Exception.h>
 #include <ElementsKernel/Temporary.h>
 
@@ -38,6 +39,31 @@ struct print_log_value<std::pair<T,U>> {
     os << "<" << pair.first << "," << pair.second << ">";
   }
 };
+}
+
+
+boost::test_tools::predicate_result checkAllClose(const XYDataset& a, const XYDataset &b) {
+  boost::test_tools::predicate_result res(true);
+  boost::test_tools::tt_detail::print_log_value<std::pair<double, double>> printer;
+
+  if (a.size() != b.size()) {
+    res = false;
+    res.message() << "Different sizes";
+  }
+  else {
+    for (auto i = a.begin(), j = b.begin(); i != a.end(); ++i, ++j) {
+      if (boost::math::relative_difference(i->first, j->first) > 1e-5 ||
+        boost::math::relative_difference(i->second, j->second) > 1e-5) {
+        res = false;
+        printer(res.message().stream(), *i);
+        res.message() << " != ";
+        printer(res.message().stream(), *j);
+        res.message() << '\n';
+      }
+    }
+  }
+
+  return res;
 }
 
 //-----------------------------------------------------------------------------
@@ -66,13 +92,13 @@ struct ReferenceSampleData_Fixture {
     {{{200,  0}, {205,  1}, {210,  2}}},
   };
   std::vector<XYDataset> m_pdz{
-    {{{0,  0}, {1,  1}, {2,  2}}},
-    {{{0, 55}, {1, 66}, {2, 77}}},
-    {{{0,  3}, {1,  2}, {2,  1}}},
+    {{{0, 0.00}, {1, 0.50}, {2, 1.00}}},
+    {{{0, 0.40}, {1, 0.48}, {2, 0.64}}},
+    {{{0, 3.00}, {1, 2.00}, {2, 1.00}}}, // This one is not normalized
   };
   std::vector<XYDataset> m_additional {
-    {{{0, 0}, {1, 1}, {2, 2}}},
-    {{{0, 5}, {1, 3}, {2, 6}}},
+    {{{0, 0.000}, {1, 0.400}, {2, 1.200}}},
+    {{{0, 0.375}, {1, 0.500}, {2, 0.625}}},
   };
   XYDataset m_unsorted {{{10, 0}, {9, 1}, {7, 2}}};
 
@@ -226,7 +252,7 @@ BOOST_FIXTURE_TEST_CASE ( test_getPdz_missing, ReferenceSample_Fixture ) {
 
 BOOST_FIXTURE_TEST_CASE ( test_getPdz, ReferenceSample_Fixture ) {
   auto pdz = m_ref.getPdzData(11).get();
-  BOOST_CHECK_EQUAL_COLLECTIONS(pdz.begin(), pdz.end(), m_pdz[1].begin(), m_pdz[1].end());
+  BOOST_CHECK(checkAllClose(pdz, m_pdz[1]));
 }
 
 //-----------------------------------------------------------------------------
@@ -274,7 +300,7 @@ BOOST_FIXTURE_TEST_CASE ( test_addSed_success, ReferenceSample_Fixture ) {
   m_ref.addSedData(1000, m_additional[0]);
   BOOST_CHECK_EQUAL(m_ref.getMissingSeds().size(), 0);
   auto sed = m_ref.getSedData(1000).get();
-  BOOST_CHECK_EQUAL_COLLECTIONS(sed.begin(), sed.end(), m_additional[0].begin(), m_additional[0].end());
+  BOOST_CHECK(checkAllClose(sed, m_additional[0]));
 }
 
 //-----------------------------------------------------------------------------
@@ -288,7 +314,7 @@ BOOST_FIXTURE_TEST_CASE ( test_addSed_newDataFile, ReferenceSampleOnDisk_Fixture
   BOOST_CHECK(boost::filesystem::exists(m_top_dir.path() / "sed_data_2.bin"));
 
   auto sed = ref.getSedData(1000).get();
-  BOOST_CHECK_EQUAL_COLLECTIONS(sed.begin(), sed.end(), m_additional[0].begin(), m_additional[0].end());
+  BOOST_CHECK(checkAllClose(sed, m_additional[0]));
 }
 
 //-----------------------------------------------------------------------------
@@ -301,9 +327,9 @@ BOOST_FIXTURE_TEST_CASE ( test_addSed_notInOrder, ReferenceSample_Fixture ) {
   m_ref.addSedData(5555, m_additional[1]);
 
   auto sed6 = m_ref.getSedData(6666).get();
-  BOOST_CHECK_EQUAL_COLLECTIONS(sed6.begin(), sed6.end(), m_additional[0].begin(), m_additional[0].end());
+  BOOST_CHECK(checkAllClose(sed6, m_additional[0]));
   auto sed5 = m_ref.getSedData(5555).get();
-  BOOST_CHECK_EQUAL_COLLECTIONS(sed5.begin(), sed5.end(), m_additional[1].begin(), m_additional[1].end());
+  BOOST_CHECK(checkAllClose(sed5, m_additional[1]));
 }
 
 //-----------------------------------------------------------------------------
@@ -332,7 +358,7 @@ BOOST_FIXTURE_TEST_CASE ( test_addPdz_success, ReferenceSample_Fixture ) {
   m_ref.addPdzData(1000, m_additional[0]);
   BOOST_CHECK_EQUAL(m_ref.getMissingPdz().size(), 0);
   auto pdz = m_ref.getPdzData(1000).get();
-  BOOST_CHECK_EQUAL_COLLECTIONS(pdz.begin(), pdz.end(), m_additional[0].begin(), m_additional[0].end());
+  BOOST_CHECK(checkAllClose(pdz, m_additional[0]));
 }
 
 //-----------------------------------------------------------------------------
@@ -346,7 +372,7 @@ BOOST_FIXTURE_TEST_CASE ( test_addPdz_newDataFile, ReferenceSampleOnDisk_Fixture
   BOOST_CHECK(boost::filesystem::exists(m_top_dir.path() / "pdz_data_2.bin"));
 
   auto pdz = ref.getPdzData(1000).get();
-  BOOST_CHECK_EQUAL_COLLECTIONS(pdz.begin(), pdz.end(), m_additional[0].begin(), m_additional[0].end());
+  BOOST_CHECK(checkAllClose(pdz, m_additional[0]));
 }
 
 //-----------------------------------------------------------------------------
@@ -359,9 +385,16 @@ BOOST_FIXTURE_TEST_CASE ( test_addPdz_notInOrder, ReferenceSample_Fixture ) {
   m_ref.addPdzData(5555, m_additional[1]);
 
   auto pdz6 = m_ref.getPdzData(6666).get();
-  BOOST_CHECK_EQUAL_COLLECTIONS(pdz6.begin(), pdz6.end(), m_additional[0].begin(), m_additional[0].end());
+  BOOST_CHECK(checkAllClose(pdz6, m_additional[0]));
   auto pdz5 = m_ref.getPdzData(5555).get();
-  BOOST_CHECK_EQUAL_COLLECTIONS(pdz5.begin(), pdz5.end(), m_additional[1].begin(), m_additional[1].end());
+  BOOST_CHECK(checkAllClose(pdz5, m_additional[1]));
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE ( test_addPdz_normalize, ReferenceSample_Fixture) {
+  auto pdz = m_ref.getPdzData(12).get();
+  BOOST_CHECK(checkAllClose(pdz, XYDataset::factory({0, 1, 2}, {0.75, 0.5, 0.25})));
 }
 
 //-----------------------------------------------------------------------------

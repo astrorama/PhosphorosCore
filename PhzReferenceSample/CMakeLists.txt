@@ -13,7 +13,7 @@ elements_subdir(PhzReferenceSample)
 #   For creating a dependency onto an other accessible module
 #         elements_depends_on_subdirs(ElementsKernel)
 #===============================================================================
-elements_depends_on_subdirs(ElementsKernel SourceCatalog XYDataset)
+elements_depends_on_subdirs(ElementsKernel SourceCatalog XYDataset MathUtils)
 
 #===============================================================================
 # Add the find_package macro (a pure CMake command) here to locate the
@@ -31,7 +31,7 @@ elements_depends_on_subdirs(ElementsKernel SourceCatalog XYDataset)
 #                     PUBLIC_HEADERS ElementsExamples)
 #===============================================================================
 elements_add_library(PhzReferenceSample src/lib/*.cpp
-                     LINK_LIBRARIES ElementsKernel SourceCatalog XYDataset
+                     LINK_LIBRARIES ElementsKernel SourceCatalog XYDataset MathUtils
                      PUBLIC_HEADERS PhzReferenceSample)
 
 #===============================================================================

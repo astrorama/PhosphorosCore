@@ -27,6 +27,8 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <MathUtils/function/function_tools.h>
+#include <MathUtils/interpolation/interpolation.h>
 
 
 namespace Euclid {
@@ -133,6 +135,31 @@ void ReferenceSample::addPdzData(int64_t id, const XYDataset::XYDataset &data) {
     throw Elements::Exception() << "PDZ for ID " << id << " is already set";
   }
 
+  // Normalize first!
+  double x_max = std::numeric_limits<double>::lowest();
+  double x_min = std::numeric_limits<double>::max();
+
+  std::vector<double> x_axis, y_axis;
+  x_axis.reserve(data.size());
+  y_axis.reserve(data.size());
+
+  for (auto& p : data) {
+    x_max = std::max(x_max, p.first);
+    x_min = std::min(x_min, p.first);
+    x_axis.push_back(p.first);
+    y_axis.push_back(p.second);
+  }
+
+  double integral = MathUtils::integrate(
+    *MathUtils::interpolate(data, MathUtils::InterpolationType::LINEAR), x_min, x_max
+  );
+
+  for (auto& y : y_axis) {
+    y /= integral;
+  }
+
+  auto normalized = XYDataset::XYDataset::factory(x_axis, y_axis);
+
   if (m_pdz_providers.back()->size() >= m_max_file_size) {
     uint16_t new_pdz_file = m_pdz_providers.size() + 1;
     auto pdz_filename = boost::str(boost::format(PDZ_DATA_FILE_PATTERN) % new_pdz_file);
@@ -143,7 +170,7 @@ void ReferenceSample::addPdzData(int64_t id, const XYDataset::XYDataset &data) {
   }
 
   loc.pdz_file = m_pdz_providers.size();
-  loc.pdz_pos = m_pdz_providers.back()->addPdz(id, data);
+  loc.pdz_pos = m_pdz_providers.back()->addPdz(id, normalized);
   m_index_provider.setLocation(id, loc);
 }
 

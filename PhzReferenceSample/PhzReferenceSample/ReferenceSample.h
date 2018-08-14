@@ -143,6 +143,8 @@ public:
    *    On failure to write to disk, if the object already has a pdz, if the bins
    *    do not match the stored bins, or, only for the first stored pdz, if the
    *    bins are not in ascending order.
+   * @note
+   *    The dataset will be normalized (integral with a value of 1)
    */
   void addPdzData(int64_t id, const XYDataset::XYDataset &data);
 
