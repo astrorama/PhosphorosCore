@@ -45,6 +45,10 @@ struct SedDataProvider_Fixture {
   SedDataProvider_Fixture(): m_sed_bin{m_top_dir.path() / "sed_data_1.bin"} {
     std::ofstream _{m_sed_bin.native()};
   }
+
+  virtual ~SedDataProvider_Fixture() {
+    boost::filesystem::remove_all(m_top_dir.path());
+  }
 };
 
 //-----------------------------------------------------------------------------

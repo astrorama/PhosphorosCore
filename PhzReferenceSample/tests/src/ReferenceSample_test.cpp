@@ -42,6 +42,10 @@ struct ReferenceSamplePath_Fixture {
 
   ReferenceSamplePath_Fixture(): m_top_dir{""} {
   }
+
+  virtual ~ReferenceSamplePath_Fixture() {
+    boost::filesystem::remove_all(m_top_dir.path());
+  }
 };
 
 struct EmptyReferenceSample_Fixture: ReferenceSamplePath_Fixture {

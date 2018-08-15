@@ -42,6 +42,10 @@ struct IndexProvider_Fixture {
   IndexProvider_Fixture(): m_index_bin{m_top_dir.path() / "index.bin"} {
     std::ofstream _{m_index_bin.native()};
   }
+
+  virtual ~IndexProvider_Fixture() {
+    boost::filesystem::remove_all(m_top_dir.path());
+  }
 };
 
 //-----------------------------------------------------------------------------

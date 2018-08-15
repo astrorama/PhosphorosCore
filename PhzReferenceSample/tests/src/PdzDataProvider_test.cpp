@@ -45,6 +45,10 @@ struct PdzDataProvider_Fixture {
   PdzDataProvider_Fixture(): m_pdz_bin{m_top_dir.path() / "pdz_data_1.bin"} {
     std::ofstream _{m_pdz_bin.native()};
   }
+
+  virtual ~PdzDataProvider_Fixture() {
+    boost::filesystem::remove_all(m_top_dir.path());
+  }
 };
 
 //-----------------------------------------------------------------------------
