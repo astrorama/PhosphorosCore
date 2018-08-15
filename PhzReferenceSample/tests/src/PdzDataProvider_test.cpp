@@ -26,19 +26,12 @@
 #include <ElementsKernel/Temporary.h>
 
 #include "PhzReferenceSample/PdzDataProvider.h"
+#include "AllClose.h"
 
 using Euclid::ReferenceSample::PdzDataProvider;
 using Euclid::XYDataset::XYDataset;
 using Elements::TempDir;
 
-namespace boost::test_tools::tt_detail {
-template<typename T, typename U>
-struct print_log_value<std::pair<T,U>> {
-  void operator()(std::ostream &os, const std::pair<T, U> &pair) {
-    os << "<" << pair.first << "," << pair.second << ">";
-  }
-};
-}
 
 //-----------------------------------------------------------------------------
 
@@ -78,7 +71,7 @@ BOOST_FIXTURE_TEST_CASE( add_one, PdzDataProvider_Fixture ) {
   auto recovered = pdz_provider.readPdz(offset, &id);
 
   BOOST_CHECK_EQUAL(id, 10);
-  BOOST_CHECK_EQUAL_COLLECTIONS(recovered.begin(), recovered.end(), pdz.begin(), pdz.end());
+  BOOST_CHECK(checkAllClose(recovered, pdz));
 }
 
 //-----------------------------------------------------------------------------
@@ -99,9 +92,9 @@ BOOST_FIXTURE_TEST_CASE( add_two, PdzDataProvider_Fixture ) {
   pdz_provider.addPdz(11, pdz);
 
   int64_t id;
-  auto sed = pdz_provider.readPdz(off10, &id);
+  auto recovered = pdz_provider.readPdz(off10, &id);
   BOOST_CHECK_EQUAL(id, 10);
-  BOOST_CHECK_EQUAL_COLLECTIONS(sed.begin(), sed.end(), pdz.begin(), pdz.end());
+  BOOST_CHECK(checkAllClose(recovered, pdz));
 }
 
 //-----------------------------------------------------------------------------
@@ -146,7 +139,7 @@ BOOST_FIXTURE_TEST_CASE( open_and_close, PdzDataProvider_Fixture ) {
   auto recovered = pdz_provider.readPdz(offset, &id);
 
   BOOST_CHECK_EQUAL(id, 10);
-  BOOST_CHECK_EQUAL_COLLECTIONS(recovered.begin(), recovered.end(), pdz.begin(), pdz.end());
+  BOOST_CHECK(checkAllClose(recovered, pdz));
 }
 
 //-----------------------------------------------------------------------------

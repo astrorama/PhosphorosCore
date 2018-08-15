@@ -97,7 +97,7 @@ public:
 private:
   boost::filesystem::path m_path;
   // Reading mutates the file descriptor, but not the file on disk
-  mutable std::fstream m_fd;
+  mutable std::unique_ptr<std::fstream> m_fd;
 
   uint32_t m_length;
   std::vector<float> m_bins;

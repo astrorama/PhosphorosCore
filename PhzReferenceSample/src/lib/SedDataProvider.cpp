@@ -28,35 +28,36 @@
 namespace Euclid {
 namespace ReferenceSample {
 
-SedDataProvider::SedDataProvider(const boost::filesystem::path &path) : m_path(path) {
-  m_fd.exceptions(std::ios::failbit | std::ios::badbit);
+SedDataProvider::SedDataProvider(const boost::filesystem::path &path)
+  : m_path{path}, m_fd{new std::fstream} {
+  m_fd->exceptions(std::ios::failbit | std::ios::badbit);
   try {
-    m_fd.open(path.c_str(), std::ios::binary | std::ios::in | std::ios::out);
+    m_fd->open(path.c_str(), std::ios::binary | std::ios::in | std::ios::out);
   }
   catch (const std::ios::failure &e) {
-    throw Elements::Exception() << "Failed to open the SED file " << path << " (" << e.code().message() << ")";
+    throw Elements::Exception() << "Failed to open the SED file " << path << " (" << e.what() << ")";
   }
 }
 
 XYDataset::XYDataset SedDataProvider::readSed(off64_t position, int64_t *id) const {
-  m_fd.clear();
-  m_fd.exceptions(std::ios::badbit | std::ios::failbit);
+  m_fd->clear();
+  m_fd->exceptions(std::ios::badbit | std::ios::failbit);
 
   if (position < 0) {
     throw Elements::Exception() << "Negative offset";
   }
 
   try {
-    m_fd.seekg(position, std::ios::beg);
+    m_fd->seekg(position, std::ios::beg);
 
     uint32_t length;
 
-    m_fd.read(reinterpret_cast<char *>(id), sizeof(*id));
-    m_fd.read(reinterpret_cast<char *>(&length), sizeof(length));
+    m_fd->read(reinterpret_cast<char *>(id), sizeof(*id));
+    m_fd->read(reinterpret_cast<char *>(&length), sizeof(length));
 
     // Even contains lambda (0, 2, 4), odd contains flux density (1, 3, 5)
     std::vector<float> raw_data(length * 2);
-    m_fd.read(reinterpret_cast<char *>(raw_data.data()), sizeof(float) * raw_data.size());
+    m_fd->read(reinterpret_cast<char *>(raw_data.data()), sizeof(float) * raw_data.size());
 
     // Organize by pairs
     std::vector<std::pair<double, double>> reshaped(length);
@@ -77,8 +78,8 @@ size_t SedDataProvider::size() const {
 }
 
 off64_t SedDataProvider::addSed(int64_t id, const XYDataset::XYDataset &data) {
-  m_fd.clear();
-  m_fd.exceptions(std::ios::badbit | std::ios::failbit);
+  m_fd->clear();
+  m_fd->exceptions(std::ios::badbit | std::ios::failbit);
 
   uint32_t len = data.size();
 
@@ -90,15 +91,15 @@ off64_t SedDataProvider::addSed(int64_t id, const XYDataset::XYDataset &data) {
   }
 
   try {
-    int64_t offset = m_fd.seekp(0, std::ios::end).tellp();
+    int64_t offset = m_fd->seekp(0, std::ios::end).tellp();
 
-    m_fd.write(reinterpret_cast<char *>(&id), sizeof(id));
-    m_fd.write(reinterpret_cast<char *>(&len), sizeof(len));
+    m_fd->write(reinterpret_cast<char *>(&id), sizeof(id));
+    m_fd->write(reinterpret_cast<char *>(&len), sizeof(len));
     for (auto p : data) {
       float lambda = p.first;
       float flux = p.second;
-      m_fd.write(reinterpret_cast<char *>(&lambda), sizeof(lambda));
-      m_fd.write(reinterpret_cast<char *>(&flux), sizeof(flux));
+      m_fd->write(reinterpret_cast<char *>(&lambda), sizeof(lambda));
+      m_fd->write(reinterpret_cast<char *>(&flux), sizeof(flux));
     }
 
     return offset;

@@ -40,29 +40,29 @@ void IndexProvider::validateLocation(const ObjectLocation &e) {
   }
 }
 
-IndexProvider::IndexProvider(const boost::filesystem::path &path) {
+IndexProvider::IndexProvider(const boost::filesystem::path &path): m_fd{new std::fstream} {
   try {
     auto index_size = boost::filesystem::file_size(path);
     if (index_size % INDEX_ENTRY_SIZE != 0) {
       throw Elements::Exception() << "The reference sample index is corrupted: " << path;
     }
 
-    m_fd.exceptions(std::ios::failbit);
-    m_fd.open(path.native(), std::ios::binary | std::ios::in | std::ios::out);
-    m_fd.seekg(0, std::ios::beg);
+    m_fd->exceptions(std::ios::failbit);
+    m_fd->open(path.native(), std::ios::binary | std::ios::in | std::ios::out);
+    m_fd->seekg(0, std::ios::beg);
 
     size_t nentries = index_size / INDEX_ENTRY_SIZE;
     m_ids.reserve(nentries);
 
-    m_fd.exceptions(std::ios::badbit);
+    m_fd->exceptions(std::ios::badbit);
 
     int64_t id;
-    while (!m_fd.read(reinterpret_cast<char *>(&id), sizeof(id)).eof()) {
+    while (!m_fd->read(reinterpret_cast<char *>(&id), sizeof(id)).eof()) {
       auto &entry = m_index[id];
-      m_fd.read(reinterpret_cast<char *>(&entry.sed_file), sizeof(entry.sed_file));
-      m_fd.read(reinterpret_cast<char *>(&entry.sed_pos), sizeof(entry.sed_pos));
-      m_fd.read(reinterpret_cast<char *>(&entry.pdz_file), sizeof(entry.pdz_file));
-      m_fd.read(reinterpret_cast<char *>(&entry.pdz_pos), sizeof(entry.pdz_pos));
+      m_fd->read(reinterpret_cast<char *>(&entry.sed_file), sizeof(entry.sed_file));
+      m_fd->read(reinterpret_cast<char *>(&entry.sed_pos), sizeof(entry.sed_pos));
+      m_fd->read(reinterpret_cast<char *>(&entry.pdz_file), sizeof(entry.pdz_file));
+      m_fd->read(reinterpret_cast<char *>(&entry.pdz_pos), sizeof(entry.pdz_pos));
 
       validateLocation(entry);
 
@@ -104,8 +104,8 @@ IndexProvider::ObjectLocation IndexProvider::getLocation(int64_t id) const {
 }
 
 void IndexProvider::setLocation(int64_t id, const Euclid::ReferenceSample::IndexProvider::ObjectLocation &loc) {
-  m_fd.clear();
-  m_fd.exceptions(std::ios::badbit | std::ios::failbit);
+  m_fd->clear();
+  m_fd->exceptions(std::ios::badbit | std::ios::failbit);
 
   auto m_index_i = m_index.find(id);
   if (m_index_i == m_index.end()) {
@@ -114,12 +114,12 @@ void IndexProvider::setLocation(int64_t id, const Euclid::ReferenceSample::Index
 
   validateLocation(loc);
 
-  m_fd.seekp(m_index_i->second.index_position * INDEX_ENTRY_SIZE + sizeof(int64_t), std::ios::beg);
+  m_fd->seekp(m_index_i->second.index_position * INDEX_ENTRY_SIZE + sizeof(int64_t), std::ios::beg);
 
-  m_fd.write(reinterpret_cast<const char *>(&loc.sed_file), sizeof(loc.sed_file));
-  m_fd.write(reinterpret_cast<const char *>(&loc.sed_pos), sizeof(loc.sed_pos));
-  m_fd.write(reinterpret_cast<const char *>(&loc.pdz_file), sizeof(loc.pdz_file));
-  m_fd.write(reinterpret_cast<const char *>(&loc.pdz_pos), sizeof(loc.pdz_pos));
+  m_fd->write(reinterpret_cast<const char *>(&loc.sed_file), sizeof(loc.sed_file));
+  m_fd->write(reinterpret_cast<const char *>(&loc.sed_pos), sizeof(loc.sed_pos));
+  m_fd->write(reinterpret_cast<const char *>(&loc.pdz_file), sizeof(loc.pdz_file));
+  m_fd->write(reinterpret_cast<const char *>(&loc.pdz_pos), sizeof(loc.pdz_pos));
 
   m_index_i->second = loc;
   m_sed_files.insert(loc.sed_file);
@@ -151,8 +151,8 @@ std::vector<int64_t> IndexProvider::getMissingPdz() const {
 }
 
 void IndexProvider::createObject(int64_t id) {
-  m_fd.clear();
-  m_fd.exceptions(std::ios::badbit | std::ios::failbit);
+  m_fd->clear();
+  m_fd->exceptions(std::ios::badbit | std::ios::failbit);
 
   if (m_index.count(id) > 0) {
     throw Elements::Exception() << "The object " << id << " already exists on the index";
@@ -161,12 +161,12 @@ void IndexProvider::createObject(int64_t id) {
   ObjectLocation loc{m_ids.size(), 0, -1, 0, -1};
 
   try {
-    m_fd.seekp(0, std::ios::end);
-    m_fd.write(reinterpret_cast<char *>(&id), sizeof(id));
-    m_fd.write(reinterpret_cast<char *>(&loc.sed_file), sizeof(loc.sed_file));
-    m_fd.write(reinterpret_cast<char *>(&loc.sed_pos), sizeof(loc.sed_pos));
-    m_fd.write(reinterpret_cast<char *>(&loc.pdz_file), sizeof(loc.pdz_file));
-    m_fd.write(reinterpret_cast<char *>(&loc.pdz_pos), sizeof(loc.pdz_pos));
+    m_fd->seekp(0, std::ios::end);
+    m_fd->write(reinterpret_cast<char *>(&id), sizeof(id));
+    m_fd->write(reinterpret_cast<char *>(&loc.sed_file), sizeof(loc.sed_file));
+    m_fd->write(reinterpret_cast<char *>(&loc.sed_pos), sizeof(loc.sed_pos));
+    m_fd->write(reinterpret_cast<char *>(&loc.pdz_file), sizeof(loc.pdz_file));
+    m_fd->write(reinterpret_cast<char *>(&loc.pdz_pos), sizeof(loc.pdz_pos));
 
     m_ids.push_back(id);
 

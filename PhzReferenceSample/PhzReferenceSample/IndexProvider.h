@@ -142,7 +142,7 @@ public:
   void createObject(int64_t id);
 
 private:
-  std::fstream m_fd;
+  std::unique_ptr<std::fstream> m_fd;
   std::vector<int64_t> m_ids;
   std::map<int64_t, ObjectLocation> m_index;
   std::set<uint16_t> m_sed_files, m_pdz_files;

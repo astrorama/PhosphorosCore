@@ -22,49 +22,16 @@
  */
 
 #include <boost/test/unit_test.hpp>
-#include <boost/math//special_functions/relative_difference.hpp>
 #include <ElementsKernel/Exception.h>
 #include <ElementsKernel/Temporary.h>
 
 #include "PhzReferenceSample/ReferenceSample.h"
+#include "AllClose.h"
 
 using namespace Euclid::ReferenceSample;
 using Euclid::XYDataset::XYDataset;
 using Elements::TempPath;
 
-namespace boost::test_tools::tt_detail {
-template<typename T, typename U>
-struct print_log_value<std::pair<T,U>> {
-  void operator()(std::ostream &os, const std::pair<T, U> &pair) {
-    os << "<" << pair.first << "," << pair.second << ">";
-  }
-};
-}
-
-
-boost::test_tools::predicate_result checkAllClose(const XYDataset& a, const XYDataset &b) {
-  boost::test_tools::predicate_result res(true);
-  boost::test_tools::tt_detail::print_log_value<std::pair<double, double>> printer;
-
-  if (a.size() != b.size()) {
-    res = false;
-    res.message() << "Different sizes";
-  }
-  else {
-    for (auto i = a.begin(), j = b.begin(); i != a.end(); ++i, ++j) {
-      if (boost::math::relative_difference(i->first, j->first) > 1e-5 ||
-        boost::math::relative_difference(i->second, j->second) > 1e-5) {
-        res = false;
-        printer(res.message().stream(), *i);
-        res.message() << " != ";
-        printer(res.message().stream(), *j);
-        res.message() << '\n';
-      }
-    }
-  }
-
-  return res;
-}
 
 //-----------------------------------------------------------------------------
 
@@ -103,7 +70,7 @@ struct ReferenceSampleData_Fixture {
   XYDataset m_unsorted {{{10, 0}, {9, 1}, {7, 2}}};
 
   void populate(ReferenceSample &ref) {
-    for (auto i = 0; i < m_obj_ids.size(); ++i) {
+    for (size_t i = 0; i < m_obj_ids.size(); ++i) {
       ref.createObject(m_obj_ids[i]);
       if (i < m_sed.size()) {
         ref.addSedData(m_obj_ids[i], m_sed[i]);
@@ -215,7 +182,7 @@ BOOST_FIXTURE_TEST_CASE ( test_getSed_missing, ReferenceSample_Fixture ) {
 
 BOOST_FIXTURE_TEST_CASE ( test_getSed, ReferenceSample_Fixture ) {
   auto sed = m_ref.getSedData(10).get();
-  BOOST_CHECK_EQUAL_COLLECTIONS(sed.begin(), sed.end(), m_sed[0].begin(), m_sed[0].end());
+  BOOST_CHECK(checkAllClose(sed, m_sed[0]));
 }
 
 //-----------------------------------------------------------------------------

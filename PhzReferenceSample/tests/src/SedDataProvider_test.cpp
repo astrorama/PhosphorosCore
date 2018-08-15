@@ -26,19 +26,12 @@
 #include <ElementsKernel/Temporary.h>
 
 #include "PhzReferenceSample/SedDataProvider.h"
+#include "AllClose.h"
 
 using Euclid::ReferenceSample::SedDataProvider;
 using Euclid::XYDataset::XYDataset;
 using Elements::TempDir;
 
-namespace boost::test_tools::tt_detail {
-template<typename T, typename U>
-struct print_log_value<std::pair<T,U>> {
-  void operator()(std::ostream &os, const std::pair<T, U> &pair) {
-    os << "<" << pair.first << "," << pair.second << ">";
-  }
-};
-}
 
 //-----------------------------------------------------------------------------
 
@@ -78,7 +71,7 @@ BOOST_FIXTURE_TEST_CASE( add_one, SedDataProvider_Fixture ) {
   auto recovered = sed_provider.readSed(offset, &id);
 
   BOOST_CHECK_EQUAL(id, 10);
-  BOOST_CHECK_EQUAL_COLLECTIONS(recovered.begin(), recovered.end(), sed.begin(), sed.end());
+  BOOST_CHECK(checkAllClose(recovered, sed));
 }
 
 //-----------------------------------------------------------------------------
@@ -141,7 +134,7 @@ BOOST_FIXTURE_TEST_CASE( open_and_close, SedDataProvider_Fixture ) {
   auto recovered = sed_provider.readSed(offset, &id);
 
   BOOST_CHECK_EQUAL(id, 10);
-  BOOST_CHECK_EQUAL_COLLECTIONS(recovered.begin(), recovered.end(), sed.begin(), sed.end());
+  BOOST_CHECK(checkAllClose(recovered, sed));
 }
 
 //-----------------------------------------------------------------------------

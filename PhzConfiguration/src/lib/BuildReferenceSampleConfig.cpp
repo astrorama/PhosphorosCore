@@ -27,7 +27,7 @@
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
 #include "PhzConfiguration/BuildReferenceSampleConfig.h"
-#include "PhzReferenceSample/PhzReferenceSample/ReferenceSample.h"
+#include "PhzReferenceSample/ReferenceSample.h"
 
 
 namespace po = boost::program_options;
