@@ -131,6 +131,7 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
     auto pdz_vals = boost::get<std::vector<double>>(object["Z-1D-PDF"]);
     auto z = boost::get<double>(object["Z"]);
     auto ebv = boost::get<double>(object["E(B-V)"]);
+    auto scale = boost::get<double>(object["Scale"]);
     XYDataset::QualifiedName red_curve_name{boost::get<std::string>(object["ReddeningCurve"])};
     XYDataset::QualifiedName sed_name{boost::get<std::string>(object["SED"])};
 
@@ -158,7 +159,13 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
 
     ref_sample.createObject(obj_id);
     for (auto &sed : grid) {
-      ref_sample.addSedData(obj_id, sed);
+      std::vector<std::pair<double, double>> scaled_data {};
+      for (auto it = sed.begin(); it != sed.end(); ++it) {
+        auto scaled_point = *it;
+        scaled_point.second *= scale;
+        scaled_data.push_back(std::move(scaled_point));
+      }
+      ref_sample.addSedData(obj_id, XYDataset::XYDataset::factory(std::move(scaled_data)));
     }
     ref_sample.addPdzData(obj_id, XYDataset::XYDataset::factory(pdz_bins, pdz_vals));
 
