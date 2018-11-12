@@ -39,6 +39,7 @@
 #include "PhzConfiguration/BVFilterConfig.h"
 #include "PhzConfiguration/MilkyWayReddeningConfig.h"
 #include "PhzConfiguration/CorrectionCoefficientGridOutputConfig.h"
+#include "PhzConfiguration/MultithreadConfig.h"
 
 
 namespace po = boost::program_options;
@@ -60,6 +61,7 @@ ComputeModelGalacticCorrectionCoefficientConfig::ComputeModelGalacticCorrectionC
   declareDependency<SedProviderConfig>();
   declareDependency<MilkyWayReddeningConfig>();
   declareDependency<CorrectionCoefficientGridOutputConfig>();
+  declareDependency<MultithreadConfig>();
 }
 
 auto ComputeModelGalacticCorrectionCoefficientConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
