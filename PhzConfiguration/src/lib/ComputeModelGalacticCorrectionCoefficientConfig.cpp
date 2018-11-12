@@ -61,7 +61,7 @@ ComputeModelGalacticCorrectionCoefficientConfig::ComputeModelGalacticCorrectionC
 }
 
 auto ComputeModelGalacticCorrectionCoefficientConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Compute Correction Coefficient Grid options", {
+  return {{"Compute Galactic Correction Coefficient Grid options", {
     {DUST_MAP_SED_BPC.c_str(), po::value<double>()->default_value(1.018),
         "The band pass correction for the SED used for defining the dust column density map (default bpc_P14=1.018)"},
   }}};
@@ -69,6 +69,10 @@ auto ComputeModelGalacticCorrectionCoefficientConfig::getProgramOptions() -> std
 
 void ComputeModelGalacticCorrectionCoefficientConfig::initialize(const UserValues& args) {
   m_dust_map_sed_bpc = args.at(DUST_MAP_SED_BPC).as<double>();
+}
+
+double ComputeModelGalacticCorrectionCoefficientConfig::getDustMapSedBpc() const{
+  return m_dust_map_sed_bpc;
 }
 
 } // PhzConfiguration namespace

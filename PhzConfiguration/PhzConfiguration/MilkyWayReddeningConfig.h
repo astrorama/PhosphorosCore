@@ -82,7 +82,7 @@ public:
 
 private:
 
-  XYDataset::QualifiedName m_miky_way_reddening_curve{""};
+  std::string m_miky_way_reddening_curve;
 
 }; /* End of MilkyWayReddeningConfig class */
 
