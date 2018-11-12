@@ -83,7 +83,7 @@ std::vector<PhzDataModel::FilterInfo> manageFilters (
 GalacticCorrectionSingleGridCreator::GalacticCorrectionSingleGridCreator(
     std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
          std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
-         std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+         const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
          IgmAbsorptionFunction igm_absorption_function,
          XYDataset::QualifiedName b_filter,
          XYDataset::QualifiedName v_filter,
@@ -130,11 +130,15 @@ PhzDataModel::PhotometryGrid GalacticCorrectionSingleGridCreator::createGrid(
   auto filter_map = buildMap(*m_filter_provider, filter_name_list.begin(), filter_name_list.end());
   auto filter_name_shared_ptr = createSharedPointer(filter_name_list);
   auto filter_info_vector {manageFilters(filter_name_list, filter_map)};
+
   auto sed_name_list = std::get<PhzDataModel::ModelParameter::SED>(parameter_space);
   auto sed_map = buildMap(*m_sed_provider, sed_name_list.begin(), sed_name_list.end());
+
+
   auto reddening_curve_list = std::get<PhzDataModel::ModelParameter::REDDENING_CURVE>(parameter_space);
   auto reddening_curve_map = convertToFunction(buildMap(*m_reddening_curve_provider,
                                             reddening_curve_list.begin(), reddening_curve_list.end()));
+
 
   // Define the functions and the algorithms based on the Functors
   PhzModeling::ModelDatasetGrid::ReddeningFunction reddening_function {PhzModeling::ExtinctionFunctor{}};
@@ -149,18 +153,32 @@ PhzDataModel::PhotometryGrid GalacticCorrectionSingleGridCreator::createGrid(
   auto correction_grid = PhzDataModel::PhotometryGrid(parameter_space);
 
   // todo convert to multithread and dispatch in functor and algo...
-  auto funct_filter_map = convertToFunction(buildMap(*m_filter_provider, filter_name_list.begin(), filter_name_list.end()));
 
   auto b_filter_dataset = (*m_filter_provider).getDataset(m_b_filter);
-  auto b_range = std::make_pair((*b_filter_dataset).front().first,(*b_filter_dataset).back().first);
+  if (nullptr==b_filter_dataset){
+    throw Elements::Exception()
+        << "The provided B filter ("<<m_b_filter.qualifiedName()<<") is not found by the Filter provider.";
+  }
+
+  auto b_range = std::make_pair(b_filter_dataset->front().first,b_filter_dataset->back().first);
 
   auto v_filter_dataset = (*m_filter_provider).getDataset(m_v_filter);
+  if (nullptr==v_filter_dataset){
+     throw Elements::Exception()
+         << "The provided V filter ("<<m_v_filter.qualifiedName()<<") is not found by the Filter provider.";
+   }
   auto v_range = std::make_pair((*v_filter_dataset).front().first,(*v_filter_dataset).back().first);
 
-  auto & b_filter = funct_filter_map[m_b_filter];
-  auto & v_filter = funct_filter_map[m_v_filter];
+  auto b_filter = MathUtils::interpolate(*b_filter_dataset, MathUtils::InterpolationType::LINEAR);
+  auto v_filter = MathUtils::interpolate(*v_filter_dataset, MathUtils::InterpolationType::LINEAR);
+
 
   auto milky_way_reddening = (*m_reddening_curve_provider).getDataset(m_milky_way_reddening);
+  if (nullptr==milky_way_reddening){
+     throw Elements::Exception()
+         << "The provided Milky Way reddening curve ("<<m_milky_way_reddening.qualifiedName()<<") is not found by the Reddening Curve provider.";
+   }
+
   auto red_range = std::pair<double,double>((*milky_way_reddening).front().first,(*milky_way_reddening).back().first);
   auto exp_milky_way_reddening = expDataSet(*milky_way_reddening,-0.04);
   auto milky_way_reddening_function_ptr = MathUtils::interpolate(exp_milky_way_reddening, MathUtils::InterpolationType::LINEAR);
@@ -173,6 +191,7 @@ PhzDataModel::PhotometryGrid GalacticCorrectionSingleGridCreator::createGrid(
   auto model_iter =model_grid.begin();
   while (correction_iter != correction_grid.end()){
     // 1) compute the SED bpc
+
 
     auto b_filtered = filter_functor(*model_iter,b_range,*b_filter);
 

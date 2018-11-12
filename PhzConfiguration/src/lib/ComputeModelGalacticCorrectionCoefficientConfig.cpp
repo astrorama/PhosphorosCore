@@ -33,6 +33,7 @@
 #include "PhzConfiguration/ResultsDirConfig.h"
 #include "PhzConfiguration/PhzOutputDirConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
+#include "PhzConfiguration/SedProviderConfig.h"
 
 
 #include "PhzConfiguration/BVFilterConfig.h"
@@ -56,6 +57,7 @@ ComputeModelGalacticCorrectionCoefficientConfig::ComputeModelGalacticCorrectionC
   declareDependency<CatalogTypeConfig>();
   declareDependency<ResultsDirConfig>();
   declareDependency<BVFilterConfig>();
+  declareDependency<SedProviderConfig>();
   declareDependency<MilkyWayReddeningConfig>();
   declareDependency<CorrectionCoefficientGridOutputConfig>();
 }

@@ -57,7 +57,7 @@ void MilkyWayReddeningConfig::initialize(const UserValues& args) {
 
 }
 
-const XYDataset::QualifiedName & MilkyWayReddeningConfig::getMilkyWayReddeningCurve() const{
+XYDataset::QualifiedName MilkyWayReddeningConfig::getMilkyWayReddeningCurve() const{
   if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
          throw Elements::Exception() << "Call to getMilkyWayReddeningCurve() on a not initialized instance.";
     }

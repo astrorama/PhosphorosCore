@@ -53,13 +53,15 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
     auto& reddening_provider = config_manager.template getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider();
     const auto& filter_provider = config_manager.template getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
     auto& igm_abs_func = config_manager.template getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
-    auto& b_filter = config_manager.template getConfiguration<BVFilterConfig>().getBFilter();
-    auto& v_filter = config_manager.template getConfiguration<BVFilterConfig>().getVFilter();
-    auto& miky_way_reddening_curve = config_manager.template getConfiguration<MilkyWayReddeningConfig>().getMilkyWayReddeningCurve();
+    auto b_filter = config_manager.template getConfiguration<BVFilterConfig>().getBFilter();
+    auto v_filter = config_manager.template getConfiguration<BVFilterConfig>().getVFilter();
+    auto miky_way_reddening_curve = config_manager.template getConfiguration<MilkyWayReddeningConfig>().getMilkyWayReddeningCurve();
     double dust_map_sed_bpc = config_manager.template getConfiguration<ComputeModelGalacticCorrectionCoefficientConfig>().getDustMapSedBpc();
     auto output_function = config_manager.template getConfiguration<CorrectionCoefficientGridOutputConfig>().getOutputFunction();
 
     std::map<std::string, PhzDataModel::PhotometryGrid> result_map{};
+
+    logger.info() << "Starts computing the grid";
     PhzGalacticCorrection::GalacticCorrectionSingleGridCreator grid_creator{
       sed_provider,
       reddening_provider,
@@ -72,7 +74,7 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
     };
 
     for(auto& grid_pair : model_phot_grid.region_axes_map){
-
+      logger.info() << "Correction computation for region '"<<grid_pair.first<<"'";
       result_map.emplace(std::make_pair(grid_pair.first, grid_creator.createGrid(grid_pair.second, model_phot_grid.filter_names)));
     }
 
