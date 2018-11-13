@@ -113,64 +113,67 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
 
   auto ref_sample_config = config_manager.getConfiguration<BuildReferenceSampleConfig>();
 
+  logger.info() << "Creating Reference Sample dir";
+  auto ref_sample = ReferenceSample::create(ref_sample_config.getReferenceSamplePath());
+
   logger.info() << "Reading the Phosphoros catalog";
   auto phosphoros_reader = ref_sample_config.getPhosphorosCatalogReader();
 
   auto pdz_bins = getPdzBins(phosphoros_reader->getComment());
   logger.debug() << "PDZ bins: " << pdz_bins;
 
-  auto phosphoros_table = phosphoros_reader->read();
-  logger.info() << phosphoros_table.size() << " entries loaded";
+  int64_t total = phosphoros_reader->rowsLeft();
+  int64_t i = 0;
+  while (phosphoros_reader->hasMoreRows()){
+    auto phosphoros_table = phosphoros_reader->read(10000);
+    logger.info() << phosphoros_table.size() << " entries loaded";
 
-  logger.info() << "Creating Reference Sample dir";
-  auto ref_sample = ReferenceSample::create(ref_sample_config.getReferenceSamplePath());
+    for (auto object : phosphoros_table) {
+      auto obj_id = boost::get<int64_t>(object["ID"]);
+      auto pdz_vals = boost::get<std::vector<double>>(object["Z-1D-PDF"]);
+      auto z = boost::get<double>(object["Z"]);
+      auto ebv = boost::get<double>(object["E(B-V)"]);
+      auto scale = boost::get<double>(object["Scale"]);
+      XYDataset::QualifiedName red_curve_name{boost::get<std::string>(object["ReddeningCurve"])};
+      XYDataset::QualifiedName sed_name{boost::get<std::string>(object["SED"])};
 
-  int64_t i = 0, total = phosphoros_table.size();
-  for (auto object : phosphoros_table) {
-    auto obj_id = boost::get<int64_t>(object["ID"]);
-    auto pdz_vals = boost::get<std::vector<double>>(object["Z-1D-PDF"]);
-    auto z = boost::get<double>(object["Z"]);
-    auto ebv = boost::get<double>(object["E(B-V)"]);
-    auto scale = boost::get<double>(object["Scale"]);
-    XYDataset::QualifiedName red_curve_name{boost::get<std::string>(object["ReddeningCurve"])};
-    XYDataset::QualifiedName sed_name{boost::get<std::string>(object["SED"])};
+      std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> reddening_curve_map;
+      std::map<XYDataset::QualifiedName, XYDataset::XYDataset> sed_map;
 
-    std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> reddening_curve_map;
-    std::map<XYDataset::QualifiedName, XYDataset::XYDataset> sed_map;
-
-    auto sed = sed_provider.getDataset(sed_name);
-    if (!sed) {
-      throw Elements::Exception() << "Could not load the SED " << sed_name;
-    }
-    sed_map.emplace(std::make_pair(sed_name, std::move(*sed)));
-
-    auto red_curve = reddening_provider.getDataset(red_curve_name);
-    if (!red_curve) {
-      throw Elements::Exception() << "Could not load the reddening curve " << red_curve_name;
-    }
-
-    reddening_curve_map.emplace(
-      std::make_pair(red_curve_name, interpolatedReddeningCurve(red_curve_name, *red_curve))
-    );
-
-    ModelAxesTuple grid_axes {createAxesTuple({z}, {ebv}, {red_curve_name}, {sed_name})};
-    ModelDatasetGrid grid {grid_axes, std::move(sed_map), std::move(reddening_curve_map),
-                           ExtinctionFunctor{}, RedshiftFunctor{}, igm_function};
-
-    ref_sample.createObject(obj_id);
-    for (auto &sed : grid) {
-      std::vector<std::pair<double, double>> scaled_data {};
-      for (auto it = sed.begin(); it != sed.end(); ++it) {
-        auto scaled_point = *it;
-        scaled_point.second *= scale;
-        scaled_data.push_back(std::move(scaled_point));
+      auto sed = sed_provider.getDataset(sed_name);
+      if (!sed) {
+        throw Elements::Exception() << "Could not load the SED " << sed_name;
       }
-      ref_sample.addSedData(obj_id, XYDataset::XYDataset::factory(std::move(scaled_data)));
-    }
-    ref_sample.addPdzData(obj_id, XYDataset::XYDataset::factory(pdz_bins, pdz_vals));
+      sed_map.emplace(std::make_pair(sed_name, std::move(*sed)));
 
-    ++i;
-    m_progress_listener(i, total);
+      auto red_curve = reddening_provider.getDataset(red_curve_name);
+      if (!red_curve) {
+        throw Elements::Exception() << "Could not load the reddening curve " << red_curve_name;
+      }
+
+      reddening_curve_map.emplace(
+        std::make_pair(red_curve_name, interpolatedReddeningCurve(red_curve_name, *red_curve))
+      );
+
+      ModelAxesTuple grid_axes {createAxesTuple({z}, {ebv}, {red_curve_name}, {sed_name})};
+      ModelDatasetGrid grid {grid_axes, std::move(sed_map), std::move(reddening_curve_map),
+                             ExtinctionFunctor{}, RedshiftFunctor{}, igm_function};
+
+      ref_sample.createObject(obj_id);
+      for (auto &sed : grid) {
+        std::vector<std::pair<double, double>> scaled_data {};
+        for (auto it = sed.begin(); it != sed.end(); ++it) {
+          auto scaled_point = *it;
+          scaled_point.second *= scale;
+          scaled_data.push_back(std::move(scaled_point));
+        }
+        ref_sample.addSedData(obj_id, XYDataset::XYDataset::factory(std::move(scaled_data)));
+      }
+      ref_sample.addPdzData(obj_id, XYDataset::XYDataset::factory(pdz_bins, pdz_vals));
+
+      ++i;
+      m_progress_listener(i, total);
+    }
   }
 }
 
