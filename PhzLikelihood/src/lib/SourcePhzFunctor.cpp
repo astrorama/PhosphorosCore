@@ -15,6 +15,7 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
+#include "PhzDataModel/CatalogAttributes/FixedRedshift.h"
 #include "MathUtils/function/Function.h"
 #include "MathUtils/function/FunctionAdapter.h"
 #include "MathUtils/function/function_tools.h"
@@ -282,10 +283,15 @@ std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixe
 } // end of anonymous namespace
 
 
-PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot, double fixed_z) const {
+PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Source & source) const {
+
+  auto source_phot_ptr = source.getAttribute<SourceCatalog::Photometry>();
+  auto fixed_z_ptr = source.getAttribute<PhzDataModel::FixedRedshift>();
+  double fixed_z = fixed_z_ptr ? fixed_z_ptr->getFixedRedshift() : -99;
+
 
   // Apply the photometric correction to the given source photometry
-  auto cor_source_phot = applyPhotCorr(m_phot_corr_map, source_phot);
+  auto cor_source_phot = applyPhotCorr(m_phot_corr_map, *source_phot_ptr);
 
   // Create a new results object
   PhzDataModel::SourceResults results {};

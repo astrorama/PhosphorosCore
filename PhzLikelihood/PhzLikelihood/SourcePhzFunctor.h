@@ -9,6 +9,7 @@
 
 #include <map>
 #include <string>
+#include "SourceCatalog/Source.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzDataModel/SourceResults.h"
 #include "PhzLikelihood/SingleGridPhzFunctor.h"
@@ -78,14 +79,13 @@ public:
    * the SingleGridPhzFunctor is used to produce the results for each region of
    * the parameter space. These results are then combined to the final results.
    *
-   * @param source_phot
-   *    The photometry of the source
-   * @param fixed_z
-   *    If not negative, the redshift will be fixed to the given value
+   * @param source
+   *    The source object
+
    * @return
    *    The PHZ results for the given source
    */
-  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot, double fixed_z=-99) const;
+  PhzDataModel::SourceResults operator()(const SourceCatalog::Source & source) const;
 
 private:
   PhzDataModel::PhotometricCorrectionMap m_phot_corr_map;

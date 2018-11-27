@@ -99,7 +99,7 @@ std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator> FindBestFitModel
         photometric_correction, model_grid_map, m_likelihood_func, m_priors
     );
 
-    const PhzDataModel::SourceResults& res = source_phz_calculator(*photometry_ptr, expected_redshift);
+    const PhzDataModel::SourceResults& res = source_phz_calculator(source);
     best_fit_map.emplace(source_id, res.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>());
   }
 
