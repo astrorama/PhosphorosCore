@@ -61,11 +61,11 @@ namespace PhzLikelihood {
   }
 
 
-  GalacticAbsorptionProcessModelGridFunctor::GalacticAbsorptionProcessModelGridFunctor(const PhzDataModel::PhotometryGrid & coefficient_grid):
+  GalacticAbsorptionProcessModelGridFunctor::GalacticAbsorptionProcessModelGridFunctor(const std::map<std::string,PhzDataModel::PhotometryGrid> & coefficient_grid):
       m_coefficient_grid(coefficient_grid){}
 
-  const PhzDataModel::PhotometryGrid GalacticAbsorptionProcessModelGridFunctor::operator()
-      (const PhzDataModel::PhotometryGrid & model_grid, const SourceCatalog::Source & source) const{
+  PhzDataModel::PhotometryGrid GalacticAbsorptionProcessModelGridFunctor::operator()
+      ( const std::string & region_name, const PhzDataModel::PhotometryGrid & model_grid, const SourceCatalog::Source & source) const{
 
     auto corrected_grid = PhzDataModel::PhotometryGrid (model_grid.getAxesTuple());
     std::copy(model_grid.begin(), model_grid.end(), corrected_grid.begin());
@@ -82,7 +82,7 @@ namespace PhzLikelihood {
 
     auto current_model = model_grid.begin();
     auto model_grid_end = model_grid.end();
-    auto current_corr = m_coefficient_grid.begin();
+    auto current_corr = m_coefficient_grid.at(region_name).begin();
     auto current_result = corrected_grid.begin();
     while (current_model!=model_grid_end){
        *current_result=computeCorrectedPhotometry(

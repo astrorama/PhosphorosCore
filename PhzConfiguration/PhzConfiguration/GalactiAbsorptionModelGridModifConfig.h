@@ -17,34 +17,37 @@
  */
 
 /**
- * @file PhzLikelihood/ProcessModelGridFunctor.h
- * @date 11/27/18
+ * @file PhzConfiguration/GalactiAbsorptionModelGridModifConfig.h
+ * @date 2018/11/28
  * @author Florian Dubath
  */
 
-#ifndef PHZLIKELIHOOD_PROCESSMODELGRIDFUNCTOR_H
-#define PHZLIKELIHOOD_PROCESSMODELGRIDFUNCTOR_H
+#ifndef _PHZCONFIGURATION_GALACTICABSORPTIONMODELGRIDMODIFCONFIG_H
+#define _PHZCONFIGURATION_GALACTICABSORPTIONMODELGRIDMODIFCONFIG_H
 
-#include <map>
-#include <string>
-#include "SourceCatalog/Source.h"
-#include "PhzDataModel/PhotometryGrid.h"
+#include "Configuration/Configuration.h"
 
 namespace Euclid {
-namespace PhzLikelihood {
+namespace PhzConfiguration {
 
-class ProcessModelGridFunctor{
-  public:
-  virtual PhzDataModel::PhotometryGrid operator()(
-      const std::string & region_name,
-      const PhzDataModel::PhotometryGrid & model_grid,
-      const SourceCatalog::Source & source) const=0;
-  virtual ~ProcessModelGridFunctor(){}
+class GalactiAbsorptionModelGridModifConfig : public Configuration::Configuration {
+
+public:
+
+  GalactiAbsorptionModelGridModifConfig(long manager_id);
+
+  /**
+   * @brief Destructor
+   */
+  virtual ~GalactiAbsorptionModelGridModifConfig() = default;
+
+
+  void postInitialize(const UserValues& args) override;
+
 };
 
+} /* namespace PhzConfiguration */
+} /* namespace Euclid */
 
 
-} // end of namespace PhzLikelihood
-} // end of namespace Euclid
-
-#endif  /* PHZLIKELIHOOD_PROCESSMODELGRIDFUNCTOR_H */
+#endif  // PHZCONFIGURATION_PHZCONFIGURATION_GALACTIABSORPTIONMODELGRIDMODIFICATIONCONFIG_H

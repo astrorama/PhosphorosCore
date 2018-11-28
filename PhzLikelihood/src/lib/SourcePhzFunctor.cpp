@@ -25,6 +25,7 @@
 #include "PhzLikelihood/SourcePhzFunctor.h"
 #include "PhzLikelihood/Pdf1DTraits.h"
 #include "PhzLikelihood/LikelihoodPdf1DTraits.h"
+#include "PhzLikelihood/ProcessModelGridFunctor.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -39,8 +40,9 @@ SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_c
                                    LikelihoodGridFunction likelihood_func,
                                    std::vector<PriorFunction> priors,
                                    std::vector<MarginalizationFunction> marginalization_func_list,
+                                   std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list,
                                    bool doNormalizePdf)
-        : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid_map(phot_grid_map),m_do_normalize_pdf{doNormalizePdf} {
+        : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid_map(phot_grid_map), m_model_funct_list{model_funct_list},m_do_normalize_pdf{doNormalizePdf} {
   for (auto& pair : phot_grid_map) {
     m_single_grid_functor_map.emplace(std::piecewise_construct,
             std::forward_as_tuple(pair.first),
@@ -286,8 +288,7 @@ std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixe
 PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Source & source) const {
 
   auto source_phot_ptr = source.getAttribute<SourceCatalog::Photometry>();
-  auto fixed_z_ptr = source.getAttribute<PhzDataModel::FixedRedshift>();
-  double fixed_z = fixed_z_ptr ? fixed_z_ptr->getFixedRedshift() : -99;
+
 
 
   // Apply the photometric correction to the given source photometry
@@ -309,29 +310,24 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
     // grid the corresponding grid slice. If we do not, we pass as grid the
     // full model grid.
     auto& model_grid = m_phot_grid_map.at(pair.first);
-    if (fixed_z >= 0) {
 
-      auto& z_axis = model_grid.getAxis<PhzDataModel::ModelParameter::Z>();
-      // If we have a fixed redshift and we are out of range we skip the region
-      if (fixed_z < z_axis[0] || fixed_z > z_axis[z_axis.size()-1]) {
-        continue;
+    PhzDataModel::PhotometryGrid current_grid = PhzDataModel::PhotometryGrid(model_grid.getAxesTuple());
+    bool first=true;
+    for(auto functor_ptr : m_model_funct_list){
+      if (first){
+        current_grid = std::move((*functor_ptr)(pair.first, model_grid, source));
+        first=false;
       }
-      auto fixed_z_index = getFixedZIndex(model_grid, fixed_z);
-
-      // The reason of the following const_cast is that the const version of the
-      // fixAxisByIndex() returns a const PhotometryGrid, which cannot be moved
-      // in the region_results object. I know that this allows to modify the const
-      // model grid, but I couldn't find a more elegant way of doing this.
-      PhzDataModel::PhotometryGrid& non_const_model_grid = const_cast<PhzDataModel::PhotometryGrid&>(model_grid);
-      auto& fixed_model_grid = region_results.set<RegResType::FIXED_REDSHIFT_MODEL_GRID>(
-                    non_const_model_grid.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(fixed_z_index));
-      region_results.set<RegResType::MODEL_GRID_REFERENCE>(fixed_model_grid);
-
-    } else {
-
-      // We do not have a fixed redshift, so use the original model grid
-      region_results.set<RegResType::MODEL_GRID_REFERENCE>(model_grid);
+      else {
+        current_grid = std::move((*functor_ptr)(pair.first, current_grid, source));
+      }
     }
+
+    if (!first && current_grid.size()){
+      continue;
+    }
+
+    region_results.set<RegResType::MODEL_GRID_REFERENCE>(first ? model_grid : current_grid);
 
     // Call the functor
     pair.second(region_results);

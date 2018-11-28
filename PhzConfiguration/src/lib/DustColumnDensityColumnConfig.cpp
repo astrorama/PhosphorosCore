@@ -58,7 +58,15 @@ void DustColumnDensityColumnConfig::initialize(const UserValues& args) {
     auto fixed_z_column = args.at(COLUMN_NAME_NAME).as<std::string>();
     auto handler = std::make_shared<PhzDataModel::DustColumnDensityFromRow>(column_info, fixed_z_column);
     catalog_conf.addAttributeHandler(handler);
+    m_galactic_correction_enabled=true;
   }
+}
+
+bool DustColumnDensityColumnConfig::isGalacticCorrectionEnabled() {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+        throw Elements::Exception() << "Call to isGalacticCorrectionEnabled() on a not initialized instance.";
+  }
+  return m_galactic_correction_enabled;
 }
 
 

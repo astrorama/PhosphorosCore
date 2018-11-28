@@ -17,55 +17,58 @@
  */
 
 /**
- * @file PhzConfiguration/DustColumnDensityColumnConfig.h
- * @date 2016/11/08
+ * @file PhzConfiguration/ModelGridModificationConfig.h
+ * @date 2018/11/28
  * @author Florian Dubath
  */
 
-#ifndef PHZCONFIGURATION_DUSTCOLUMNDENSITYCOLUMNCONFIG_H
-#define	PHZCONFIGURATION_DUSTCOLUMNDENSITYCOLUMNCONFIG_H
+#ifndef PHZCONFIGURATION_MODELGRIDMODIFICATIONCONFIG_H
+#define PHZCONFIGURATION_MODELGRIDMODIFICATIONCONFIG_H
 
+#include <string>
+#include <vector>
+#include <memory>
+#include <map>
+
+#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
+#include "PhzLikelihood/ProcessModelGridFunctor.h"
+
 
 namespace Euclid {
 namespace PhzConfiguration {
 
 /**
- * @class DustColumnDensityColumnConfig
- *
  * @brief
- * This class defines the standard B and V Filters options
+ * This class collect the ProcessModelGridFunctor to be applied on the model
+ * grid before the likelihood computation.
  */
-class DustColumnDensityColumnConfig : public Configuration::Configuration {
+class ModelGridModificationConfig : public Configuration::Configuration {
 
 public:
   /**
-   * @brief constructor
+   * @brief Constructor
    */
-  DustColumnDensityColumnConfig(long manager_id);
+  ModelGridModificationConfig(long manager_id);
 
   /**
    * @brief Destructor
    */
-  virtual ~DustColumnDensityColumnConfig() = default;
+  virtual ~ModelGridModificationConfig() = default;
 
-  /**
-   * @details
-   * This class define the "dust-column-density-column-name"
-   * options into the "Galactic Correction Coefficient options" group
-   */
-  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
+  const std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>>& getProcessModelGridFunctors() const;
 
-  void initialize(const UserValues& args) override;
-  bool isGalacticCorrectionEnabled();
+
+  void addFunctor(std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor> new_functor);
 
 private:
-  bool m_galactic_correction_enabled = false;
-}; /* End of DustColumnDensityColumnConfig class */
+
+   std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> m_functor_list;
+
+};
 
 
 } // end of namespace PhzConfiguration
 } // end of namespace Euclid
 
-#endif	/* PHZCONFIGURATION_DUSTCOLUMNDENSITYCOLUMNCONFIG_H */
-
+#endif  /* PHZCONFIGURATION_MODELGRIDMODIFICATIONCONFIG_H */

@@ -57,8 +57,8 @@ namespace PhzLikelihood {
   }
 
 
-  const PhzDataModel::PhotometryGrid FixRedshiftProcessModelGridFunctor::operator()
-      (const PhzDataModel::PhotometryGrid & model_grid, const SourceCatalog::Source & source) const{
+  PhzDataModel::PhotometryGrid FixRedshiftProcessModelGridFunctor::operator()
+      ( const std::string & , const PhzDataModel::PhotometryGrid & model_grid, const SourceCatalog::Source & source) const{
 
     auto fixed_z_ptr = source.getAttribute<PhzDataModel::FixedRedshift>();
 
