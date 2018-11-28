@@ -17,11 +17,12 @@
  */
 
 /**
- * @file src/lib/BVFilterConfig.cpp
+ * @file src/lib/DustColumnDensityColumnConfig.cpp
  * @date 2016/11/08
  * @author Florian Dubath
  */
 
+#include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/DustColumnDensityColumnConfig.h"
 #include "Configuration/CatalogConfig.h"
 #include "PhzDataModel/CatalogAttributes/DustColumnDensity.h"
@@ -45,7 +46,7 @@ DustColumnDensityColumnConfig::DustColumnDensityColumnConfig(long manager_id) : 
 auto DustColumnDensityColumnConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Galactic Correction Coefficient options", {
     {COLUMN_NAME_NAME.c_str(), po::value<std::string>(),
-        "Name of the catalog column containing the dust column density in the direction of the source"},
+        "Name of the catalog column containing the dust column density (Galactic E(B-V) from Plank Map) in the direction of the source. If set, enable the Galactic reddening correction."},
   }}};
 }
 
@@ -53,9 +54,9 @@ auto DustColumnDensityColumnConfig::getProgramOptions() -> std::map<std::string,
 void DustColumnDensityColumnConfig::initialize(const UserValues& args) {
   if (args.find(COLUMN_NAME_NAME) != args.end()) {
     auto& catalog_conf = getDependency<Euclid::Configuration::CatalogConfig>();
-    auto column_info = catalog_conf.getAsTable().getColumnInfo();
+    auto column_info = catalog_conf.getColumnInfo();
     auto fixed_z_column = args.at(COLUMN_NAME_NAME).as<std::string>();
-    auto handler = std::make_shared<PhzDataModel::DustColumnDensity>(column_info, fixed_z_column);
+    auto handler = std::make_shared<PhzDataModel::DustColumnDensityFromRow>(column_info, fixed_z_column);
     catalog_conf.addAttributeHandler(handler);
   }
 }
@@ -63,6 +64,4 @@ void DustColumnDensityColumnConfig::initialize(const UserValues& args) {
 
 } // PhzConfiguration namespace
 } // Euclid namespace
-
-
 

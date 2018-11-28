@@ -37,6 +37,7 @@
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/CorrectionCoefficientGridConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -56,7 +57,7 @@ CorrectionCoefficientGridConfig::CorrectionCoefficientGridConfig(long manager_id
   // is loading a catalog with photometries, we want to have model grids with the
   // same photometries.
   auto& manager = Euclid::Configuration::ConfigManager::getInstance(manager_id);
-  manager.registerDependency<PhotometryGridConfig, Euclid::Configuration::PhotometricBandMappingConfig>();
+  manager.registerDependency<PhzConfiguration::PhotometryGridConfig, Euclid::Configuration::PhotometricBandMappingConfig>();
 }
 
 auto CorrectionCoefficientGridConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -73,7 +74,7 @@ void CorrectionCoefficientGridConfig::initialize(const UserValues& args) {
   auto filename = path.is_absolute() ? path : intermediate_dir/catalog_type/"GalacticCorrectionCoefficientGrids"/path;
   if (!fs::exists(filename)) {
     logger.error() << "File " << filename << " not found!";
-    throw Elements::Exception() << "Galactic Correction Coefficient grid file (" << MODEL_GRID_FILE
+    throw Elements::Exception() << "Galactic Correction Coefficient grid file (" << CORRECTION_COEFFICIENT_GRID_FILE
                                 << " option) does not exist: " << filename;
   }
 

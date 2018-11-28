@@ -38,14 +38,14 @@ double DustColumnDensity::getDustColumnDensity() const {
 DustColumnDensityFromRow::DustColumnDensityFromRow(std::shared_ptr<Table::ColumnInfo> column_info, const std::string& dust_column_density_col_name) {
   auto index = column_info->find(dust_column_density_col_name);
   if (index == nullptr) {
-    throw Elements::Exception() << "Missing dust column density column " << fix_z_col_name;
+    throw Elements::Exception() << "Missing dust column density column " << dust_column_density_col_name;
   }
   m_column_index = *index;
 }
 
 std::unique_ptr<SourceCatalog::Attribute> DustColumnDensityFromRow::createAttribute(const Table::Row& row) {
-  double fixed_z = boost::apply_visitor(Table::CastVisitor<double>(), row[m_column_index]);
-  return std::unique_ptr<SourceCatalog::Attribute> {new FixedRedshift {fixed_z}};
+  double ebv = boost::apply_visitor(Table::CastVisitor<double>(), row[m_column_index]);
+  return std::unique_ptr<SourceCatalog::Attribute> {new DustColumnDensity{ebv}};
 }
 
 } // PhzDataModel namespace
