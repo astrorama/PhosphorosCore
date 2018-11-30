@@ -13,6 +13,7 @@
 #include "ElementsKernel/EnableGMock.h"
 
 #include "PhzLikelihood/SourcePhzFunctor.h"
+#include "SourceCatalog/Source.h"
 
 using namespace testing;
 
@@ -36,10 +37,10 @@ public:
       }
 
   MOCK_METHOD1(FunctorCall,
-      PhzDataModel::SourceResults*(const SourceCatalog::Photometry& source_phot));
+      PhzDataModel::SourceResults*(const SourceCatalog::Source & source));
 
-  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot, double fixed_z=-99){
-    std::unique_ptr< PhzDataModel::SourceResults> res(FunctorCall(source_phot));
+  PhzDataModel::SourceResults operator()(const SourceCatalog::Source & source){
+    std::unique_ptr< PhzDataModel::SourceResults> res(FunctorCall(source));
     return std::move(*res);
   }
 
