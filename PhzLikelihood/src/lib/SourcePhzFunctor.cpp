@@ -323,7 +323,7 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
       }
     }
 
-    if (!first && current_grid.size()){
+    if (!first && !current_grid.size()){
       continue;
     }
 
