@@ -94,7 +94,7 @@ namespace PhzLikelihood {
        ++current_corr;
        ++current_result;
     }
-    return corrected_grid;
+    return std::move(corrected_grid);
   }
 
 

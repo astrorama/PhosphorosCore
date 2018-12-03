@@ -80,7 +80,7 @@ namespace PhzLikelihood {
     // in the region_results object. I know that this allows to modify the const
     // model grid, but I couldn't find a more elegant way of doing this.
     PhzDataModel::PhotometryGrid& non_const_model_grid = const_cast<PhzDataModel::PhotometryGrid&>(model_grid);
-    return non_const_model_grid.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(fixed_z_index);
+    return std::move(non_const_model_grid.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(fixed_z_index));
   }
 
 
