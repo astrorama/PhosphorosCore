@@ -8,10 +8,13 @@
 #define PHZPHOTOMETRICCORRECTION_FINDBESTFITMODELS_H
 
 #include <map>
+#include <vector>
+#include <memory>
 #include "SourceCatalog/Catalog.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
+#include "PhzLikelihood/ProcessModelGridFunctor.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
@@ -36,7 +39,10 @@ public:
   using LikelihoodGridFunction = PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction;
   using PriorFunction = PhzLikelihood::SourcePhzFunctor::PriorFunction;
   
-  FindBestFitModels(LikelihoodGridFunction likelihood_func, std::vector<PriorFunction> priors = {});
+  FindBestFitModels(LikelihoodGridFunction likelihood_func,
+                    std::vector<PriorFunction> priors = {},
+                    std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> marginalization_func_list = {PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}},
+                    std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list ={});
 
   /**
    * @brief Map each input source to the model which is the best match,
@@ -74,6 +80,8 @@ private:
   
   LikelihoodGridFunction m_likelihood_func;
   std::vector<PriorFunction> m_priors;
+  std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> m_marginalization_func_list;
+  std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> m_model_funct_list;
   
 };
 

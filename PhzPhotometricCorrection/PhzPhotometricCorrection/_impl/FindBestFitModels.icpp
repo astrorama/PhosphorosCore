@@ -10,6 +10,7 @@
 #include "PhzLikelihood/SourcePhzFunctor.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
+#include "PhzLikelihood/SingleGridPhzFunctor.h"
 
 #include "PhzLikelihood/LikelihoodGridFunctor.h"
 #include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
@@ -33,8 +34,13 @@ static constexpr double MAXIMALZ=1100.;
 template<typename SourceCalculatorFunctor>
 FindBestFitModels<SourceCalculatorFunctor>::FindBestFitModels(
                                         LikelihoodGridFunction likelihood_func,
-                                        std::vector<PriorFunction> priors)
-        : m_likelihood_func(likelihood_func), m_priors(priors) {
+                                        std::vector<PriorFunction> priors,
+                                        std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> marginalization_func_list,
+                                        std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list)
+        : m_likelihood_func(likelihood_func),
+          m_priors(priors),
+          m_marginalization_func_list(marginalization_func_list),
+          m_model_funct_list(model_funct_list) {
 }
 
 template<typename SourceCalculatorFunctor>
@@ -96,7 +102,12 @@ std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator> FindBestFitModel
     }
 
     SourceCalculatorFunctor source_phz_calculator (
-        photometric_correction, model_grid_map, m_likelihood_func, m_priors
+        photometric_correction,
+        model_grid_map,
+        m_likelihood_func,
+        m_priors,
+        m_marginalization_func_list,
+        m_model_funct_list
     );
 
     const PhzDataModel::SourceResults& res = source_phz_calculator(source);
