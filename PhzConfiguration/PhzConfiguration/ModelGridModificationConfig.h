@@ -61,6 +61,9 @@ public:
 
   void addFunctor(std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor> new_functor);
 
+
+  void addFunctorAtBegining(std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor> new_functor);
+
 private:
 
    std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> m_functor_list;

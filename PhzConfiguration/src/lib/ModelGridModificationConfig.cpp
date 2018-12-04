@@ -51,5 +51,12 @@ namespace PhzConfiguration {
     }
     m_functor_list.push_back(new_functor);
   }
+
+  void ModelGridModificationConfig::addFunctorAtBegining(std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor> new_functor){
+    if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
+           throw Elements::Exception() << "Call to getProcessModelGridFunctors() on a not initialized instance.";
+    }
+    m_functor_list.insert(m_functor_list.begin(),new_functor);
+  }
 }
 }

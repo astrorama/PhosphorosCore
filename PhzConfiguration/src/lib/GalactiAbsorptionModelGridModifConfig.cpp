@@ -128,7 +128,7 @@ void GalactiAbsorptionModelGridModifConfig::postInitialize(const UserValues& arg
 
     auto& coef_grid = getDependency<CorrectionCoefficientGridConfig>().getCorrectionCoefficientGrid();
     std::shared_ptr<PhzLikelihood::GalacticAbsorptionProcessModelGridFunctor> ptr{new PhzLikelihood::GalacticAbsorptionProcessModelGridFunctor(coef_grid)};
-    getDependency<ModelGridModificationConfig>().addFunctor(ptr);
+    getDependency<ModelGridModificationConfig>().addFunctorAtBegining(ptr);
   }
 }
 
