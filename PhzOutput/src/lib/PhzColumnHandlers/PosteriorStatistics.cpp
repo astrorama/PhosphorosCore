@@ -32,6 +32,7 @@ std::vector<Table::ColumnInfo::info_type> PosteriorStatistics::getColumnInfoList
   
   return std::vector<Table::ColumnInfo::info_type> {
       Table::ColumnInfo::info_type("Posterior-Log", typeid(double)),
+      Table::ColumnInfo::info_type("Likelihood-Log", typeid(double)),
       Table::ColumnInfo::info_type("1DPDF-Peak-Z", typeid(double))
   };
 }
@@ -41,11 +42,12 @@ std::vector<Table::Row::cell_type> PosteriorStatistics::convertResults(
                       const PhzDataModel::SourceResults& results) const {
   
   auto posterior_log = results.get<PhzDataModel::SourceResultType::BEST_MODEL_POSTERIOR_LOG>();
+  auto likelihood_log = results.get<PhzDataModel::SourceResultType::BEST_MODEL_LIKELIHOOD_LOG>();
   auto& pdf_1d = results.get<PhzDataModel::SourceResultType::Z_1D_PDF>();
   auto pdf_1d_peak_z = std::max_element(pdf_1d.begin(), pdf_1d.end()).axisValue<0>();
   
   return std::vector<Table::Row::cell_type> {
-    posterior_log, pdf_1d_peak_z
+    posterior_log, likelihood_log, pdf_1d_peak_z
   };
 }
 

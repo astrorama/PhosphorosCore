@@ -22,6 +22,7 @@
  * @author Florian Dubath
  */
 
+#include <PhzOutput/PhzColumnHandlers/BestModel.h>
 #include <cstdlib>
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
@@ -50,16 +51,17 @@
 #include "PhzConfiguration/FixedRedshiftConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
 #include "PhzConfiguration/PhzOutputDirConfig.h"
+#include "PhzConfiguration/BestLikelihoodModelOutputConfig.h"
 #include "PhzConfiguration/BestModelOutputConfig.h"
 #include "PhzConfiguration/PdfOutputConfig.h"
 #include "PhzConfiguration/OutputStatisticsConfig.h"
+#include "PhzConfiguration/CopyColumnsConfig.h"
 
 #include "PhzOutput/PdfOutput.h"
 #include "PhzOutput/LikelihoodHandler.h"
 #include "PhzOutput/LikelihoodHandler.h"
 #include "PhzOutput/PhzCatalog.h"
 #include "PhzOutput/PhzColumnHandlers/Id.h"
-#include "PhzOutput/PhzColumnHandlers/BestModel.h"
 #include "PhzOutput/PhzColumnHandlers/Pdf.h"
 
 #include "Configuration/PhotometricBandMappingConfig.h"
@@ -105,9 +107,11 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<FixedRedshiftConfig>();
   declareDependency<OutputCatalogConfig>();
   declareDependency<PhzOutputDirConfig>();
+  declareDependency<BestLikelihoodModelOutputConfig>();
   declareDependency<BestModelOutputConfig>();
   declareDependency<PdfOutputConfig>();
   declareDependency<OutputStatisticsConfig>();
+  declareDependency<CopyColumnsConfig>();
 }
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -155,7 +159,7 @@ void ComputeRedshiftsConfig::preInitialize(const UserValues& args) {
     throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_POSTERIORS_FLAG
         << ": " << args.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>();
   }
-  
+
   if (args.at(INPUT_BUFFER_SIZE).as<std::size_t>() == 0) {
     throw Elements::Exception() << "Option " << INPUT_BUFFER_SIZE << " cannot be 0";
   }
@@ -172,6 +176,12 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
   std::vector<std::string> filter_to_process_list{};
   for (auto& pair : getDependency<Euclid::Configuration::PhotometricBandMappingConfig>().getPhotometricBandMapping()){
     filter_to_process_list.push_back(pair.first);
+  }
+
+  // Check that at least two filters are selected.
+  if (filter_to_process_list.size()<2){
+    throw Elements::Exception() << "You need to select at least 2 filters in order to apply the template fitting algorithm and compute the redshifts.";
+
   }
 
   // Check that the given grid contains photometries for all the filters we
@@ -218,7 +228,7 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
   if (m_posterior_flag) {
     m_out_posterior_dir = output_dir / "posteriors";
   }
-  
+
   m_input_buffer_size = args.at(INPUT_BUFFER_SIZE).as<std::size_t>();
 }
 

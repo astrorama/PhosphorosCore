@@ -1,22 +1,22 @@
 /*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment    
- *  
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ *
  * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 3.0 of the License, or (at your option)  
- * any later version.  
- *  
- * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
- * details.  
- *  
- * You should have received a copy of the GNU Lesser General Public License 
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* 
+/*
  * @file PhzDataModel/sRegionResults.h
  * @author nikoapos
  */
@@ -38,6 +38,8 @@ enum class RegionResultType {
   /// to allow for having a valid reference in the MODEL_GRID_REFERENCE result,
   /// which is pointing to the slice.
   FIXED_REDSHIFT_MODEL_GRID,
+  /// Iterator of the likelihood grid, pointing to the best fitted model
+  BEST_LIKELIHOOD_MODEL_ITERATOR,
   /// Iterator of the posterior grid, pointing to the best fitted model
   BEST_MODEL_ITERATOR,
   /// The grid containing the scale factor for all models
@@ -46,6 +48,8 @@ enum class RegionResultType {
   LIKELIHOOD_LOG_GRID,
   /// The grid containing the logarithm of the posterior for all models
   POSTERIOR_LOG_GRID,
+  /// The grid containing the normalized likelihood for all models
+  LIKELIHOOD_GRID,
   /// The grid containing the normalized posterior for all models
   POSTERIOR_GRID,
   /// The 1D PDF over the SED
@@ -56,6 +60,16 @@ enum class RegionResultType {
   EBV_1D_PDF,
   /// The 1D PDF over the redshift
   Z_1D_PDF,
+  /// The 1D PDF over the SED
+  LIKELIHOOD_SED_1D_PDF,
+  /// The 1D PDF over the reddening curve
+  LIKELIHOOD_RED_CURVE_1D_PDF,
+  /// The 1D PDF over the E(B-V)
+  LIKELIHOOD_EBV_1D_PDF,
+  /// The 1D PDF over the redshift
+  LIKELIHOOD_Z_1D_PDF,
+  /// The logarithm of the normalization of the likelihood grid and the 1D PDFs
+  LIKELIHOOD_NORMALIZATION_LOG,
   /// The logarithm of the normalization of the posterior grid and the 1D PDFs
   NORMALIZATION_LOG
 };

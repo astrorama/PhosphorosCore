@@ -11,6 +11,7 @@
 #include "SourceCatalog/Catalog.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
+#include "PhzLikelihood/SourcePhzFunctor.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
@@ -29,7 +30,13 @@ namespace PhzPhotometricCorrection {
  */
 template<typename SourceCalculatorFunctor>
 class FindBestFitModels {
+  
 public:
+  
+  using LikelihoodGridFunction = PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction;
+  using PriorFunction = PhzLikelihood::SourcePhzFunctor::PriorFunction;
+  
+  FindBestFitModels(LikelihoodGridFunction likelihood_func, std::vector<PriorFunction> priors = {});
 
   /**
    * @brief Map each input source to the model which is the best match,
@@ -62,6 +69,11 @@ public:
       const SourceCatalog::Catalog& calibration_catalog,
       const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
       const PhzDataModel::PhotometricCorrectionMap& photometric_correction);
+  
+private:
+  
+  LikelihoodGridFunction m_likelihood_func;
+  std::vector<PriorFunction> m_priors;
   
 };
 

@@ -23,33 +23,31 @@
 #include "PhzDataModel/Pdf1D.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
 #include "PhzLikelihood/Pdf1DTraits.h"
+#include "PhzLikelihood/LikelihoodPdf1DTraits.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzLikelihood");
 
-namespace {
-
 using ResType = PhzDataModel::SourceResultType;
 using RegResType = PhzDataModel::RegionResultType;
-  
-} // end of anonymous namespace
 
 SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                                    LikelihoodGridFunction likelihood_func,
                                    std::vector<PriorFunction> priors,
-                                   std::vector<MarginalizationFunction> marginalization_func_list)
-        : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid_map(phot_grid_map) {
+                                   std::vector<MarginalizationFunction> marginalization_func_list,
+                                   bool doNormalizePdf)
+        : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid_map(phot_grid_map),m_do_normalize_pdf{doNormalizePdf} {
   for (auto& pair : phot_grid_map) {
     m_single_grid_functor_map.emplace(std::piecewise_construct,
             std::forward_as_tuple(pair.first),
             std::forward_as_tuple(priors, marginalization_func_list, likelihood_func));
   }
 }
-   
-          
+
+
 namespace {
 
 SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectionMap& pc_map,
@@ -101,13 +99,13 @@ std::unique_ptr<MathUtils::Function> pdf_to_func(const PhzDataModel::Pdf1D<AxisT
 
 template <typename AxisType, typename std::enable_if<std::is_arithmetic<AxisType>::value>::type* = nullptr>
 PhzDataModel::Pdf1D<AxisType> combineTwoPdfs(const PhzDataModel::Pdf1D<AxisType>& pdf1, double pdf1_factor, const PhzDataModel::Pdf1D<AxisType>& pdf2, double pdf2_factor) {
-  
+
   // Create the functions representing the two PDFs results and initialize the
   // knots for which we produce the final result for
   std::set<double> x_set {};
   auto pdf1_func = pdf_to_func(pdf1, pdf1_factor, x_set);
   auto pdf2_func = pdf_to_func(pdf2, pdf2_factor, x_set);
-  
+
   // Calculate the sum of the PDFs
   std::vector<double> final_x {x_set.begin(), x_set.end()};
   PhzDataModel::Pdf1D<AxisType> result {{pdf1.template getAxis<0>().name(), std::move(final_x)}};
@@ -115,14 +113,14 @@ PhzDataModel::Pdf1D<AxisType> combineTwoPdfs(const PhzDataModel::Pdf1D<AxisType>
     auto x_value = iter.template axisValue<0>();
     *iter = (*pdf1_func)(x_value) + (*pdf2_func)(x_value);
   }
-  
+
   return result;
 }
 
 
 template <typename AxisType, typename std::enable_if<!std::is_arithmetic<AxisType>::value>::type* = nullptr>
 PhzDataModel::Pdf1D<AxisType> combineTwoPdfs(const PhzDataModel::Pdf1D<AxisType>& pdf1, double pdf1_factor, const PhzDataModel::Pdf1D<AxisType>& pdf2, double pdf2_factor) {
-  
+
   // We create a map were we keep the results of the addition
   std::map<AxisType, double> result_map {};
   for (auto iter = pdf1.begin(); iter != pdf1.end(); ++iter) {
@@ -131,7 +129,7 @@ PhzDataModel::Pdf1D<AxisType> combineTwoPdfs(const PhzDataModel::Pdf1D<AxisType>
   for (auto iter = pdf2.begin(); iter != pdf2.end(); ++iter) {
     result_map[iter.template axisValue<0>()] += pdf2_factor * *iter;
   }
-  
+
   // Create the knots of the combined PDF. The knots of the first PDF are added
   // first and they are followed by the knots of the second pdf which are different
   std::set<AxisType> x_set {};
@@ -145,7 +143,7 @@ PhzDataModel::Pdf1D<AxisType> combineTwoPdfs(const PhzDataModel::Pdf1D<AxisType>
       xs.push_back(x);
     }
   }
-  
+
   PhzDataModel::Pdf1D<AxisType> result {{pdf1.template getAxis<0>().name(), std::move(xs)}};
   for (auto iter = result.begin(); iter != result.end(); ++iter) {
     *iter = result_map[iter.template axisValue<0>()];
@@ -180,10 +178,17 @@ void normalizePdf(PhzDataModel::Pdf1D<AxisType>& pdf) {
   }
 }
 
+template <typename AxisType>
+void scalePdf( PhzDataModel::Pdf1D<AxisType>& pdf, double scale) {
+  for (auto& cell : pdf) {
+    cell *= scale;
+  }
+}
+
 
 template <int FixedAxis>
-typename PhzDataModel::Pdf1DParam<FixedAxis> combine1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map) {
-  
+typename PhzDataModel::Pdf1DParam<FixedAxis> combine1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map, bool do_normalize_pdf) {
+
   // All the 1D PDFs were normalized. We compute factors for each PDF
   // in such way so the region with the smallest normalization log will have the
   // multiplier 1, and the rest region factors will rescale them to match this
@@ -200,7 +205,7 @@ typename PhzDataModel::Pdf1DParam<FixedAxis> combine1DPdfs(const std::map<std::s
   for (auto& factor : factor_map) {
     factor.second = std::exp(factor.second - min_norm_log);
   }
-  
+
   // We combine all the PDFs from the regions, one by one, starting with an emtpy one
   typename PhzDataModel::Pdf1DParam<FixedAxis> combined_pdf {{PhzDataModel::ModelParameterTraits<FixedAxis>::name(), {}}};
   for (auto& pair : reg_result_map) {
@@ -208,25 +213,69 @@ typename PhzDataModel::Pdf1DParam<FixedAxis> combine1DPdfs(const std::map<std::s
     auto& reg_pdf = pair.second.get<Pdf1DTraits<FixedAxis>::PdfRes>();
     combined_pdf = combineTwoPdfs(combined_pdf, 1., reg_pdf, factor);
   }
-  
+
   // Normalize the final PDF
-  normalizePdf(combined_pdf);
-  
+  if (do_normalize_pdf){
+    normalizePdf(combined_pdf);
+  } else {
+    scalePdf(combined_pdf, std::exp(min_norm_log));
+  }
+
   return combined_pdf;
 }
+
+
+template <int FixedAxis>
+typename PhzDataModel::Pdf1DParam<FixedAxis> combineLikelihood1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map, bool do_normalize_pdf) {
+
+  // All the 1D PDFs were normalized. We compute factors for each PDF
+  // in such way so the region with the smallest normalization log will have the
+  // multiplier 1, and the rest region factors will rescale them to match this
+  // normalization
+  std::map<std::string, double> factor_map {};
+  double min_norm_log = std::numeric_limits<double>::lowest();
+  for (auto& pair : reg_result_map) {
+    double norm_log = pair.second.get<RegResType::LIKELIHOOD_NORMALIZATION_LOG>();
+    factor_map[pair.first] = norm_log;
+    if (norm_log > min_norm_log) {
+      min_norm_log = norm_log;
+    }
+  }
+  for (auto& factor : factor_map) {
+    factor.second = std::exp(factor.second - min_norm_log);
+  }
+
+  // We combine all the PDFs from the regions, one by one, starting with an emtpy one
+  typename PhzDataModel::Pdf1DParam<FixedAxis> combined_pdf {{PhzDataModel::ModelParameterTraits<FixedAxis>::name(), {}}};
+  for (auto& pair : reg_result_map) {
+    double factor = factor_map.at(pair.first);
+    auto& reg_pdf = pair.second.get<LikelihoodPdf1DTraits<FixedAxis>::PdfRes>();
+    combined_pdf = combineTwoPdfs(combined_pdf, 1., reg_pdf, factor);
+  }
+
+  // Normalize the final PDF
+  if (do_normalize_pdf){
+     normalizePdf(combined_pdf);
+   } else {
+     scalePdf(combined_pdf, std::exp(min_norm_log));
+   }
+
+  return combined_pdf;
+}
+
 
 std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixed_z) {
   auto& z_axis = grid.getAxis<PhzDataModel::ModelParameter::Z>();
   int i = 0;
   for (auto& z : z_axis) {
-    if (z > fixed_z) {
+    if (z >= fixed_z) {
       break;
     }
     ++i;
   }
   if (i != 0 && (fixed_z - z_axis[i-1]) < (z_axis[i] - fixed_z)) {
     --i;
-  } 
+  }
   return i;
 }
 
@@ -234,35 +283,35 @@ std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixe
 
 
 PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Photometry& source_phot, double fixed_z) const {
-  
+
   // Apply the photometric correction to the given source photometry
   auto cor_source_phot = applyPhotCorr(m_phot_corr_map, source_phot);
 
   // Create a new results object
   PhzDataModel::SourceResults results {};
-  
+
   // Calculate the results for all the regions
   auto& region_results_map = results.set<ResType::REGION_RESULTS_MAP>();
   for (auto& pair : m_single_grid_functor_map) {
-    
+
     //Setup the results with what is the input of the SingleGridPhzFunctor
     auto& region_results = region_results_map[pair.first];
     region_results.set<RegResType::SOURCE_PHOTOMETRY_REFERENCE>(std::cref(cor_source_phot));
-    
+
     // We check if we have a fixed redshift. If we do, we only continue for
     // regions that have this redshift in their range and we pass them as model
     // grid the corresponding grid slice. If we do not, we pass as grid the
     // full model grid.
     auto& model_grid = m_phot_grid_map.at(pair.first);
     if (fixed_z >= 0) {
-      
+
       auto& z_axis = model_grid.getAxis<PhzDataModel::ModelParameter::Z>();
       // If we have a fixed redshift and we are out of range we skip the region
       if (fixed_z < z_axis[0] || fixed_z > z_axis[z_axis.size()-1]) {
         continue;
       }
       auto fixed_z_index = getFixedZIndex(model_grid, fixed_z);
-      
+
       // The reason of the following const_cast is that the const version of the
       // fixAxisByIndex() returns a const PhotometryGrid, which cannot be moved
       // in the region_results object. I know that this allows to modify the const
@@ -271,18 +320,39 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
       auto& fixed_model_grid = region_results.set<RegResType::FIXED_REDSHIFT_MODEL_GRID>(
                     non_const_model_grid.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(fixed_z_index));
       region_results.set<RegResType::MODEL_GRID_REFERENCE>(fixed_model_grid);
-      
+
     } else {
-      
+
       // We do not have a fixed redshift, so use the original model grid
       region_results.set<RegResType::MODEL_GRID_REFERENCE>(model_grid);
     }
-    
+
     // Call the functor
     pair.second(region_results);
-    
+
   }
-  
+
+  // Find the result region which contains the model with the best likelihood
+  std::string best_likelihood_region;
+  double best_region_likelihood = std::numeric_limits<double>::lowest();
+  for (auto& pair : results.get<ResType::REGION_RESULTS_MAP>()){
+    auto& iter = pair.second.get<RegResType::BEST_LIKELIHOOD_MODEL_ITERATOR>();
+    if (*iter > best_region_likelihood) {
+      best_likelihood_region = pair.first;
+      best_region_likelihood = *iter;
+    }
+  }
+  auto& best_likelihood_region_results = results.get<ResType::REGION_RESULTS_MAP>().at(best_likelihood_region);
+
+  auto likelihood_post_it = best_likelihood_region_results.get<RegResType::BEST_LIKELIHOOD_MODEL_ITERATOR>();
+  auto likelihood_model_it = best_likelihood_region_results.get<RegResType::MODEL_GRID_REFERENCE>().get().begin();
+  likelihood_model_it.fixAllAxes(likelihood_post_it);
+  results.set<ResType::BEST_LIKELIHOOD_MODEL_ITERATOR>(likelihood_model_it);
+
+  auto likelihood_scale_it = best_likelihood_region_results.get<RegResType::SCALE_FACTOR_GRID>().begin();
+  likelihood_scale_it.fixAllAxes(likelihood_post_it);
+  results.set<ResType::BEST_LIKELIHOOD_MODEL_SCALE_FACTOR>(*likelihood_scale_it);
+
   // Find the result region which contains the model with the best posterior
   std::string best_region;
   double best_region_posterior = std::numeric_limits<double>::lowest();
@@ -294,33 +364,55 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Ph
     }
   }
   auto& best_region_results = results.get<ResType::REGION_RESULTS_MAP>().at(best_region);
-  
+
   auto post_it = best_region_results.get<RegResType::BEST_MODEL_ITERATOR>();
   auto model_it = best_region_results.get<RegResType::MODEL_GRID_REFERENCE>().get().begin();
   model_it.fixAllAxes(post_it);
   results.set<ResType::BEST_MODEL_ITERATOR>(model_it);
-  
+
   // We add the combined 1D PDFs only if they are computed for the regions
   auto& first_region_results = results.get<ResType::REGION_RESULTS_MAP>().begin()->second;
   if (first_region_results.contains<RegResType::SED_1D_PDF>()) {
-    results.set<ResType::SED_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::SED>(results.get<ResType::REGION_RESULTS_MAP>()));
+    results.set<ResType::SED_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::SED>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::RED_CURVE_1D_PDF>()) {
-    results.set<ResType::RED_CURVE_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::REDDENING_CURVE>(results.get<ResType::REGION_RESULTS_MAP>()));
+    results.set<ResType::RED_CURVE_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::REDDENING_CURVE>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::EBV_1D_PDF>()) {
-    results.set<ResType::EBV_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::EBV>(results.get<ResType::REGION_RESULTS_MAP>()));
+    results.set<ResType::EBV_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::EBV>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::Z_1D_PDF>()) {
-    results.set<ResType::Z_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>()));
+    results.set<ResType::Z_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
-          
+
+
+  // We add the combined Likelihood 1D PDFs only if they are computed for the regions
+  if (first_region_results.contains<RegResType::LIKELIHOOD_SED_1D_PDF>()) {
+    results.set<ResType::LIKELIHOOD_SED_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::SED>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
+  }
+  if (first_region_results.contains<RegResType::LIKELIHOOD_RED_CURVE_1D_PDF>()) {
+    results.set<ResType::LIKELIHOOD_RED_CURVE_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::REDDENING_CURVE>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
+  }
+  if (first_region_results.contains<RegResType::LIKELIHOOD_EBV_1D_PDF>()) {
+    results.set<ResType::LIKELIHOOD_EBV_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::EBV>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
+  }
+  if (first_region_results.contains<RegResType::LIKELIHOOD_Z_1D_PDF>()) {
+    results.set<ResType::LIKELIHOOD_Z_1D_PDF>(combineLikelihood1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
+  }
+
+
+
+
   auto scale_it = best_region_results.get<RegResType::SCALE_FACTOR_GRID>().begin();
   scale_it.fixAllAxes(post_it);
   results.set<ResType::BEST_MODEL_SCALE_FACTOR>(*scale_it);
-          
+
   results.set<ResType::BEST_MODEL_POSTERIOR_LOG>(*post_it);
-  
+
+  auto likelihood_grid_it =  best_region_results.get<RegResType::LIKELIHOOD_LOG_GRID>().begin();
+  likelihood_grid_it.fixAllAxes(post_it);
+  results.set<ResType::BEST_MODEL_LIKELIHOOD_LOG>(*likelihood_grid_it);
+
   return results;
 }
 

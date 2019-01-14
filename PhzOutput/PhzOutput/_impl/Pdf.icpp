@@ -31,64 +31,74 @@ namespace ColumnHandlers {
 
 namespace Pdf_impl {
 
-template <int Parameter>
+template <PhzDataModel::GridType GT, int Parameter>
 struct PdfColumnTraits;
 
 template <>
-struct PdfColumnTraits<PhzDataModel::ModelParameter::SED> {
+struct PdfColumnTraits<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::SED> {
+  static std::string name_prefix() {return "LIKELIHOOD-SED";}
+  static constexpr auto res_type = PhzDataModel::SourceResultType::LIKELIHOOD_SED_1D_PDF;
+};
+
+template <>
+struct PdfColumnTraits<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::REDDENING_CURVE> {
+  static std::string name_prefix() {return "LIKELIHOOD-REDDENING-CURVE";}
+  static constexpr auto res_type = PhzDataModel::SourceResultType::LIKELIHOOD_RED_CURVE_1D_PDF;
+};
+
+template <>
+struct PdfColumnTraits<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::EBV> {
+  static std::string name_prefix() {return "LIKELIHOOD-EBV";}
+  static constexpr auto res_type = PhzDataModel::SourceResultType::LIKELIHOOD_EBV_1D_PDF;
+};
+
+template <>
+struct PdfColumnTraits<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::Z> {
+  static std::string name_prefix() {return "LIKELIHOOD-Z";}
+  static constexpr auto res_type = PhzDataModel::SourceResultType::LIKELIHOOD_Z_1D_PDF;
+};
+
+template <>
+struct PdfColumnTraits<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::SED> {
   static std::string name_prefix() {return "SED";}
   static constexpr auto res_type = PhzDataModel::SourceResultType::SED_1D_PDF;
-  static std::string makeStreamable(const XYDataset::QualifiedName& value) {
-    return value.qualifiedName();
-  }
 };
 
 template <>
-struct PdfColumnTraits<PhzDataModel::ModelParameter::REDDENING_CURVE> {
+struct PdfColumnTraits<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::REDDENING_CURVE> {
   static std::string name_prefix() {return "REDDENING-CURVE";}
   static constexpr auto res_type = PhzDataModel::SourceResultType::RED_CURVE_1D_PDF;
-  static std::string makeStreamable(const XYDataset::QualifiedName& value) {
-    return value.qualifiedName();
-  }
 };
 
 template <>
-struct PdfColumnTraits<PhzDataModel::ModelParameter::EBV> {
+struct PdfColumnTraits<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::EBV> {
   static std::string name_prefix() {return "EBV";}
   static constexpr auto res_type = PhzDataModel::SourceResultType::EBV_1D_PDF;
-  using axis_type = PhzDataModel::ModelParameterTraits<PhzDataModel::ModelParameter::EBV>::type;
-  static axis_type makeStreamable(axis_type value) {
-    return value;
-  }
 };
 
 template <>
-struct PdfColumnTraits<PhzDataModel::ModelParameter::Z> {
+struct PdfColumnTraits<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::Z> {
   static std::string name_prefix() {return "Z";}
   static constexpr auto res_type = PhzDataModel::SourceResultType::Z_1D_PDF;
-  using axis_type = PhzDataModel::ModelParameterTraits<PhzDataModel::ModelParameter::Z>::type;
-  static axis_type makeStreamable(axis_type value) {
-    return value;
-  }
 };
 
 } // end of namespace Pdf_impl
 
-template <int Parameter>
-std::vector<Table::ColumnInfo::info_type> Pdf<Parameter>::getColumnInfoList() const {
-  std::string col_name = Pdf_impl::PdfColumnTraits<Parameter>::name_prefix();
+template <PhzDataModel::GridType GT, int Parameter>
+std::vector<Table::ColumnInfo::info_type> Pdf<GT, Parameter>::getColumnInfoList() const {
+  std::string col_name = Pdf_impl::PdfColumnTraits<GT, Parameter>::name_prefix();
   col_name = col_name + "-1D-PDF";
   return std::vector<Table::ColumnInfo::info_type> {
     Table::ColumnInfo::info_type(col_name, typeid(std::vector<double>))
   };
 }
 
-template <int Parameter>
-std::vector<Table::Row::cell_type> Pdf<Parameter>::convertResults(
+template <PhzDataModel::GridType GT, int Parameter>
+std::vector<Table::Row::cell_type> Pdf<GT, Parameter>::convertResults(
                       const SourceCatalog::Source&,
                       const PhzDataModel::SourceResults& results) const {
   
-  auto& pdf_1d = results.get<Pdf_impl::PdfColumnTraits<Parameter>::res_type>();
+  auto& pdf_1d = results.get<Pdf_impl::PdfColumnTraits<GT, Parameter>::res_type>();
   std::vector<double> data {pdf_1d.begin(), pdf_1d.end()};
   
   // Note to developers:
@@ -97,9 +107,9 @@ std::vector<Table::Row::cell_type> Pdf<Parameter>::convertResults(
   // CURRENTLY DONE TO CHECK THAT THIS IS TRUE.
   if (m_knots_comment.empty()) {
     std::stringstream comment {};
-    comment << Pdf_impl::PdfColumnTraits<Parameter>::name_prefix() << "-BINS : {";
+    comment << Pdf_impl::PdfColumnTraits<GT, Parameter>::name_prefix() << "-BINS : {";
     for (auto& knot_value : pdf_1d.template getAxis<0>()) {
-      comment << Pdf_impl::PdfColumnTraits<Parameter>::makeStreamable(knot_value) << ',';
+      comment << knot_value << ',';
     }
     comment.seekp(-1, comment.cur);
     comment << '}';
@@ -109,8 +119,8 @@ std::vector<Table::Row::cell_type> Pdf<Parameter>::convertResults(
   return std::vector<Table::Row::cell_type> {std::move(data)};
 }
 
-template <int Parameter>
-std::vector<std::string> Pdf<Parameter>::getComments() {
+template <PhzDataModel::GridType GT, int Parameter>
+std::vector<std::string> Pdf<GT, Parameter>::getComments() {
   return {m_knots_comment};
 }
 

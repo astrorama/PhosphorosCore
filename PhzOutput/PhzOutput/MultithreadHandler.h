@@ -101,8 +101,7 @@ private:
   std::atomic<size_t>& m_progress;
   std::vector<std::unique_ptr<ResultType>> m_result_list {};
   std::map<decltype(std::declval<SourceCatalog::Source>().getId()), std::size_t> m_index_map {};
-  std::mutex m_result_list_mutex {};
-  std::mutex m_handler_mutex {};
+  std::mutex m_mutex {};
   std::size_t m_next_to_output_index {0};
 
 }; /* End of MultithreadHandler class */

@@ -11,6 +11,7 @@ elements_depends_on_subdirs(PhzLikelihood)
 elements_depends_on_subdirs(PhzPhotometricCorrection)
 elements_depends_on_subdirs(PhzUtils)
 elements_depends_on_subdirs(PhzLuminosity)
+elements_depends_on_subdirs(PhzReferenceSample)
 elements_depends_on_subdirs(Configuration)
 
 
@@ -124,5 +125,9 @@ elements_add_unit_test(GenericGridPriorConfig_test tests/src/GenericGridPriorCon
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
 elements_add_unit_test(PdfOutputFlagsConfig_test tests/src/PdfOutputFlagsConfig_test.cpp 
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
+elements_add_unit_test(ComputeReferenceSampleConfig tests/src/BuildReferenceSampleConfig_test.cpp
+                     EXECUTABLE PhzConfiguration_ComputeReferenceSampleConfig_test
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)

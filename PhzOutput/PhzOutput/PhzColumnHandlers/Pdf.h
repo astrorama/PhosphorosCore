@@ -25,6 +25,7 @@
 #ifndef _PHZOUTPUT_PHZCOLUMNHANDLERS_PDF_H
 #define _PHZOUTPUT_PHZCOLUMNHANDLERS_PDF_H
 
+#include "PhzDataModel/GridType.h"
 #include "PhzOutput/PhzColumnHandlers/ColumnHandler.h"
 
 namespace Euclid {
@@ -36,7 +37,7 @@ namespace ColumnHandlers {
  * @brief
  *
  */
-template <int Parameter>
+template <PhzDataModel::GridType GT, int Parameter>
 class Pdf : public ColumnHandler {
 
 public:

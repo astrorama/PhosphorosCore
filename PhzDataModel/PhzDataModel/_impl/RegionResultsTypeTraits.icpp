@@ -1,22 +1,22 @@
 /*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment    
- *  
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ *
  * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 3.0 of the License, or (at your option)  
- * any later version.  
- *  
- * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
- * details.  
- *  
- * You should have received a copy of the GNU Lesser General Public License 
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* 
+/*
  * @file RegionResultsTypeTraits.icpp
  * @author nikoapos
  */
@@ -61,6 +61,7 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
+                              T == RegionResultType::LIKELIHOOD_NORMALIZATION_LOG ||
                               T == RegionResultType::NORMALIZATION_LOG
                        >::type> {
   using type = double;
@@ -69,7 +70,8 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
-                              T == RegionResultType::BEST_MODEL_ITERATOR
+                              T == RegionResultType::BEST_MODEL_ITERATOR ||
+                              T == RegionResultType::BEST_LIKELIHOOD_MODEL_ITERATOR
                        >::type> {
   using type = DoubleGrid::iterator;
 };
@@ -80,6 +82,7 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
                               T == RegionResultType::SCALE_FACTOR_GRID ||
                               T == RegionResultType::LIKELIHOOD_LOG_GRID ||
                               T == RegionResultType::POSTERIOR_LOG_GRID ||
+                              T == RegionResultType::LIKELIHOOD_GRID ||
                               T == RegionResultType::POSTERIOR_GRID
                        >::type> {
   using type = DoubleGrid;
@@ -88,7 +91,8 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
-                                    T == RegionResultType::SED_1D_PDF
+                                    T == RegionResultType::SED_1D_PDF ||
+                                    T == RegionResultType::LIKELIHOOD_SED_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::SED>;
 };
@@ -96,7 +100,8 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
-                                    T == RegionResultType::RED_CURVE_1D_PDF
+                                    T == RegionResultType::RED_CURVE_1D_PDF ||
+                                    T == RegionResultType::LIKELIHOOD_RED_CURVE_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::REDDENING_CURVE>;
 };
@@ -104,7 +109,8 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
-                                    T == RegionResultType::EBV_1D_PDF
+                                    T == RegionResultType::EBV_1D_PDF ||
+                                    T == RegionResultType::LIKELIHOOD_EBV_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::EBV>;
 };
@@ -112,7 +118,8 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
-                                    T == RegionResultType::Z_1D_PDF
+                                    T == RegionResultType::Z_1D_PDF ||
+                                    T == RegionResultType::LIKELIHOOD_Z_1D_PDF
                              >::type> {
   using type = PhzDataModel::Pdf1DParam<ModelParameter::Z>;
 };

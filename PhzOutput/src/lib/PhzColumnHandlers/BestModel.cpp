@@ -16,50 +16,78 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
  */  
 
+
 /**
- * @file src/lib/PhzColumnHandlers/BestModel.cpp
- * @date 07/04/16
- * @author nikoapos
+ * @file PhzOutput/PhzColumnHandlers/BestModel.h
+ * @date 19/05/17
+ * @author dubathf
  */
 
+
 #include "PhzOutput/PhzColumnHandlers/BestModel.h"
+
 
 namespace Euclid {
 namespace PhzOutput {
 namespace ColumnHandlers {
 
+
 std::vector<Table::ColumnInfo::info_type> BestModel::getColumnInfoList() const {
-  
-  return std::vector<Table::ColumnInfo::info_type> {
-    Table::ColumnInfo::info_type("SED", typeid(std::string)),
-    Table::ColumnInfo::info_type("SED-Index", typeid(int64_t)),
-    Table::ColumnInfo::info_type("ReddeningCurve", typeid(std::string)),
-    Table::ColumnInfo::info_type("E(B-V)", typeid(double)),
-    Table::ColumnInfo::info_type("Z", typeid(double)),
-    Table::ColumnInfo::info_type("Scale", typeid(double))
-  };
-}
+    return std::vector<Table::ColumnInfo::info_type> {
+      Table::ColumnInfo::info_type(m_column_prefix+"SED", typeid(std::string)),
+      Table::ColumnInfo::info_type(m_column_prefix+"SED-Index", typeid(int64_t)),
+      Table::ColumnInfo::info_type(m_column_prefix+"ReddeningCurve", typeid(std::string)),
+      Table::ColumnInfo::info_type(m_column_prefix+"E(B-V)", typeid(double)),
+      Table::ColumnInfo::info_type(m_column_prefix+"Z", typeid(double)),
+      Table::ColumnInfo::info_type(m_column_prefix+"Scale", typeid(double))
+    };
+  }
 
 std::vector<Table::Row::cell_type> BestModel::convertResults(
-                      const SourceCatalog::Source&,
-                      const PhzDataModel::SourceResults& results) const {
-  
-  auto& best_model = results.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
-  auto sed = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
-  int64_t sed_index = best_model.axisIndex<PhzDataModel::ModelParameter::SED>() + 1;
-  auto reddening_curve = best_model.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>().qualifiedName();
-  auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
-  auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
-  auto scale = results.get<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>();
-  
-  return std::vector<Table::Row::cell_type> {
-    sed, sed_index, reddening_curve, ebv, z, scale
-  };
+                        const SourceCatalog::Source&,
+                        const PhzDataModel::SourceResults& results) const {
+
+    PhzDataModel::PhotometryGrid::const_iterator best_model = m_model_iterator_functor(results);
+    auto sed = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
+    int64_t sed_index = best_model.axisIndex<PhzDataModel::ModelParameter::SED>() + 1;
+    auto reddening_curve = best_model.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>().qualifiedName();
+    auto ebv = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
+    auto z = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
+    auto scale = m_scale_functor(results);
+
+    return std::vector<Table::Row::cell_type> {
+      sed, sed_index, reddening_curve, ebv, z, scale
+    };
+  }
+
+BestModel::BestModel(PhzDataModel::GridType grid_type) {
+  switch (grid_type) {
+    case PhzDataModel::GridType::LIKELIHOOD:
+      m_column_prefix = "LIKELIHOOD-";
+      m_model_iterator_functor = [](const PhzDataModel::SourceResults& results){
+        return results.get<PhzDataModel::SourceResultType::BEST_LIKELIHOOD_MODEL_ITERATOR>();
+      };
+      m_scale_functor = [](const PhzDataModel::SourceResults& results){
+        return results.get<PhzDataModel::SourceResultType::BEST_LIKELIHOOD_MODEL_SCALE_FACTOR>();
+      };
+      break;
+    case PhzDataModel::GridType::POSTERIOR:
+      m_column_prefix = "";
+      m_model_iterator_functor = [](const PhzDataModel::SourceResults& results){
+        return results.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
+      };
+      m_scale_functor = [](const PhzDataModel::SourceResults& results){
+        return results.get<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>();
+      };
+      break;
+    default:
+      throw Elements::Exception() << "BestModel can only be used with likelihood or posterior grids";
+  }
 }
 
-} /* namespace ColumnHandlers */
-} /* namespace PhzOutput */
-} /* namespace Euclid */
+} // ColumnHandlers namespace
+} // PhzOutput namespace
+} // Euclid namespace
 
 
 

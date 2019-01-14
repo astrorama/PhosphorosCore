@@ -28,6 +28,8 @@
 #include "PhzOutput/MultithreadHandler.h"
 #include "PhzUtils/Multithreading.h"
 
+#include <iostream>
+
 namespace Euclid {
 namespace PhzOutput {
 
@@ -46,27 +48,26 @@ void MultithreadHandler::handleSourceOutput(const SourceCatalog::Source& source,
     throw Elements::Exception() << "Stopped by the user";
   }
   
-  // Lock the results, add the new result and get all the results that can be
+  // Block any other threads adding results, to guarantee the order
+  std::lock_guard<std::mutex> lock {m_mutex};
+  
+  // Add the new result and get all the results that can be
   // flashed to the output handler
+  auto index = m_index_map.find(source.getId());
+  if (index == m_index_map.end()) {
+    throw Elements::Exception() << "Unexpected source ID while handling output : " << source.getId();
+  }
+  m_result_list[index->second].reset(new ResultType{source, results});
+
   std::vector<std::unique_ptr<ResultType>> to_output {};
-  {
-    std::lock_guard<std::mutex> results_lock {m_result_list_mutex};
-    auto index = m_index_map.find(source.getId());
-    if (index == m_index_map.end()) {
-      throw Elements::Exception() << "Unexpected source ID while handling output : " << source.getId();
-    }
-    m_result_list[index->second].reset(new ResultType{source, results});
-    
-    while (m_next_to_output_index < m_result_list.size() &&
-           m_result_list[m_next_to_output_index] != nullptr) {
-      to_output.emplace_back(m_result_list[m_next_to_output_index].release());
-      ++m_next_to_output_index;
-    }
+  while (m_next_to_output_index < m_result_list.size() &&
+         m_result_list[m_next_to_output_index] != nullptr) {
+    to_output.emplace_back(m_result_list[m_next_to_output_index].release());
+    ++m_next_to_output_index;
   }
   
-  // Lock the output handler and flash the ready outputs
+  // flash the ready outputs
   if (!to_output.empty()) {
-    std::lock_guard<std::mutex> handler_lock {m_handler_mutex};
     for (auto& result : to_output) {
       m_handler.handleSourceOutput(result->source, result->results);
       ++m_progress;

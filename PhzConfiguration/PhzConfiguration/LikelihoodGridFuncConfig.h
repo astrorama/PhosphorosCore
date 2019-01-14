@@ -63,7 +63,9 @@ public:
    * parameters.
    */
   const PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction & getLikelihoodGridFunction();
-
+  
+  // Returns the function which computes the scale factor
+  PhzLikelihood::LikelihoodLogarithmAlgorithm::ScaleFactorCalc getScaleFactorFunction();
 
 private:
 
