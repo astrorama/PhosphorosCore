@@ -364,14 +364,22 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
 
   // Find the result region which contains the model with the best posterior
   std::string best_region;
+  bool found = false;
   double best_region_posterior = std::numeric_limits<double>::lowest();
   for (auto& pair : results.get<ResType::REGION_RESULTS_MAP>()){
     auto& iter = pair.second.get<RegResType::BEST_MODEL_ITERATOR>();
     if (*iter > best_region_posterior) {
       best_region = pair.first;
       best_region_posterior = *iter;
+      found = true;
     }
   }
+
+  if (!found) {
+    best_region = results.get<ResType::REGION_RESULTS_MAP>().begin()->first;
+    logger.warn() << "The source with ID =" << source.getId() << " has no best region result, using default one.";
+  }
+
   auto& best_region_results = results.get<ResType::REGION_RESULTS_MAP>().at(best_region);
 
   auto post_it = best_region_results.get<RegResType::BEST_MODEL_ITERATOR>();
