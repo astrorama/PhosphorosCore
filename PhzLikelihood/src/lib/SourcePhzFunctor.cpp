@@ -377,7 +377,7 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
 
   if (!found) {
     best_region = results.get<ResType::REGION_RESULTS_MAP>().begin()->first;
-    logger.warn() << "The source with ID =" << source.getId() << " has no best region result, using default one.";
+    logger.warn() << "Source with no best region result detected, using default one (first).";
   }
 
   auto& best_region_results = results.get<ResType::REGION_RESULTS_MAP>().at(best_region);
