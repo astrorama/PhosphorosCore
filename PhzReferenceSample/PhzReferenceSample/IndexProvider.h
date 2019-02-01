@@ -53,9 +53,9 @@ public:
   struct ObjectLocation {
     size_t index_position; ///< Position of this object on the index
     uint16_t sed_file;     ///< ID of the SED data file that contains the SED data
-    off64_t sed_pos;       ///< Position inside the SED data file where the SED is located
+    int64_t sed_pos;       ///< Position inside the SED data file where the SED is located
     uint16_t pdz_file;     ///< ID of the PDZ data file that contains the PDZ data
-    off64_t pdz_pos;       ///< Position inside the PDZ data file where the PDZ is located
+    int64_t pdz_pos;       ///< Position inside the PDZ data file where the PDZ is located
   };
 
   /**

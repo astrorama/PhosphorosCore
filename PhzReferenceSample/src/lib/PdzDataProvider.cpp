@@ -49,7 +49,7 @@ PdzDataProvider::PdzDataProvider(const boost::filesystem::path &path)
   }
 }
 
-XYDataset::XYDataset PdzDataProvider::readPdz(off64_t position, int64_t *id) const {
+XYDataset::XYDataset PdzDataProvider::readPdz(int64_t position, int64_t *id) const {
   m_fd->clear();
   m_fd->exceptions(std::ios::failbit | std::ios::badbit);
 
@@ -84,7 +84,7 @@ size_t PdzDataProvider::size() const {
   return boost::filesystem::file_size(m_path);
 }
 
-off64_t PdzDataProvider::addPdz(int64_t id, const Euclid::XYDataset::XYDataset &data) {
+int64_t PdzDataProvider::addPdz(int64_t id, const Euclid::XYDataset::XYDataset &data) {
   std::vector<float> bins, values;
 
   bins.reserve(data.size());
@@ -104,7 +104,7 @@ off64_t PdzDataProvider::addPdz(int64_t id, const Euclid::XYDataset::XYDataset &
     m_fd->clear();
     m_fd->exceptions(std::ios::failbit | std::ios::badbit);
 
-    off64_t offset = m_fd->seekp(0, std::ios::end).tellp();
+    int64_t offset = m_fd->seekp(0, std::ios::end).tellp();
 
     m_fd->write(reinterpret_cast<char *>(&id), sizeof(id));
     m_fd->write(reinterpret_cast<char *>(values.data()), sizeof(float) * values.size());
