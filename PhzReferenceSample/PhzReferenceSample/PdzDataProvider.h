@@ -72,7 +72,7 @@ public:
    * @throw Element::Exception
    *    If the position is negative, or on failure to read.
    */
-  XYDataset::XYDataset readPdz(off64_t position, int64_t *id) const;
+  XYDataset::XYDataset readPdz(int64_t position, int64_t *id) const;
 
   /**
    * @return Size on disk of the data file.
@@ -92,7 +92,7 @@ public:
    *    do not match the stored bins, or, only for the first stored pdz, if the
    *    bins are not in ascending order.
    */
-  off64_t addPdz(int64_t id, const XYDataset::XYDataset &data);
+  int64_t addPdz(int64_t id, const XYDataset::XYDataset &data);
 
 private:
   boost::filesystem::path m_path;
