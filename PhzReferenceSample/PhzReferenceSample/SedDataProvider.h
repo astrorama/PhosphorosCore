@@ -71,7 +71,7 @@ public:
    * @throw Element::Exception
    *    If the position is negative, or on failure to read.
    */
-  XYDataset::XYDataset readSed(off64_t position, int64_t *id) const;
+  XYDataset::XYDataset readSed(int64_t position, int64_t *id) const;
 
   /**
    * @return Size on disk of the data file.
@@ -90,7 +90,7 @@ public:
    *    On failure to write to disk, or if the
    *    bins are not in ascending order.
    */
-  off64_t addSed(int64_t id, const XYDataset::XYDataset &data);
+  int64_t addSed(int64_t id, const XYDataset::XYDataset &data);
 
 private:
   boost::filesystem::path m_path;
