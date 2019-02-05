@@ -7,6 +7,7 @@
 
 #include "ElementsKernel/Logging.h"
 #include <functional>
+#include <cmath>
 #include "MathUtils/function/Function.h"
 #include "PhzLuminosity/LuminosityPrior.h"
 #include "PhzDataModel/DoubleGrid.h"
@@ -32,7 +33,7 @@ m_effectiveness{effectiveness} {
 }
 
 void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
-  
+
   // Get from the results the input
   auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
   const auto& scale_factor_grid = results.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
@@ -84,9 +85,14 @@ void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
       while (prior_iter != prior_grid.end()) {
         double luminosity = (*m_luminosity_calculator)(scal_iter);
 
-        *prior_iter = luminosity_function(luminosity + m_mag_shift);
-        if (*prior_iter > max) {
-          max = *prior_iter;
+        if (!std::isfinite(luminosity)) {
+          *prior_iter = 0;
+          logger.warn() << "Undefined luminosity in the prior computation.";
+        } else {
+           *prior_iter = luminosity_function(luminosity + m_mag_shift);
+           if (*prior_iter > max) {
+             max = *prior_iter;
+           }
         }
 
         ++prior_iter;
