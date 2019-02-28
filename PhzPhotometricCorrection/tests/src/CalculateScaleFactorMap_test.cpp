@@ -28,7 +28,7 @@ struct CalculateScaleFactorMap_Fixture {
 
   std::vector<SourceCatalog::Source> m_catalog{};
 
-  std::map<int64_t, std::unique_ptr<SourceCatalog::Photometry>> model_map{};
+  std::map<int64_t, SourceCatalog::Photometry> model_map{};
 
 
   CalculateScaleFactorMap_Fixture(){
@@ -60,12 +60,12 @@ struct CalculateScaleFactorMap_Fixture {
       m_catalog.push_back(std::move(source_2));
 
     auto model_photo_Value_1 = std::vector<SourceCatalog::FluxErrorPair>{{10.1,0.1},{10.2,0.2},{10.3,0.3}};
-    auto model_ptr_1 = std::unique_ptr<SourceCatalog::Photometry>(new SourceCatalog::Photometry(filters,std::move(model_photo_Value_1)));
+    auto model_phot_1 =  SourceCatalog::Photometry(filters,std::move(model_photo_Value_1));
     auto model_photo_Value_2 = std::vector<SourceCatalog::FluxErrorPair>{{20.1,0.1},{20.2,0.2},{20.3,0.3}};
-    auto model_ptr_2 = std::unique_ptr<SourceCatalog::Photometry>(new SourceCatalog::Photometry(filters,std::move(model_photo_Value_2)));
+    auto model_phot_2 =  SourceCatalog::Photometry(filters,std::move(model_photo_Value_2));
 
-    model_map.emplace(source_1_id,std::move(model_ptr_1));
-    model_map.emplace(source_2_id,std::move(model_ptr_2));
+    model_map.emplace(source_1_id, model_phot_1);
+    model_map.emplace(source_2_id, model_phot_2);
 
     }
 

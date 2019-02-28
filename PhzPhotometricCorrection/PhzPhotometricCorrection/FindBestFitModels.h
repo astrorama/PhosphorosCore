@@ -63,15 +63,14 @@ public:
    *
    * @return An object of type std::map, with keys of type int64 t,
    * representing the IDs of the sources, and values of type
-   * PhzDataModel::PhotometryGrid::const iterator, pointing to a cell of the
-   * input Model Photometry Grid, representing the best fitted model for the source.
+   * SourceCatalog::Photometry representing the best fitted model for the source.
    *
    * @throws ElementsException
    *    if any of the source is missing the Spec-Z information
    * @throws ElementsException
    *    if any of the source is missing the Photometry information
    */
-  std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator> operator()(
+  std::map<int64_t,  SourceCatalog::Photometry> operator()(
       const SourceCatalog::Catalog& calibration_catalog,
       const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
       const PhzDataModel::PhotometricCorrectionMap& photometric_correction);

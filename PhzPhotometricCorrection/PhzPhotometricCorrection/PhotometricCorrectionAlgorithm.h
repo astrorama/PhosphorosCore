@@ -59,11 +59,11 @@ public:
    * @throws ElementsException
    *    if the model photometry map does not contain photometries for all the sources
    */
-  template <typename SourceIter, typename ModelPhotPtr>
+  template <typename SourceIter, typename ModelPhot>
   PhzDataModel::PhotometricCorrectionMap operator()(
                     SourceIter source_begin, SourceIter source_end,
                     const std::map<int64_t, double>& scale_factor_map,
-                    const std::map<int64_t, ModelPhotPtr>& model_phot_map,
+                    const std::map<int64_t, ModelPhot>& model_phot_map,
                     PhotometricCorrectionSelector<SourceIter> selector=FindMedianPhotometricCorrectionsFunctor{});
                     
 };
