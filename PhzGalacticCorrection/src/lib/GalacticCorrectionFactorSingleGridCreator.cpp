@@ -9,8 +9,10 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <iterator>
 #include "ElementsKernel/Logging.h"
+#include "ElementsKernel/Exception.h"
 #include "MathUtils/interpolation/interpolation.h"
 
 #include "PhzModeling/ExtinctionFunctor.h"
@@ -161,6 +163,7 @@ public:
           m_dust_sed_bpc{dust_sed_bpc}{ }
 
   void operator()() {
+
     DoneUpdater done_updater {m_done_counter};
 
     auto b_filter = MathUtils::interpolate(m_b_dataset, MathUtils::InterpolationType::LINEAR);
@@ -169,8 +172,7 @@ public:
 
     m_progress={0};
     while (m_model_begin != m_model_end){
-    auto b_filtered = m_filter_functor(*m_model_begin,m_b_range,*b_filter);
-
+      auto b_filtered = m_filter_functor(*m_model_begin,m_b_range,*b_filter);
       double b_norm = m_integrate_funct(b_filtered,m_b_range);
       auto b_reddened = m_filter_functor(b_filtered,m_red_range,*milky_way_reddening_function_ptr);
       double b_red_norm = m_integrate_funct(b_reddened,m_b_range);
@@ -181,7 +183,14 @@ public:
       double v_red_norm = m_integrate_funct(v_reddened,m_v_range);
 
       double bpc = -0.04/std::log10(b_red_norm*v_norm/(b_norm*v_red_norm));
-
+      /// DBG
+      if (std::isnan(bpc)){
+        std::string message = "The computation of the MilkyWay absorption correction failed: "
+            "check that you do NOT use MADAU IGM and that your SEDs are defined and non-zero "
+            "at least from  min_lambda(B filter)/(1+z)=3566/(1+6) = 509 Angstrom";
+        logger.error() << message;
+        throw Elements::Exception()<<message;
+      }
       auto exp_milky_way_A_lambda = expDataSet(m_red_dataset,-0.12/bpc);
       auto milky_way_A_lambda_function_ptr = MathUtils::interpolate(exp_milky_way_A_lambda, MathUtils::InterpolationType::LINEAR);
 
