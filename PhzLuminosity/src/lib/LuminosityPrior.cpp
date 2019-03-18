@@ -108,11 +108,19 @@ void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
     v = max * (1 - m_effectiveness) + m_effectiveness * v;
   }
   
+  double min_value = std::exp(std::numeric_limits<double>::min());
+
   // Apply the prior to the likelihood
-  for (auto l_it=posterior_grid.begin(), p_it=prior_grid.begin(); l_it!=posterior_grid.end(); ++l_it, ++p_it) {
-    *l_it += std::log(*p_it);
+  for (auto l_it = posterior_grid.begin(), p_it = prior_grid.begin();
+            l_it != posterior_grid.end();
+            ++l_it, ++p_it) {
+
+    if (*p_it <= min_value) {
+      *l_it = std::numeric_limits<double>::min();
+    } else {
+      *l_it += std::log(*p_it);
+    }
   }
-  
 }
 
 }
