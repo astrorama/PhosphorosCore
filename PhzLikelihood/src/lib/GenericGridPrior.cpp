@@ -34,12 +34,18 @@ GenericGridPrior::GenericGridPrior(std::vector<PhzDataModel::DoubleGrid> prior_g
 
 void GenericGridPrior::operator()(PhzDataModel::RegionResults& results) const {
   auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
+  double min_value = std::exp(std::numeric_limits<double>::min());
+
   for (auto& prior_grid : m_prior_grid_list) {
     if (prior_grid.getAxesTuple() == posterior_grid.getAxesTuple()) {
       auto prior_it = prior_grid.begin();
       auto post_it = posterior_grid.begin();
       for (; post_it != posterior_grid.end(); ++prior_it, ++post_it) {
-        *post_it *= *prior_it;
+        if (*prior_it <= min_value) {
+          *post_it = std::numeric_limits<double>::min();
+        } else {
+          *post_it += std::log(*prior_it);
+        }
       }
       return;
     }
