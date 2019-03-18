@@ -11,6 +11,7 @@ elements_depends_on_subdirs(PhzLikelihood)
 elements_depends_on_subdirs(PhzPhotometricCorrection)
 elements_depends_on_subdirs(PhzUtils)
 elements_depends_on_subdirs(PhzLuminosity)
+elements_depends_on_subdirs(PhzNzPrior)
 elements_depends_on_subdirs(PhzReferenceSample)
 elements_depends_on_subdirs(Configuration)
 

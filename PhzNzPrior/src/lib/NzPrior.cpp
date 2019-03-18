@@ -29,11 +29,11 @@ NzPrior::NzPrior(
        m_i_filter_name{i_filter_name}, m_prior_param{prior_param} {}
 
 
- double pt__m0(double ft, double kt, double m0){
+ double pt__m0(double ft, double kt, double m0) {
    return ft*std::exp(-kt * (m0 - 20));
  }
 
- double zmt(double z0t, double kmt, double m0){
+ double zmt(double z0t, double kmt, double m0) {
    return z0t + kmt*(m0 - 20);
  }
 
@@ -95,10 +95,10 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
 
     if (mag_Iab < 20) {
       if (z < 1) {
-        *grid_iter = -1e60;
+        *grid_iter = std::numeric_limits<double>::min();
       }
     } else {
-      *grid_iter += std::log10(computeP_T_z__m0(mag_Iab, z, sed));
+      *grid_iter += std::log(computeP_T_z__m0(mag_Iab, z, sed));
     }
   }
 
