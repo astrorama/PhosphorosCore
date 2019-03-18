@@ -182,7 +182,7 @@ public:
       auto v_reddened = m_filter_functor(v_filtered,m_red_range,*milky_way_reddening_function_ptr);
       double v_red_norm = m_integrate_funct(v_reddened,m_v_range);
 
-      double bpc = -0.04/std::log10(b_red_norm*v_norm/(b_norm*v_red_norm));
+      double bpc = -25.0 * std::log10(b_red_norm*v_norm/(b_norm*v_red_norm));
       /// DBG
       if (std::isnan(bpc)){
         std::string message = "The computation of the MilkyWay absorption correction failed: "
@@ -202,6 +202,7 @@ public:
 
       auto corr_iter = corr_vertor.begin();
       auto filter_iter = m_filter_info_vector.begin();
+      bool first = true;
       while (corr_iter != corr_vertor.end()){
         auto x_filterd = m_filter_functor(*m_model_begin,filter_iter->getRange(),filter_iter->getFilter());
         double flux_int =  m_integrate_funct(x_filterd,filter_iter->getRange());
@@ -210,6 +211,15 @@ public:
         double a_sed_x = -5.*std::log10(flux_obs/flux_int)/0.6;
 
         (*corr_iter).flux = a_sed_x*m_dust_sed_bpc/bpc;
+
+        if (first){
+          first=false;
+          logger.debug() << "Model: SED " <<m_model_begin.axisValue<PhzDataModel::ModelParameter::SED>()
+                         << ", Reddening Curve "<<m_model_begin.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>()
+                         << ", E(B-V) "<<m_model_begin.axisValue<PhzDataModel::ModelParameter::EBV>()
+                         << ", Z "<<m_model_begin.axisValue<PhzDataModel::ModelParameter::Z>()
+                         << ", Correction :" << (*corr_iter).flux;
+        }
 
         ++corr_iter;
         ++filter_iter;
