@@ -83,10 +83,22 @@ BOOST_FIXTURE_TEST_CASE(prior_application, AxisFunctionPrior_Fixture) {
   
   // Then
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, it.axisIndex<ModelParameter::SED>() +
-                           it.axisIndex<ModelParameter::REDDENING_CURVE>() +
-                           it.axisIndex<ModelParameter::EBV>() +
-                           it.axisIndex<ModelParameter::Z>());
+
+
+    double prior_value = it.axisIndex<ModelParameter::SED>() +
+    it.axisIndex<ModelParameter::REDDENING_CURVE>() +
+    it.axisIndex<ModelParameter::EBV>() +
+    it.axisIndex<ModelParameter::Z>();
+
+    double min_value = std::exp(std::numeric_limits<double>::min());
+
+    double log_value = std::numeric_limits<double>::min();
+    if (prior_value > min_value) {
+      log_value = std::log(prior_value) + 1.;
+    }
+
+    BOOST_CHECK_CLOSE(*it, log_value, 0.0001);
+
   }
 
 }
