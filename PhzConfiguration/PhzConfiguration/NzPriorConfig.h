@@ -26,6 +26,8 @@
 #define _PHZCONFIGURATION_NZPRIORCONFIG_H
 
 #include "Configuration/Configuration.h"
+#include "PhzNzPrior/NzPriorParam.h"
+#include "PhzNzPrior/SedClassifier.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -51,6 +53,8 @@ public:
    * @brief Destructor
    */
   virtual ~NzPriorConfig() = default;
+
+
 
 }; /* End of NzPriorConfig class */
 
