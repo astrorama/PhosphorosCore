@@ -22,8 +22,8 @@ namespace PhzNzPrior {
 class SedClassifier{
 public:
 
-  SedClassifier(std::shared_ptr<XYDataset::XYDatasetProvider>& filter_provider,
-                std::shared_ptr<XYDataset::XYDatasetProvider>& sed_provider,
+  SedClassifier(std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider,
+                std::shared_ptr<XYDataset::XYDatasetProvider> sed_provider,
                 double bi_break_1 = 0.945,
                 double bi_break_2 = 1.285);
 

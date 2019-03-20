@@ -38,12 +38,15 @@ NzPrior::NzPrior(
  }
 
 double NzPrior::computeP_T_z__m0(double m0, double z, XYDataset::QualifiedName sed) {
+  if (z <= 0.0) {
+    z = 1e-4;
+  }
   auto group_name = m_sedGroupManager.findGroupContaining(sed).first;
 
   double res = 0;
   if (group_name == "T1") {
-    double pt_m0_1 = pt__m0(m_prior_param.getFt(1), m_prior_param.getKt(1), m0);
 
+    double pt_m0_1 = pt__m0(m_prior_param.getFt(1), m_prior_param.getKt(1), m0);
     double zmt_1 = zmt(m_prior_param.getZ0t(1), m_prior_param.getKmt(1), m0);
     double alpt_1 = m_prior_param.getAlphat(1);
     double A_1 = m_prior_param.getCst(1) * std::pow(zmt_1, alpt_1+1) / alpt_1;
@@ -52,7 +55,6 @@ double NzPrior::computeP_T_z__m0(double m0, double z, XYDataset::QualifiedName s
 
   } else if (group_name == "T2") {
     double pt_m0_2 = pt__m0(m_prior_param.getFt(2), m_prior_param.getKt(2), m0);
-
     double zmt_2 = zmt(m_prior_param.getZ0t(2), m_prior_param.getKmt(2), m0);
     double alpt_2 = m_prior_param.getAlphat(2);
     double A_2 = m_prior_param.getCst(2) * std::pow(zmt_2, alpt_2+1) / alpt_2;
@@ -94,7 +96,7 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
     auto sed = grid_iter.axisValue<PhzDataModel::ModelParameter::SED>();
 
     if (mag_Iab < 20) {
-      if (z < 1) {
+      if (z > 1) {
         *grid_iter = std::numeric_limits<double>::min();
       }
     } else {
@@ -103,8 +105,6 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
   }
 
 }
-
-
 
 
 }

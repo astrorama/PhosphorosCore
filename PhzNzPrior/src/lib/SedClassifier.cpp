@@ -45,15 +45,14 @@ double computeB_I(const PhzDataModel::FilterInfo& filter_b,
   if (flux_i <= 0) {
     throw Elements::Exception() << "PhzNzPrior::SedClassifier: A SED has 0 flux in provided I filter ";
   }
-
   double mag_b = -2.5*std::log10(flux_b);
   double mag_i = -2.5*std::log10(flux_i);
 
   return mag_b - mag_i;
 }
 
-SedClassifier::SedClassifier(std::shared_ptr<XYDataset::XYDatasetProvider>& filter_provider,
-    std::shared_ptr<XYDataset::XYDatasetProvider>& sed_provider, double bi_break_1, double bi_break_2):
+SedClassifier::SedClassifier(std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider,
+    std::shared_ptr<XYDataset::XYDatasetProvider> sed_provider, double bi_break_1, double bi_break_2):
                           m_filter_provider{filter_provider}, m_sed_provider{sed_provider},
                           m_break_1{bi_break_1}, m_break_2{bi_break_2} {
   if (m_break_1 >= m_break_2){
@@ -92,7 +91,7 @@ PhzDataModel::QualifiedNameGroupManager SedClassifier::operator()(const XYDatase
       }
 
       double B_I_rest = computeB_I(filter_info_b, filter_info_i, *sed_ptr);
-
+      logger.info()<< "SED " << sed_iter->qualifiedName() << " has B-I value " << B_I_rest;
       if (B_I_rest > m_break_2) {
         T1_sed_set.insert(*sed_iter);
       } else if (B_I_rest > m_break_1) {
