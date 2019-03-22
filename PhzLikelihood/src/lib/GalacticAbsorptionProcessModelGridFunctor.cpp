@@ -61,8 +61,10 @@ namespace PhzLikelihood {
   }
 
 
-  GalacticAbsorptionProcessModelGridFunctor::GalacticAbsorptionProcessModelGridFunctor(const std::map<std::string,PhzDataModel::PhotometryGrid> & coefficient_grid):
-      m_coefficient_grid(coefficient_grid){}
+  GalacticAbsorptionProcessModelGridFunctor::GalacticAbsorptionProcessModelGridFunctor(
+      const std::map<std::string,PhzDataModel::PhotometryGrid> & coefficient_grid,
+      double dust_map_sed_bpc):
+      m_coefficient_grid(coefficient_grid), m_dust_map_sed_bpc{dust_map_sed_bpc} {}
 
   PhzDataModel::PhotometryGrid GalacticAbsorptionProcessModelGridFunctor::operator()
       ( const std::string & region_name, const PhzDataModel::PhotometryGrid & model_grid, const SourceCatalog::Source & source) const{
@@ -77,7 +79,7 @@ namespace PhzLikelihood {
       throw Elements::Exception() << "The DustColumnDensity attribute is missing in the source object";
     }
 
-    double dust_ebv = dust_ebv_ptr->getDustColumnDensity();
+    double dust_ebv = m_dust_map_sed_bpc * dust_ebv_ptr->getDustColumnDensity();
 
 
     auto current_model = model_grid.begin();

@@ -58,9 +58,13 @@ public:
 
   void initialize(const UserValues& args) override;
   bool isGalacticCorrectionEnabled();
+  double getDustMapSedBpc() const;
 
 private:
+
   bool m_galactic_correction_enabled = false;
+  double m_dust_map_sed_bpc=1.;
+
 }; /* End of DustColumnDensityColumnConfig class */
 
 

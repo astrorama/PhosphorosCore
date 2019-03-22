@@ -35,6 +35,7 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 static const std::string COLUMN_NAME_NAME {"dust-column-density-column-name"};
+static const std::string DUST_MAP_SED_BPC {"dust-map-sed-bpc"};
 
 
 static Elements::Logging logger = Elements::Logging::getLogger("DustColumnDensityColumnConfig");
@@ -47,6 +48,9 @@ auto DustColumnDensityColumnConfig::getProgramOptions() -> std::map<std::string,
   return {{"Galactic Correction Coefficient options", {
     {COLUMN_NAME_NAME.c_str(), po::value<std::string>(),
         "Name of the catalog column containing the dust column density (Galactic E(B-V) from Plank Map) in the direction of the source. If set, enable the Galactic reddening correction."},
+    {DUST_MAP_SED_BPC.c_str(), po::value<double>()->default_value(1.018),
+         "The band pass correction for the SED used for defining the dust column density map (default bpc_P14=1.018)"},
+
   }}};
 }
 
@@ -58,9 +62,16 @@ void DustColumnDensityColumnConfig::initialize(const UserValues& args) {
     auto fixed_z_column = args.at(COLUMN_NAME_NAME).as<std::string>();
     auto handler = std::make_shared<PhzDataModel::DustColumnDensityFromRow>(column_info, fixed_z_column);
     catalog_conf.addAttributeHandler(handler);
-    m_galactic_correction_enabled=true;
+    m_galactic_correction_enabled = true;
   }
+  m_dust_map_sed_bpc = args.at(DUST_MAP_SED_BPC).as<double>();
 }
+
+
+double DustColumnDensityColumnConfig::getDustMapSedBpc() const{
+  return m_dust_map_sed_bpc;
+}
+
 
 bool DustColumnDensityColumnConfig::isGalacticCorrectionEnabled() {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {

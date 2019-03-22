@@ -52,22 +52,7 @@ public:
    */
   virtual ~ComputeModelGalacticCorrectionCoefficientConfig() = default;
 
-  /**
-   * @details
-   */
-  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
-
-  /**
-   * @details
-   */
-  void initialize(const UserValues& args) override;
-
-  double getDustMapSedBpc() const;
-
-private:
-
-  double m_dust_map_sed_bpc=1.;
 
 };
 

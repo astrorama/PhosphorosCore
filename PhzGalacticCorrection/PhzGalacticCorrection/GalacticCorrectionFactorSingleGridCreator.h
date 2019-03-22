@@ -49,10 +49,7 @@ public:
        std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
        const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
        IgmAbsorptionFunction igm_absorption_function,
-       XYDataset::QualifiedName b_filter,
-       XYDataset::QualifiedName v_filter,
-       XYDataset::QualifiedName milky_way_reddening,
-       double dust_sed_bpc
+       XYDataset::QualifiedName milky_way_reddening
        );
 
   virtual ~GalacticCorrectionSingleGridCreator();
@@ -67,10 +64,7 @@ private:
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
   const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
   IgmAbsorptionFunction m_igm_absorption_function;
-  XYDataset::QualifiedName m_b_filter;
-  XYDataset::QualifiedName m_v_filter;
   XYDataset::QualifiedName m_milky_way_reddening;
-  double m_dust_sed_bpc;
 
 };
 

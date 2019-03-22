@@ -97,7 +97,7 @@ BOOST_FIXTURE_TEST_CASE(test_precondition,GalacticAbsorptionProcessModelGridFunc
 
   map_grid.insert(std::pair<std::string, PhzDataModel::PhotometryGrid>("region_1", std::move(photo_grid_2)));
 
-  GalacticAbsorptionProcessModelGridFunctor functor(map_grid);
+  GalacticAbsorptionProcessModelGridFunctor functor(map_grid, 1.018);
   std::string region = "region_1";
   // Then
   BOOST_CHECK_THROW(functor(region, photo_grid, source_1),  Elements::Exception);
@@ -110,7 +110,7 @@ BOOST_FIXTURE_TEST_CASE(test_nominal,GalacticAbsorptionProcessModelGridFunctor_F
   std::map<std::string, PhzDataModel::PhotometryGrid> map_grid{};
   map_grid.insert(std::pair<std::string, PhzDataModel::PhotometryGrid>("region_1", std::move(photo_grid_2)));
 
-  GalacticAbsorptionProcessModelGridFunctor functor(map_grid);
+  GalacticAbsorptionProcessModelGridFunctor functor(map_grid, 1.018);
   std::string region = "region_1";
   // When
   auto new_grid = functor(region, photo_grid, source_2);
@@ -123,9 +123,9 @@ BOOST_FIXTURE_TEST_CASE(test_nominal,GalacticAbsorptionProcessModelGridFunctor_F
   BOOST_CHECK((get<2>(new_tuple)).size() == (get<2>(ref_tuple)).size());
   BOOST_CHECK((get<3>(new_tuple)).size() == (get<3>(ref_tuple)).size());
 
-  // flux*10^(-0.4*corr*ebv)=1.1 * 10^(-0.4*1.1*0.1)=0.9940144
-  // 1.2 * 10^(-0.4*1.2*0.1)=1.0744377
-  std::vector<double> target{0.9940144, 1.0744377};
+  // flux*10^(-0.4*corr*ebv)=1.1 * 10^(-0.4*1.1*0.1*1.018)=0.9922033
+  // 1.2 * 10^(-0.4*1.2*0.1*1.018)=1.0723023
+  std::vector<double> target{0.9922033,1.0723023};
   auto target_iter = target.begin();
   for (auto& iter : new_grid.at(0,0,0,0)){
     BOOST_CHECK_CLOSE(iter.flux, *target_iter,  0.01);

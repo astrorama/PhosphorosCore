@@ -36,10 +36,10 @@
 #include "PhzConfiguration/SedProviderConfig.h"
 
 
-#include "PhzConfiguration/BVFilterConfig.h"
 #include "PhzConfiguration/MilkyWayReddeningConfig.h"
 #include "PhzConfiguration/CorrectionCoefficientGridOutputConfig.h"
 #include "PhzConfiguration/MultithreadConfig.h"
+#include "PhzConfiguration/FilterProviderConfig.h"
 
 
 namespace po = boost::program_options;
@@ -48,7 +48,6 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string DUST_MAP_SED_BPC {"dust-map-sed-bpc"};
 
 static Elements::Logging logger = Elements::Logging::getLogger("ComputeModelGalacticCorrectionCoefficientConfig");
 
@@ -57,27 +56,13 @@ ComputeModelGalacticCorrectionCoefficientConfig::ComputeModelGalacticCorrectionC
   declareDependency<PhotometryGridConfig>();
   declareDependency<CatalogTypeConfig>();
   declareDependency<ResultsDirConfig>();
-  declareDependency<BVFilterConfig>();
   declareDependency<SedProviderConfig>();
   declareDependency<MilkyWayReddeningConfig>();
   declareDependency<CorrectionCoefficientGridOutputConfig>();
   declareDependency<MultithreadConfig>();
+  declareDependency<FilterProviderConfig>();
 }
 
-auto ComputeModelGalacticCorrectionCoefficientConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Compute Galactic Correction Coefficient Grid options", {
-    {DUST_MAP_SED_BPC.c_str(), po::value<double>()->default_value(1.018),
-        "The band pass correction for the SED used for defining the dust column density map (default bpc_P14=1.018)"},
-  }}};
-}
-
-void ComputeModelGalacticCorrectionCoefficientConfig::initialize(const UserValues& args) {
-  m_dust_map_sed_bpc = args.at(DUST_MAP_SED_BPC).as<double>();
-}
-
-double ComputeModelGalacticCorrectionCoefficientConfig::getDustMapSedBpc() const{
-  return m_dust_map_sed_bpc;
-}
 
 } // PhzConfiguration namespace
 } // Euclid namespace

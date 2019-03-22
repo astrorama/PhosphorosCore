@@ -122,12 +122,15 @@ void GalactiAbsorptionModelGridModifConfig::postInitialize(const UserValues& arg
     // CHECK grid compatibility we already know we have the same filters
     const auto& model_grid_info = getDependency<PhotometryGridConfig>().getPhotometryGridInfo();
     const auto& coeff_grid_info = getDependency<CorrectionCoefficientGridConfig>().getCorrectionCoefficientGridInfo();
-    if (!areGridsCompatible(coeff_grid_info, model_grid_info)){
+    if (!areGridsCompatible(coeff_grid_info, model_grid_info)) {
       throw Elements::Exception() << "The provided 'galactic-correction-coefficient-grid-file' is not compatible with the 'model-grid-file'";
     }
 
+    double dus_map_sed_bpc = getDependency<DustColumnDensityColumnConfig>().getDustMapSedBpc();
+
     auto& coef_grid = getDependency<CorrectionCoefficientGridConfig>().getCorrectionCoefficientGrid();
-    std::shared_ptr<PhzLikelihood::GalacticAbsorptionProcessModelGridFunctor> ptr{new PhzLikelihood::GalacticAbsorptionProcessModelGridFunctor(coef_grid)};
+    std::shared_ptr<PhzLikelihood::GalacticAbsorptionProcessModelGridFunctor> ptr{
+      new PhzLikelihood::GalacticAbsorptionProcessModelGridFunctor(coef_grid, dus_map_sed_bpc)};
     getDependency<ModelGridModificationConfig>().addFunctorAtBegining(ptr);
   }
 }
