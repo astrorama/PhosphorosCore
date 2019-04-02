@@ -103,13 +103,41 @@ BOOST_FIXTURE_TEST_CASE(BuildFilterInfoFunctor_test, BuildFilterInfoFunctor_Fixt
 
   Euclid::XYDataset::XYDataset filter_sample(std::vector<std::pair<double, double>>{
     std::make_pair(1.,1.),
+    std::make_pair(2.,2.),
+    std::make_pair(3.,3.),
+    std::make_pair(4.,4.),
+    std::make_pair(5.,5.)
+  });
+
+  Euclid::PhzModeling::BuildFilterInfoFunctor functor{};
+
+  auto filter_info = functor(filter_sample);
+
+  // check the function
+  for (auto pair:filter_sample){
+    BOOST_CHECK(Elements::isEqual(pair.second,filter_info.getFilter()(pair.first)));
+  }
+
+  // check the normalization we have define the filter to have int(c) between 1 and 5
+  auto expected_value= Elements::Units::c_light/ Elements::Units::angstrom*4.;
+  BOOST_CHECK(Elements::isEqual(expected_value,filter_info.getNormalization()));
+
+}
+
+BOOST_FIXTURE_TEST_CASE(BuildFilterInfoFunctorEnergy_test, BuildFilterInfoFunctor_Fixture) {
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the BuildFilterInfoFunctor");
+  BOOST_TEST_MESSAGE(" ");
+
+  Euclid::XYDataset::XYDataset filter_sample(std::vector<std::pair<double, double>>{
+    std::make_pair(1.,1.),
     std::make_pair(2.,4.),
     std::make_pair(3.,9.),
     std::make_pair(4.,16.),
     std::make_pair(5.,25.)
   });
 
-  Euclid::PhzModeling::BuildFilterInfoFunctor functor{};
+  Euclid::PhzModeling::BuildFilterInfoFunctor functor(false);
 
   auto filter_info = functor(filter_sample);
 
