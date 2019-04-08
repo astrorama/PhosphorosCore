@@ -172,8 +172,12 @@ public:
         double flux_int =  m_integrate_funct(x_filterd, filter_iter->getRange());
         auto x_reddened = m_filter_functor(x_filterd, m_red_range, *milky_way_A_lambda_function_ptr);
         double flux_obs =  m_integrate_funct(x_reddened, filter_iter->getRange());
-        double a_sed_x = -5.*std::log10(flux_obs/flux_int)/0.6;
 
+        double a_sed_x =  0.0;
+        // if the flux is not null we can compute the correction coef
+        if (flux_int != 0) {
+          a_sed_x = -5.*std::log10(flux_obs/flux_int)/0.6;
+        }
         (*corr_iter).flux = a_sed_x;
 
         ++corr_iter;
