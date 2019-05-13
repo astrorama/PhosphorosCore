@@ -9,6 +9,7 @@
 
 #include "SourceCatalog/Catalog.h"
 #include "PhzLikelihood/ScaleFactorFunctor.h"
+#include "PhzUtils/SourceTraits.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
