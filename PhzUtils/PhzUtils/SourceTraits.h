@@ -1,3 +1,9 @@
+/*
+ * SourceTraits.h
+ *
+ *  Created on: Mar 29, 2018
+ *      Author: Alejandro Alvarez Ayllon
+ */
 
 #ifndef PHZUTILS_PHZUTILS_SOURCETRAITS_H_
 #define PHZUTILS_PHZUTILS_SOURCETRAITS_H_

@@ -8,7 +8,7 @@
 #define	PHZPHOTOMETRICCORRECTION_FINDWEIGHTEDMEDIANPHOTOMETRICCORRECTIONSFUNCTOR_H
 
 #include "PhzDataModel/PhotometricCorrectionMap.h"
-#include "../../PhzUtils/PhzUtils/SourceTraits.h"
+#include "PhzUtils/PhzUtils/SourceTraits.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
