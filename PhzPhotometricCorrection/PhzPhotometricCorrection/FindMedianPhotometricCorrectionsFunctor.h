@@ -10,7 +10,7 @@
 
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
-#include "PhzUtils/PhzUtils/SourceTraits.h"
+#include "PhzUtils/SourceTraits.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
