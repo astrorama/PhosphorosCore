@@ -199,7 +199,7 @@ public:
 
       std::vector<double> mags {};
       //  compute the luminosity for each filter
-      std::string result_row = std::to_string(source.getId());
+      std::string result_row = boost::lexical_cast<std::string>(source.getId());
       for(auto& lum_calc : luminosity_calculators){
         auto band_flux = source_photometry->find(lum_calc.getLuminosityFilter().qualifiedName())->flux;
         double mag_app = computeApparentMag(band_flux);

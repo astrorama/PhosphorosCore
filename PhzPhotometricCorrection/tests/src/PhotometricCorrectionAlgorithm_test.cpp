@@ -35,14 +35,14 @@ struct PhotometricCorrectionAlgorithm_Fixture {
         vector<FluxErrorPair>{   {3.1, 0.1}, {3.2, 0.2}}}}}}
   };
   
-  map<int64_t, double> scale_factors {
+  map<Source::id_type, double> scale_factors {
     {1, 1.5},
     {2, 2.5},
     {3, 4.5},
     {4, 3.5}
   };
   
-  map<int64_t, shared_ptr<Photometry>> models {
+  map<Source::id_type, shared_ptr<Photometry>> models {
     {1, shared_ptr<Photometry>{new Photometry{make_shared<vector<string>>(
         initializer_list<string>{"Filter1", "Filter2"}),
         vector<FluxErrorPair>{   {.11, 0.},  {.12, 0.}}}}},

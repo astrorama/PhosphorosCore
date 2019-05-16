@@ -20,7 +20,7 @@ using namespace Euclid::SourceCatalog;
 
 struct FindWeightedMedianPhotometricCorrectionsFunctor_Fixture {
 
-  std::map<int64_t, PhzDataModel::PhotometricCorrectionMap> source_phot_corr_map
+  std::map<Source::id_type, PhzDataModel::PhotometricCorrectionMap> source_phot_corr_map
     {
       {1,{
             {XYDataset::QualifiedName{"Filter_1"},1},
