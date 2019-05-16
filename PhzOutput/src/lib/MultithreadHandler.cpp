@@ -34,7 +34,7 @@ namespace Euclid {
 namespace PhzOutput {
 
 MultithreadHandler::MultithreadHandler(PhzOutput::OutputHandler& handler, std::atomic<size_t>& progress,
-                                       const std::vector<decltype(std::declval<SourceCatalog::Source>().getId())>& order)
+                                       const std::vector<typename SourceCatalog::Source::id_type>& order)
         : m_handler(handler), m_progress(progress) {
   for (auto id : order) {
     m_index_map[id] = m_result_list.size();

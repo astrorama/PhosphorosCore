@@ -20,7 +20,7 @@ using namespace Euclid::SourceCatalog;
 
 struct FindMedianPhotometricCorrectionsFunctor_Fixture {
 
-  std::map<int64_t, PhzDataModel::PhotometricCorrectionMap> source_phot_corr_map
+  std::map<Source::id_type, PhzDataModel::PhotometricCorrectionMap> source_phot_corr_map
   {
     {1,{
           {XYDataset::QualifiedName{"Filter_1"},1},
@@ -49,8 +49,23 @@ struct FindMedianPhotometricCorrectionsFunctor_Fixture {
     }
   };
 
-  std::vector<int64_t> sources {1,2,3,4,5};
-
+    vector<Source> sources {
+        {1, {shared_ptr<Attribute>{new Photometry{make_shared<vector<string>>(
+            initializer_list<string>{"Filter_1", "Filter_2","Filter_3", "Filter_4"}),
+                                                  vector<FluxErrorPair>{   {1., 1.},  {11., 11.},  {100., 1.},  {100., 100.}}}}}},
+        {2, {shared_ptr<Attribute>{new Photometry{make_shared<vector<string>>(
+            initializer_list<string>{"Filter_1", "Filter_2","Filter_3", "Filter_4"}),
+                                                  vector<FluxErrorPair>{   {3., 3.}, {10., 10.},  {101., 100.},  {101., 100.}}}}}},
+        {3, {shared_ptr<Attribute>{new Photometry{make_shared<vector<string>>(
+            initializer_list<string>{"Filter_1", "Filter_2","Filter_3", "Filter_4"}),
+                                                  vector<FluxErrorPair>{   {5., 5.}, {8., 8.},  {102., 100.},  {102., 100.}}}}}},
+        {4, {shared_ptr<Attribute>{new Photometry{make_shared<vector<string>>(
+            initializer_list<string>{"Filter_1", "Filter_2","Filter_3", "Filter_4"}),
+                                                  vector<FluxErrorPair>{   {7., 7.}, {12., 4.},  {103., 100.},  {103., 100.}}}}}},
+        {5, {shared_ptr<Attribute>{new Photometry{make_shared<vector<string>>(
+            initializer_list<string>{"Filter_1", "Filter_2","Filter_3", "Filter_4"}),
+                                                  vector<FluxErrorPair>{   {101., 101.}, {20., 5.},  {104., 100.},  {104., 1.}}}}}}
+    };
 };
 
 //-----------------------------------------------------------------------------
