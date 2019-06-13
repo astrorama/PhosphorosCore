@@ -39,7 +39,7 @@ SedDataProvider::SedDataProvider(const boost::filesystem::path &path)
   }
 }
 
-XYDataset::XYDataset SedDataProvider::readSed(off64_t position, int64_t *id) const {
+XYDataset::XYDataset SedDataProvider::readSed(int64_t position, int64_t *id) const {
   m_fd->clear();
   m_fd->exceptions(std::ios::badbit | std::ios::failbit);
 
@@ -77,7 +77,7 @@ size_t SedDataProvider::size() const {
   return boost::filesystem::file_size(m_path);
 }
 
-off64_t SedDataProvider::addSed(int64_t id, const XYDataset::XYDataset &data) {
+int64_t SedDataProvider::addSed(int64_t id, const XYDataset::XYDataset &data) {
   m_fd->clear();
   m_fd->exceptions(std::ios::badbit | std::ios::failbit);
 

@@ -9,12 +9,10 @@
 
 #include "SourceCatalog/Catalog.h"
 #include "PhzLikelihood/ScaleFactorFunctor.h"
+#include "PhzUtils/SourceTraits.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
-
-typedef std::map<int64_t, double> ScaleFactorMap;
-
 
 
 /**
@@ -63,10 +61,10 @@ public:
     * its best fitted model.
     */
   template<typename SourceIter,typename ModelPhotPtr>
-  ScaleFactorMap operator()(
+  std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, double> operator()(
       SourceIter source_begin,
       SourceIter source_end,
-      const std::map<int64_t, ModelPhotPtr>& model_phot_map) const;
+      const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhotPtr>& model_phot_map) const;
 private:
   ScaleFactorCalc m_scale_factor_function;
 };

@@ -31,7 +31,7 @@ template<PhzDataModel::RegionResultType GridType>
 void LikelihoodHandler<GridType>::handleSourceOutput(
                                           const SourceCatalog::Source& source,
                                           const PhzDataModel::SourceResults& results) {
-  std::string id = std::to_string(source.getId());
+  std::string id = boost::lexical_cast<std::string>(source.getId());
   std::string filename = (m_out_dir/(id+".fits")).string();
   fs::remove(filename);
   

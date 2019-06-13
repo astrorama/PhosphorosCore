@@ -115,10 +115,20 @@ BOOST_FIXTURE_TEST_CASE(single_prior, GenericGridPriorConfig_fixture) {
   // Then
   BOOST_CHECK_EQUAL(prior_list.size(), 1);
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, it.axisIndex<PhzDataModel::ModelParameter::SED>() *
-                           it.axisIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>() *
-                           it.axisIndex<PhzDataModel::ModelParameter::EBV>() *
-                           it.axisIndex<PhzDataModel::ModelParameter::Z>());
+
+    double prior_value = it.axisIndex<PhzDataModel::ModelParameter::SED>() *
+        it.axisIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>() *
+        it.axisIndex<PhzDataModel::ModelParameter::EBV>() *
+        it.axisIndex<PhzDataModel::ModelParameter::Z>();
+
+    double min_value = std::exp(std::numeric_limits<double>::min());
+
+    double log_value = std::numeric_limits<double>::min();
+    if (prior_value > min_value){
+      log_value =std::log(prior_value) +1.;
+    }
+
+    BOOST_CHECK_CLOSE(*it, log_value,0.0001);
   }
   
 }
@@ -140,12 +150,19 @@ BOOST_FIXTURE_TEST_CASE(two_priors, GenericGridPriorConfig_fixture) {
   // Then
   BOOST_CHECK_EQUAL(prior_list.size(), 2);
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, std::pow(it.axisIndex<PhzDataModel::ModelParameter::SED>() *
-                                    it.axisIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>() *
-                                    it.axisIndex<PhzDataModel::ModelParameter::EBV>() *
-                                    it.axisIndex<PhzDataModel::ModelParameter::Z>(), 2));
+    double prior_value = it.axisIndex<PhzDataModel::ModelParameter::SED>() *
+       it.axisIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>() *
+       it.axisIndex<PhzDataModel::ModelParameter::EBV>() *
+       it.axisIndex<PhzDataModel::ModelParameter::Z>();
+
+    double min_value = std::exp(std::numeric_limits<double>::min());
+
+    double log_value = std::numeric_limits<double>::min();
+    if (prior_value > min_value) {
+     log_value = 2*std::log(prior_value) +1.;
+    }
+    BOOST_CHECK_CLOSE(*it, log_value,0.0001);
   }
-  
 }
 
 //-----------------------------------------------------------------------------

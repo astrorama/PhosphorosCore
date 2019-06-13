@@ -38,7 +38,7 @@ FindBestFitModels<SourceCalculatorFunctor>::FindBestFitModels(
 }
 
 template<typename SourceCalculatorFunctor>
-std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator> FindBestFitModels<SourceCalculatorFunctor>::operator()(
+std::map<SourceCatalog::Source::id_type, PhzDataModel::PhotometryGrid::const_iterator> FindBestFitModels<SourceCalculatorFunctor>::operator()(
     const SourceCatalog::Catalog& calibration_catalog,
     const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
     const PhzDataModel::PhotometricCorrectionMap& photometric_correction) {
@@ -46,7 +46,7 @@ std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator> FindBestFitModel
   using namespace std;
   auto logger = Elements::Logging::getLogger("FindBestFitModels");
 
-  auto best_fit_map = map<int64_t, PhzDataModel::PhotometryGrid::const_iterator>();
+  auto best_fit_map = map<SourceCatalog::Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>();
   
   // We are going to ignore any source that its redshift is outside of all model
   // grid ranges, as it cannot give us any useful information. For this reason
@@ -68,7 +68,7 @@ std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator> FindBestFitModel
 
   for (auto& source : calibration_catalog) {
 
-    int64_t source_id = source.getId();
+    auto source_id = source.getId();
 
     shared_ptr < SourceCatalog::SpectroscopicRedshift > redshift_ptr =
         source.getAttribute<SourceCatalog::SpectroscopicRedshift>();

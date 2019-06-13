@@ -37,3 +37,5 @@ elements_add_unit_test(PhotometryGridCreator_test tests/src/PhotometryGridCreato
                        LINK_LIBRARIES XYDataset PhzModeling TYPE Boost)
 elements_add_unit_test(IntegrateDatasetFunctor_test tests/src/IntegrateDatasetFunctor_test.cpp
                        LINK_LIBRARIES PhzModeling TYPE Boost)
+elements_add_unit_test(IntegrateLambdaTimeDatasetFunctor_test tests/src/IntegrateLambdaTimeDatasetFunctor_test.cpp
+                       LINK_LIBRARIES PhzModeling TYPE Boost)

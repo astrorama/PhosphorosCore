@@ -28,9 +28,12 @@ namespace Euclid {
 namespace PhzOutput {
 namespace ColumnHandlers {
 
+Id::Id(std::type_index type): m_id_type(type) {
+}
+
 std::vector<Table::ColumnInfo::info_type> Id::getColumnInfoList() const {
   return std::vector<Table::ColumnInfo::info_type> {
-    Table::ColumnInfo::info_type("ID", typeid(int64_t))
+    Table::ColumnInfo::info_type("ID", m_id_type)
   };
 }
 

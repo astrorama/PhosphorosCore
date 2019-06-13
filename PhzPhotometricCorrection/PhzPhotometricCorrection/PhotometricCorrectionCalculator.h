@@ -24,17 +24,18 @@ class PhotometricCorrectionCalculator {
 public:
   
   typedef std::function<void(size_t iter_no, const PhzDataModel::PhotometricCorrectionMap& phot_corr)> ProgressListener;
+  typedef SourceCatalog::Source::id_type source_id_type;
   
-  typedef std::function<std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator>(
+  typedef std::function<std::map<source_id_type, PhzDataModel::PhotometryGrid::const_iterator>(
                   const SourceCatalog::Catalog& calibration_catalog,
                   const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
                   const PhzDataModel::PhotometricCorrectionMap& photometric_correction
             )> FindBestFitModelsFunction;
   
-  typedef std::function<std::map<int64_t, double>(
+  typedef std::function<std::map<source_id_type, double>(
                   SourceCatalog::Catalog::const_iterator source_begin,
                   SourceCatalog::Catalog::const_iterator source_end,
-                  const std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator>& model_phot_map
+                  const std::map<source_id_type, PhzDataModel::PhotometryGrid::const_iterator>& model_phot_map
             )> CalculateScaleFactorsMapFunction;
   
   typedef PhzPhotometricCorrection::PhotometricCorrectionAlgorithm::PhotometricCorrectionSelector<SourceCatalog::Catalog::const_iterator> SelectorFunction;
@@ -42,8 +43,8 @@ public:
   typedef std::function<PhzDataModel::PhotometricCorrectionMap(
                   SourceCatalog::Catalog::const_iterator source_begin,
                   SourceCatalog::Catalog::const_iterator source_end,
-                  const std::map<int64_t, double>& scale_factor_map,
-                  const std::map<int64_t, PhzDataModel::PhotometryGrid::const_iterator>& model_phot_map,
+                  const std::map<source_id_type, double>& scale_factor_map,
+                  const std::map<source_id_type, PhzDataModel::PhotometryGrid::const_iterator>& model_phot_map,
                   SelectorFunction selector
             )> CalculatePhotometricCorrectionFunction;
   

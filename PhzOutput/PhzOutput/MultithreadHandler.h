@@ -62,7 +62,7 @@ public:
    * @param order The order in which the results will be handled
    */
   MultithreadHandler(PhzOutput::OutputHandler& handler, std::atomic<size_t>& progress,
-                     const std::vector<decltype(std::declval<SourceCatalog::Source>().getId())>& order);
+                     const std::vector<typename SourceCatalog::Source::id_type>& order);
 
   /**
    * @brief Destructor
@@ -100,7 +100,7 @@ private:
   PhzOutput::OutputHandler& m_handler;
   std::atomic<size_t>& m_progress;
   std::vector<std::unique_ptr<ResultType>> m_result_list {};
-  std::map<decltype(std::declval<SourceCatalog::Source>().getId()), std::size_t> m_index_map {};
+  std::map<typename SourceCatalog::Source::id_type, std::size_t> m_index_map {};
   std::mutex m_mutex {};
   std::size_t m_next_to_output_index {0};
 
