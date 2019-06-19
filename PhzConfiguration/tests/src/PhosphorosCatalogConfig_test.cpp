@@ -95,7 +95,7 @@ BOOST_FIXTURE_TEST_CASE( nominal_test, PhosphorosCatalogConfig_fixture ) {
   
   // Then
   BOOST_CHECK_EQUAL(catalog.size(), 1);
-  BOOST_CHECK_EQUAL(catalog.find(1)->getId(), 1);
+  BOOST_CHECK_EQUAL(boost::get<int64_t>(catalog.find(1)->getId()), 1);
   BOOST_CHECK_EQUAL(mapping.size(), 2);
   BOOST_CHECK_EQUAL(mapping[0].first, "Filter1");
   BOOST_CHECK_EQUAL(mapping[1].first, "Filter2");

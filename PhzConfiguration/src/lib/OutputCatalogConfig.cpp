@@ -22,6 +22,7 @@
  * @author nikoapos
  */
 
+#include "Configuration/CatalogConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
 #include "PhzConfiguration/PhzOutputDirConfig.h"
 #include "PhzOutput/PhzCatalog.h"
@@ -36,10 +37,8 @@ static const std::string OUTPUT_CATALOG_FORMAT {"output-catalog-format"};
 static const std::string OUTPUT_FLUSH_SIZE {"output-flush-size"};
 
 OutputCatalogConfig::OutputCatalogConfig(long manager_id) : Configuration(manager_id) {
+  declareDependency<Euclid::Configuration::CatalogConfig>();
   declareDependency<PhzOutputDirConfig>();
-
-  // The ID is always a part of the catalog
-  m_column_handler_list.emplace_back(new PhzOutput::ColumnHandlers::Id {});
 }
 
 auto OutputCatalogConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -68,6 +67,18 @@ void OutputCatalogConfig::preInitialize(const UserValues& args) {
 
 void OutputCatalogConfig::initialize(const UserValues& args) {
   auto output_dir = getDependency<PhzOutputDirConfig>().getPhzOutputDir();
+  auto catalog_config =  getDependency<Euclid::Configuration::CatalogConfig>();
+
+  // The ID is always a part of the catalog
+  auto column_info = catalog_config.getColumnInfo();
+  auto id_column = catalog_config.getIdColumn();
+  auto id_index = column_info->find(id_column);
+  if (!id_index) {
+    // This really should have happened sooner
+    throw Elements::Exception() << "Could not find the ID column on the input catalog";
+  }
+  auto id_info = column_info->getDescription(*id_index);
+  m_column_handler_list.emplace_back(new PhzOutput::ColumnHandlers::Id {id_info.type});
 
   if (args.at(OUTPUT_CATALOG_FORMAT).as<std::string>() == "ASCII") {
     m_format = PhzOutput::PhzCatalog::Format::ASCII;

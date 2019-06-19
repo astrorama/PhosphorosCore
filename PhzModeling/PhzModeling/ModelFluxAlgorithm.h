@@ -8,7 +8,7 @@
 #define PHZMODELING_MODELFLUXALGORITHM_H
 
 #include <functional>
-#include "PhzModeling/IntegrateDatasetFunctor.h"
+#include "PhzModeling/IntegrateLambdaTimeDatasetFunctor.h"
 
 namespace Euclid {
 namespace MathUtils {
@@ -62,7 +62,7 @@ public:
    *
    */
   ModelFluxAlgorithm(ApplyFilterFunction apply_filter_function,
-      IntegrateDatasetFunction integrate_dataset_function=IntegrateDatasetFunctor{MathUtils::InterpolationType::LINEAR});
+      IntegrateDatasetFunction integrate_dataset_function=IntegrateLambdaTimeDatasetFunctor{MathUtils::InterpolationType::LINEAR});
 
   /**
    * @brief  Function Call Operator

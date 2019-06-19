@@ -28,7 +28,7 @@ struct CalculateScaleFactorMap_Fixture {
 
   std::vector<SourceCatalog::Source> m_catalog{};
 
-  std::map<int64_t, SourceCatalog::Photometry> model_map{};
+  std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> model_map{};
 
 
   CalculateScaleFactorMap_Fixture(){

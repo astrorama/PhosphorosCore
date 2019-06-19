@@ -24,8 +24,8 @@ template<typename SourceIter, typename ModelPhot>
 ScaleFactorMap CalculateScaleFactorMap::operator()(
     SourceIter source_begin,
     SourceIter source_end,
-    const std::map<int64_t, ModelPhot>& model_phot_map) const{
-    auto result_map= ScaleFactorMap();
+    const std::map<SourceCatalog::Source::id_type, ModelPhot>& model_phot_map) const{
+    auto result_map = ScaleFactorMap();
 
     for (; source_begin!=source_end; ++source_begin) {
       auto source_id = source_begin->getId();

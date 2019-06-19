@@ -3,6 +3,7 @@ elements_subdir(PhzPhotometricCorrection)
 elements_depends_on_subdirs(SourceCatalog)
 elements_depends_on_subdirs(PhzDataModel)
 elements_depends_on_subdirs(PhzLikelihood)
+elements_depends_on_subdirs(PhzUtils)
 
 
 find_package(GMock)
