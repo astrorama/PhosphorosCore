@@ -132,16 +132,16 @@ public:
               XYDataset::XYDataset& red_exp_dataset,
               PhzModeling::ModelDatasetGrid::iterator model_begin,
               PhzModeling::ModelDatasetGrid::iterator model_end,
-              PhzDataModel::PhotometryGrid::iterator correction_begin,
+              typename PhzDataModel::PhotometryGrid::iterator correction_begin,
               std::atomic<size_t>& m_progress,
-              std::atomic<uint>& done_counter)
-        : m_filter_name_shared_ptr{filter_name_shared_ptr},
-          m_filter_info_vector{filter_info_vector},
-          m_filter_functor{filter_functor},
-          m_integrate_funct{integrate_funct},
-          m_red_range{red_range},
-          m_red_dataset{red_dataset},
-          m_red_exp_dataset{red_exp_dataset},
+              std::atomic<size_t>& done_counter)
+        : m_filter_name_shared_ptr(filter_name_shared_ptr),
+          m_filter_info_vector(filter_info_vector),
+          m_filter_functor(filter_functor),
+          m_integrate_funct(integrate_funct),
+          m_red_range(red_range),
+          m_red_dataset(red_dataset),
+          m_red_exp_dataset(red_exp_dataset),
           m_model_begin(model_begin),
           m_model_end(model_end),
           m_correction_begin(correction_begin),
@@ -198,10 +198,10 @@ private:
 
   class DoneUpdater {
   public:
-    DoneUpdater(std::atomic<uint>& m_done_counter) : m_done_counter(m_done_counter) { }
+    DoneUpdater(std::atomic<size_t>& m_done_counter) : m_done_counter(m_done_counter) { }
     virtual ~DoneUpdater() {++m_done_counter;}
   private:
-    std::atomic<uint>& m_done_counter;
+    std::atomic<size_t>& m_done_counter;
   };
   std::shared_ptr<std::vector<std::string>> m_filter_name_shared_ptr;
   std::vector<PhzDataModel::FilterInfo> & m_filter_info_vector;
@@ -214,7 +214,7 @@ private:
   PhzModeling::ModelDatasetGrid::iterator m_model_end;
   PhzDataModel::PhotometryGrid::iterator m_correction_begin;
   std::atomic<size_t>& m_progress;
-  std::atomic<uint>& m_done_counter;
+  std::atomic<size_t>& m_done_counter;
 
 };
 ////////////////////////////////////////////////////////////////////////////////
@@ -227,7 +227,7 @@ PhzDataModel::PhotometryGrid GalacticCorrectionSingleGridCreator::createGrid(
   // Create the maps
   auto filter_map = buildMap(*m_filter_provider, filter_name_list.begin(), filter_name_list.end());
   auto filter_name_shared_ptr = createSharedPointer(filter_name_list);
-  auto filter_info_vector {manageFilters(filter_name_list, filter_map)};
+  auto filter_info_vector = manageFilters(filter_name_list, filter_map);
 
   auto sed_name_list = std::get<PhzDataModel::ModelParameter::SED>(parameter_space);
   auto sed_map = buildMap(*m_sed_provider, sed_name_list.begin(), sed_name_list.end());
@@ -268,8 +268,8 @@ PhzDataModel::PhotometryGrid GalacticCorrectionSingleGridCreator::createGrid(
    // Here we keep the futures for the threads we start so we can wait for them
    std::vector<std::future<void>> futures;
    std::atomic<size_t> progress {0};
-   std::atomic<uint> done_counter {0};
-   uint threads = PhzUtils::getThreadNumber();
+   std::atomic<size_t> done_counter {0};
+   size_t threads = PhzUtils::getThreadNumber();
    size_t total_models = model_grid.size();
    logger.info() << "Creating Correctiond for " << total_models << " models";
    if (total_models < threads) {
@@ -282,7 +282,7 @@ PhzDataModel::PhotometryGrid GalacticCorrectionSingleGridCreator::createGrid(
    auto correction_iter = correction_grid.begin();
    std::size_t step = total_models / threads;
 
-   for (uint i = 0; i < threads; ++i) {
+   for (size_t i = 0; i < threads; ++i) {
      std::advance(end_model_iter, step);
      futures.push_back(std::async(std::launch::async, ParallelJob (
        filter_name_shared_ptr,
