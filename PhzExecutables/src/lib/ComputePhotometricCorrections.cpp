@@ -28,6 +28,7 @@
 #include "PhzConfiguration/ComputePhotometricCorrectionsConfig.h"
 #include "PhzConfiguration/LikelihoodGridFuncConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
+#include "PhzConfiguration/MarginalizationConfig.h"
 
 #include "PhzPhotometricCorrection/FindBestFitModels.h"
 #include "PhzPhotometricCorrection/CalculateScaleFactorMap.h"
@@ -35,6 +36,7 @@
 #include "PhzPhotometricCorrection/PhotometricCorrectionCalculator.h"
 
 #include "PhzExecutables/ComputePhotometricCorrections.h"
+#include "PhzConfiguration/ModelGridModificationConfig.h"
 
 using namespace Euclid::Configuration;
 using namespace Euclid::PhzConfiguration;
@@ -71,10 +73,12 @@ void ComputePhotometricCorrections::run(ConfigManager& config_manager) {
   auto& likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
   auto scale_factor_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getScaleFactorFunction();
   auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();
+  auto& marginalization_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
+  auto& model_func_list = config_manager.getConfiguration<ModelGridModificationConfig>().getProcessModelGridFunctors();
   auto& output_func = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getOutputFunction();
   auto& stop_criteria = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getStopCriteria();
 
-  FindBestFitModels<PhzLikelihood::SourcePhzFunctor> find_best_fit_models {likelihood_grid_func, priors};
+  FindBestFitModels<PhzLikelihood::SourcePhzFunctor> find_best_fit_models {likelihood_grid_func, priors, marginalization_func_list, model_func_list};
   CalculateScaleFactorMap calculate_scale_factor_map {scale_factor_func};
   PhotometricCorrectionAlgorithm phot_corr_algorighm {};
   auto selector = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getPhotometricCorrectionSelector();

@@ -14,6 +14,9 @@
 namespace Euclid {
 namespace PhzPhotometricCorrection {
 
+typedef std::map<SourceCatalog::Source::id_type, double> ScaleFactorMap;
+
+
 
 /**
  * @class CalculateScaleFactorMap
@@ -55,16 +58,16 @@ public:
     * The end iterator over the sources.
     *
     * @param modelMap
-    * A BestFitmodelMap pairing the sources Id with a pointer to the best fit model.
+    * A BestFitmodelMap pairing the sources Id with photometry of the best fit model.
     *
     * @return A map pairing the source Id with the computed scale factor for
     * its best fitted model.
     */
-  template<typename SourceIter,typename ModelPhotPtr>
-  std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, double> operator()(
+  template<typename SourceIter,typename ModelPhot>
+  ScaleFactorMap operator()(
       SourceIter source_begin,
       SourceIter source_end,
-      const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhotPtr>& model_phot_map) const;
+      const std::map<SourceCatalog::Source::id_type, ModelPhot>& model_phot_map) const;
 private:
   ScaleFactorCalc m_scale_factor_function;
 };

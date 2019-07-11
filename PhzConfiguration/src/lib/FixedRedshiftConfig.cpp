@@ -51,7 +51,15 @@ void FixedRedshiftConfig::initialize(const UserValues& args) {
     auto fixed_z_column = args.at(FIXED_REDSHIFT_COLUMN).as<std::string>();
     auto handler = std::make_shared<PhzDataModel::FixedRedshiftFromRow>(column_info, fixed_z_column);
     catalog_conf.addAttributeHandler(handler);
+    m_do_fix_redshift = true;
   }
+}
+
+bool FixedRedshiftConfig::isRedshiftFixed() {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+        throw Elements::Exception() << "Call to isRedshiftFixed() on a not initialized instance.";
+  }
+  return m_do_fix_redshift;
 }
 
 } // PhzConfiguration namespace

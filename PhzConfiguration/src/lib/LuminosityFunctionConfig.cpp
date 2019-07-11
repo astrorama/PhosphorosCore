@@ -176,6 +176,11 @@ void LuminosityFunctionConfig::initialize(const UserValues& args){
       auto path = getDependency<AuxDataDirConfig>().getAuxDataDir() / "LuminosityFunctionCurves";
       XYDataset::FileSystemProvider fsp (path.string(), std::move(fp));
       auto dataset_ptr = fsp.getDataset(dataset_identifier);
+
+      if (!dataset_ptr) {
+        throw Elements::Exception() << "The Luminosity Function Curve '" << curve_name << "' was not found in " << path.string();
+      }
+
       auto fct_ptr = MathUtils::interpolate(*(dataset_ptr.get()),MathUtils::InterpolationType::LINEAR);
       vector.push_back(std::make_pair(std::move(domain),std::move(fct_ptr)));
 

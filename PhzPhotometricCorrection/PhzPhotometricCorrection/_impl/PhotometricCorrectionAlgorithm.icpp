@@ -16,11 +16,11 @@
 namespace Euclid {
 namespace PhzPhotometricCorrection {
 
-template <typename SourceIter, typename ModelPhotPtr>
+template <typename SourceIter, typename ModelPhot>
 static std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap> createSourcePhotCorrMap(
                                   SourceIter source, SourceIter source_end,
                                   const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, double>& scale_factor_map,
-                                  const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhotPtr>& model_phot_map) {
+                                  const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhot>& model_phot_map) {
 
   // Iterate through the sources and calcualte their optimal photometric corerctions
   std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap> result {};
@@ -53,9 +53,11 @@ static std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDat
           << " is not available";
     }
 
+    const SourceCatalog::Photometry& model_photometry = model_phot->second;
+
     PhzDataModel::PhotometricCorrectionMap source_phot_corr {};
     for (auto source_iter=source_phot_ptr->begin(); source_iter!=source_phot_ptr->end(); ++source_iter) {
-      auto model_ptr = model_phot->second->find(source_iter.filterName());
+      auto model_ptr = model_photometry.find(source_iter.filterName());
       source_phot_corr[source_iter.filterName()] = scale->second * model_ptr->flux / (*source_iter).flux;
     }
     result[source->getId()] = std::move(source_phot_corr);
@@ -79,11 +81,11 @@ static PhzDataModel::PhotometricCorrectionMap normalizePhotCorr(const PhzDataMod
   return result;
 }
 
-template <typename SourceIter, typename ModelPhotPtr>
+template <typename SourceIter, typename ModelPhot>
 PhzDataModel::PhotometricCorrectionMap PhotometricCorrectionAlgorithm::operator ()(
                                   SourceIter source_begin, SourceIter source_end,
                                   const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, double>& scale_factor_map,
-                                  const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhotPtr>& model_phot_map,
+                                  const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhot>& model_phot_map,
                                   PhotometricCorrectionSelector<SourceIter> selector) {
 
   // Check that we have some sources

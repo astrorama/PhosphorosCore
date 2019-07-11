@@ -9,6 +9,9 @@
 
 #include <map>
 #include <string>
+#include <vector>
+#include <memory>
+#include "SourceCatalog/Source.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzDataModel/SourceResults.h"
 #include "PhzLikelihood/SingleGridPhzFunctor.h"
@@ -16,6 +19,7 @@
 #include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
 #include "PhzLikelihood/ScaleFactorFunctor.h"
 #include "PhzLikelihood/ChiSquareLikelihoodLogarithm.h"
+#include "PhzLikelihood/ProcessModelGridFunctor.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -69,6 +73,7 @@ public:
                    LikelihoodGridFunction likelihood_grid_func,
                    std::vector<PriorFunction> priors = {},
                    std::vector<MarginalizationFunction> marginalization_func_list = {BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}},
+                   std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list ={},
                    bool doNormalizePdf = true);
 
 
@@ -78,20 +83,20 @@ public:
    * the SingleGridPhzFunctor is used to produce the results for each region of
    * the parameter space. These results are then combined to the final results.
    *
-   * @param source_phot
-   *    The photometry of the source
-   * @param fixed_z
-   *    If not negative, the redshift will be fixed to the given value
+   * @param source
+   *    The source object
+
    * @return
    *    The PHZ results for the given source
    */
-  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot, double fixed_z=-99) const;
+  PhzDataModel::SourceResults operator()(const SourceCatalog::Source & source) const;
 
 private:
   PhzDataModel::PhotometricCorrectionMap m_phot_corr_map;
   const std::map<std::string, PhzDataModel::PhotometryGrid>& m_phot_grid_map;
-  bool m_do_normalize_pdf;
   std::map<std::string, SingleGridPhzFunctor> m_single_grid_functor_map {};
+  std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> m_model_funct_list;
+  bool m_do_normalize_pdf;
 
 };
 

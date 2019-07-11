@@ -13,6 +13,9 @@
 #include "ElementsKernel/EnableGMock.h"
 
 #include "PhzLikelihood/SourcePhzFunctor.h"
+#include "SourceCatalog/Source.h"
+#include "PhzLikelihood/ProcessModelGridFunctor.h"
+#include "PhzLikelihood/SingleGridPhzFunctor.h"
 
 using namespace testing;
 
@@ -27,7 +30,9 @@ public:
   SourcePhzCalculatorMock(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
      const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
      PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction,
-     std::vector<PhzLikelihood::SourcePhzFunctor::PriorFunction>):
+     std::vector<PhzLikelihood::SourcePhzFunctor::PriorFunction>,
+     std::vector<PhzLikelihood::SingleGridPhzFunctor::MarginalizationFunction> ,
+     std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> ):
        m_phot_corr_map{std::move(phot_corr_map)},
        m_phot_grid(model_grid_map.at("")){
         expectFunctorCall();
@@ -36,10 +41,10 @@ public:
       }
 
   MOCK_METHOD1(FunctorCall,
-      PhzDataModel::SourceResults*(const SourceCatalog::Photometry& source_phot));
+      PhzDataModel::SourceResults*(const SourceCatalog::Source & source));
 
-  PhzDataModel::SourceResults operator()(const SourceCatalog::Photometry& source_phot, double fixed_z=-99){
-    std::unique_ptr< PhzDataModel::SourceResults> res(FunctorCall(source_phot));
+  PhzDataModel::SourceResults operator()(const SourceCatalog::Source & source){
+    std::unique_ptr< PhzDataModel::SourceResults> res(FunctorCall(source));
     return std::move(*res);
   }
 

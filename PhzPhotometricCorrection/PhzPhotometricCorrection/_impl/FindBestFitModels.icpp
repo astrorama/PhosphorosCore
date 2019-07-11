@@ -10,6 +10,7 @@
 #include "PhzLikelihood/SourcePhzFunctor.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
+#include "PhzLikelihood/SingleGridPhzFunctor.h"
 
 #include "PhzLikelihood/LikelihoodGridFunctor.h"
 #include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
@@ -33,12 +34,17 @@ static constexpr double MAXIMALZ=1100.;
 template<typename SourceCalculatorFunctor>
 FindBestFitModels<SourceCalculatorFunctor>::FindBestFitModels(
                                         LikelihoodGridFunction likelihood_func,
-                                        std::vector<PriorFunction> priors)
-        : m_likelihood_func(likelihood_func), m_priors(priors) {
+                                        std::vector<PriorFunction> priors,
+                                        std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> marginalization_func_list,
+                                        std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list)
+        : m_likelihood_func(likelihood_func),
+          m_priors(priors),
+          m_marginalization_func_list(marginalization_func_list),
+          m_model_funct_list(model_funct_list) {
 }
 
 template<typename SourceCalculatorFunctor>
-std::map<SourceCatalog::Source::id_type, PhzDataModel::PhotometryGrid::const_iterator> FindBestFitModels<SourceCalculatorFunctor>::operator()(
+std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> FindBestFitModels<SourceCalculatorFunctor>::operator()(
     const SourceCatalog::Catalog& calibration_catalog,
     const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
     const PhzDataModel::PhotometricCorrectionMap& photometric_correction) {
@@ -46,7 +52,7 @@ std::map<SourceCatalog::Source::id_type, PhzDataModel::PhotometryGrid::const_ite
   using namespace std;
   auto logger = Elements::Logging::getLogger("FindBestFitModels");
 
-  auto best_fit_map = map<SourceCatalog::Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>();
+  auto best_fit_map = map<SourceCatalog::Source::id_type, SourceCatalog::Photometry>();
   
   // We are going to ignore any source that its redshift is outside of all model
   // grid ranges, as it cannot give us any useful information. For this reason
@@ -96,11 +102,19 @@ std::map<SourceCatalog::Source::id_type, PhzDataModel::PhotometryGrid::const_ite
     }
 
     SourceCalculatorFunctor source_phz_calculator (
-        photometric_correction, model_grid_map, m_likelihood_func, m_priors
+        photometric_correction,
+        model_grid_map,
+        m_likelihood_func,
+        m_priors,
+        m_marginalization_func_list,
+        m_model_funct_list
     );
 
-    const PhzDataModel::SourceResults& res = source_phz_calculator(*photometry_ptr, expected_redshift);
-    best_fit_map.emplace(source_id, res.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>());
+    const PhzDataModel::SourceResults& res = source_phz_calculator(source);
+    auto& best_model =  res.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
+    auto photo = SourceCatalog::Photometry{*best_model};
+
+    best_fit_map.emplace(source_id, std::move(photo));
   }
 
   return best_fit_map;

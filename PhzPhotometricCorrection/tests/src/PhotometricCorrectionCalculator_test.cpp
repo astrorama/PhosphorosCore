@@ -19,14 +19,14 @@ using namespace testing;
 class FindBestFitModelsMock {
 public:
   virtual ~FindBestFitModelsMock() = default;
-  MOCK_METHOD3(FunctorCall, map<Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>(
+  MOCK_METHOD3(FunctorCall, map<Source::id_type,  SourceCatalog::Photometry>(
                   const Catalog& calibration_catalog,
                   const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
                   const PhzDataModel::PhotometricCorrectionMap& photometric_correction));
   void expectFunctorCall(const Catalog& expected_catalog,
                          const std::map<std::string, PhzDataModel::PhotometryGrid>& expected_model_grid_map,
                          const PhzDataModel::PhotometricCorrectionMap& expected_phot_corr,
-                         const map<Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>& result) {
+                         const map<Source::id_type, SourceCatalog::Photometry>& result) {
     EXPECT_CALL(*this, FunctorCall(
         Truly([&expected_catalog](const Catalog& catalog) { // First argument check
           BOOST_CHECK_EQUAL(catalog.size(), expected_catalog.size());
@@ -77,13 +77,13 @@ public:
   MOCK_METHOD3(FunctorCall, map<Source::id_type, double>(
                   Catalog::const_iterator source_begin,
                   Catalog::const_iterator source_end,
-                  const map<Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>& model_phot_map));
+                  const map<Source::id_type, SourceCatalog::Photometry>& model_phot_map));
   void expectFunctorCall(Catalog::const_iterator expected_source_begin,
                          Catalog::const_iterator expected_source_end,
-                         const map<Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>& expected_model_phot_map,
+                         const map<Source::id_type, SourceCatalog::Photometry>& expected_model_phot_map,
                          const map<Source::id_type, double> result) {
     EXPECT_CALL(*this, FunctorCall(_, _,
-        Truly([&expected_model_phot_map](const map<Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>& model_phot_map) {
+        Truly([&expected_model_phot_map](const map<Source::id_type,  SourceCatalog::Photometry>& model_phot_map) {
           BOOST_CHECK_EQUAL(model_phot_map.size(), expected_model_phot_map.size());
           for (auto iter=model_phot_map.begin(), exp_iter=expected_model_phot_map.begin(); iter!=model_phot_map.end(); ++iter, ++exp_iter) {
             BOOST_CHECK_EQUAL(iter->first, exp_iter->first);
@@ -105,7 +105,7 @@ public:
   Euclid::PhzPhotometricCorrection::PhotometricCorrectionCalculator::CalculateScaleFactorsMapFunction getFunctorObject() {
     return [=](SourceCatalog::Catalog::const_iterator source_begin,
                SourceCatalog::Catalog::const_iterator source_end,
-               const std::map<Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>& model_phot_map) {
+               const std::map<Source::id_type,  SourceCatalog::Photometry>& model_phot_map) {
       return this->FunctorCall(source_begin, source_end, model_phot_map);
     };
   }
@@ -118,11 +118,11 @@ public:
                   Catalog::const_iterator source_begin,
                   Catalog::const_iterator source_end,
                   const map<Source::id_type, double>& scale_factor_map,
-                  const map<Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>& model_phot_map));
+                  const map<Source::id_type,  SourceCatalog::Photometry>& model_phot_map));
   void expectFunctorCall(Catalog::const_iterator expected_source_begin,
                          Catalog::const_iterator expected_source_end,
                          const map<Source::id_type, double>& expected_scale_factor_map,
-                         const map<Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>& expected_model_phot_map,
+                         const map<Source::id_type,  SourceCatalog::Photometry>& expected_model_phot_map,
                          const PhzDataModel::PhotometricCorrectionMap& result) {
     EXPECT_CALL(*this, FunctorCall(_, _,
         Truly([&expected_scale_factor_map](const map<Source::id_type, double>& scale_factor_map) {
@@ -132,7 +132,7 @@ public:
           }
           return true;
         }),
-        Truly([&expected_model_phot_map](const map<Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>& model_phot_map) {
+        Truly([&expected_model_phot_map](const map<Source::id_type,  SourceCatalog::Photometry>& model_phot_map) {
           BOOST_CHECK_EQUAL(model_phot_map.size(), expected_model_phot_map.size());
           for (auto iter=model_phot_map.begin(), exp_iter=expected_model_phot_map.begin(); iter!=model_phot_map.end(); ++iter, ++exp_iter) {
             BOOST_CHECK_EQUAL(iter->first, exp_iter->first);
@@ -152,10 +152,10 @@ public:
   // used when these actions are needed (the mock instance does not support them). Note
   // that this object is valid only as long as the mock object is not deleted.
   Euclid::PhzPhotometricCorrection::PhotometricCorrectionCalculator::CalculatePhotometricCorrectionFunction getFunctorObject() {
-    return [=](Catalog::const_iterator source_begin,
-               Catalog::const_iterator source_end,
+    return [=](SourceCatalog::Catalog::const_iterator source_begin,
+               SourceCatalog::Catalog::const_iterator source_end,
                const std::map<Source::id_type, double>& scale_factor_map,
-               const std::map<Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>& model_phot_map,
+               const std::map<Source::id_type,  SourceCatalog::Photometry>& model_phot_map,
                Euclid::PhzPhotometricCorrection::PhotometricCorrectionCalculator::SelectorFunction) {
       return this->FunctorCall(source_begin, source_end, scale_factor_map, model_phot_map);
     };
@@ -214,9 +214,9 @@ BOOST_AUTO_TEST_CASE(FunctorCallSuccess) {
     {{{"Filter1"}, 2.}, {{"Filter2"}, 2.}},
     {{{"Filter1"}, 3.}, {{"Filter2"}, 3.}}
   };
-  vector<std::map<Source::id_type, PhzDataModel::PhotometryGrid::const_iterator>> best_fit_map_list {
-    {{1, model_grid_map.at("").cbegin()}},
-    {{2, model_grid_map.at("").cbegin()}}
+  vector<std::map<Source::id_type,  SourceCatalog::Photometry>> best_fit_map_list {
+    {{1, SourceCatalog::Photometry{*(model_grid_map.at("").cbegin())}}},
+    {{2, SourceCatalog::Photometry{*(model_grid_map.at("").cbegin())}}}
   };
   vector<std::map<Source::id_type, double>> scale_map_list {
     {{1, 0.}}, {{2, 0.}}
