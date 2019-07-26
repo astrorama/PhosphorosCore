@@ -126,7 +126,7 @@ struct FindBestFitModels_Fixture {
 
        ++filter_iter;
      }
-     return move(result);
+     return result;
    }
    
    PhzLikelihood::LikelihoodGridFunctor likelihood_func {

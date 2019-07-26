@@ -17,5 +17,5 @@ Euclid::XYDataset::XYDataset
     double reddened_value = sed_pair.second * std::pow(10, exponent);
     reddened_values.emplace_back(std::make_pair(sed_pair.first, reddened_value));
   }
-  return std::move(reddened_values);
+  return reddened_values;
 }

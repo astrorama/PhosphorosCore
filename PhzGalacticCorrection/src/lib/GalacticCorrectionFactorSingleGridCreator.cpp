@@ -77,7 +77,7 @@ std::vector<PhzDataModel::FilterInfo> manageFilters (
     }
   }
 
-  return std::move(vector);
+  return vector;
 }
 
 GalacticCorrectionSingleGridCreator::GalacticCorrectionSingleGridCreator(
@@ -324,7 +324,7 @@ PhzDataModel::PhotometryGrid GalacticCorrectionSingleGridCreator::createGrid(
      f.get();
    }
 
-  return std::move(correction_grid);
+  return correction_grid;
 }
 
 

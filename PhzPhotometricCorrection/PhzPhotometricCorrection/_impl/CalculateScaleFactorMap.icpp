@@ -44,7 +44,7 @@ ScaleFactorMap CalculateScaleFactorMap::operator()(
       result_map.emplace(std::make_pair(source_id, alpha));
     }
 
-    return std::move(result_map);
+    return result_map;
   }
 
 

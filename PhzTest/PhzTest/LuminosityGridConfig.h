@@ -67,14 +67,14 @@ public:
    */
   virtual ~LuminosityGridConfig() = default;
 
-  auto getProgramOptions () -> std::map<std::string, OptionDescriptionList> {
+  auto getProgramOptions () -> std::map<std::string, OptionDescriptionList> override {
     return { {"Luminosity Grid options", {
           { LUMINOSITY_MODEL_GRID_FILE.c_str(), po::value<std::string>(),
             "The path of the pluminosity grid file"}
         }}};
   }
 
-  void initialize(const UserValues& args) override{
+  void initialize(const UserValues& args) override {
       auto& intermediate_dir = getDependency<PhzConfiguration::IntermediateDirConfig>().getIntermediateDir();
       auto& catalog_dir = getDependency<PhzConfiguration::CatalogTypeConfig>().getCatalogType();
       fs::path filename = intermediate_dir / catalog_dir / "LuminosityModelGrids" / "model_grid.dat";

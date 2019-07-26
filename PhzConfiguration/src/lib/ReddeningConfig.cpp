@@ -139,7 +139,7 @@ static std::vector<double> getRegionEbvList(const std::string& region_name,
     std::vector<std::tuple<double, double, double>> ranges_list {};
     try {
       ranges_list = parseRanges(options.at(EBV_RANGE+postfix).as<std::vector<std::string>>());
-    } catch (Elements::Exception ex) {
+    } catch (const Elements::Exception& ex) {
       throw Elements::Exception() << "Invalid " << (EBV_RANGE+postfix) << " option : " << ex.what();
     }
     

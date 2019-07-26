@@ -95,7 +95,7 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
     for (auto& pair : filter_mapping) {
       filter_names->push_back(pair.first);
     }
-  } catch (Elements::Exception e) {
+  } catch (const Elements::Exception& e) {
     // The exception means the PhotometricBandMappingConfig was not registered
   }
     
