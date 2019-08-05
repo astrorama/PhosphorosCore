@@ -11,7 +11,7 @@
 #include <cmath>
 #include <vector>
 #include "XYDataset/QualifiedName.h"
-#include "MathUtils/function/Function.h"
+#include "MathUtils/function/Integrable.h"
 
 
 namespace Euclid {
@@ -22,7 +22,7 @@ namespace PhzLuminosity {
  *
  * @brief The Schechter Luminosity Function in magnitude or flux.
  */
-class SchechterLuminosityFunction :public MathUtils::Function{
+class SchechterLuminosityFunction :public MathUtils::Integrable{
 public:
   /**
    * @brief constructor
@@ -50,6 +50,14 @@ public:
     * @return The density of galaxy by computing the Schechter function.
     */
   double operator()(const double luminosity) const override;
+
+  /**
+   * Calculates the integral of the function in the range [a,b].
+   * @param a The lower bound of the integration
+   * @param b The upper bound of the integration
+   * @return The integral of the function in the range [a,b]
+   */
+  double integrate(const double a, const double b) const override;
 
   std::unique_ptr<MathUtils::Function> clone() const override;
 

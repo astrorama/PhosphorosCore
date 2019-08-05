@@ -6,6 +6,7 @@
 
 #include "PhzLikelihood/ParallelCatalogHandler.h"
 #include "PhzUtils/Multithreading.h"
+#include "PhzLikelihood/ProcessModelGridFunctor.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -15,8 +16,15 @@ ParallelCatalogHandler::ParallelCatalogHandler(PhzDataModel::PhotometricCorrecti
                                                LikelihoodGridFunction likelihood_grid_func,
                                                std::vector<StaticPriorFunction> static_priors,
                                                std::vector<MarginalizationFunction> marginalization_func_list,
+                                               std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list,
                                                bool doNormalizePdf)
-        : m_catalog_handler{phot_corr_map, phot_grid_map, std::move(likelihood_grid_func), std::move(static_priors), std::move(marginalization_func_list), doNormalizePdf} { }
+        : m_catalog_handler{phot_corr_map,
+                            phot_grid_map,
+                            std::move(likelihood_grid_func),
+                            std::move(static_priors),
+                            std::move(marginalization_func_list),
+                            std::move(model_funct_list),
+                            doNormalizePdf} { }
 
 ParallelCatalogHandler::~ParallelCatalogHandler() {
   // The multithreaded job is done, so reset the stop threads flag

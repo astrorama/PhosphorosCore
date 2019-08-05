@@ -66,7 +66,7 @@ void ParallelCatalogHandler::handleSources(SourceIter source_begin, SourceIter s
   std::atomic<size_t> progress {0};
   std::atomic<uint> done_counter {0};
   
-  std::vector<decltype(std::declval<SourceCatalog::Source>().getId())> source_id_order {};
+  std::vector<typename SourceCatalog::Source::id_type> source_id_order {};
   for (auto it = source_begin; it != source_end; ++it) {
     source_id_order.emplace_back(it->getId());
   }

@@ -35,26 +35,26 @@ struct PhotometricCorrectionAlgorithm_Fixture {
         vector<FluxErrorPair>{   {3.1, 0.1}, {3.2, 0.2}}}}}}
   };
   
-  map<int64_t, double> scale_factors {
+  map<Source::id_type, double> scale_factors {
     {1, 1.5},
     {2, 2.5},
     {3, 4.5},
     {4, 3.5}
   };
   
-  map<int64_t, shared_ptr<Photometry>> models {
-    {1, shared_ptr<Photometry>{new Photometry{make_shared<vector<string>>(
+  map<Source::id_type, Photometry> models {
+    {1, Photometry{make_shared<vector<string>>(
         initializer_list<string>{"Filter1", "Filter2"}),
-        vector<FluxErrorPair>{   {.11, 0.},  {.12, 0.}}}}},
-    {2, shared_ptr<Photometry>{new Photometry{make_shared<vector<string>>(
+        vector<FluxErrorPair>{   {.11, 0.},  {.12, 0.}}}},
+    {2, Photometry{make_shared<vector<string>>(
         initializer_list<string>{"Filter1", "Filter2"}),
-        vector<FluxErrorPair>{   {.21, 0.},  {.22, 0.}}}}},
-    {3, shared_ptr<Photometry>{new Photometry{make_shared<vector<string>>(
+        vector<FluxErrorPair>{   {.21, 0.},  {.22, 0.}}}},
+    {3, Photometry{make_shared<vector<string>>(
         initializer_list<string>{"Filter1", "Filter2"}),
-        vector<FluxErrorPair>{   {.41, 0.},  {.42, 0.}}}}},
-    {4, shared_ptr<Photometry>{new Photometry{make_shared<vector<string>>(
+        vector<FluxErrorPair>{   {.41, 0.},  {.42, 0.}}}},
+    {4, Photometry{make_shared<vector<string>>(
         initializer_list<string>{"Filter1", "Filter2"}),
-        vector<FluxErrorPair>{   {.31, 0.},  {.32, 0.}}}}}
+        vector<FluxErrorPair>{   {.31, 0.},  {.32, 0.}}}}
   };
   
 };
@@ -122,7 +122,7 @@ BOOST_FIXTURE_TEST_CASE(EvenNumberOfSources_test, PhotometricCorrectionAlgorithm
 // of sources
 //-----------------------------------------------------------------------------
 BOOST_FIXTURE_TEST_CASE(OddNumberOfSources_test, PhotometricCorrectionAlgorithm_Fixture) {
-  
+
   // Given
   sources.emplace_back(5, std::vector<std::shared_ptr<Attribute>>{
         shared_ptr<Attribute>{new Photometry{make_shared<vector<string>>(
@@ -130,9 +130,12 @@ BOOST_FIXTURE_TEST_CASE(OddNumberOfSources_test, PhotometricCorrectionAlgorithm_
                 vector<FluxErrorPair>{   {5.1, 0.1}, {5.2, 0.2}}}}
   });
   scale_factors[5] = 2.8;
-  models[5] = shared_ptr<Photometry>{new Photometry{make_shared<vector<string>>(
-        initializer_list<string>{"Filter1", "Filter2"}),
-        vector<FluxErrorPair>{   {.51, 0.},  {.52, 0.}}}};
+
+  auto phot = Photometry{make_shared<vector<string>>(
+      initializer_list<string>{"Filter1", "Filter2"}),
+      vector<FluxErrorPair>{   {.51, 0.},  {.52, 0.}}};
+  models.insert ( std::pair<int64_t, Photometry>(5,phot));
+
   PhzPhotometricCorrection::PhotometricCorrectionAlgorithm algo {};
   
   // When

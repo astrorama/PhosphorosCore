@@ -20,12 +20,12 @@ CalculateScaleFactorMap::CalculateScaleFactorMap(
     CalculateScaleFactorMap::ScaleFactorCalc scaleFactorFunction)
 : m_scale_factor_function(std::move(scaleFactorFunction)){}
 
-template<typename SourceIter, typename ModelPhotPtr>
+template<typename SourceIter, typename ModelPhot>
 ScaleFactorMap CalculateScaleFactorMap::operator()(
     SourceIter source_begin,
     SourceIter source_end,
-    const std::map<int64_t, ModelPhotPtr>& model_phot_map) const{
-    auto result_map= ScaleFactorMap();
+    const std::map<SourceCatalog::Source::id_type, ModelPhot>& model_phot_map) const{
+    auto result_map = ScaleFactorMap();
 
     for (; source_begin!=source_end; ++source_begin) {
       auto source_id = source_begin->getId();
@@ -34,7 +34,7 @@ ScaleFactorMap CalculateScaleFactorMap::operator()(
         continue;
       }
       auto source_photometry = source_begin->template getAttribute<SourceCatalog::Photometry>();
-      auto model_iterator = model_phot_map.at(source_id)->begin();
+      auto model_iterator = model_phot_map.at(source_id).begin();
 
       double alpha = m_scale_factor_function(
           source_photometry->begin(),

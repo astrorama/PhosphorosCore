@@ -5,8 +5,6 @@
  */
 
 #include <iomanip>
-#include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/CatalogAttributes/FixedRedshift.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -17,10 +15,7 @@ void CatalogHandler::handleSources(SourceIter source_begin, SourceIter source_en
   
   for (SourceIter source=source_begin; source != source_end; ++source) {
     // Get the PHZ results
-    auto source_phot_ptr = (*source).template getAttribute<SourceCatalog::Photometry>();
-    auto fixed_z_ptr = (*source).template getAttribute<PhzDataModel::FixedRedshift>();
-    double fixed_z = fixed_z_ptr ? fixed_z_ptr->getFixedRedshift() : -99;
-    auto phz_results = m_source_phz_func(*source_phot_ptr, fixed_z);
+    auto phz_results = m_source_phz_func(*source);
     // Pass them to the handler
     out_handler.handleSourceOutput(*source, phz_results);
   }

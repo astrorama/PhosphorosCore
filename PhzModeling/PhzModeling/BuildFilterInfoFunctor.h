@@ -30,7 +30,8 @@ namespace PhzModeling {
  * This functor is in charge of building the filter object.
  * @details
  * This functor takes the sampling of the filter. It extracts the range of the filter,
- * compute the filter normalization (integration of c*filter(lambda)/lambda² )
+ * compute the filter normalization (integration of c*filter(lambda)/lambda² for the
+ * energy case, c*filter(lambda)/lambda for the photons (default) case)
  * and build an interpolated Function representing the filter.
  *
  * Note that the range starts at the last value of Lambda for which the
@@ -40,6 +41,10 @@ namespace PhzModeling {
 class BuildFilterInfoFunctor {
 
 public:
+ /**
+  * Build the Filter Info.
+  */
+  explicit BuildFilterInfoFunctor(bool is_in_photon = true);
 
   /**
    * @brief Work out the filter info from the filter data set
@@ -51,6 +56,9 @@ public:
    * The FilterInfo build from the input filter sampling.
    */
   PhzDataModel::FilterInfo operator()(const XYDataset::XYDataset& filter_dataset) const;
+
+private:
+  bool m_is_in_photon;
 
 };
 

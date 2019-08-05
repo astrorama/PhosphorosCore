@@ -8,6 +8,7 @@
 #define	PHZLIKELIHOOD_PARALLELCATALOGHANDLER_H
 
 #include "PhzLikelihood/CatalogHandler.h"
+#include "PhzLikelihood/ProcessModelGridFunctor.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -61,6 +62,7 @@ public:
                          LikelihoodGridFunction likelihood_grid_func,
                          std::vector<StaticPriorFunction> static_priors,
                          std::vector<MarginalizationFunction> marginalization_func_list,
+                         std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list,
                          bool doNormalizePdf = true);
 
   virtual ~ParallelCatalogHandler();

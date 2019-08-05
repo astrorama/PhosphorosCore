@@ -11,6 +11,7 @@
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzOutput/OutputHandler.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
+#include "PhzLikelihood/ProcessModelGridFunctor.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -62,6 +63,7 @@ public:
                  LikelihoodGridFunction likelihood_grid_func,
                  std::vector<PriorFunction> priors,
                  std::vector<MarginalizationFunction> marginalization_func_list,
+                 std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list,
                  bool doNormalizePdf);
 
   /**
