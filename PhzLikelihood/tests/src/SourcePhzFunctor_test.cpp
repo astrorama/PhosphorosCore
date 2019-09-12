@@ -79,7 +79,7 @@ struct SourcePhzFunctor_Fixture {
 
       ++filter_iter;
     }
-    return move(result);
+    return result;
   }
 
   SourcePhzFunctor_Fixture() {

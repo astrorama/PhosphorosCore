@@ -73,7 +73,7 @@ std::map<std::string, PhzDataModel::PhotometryGrid> SparseGridCreator::createGri
 
   }
 
-  return std::move(results);
+  return results;
 }
 
 }

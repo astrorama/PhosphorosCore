@@ -30,7 +30,7 @@ std::vector<PhzDataModel::FilterInfo> manageFilters (
     }
   }
 
-  return std::move(vector);
+  return vector;
 }
 
 std::shared_ptr<std::vector<std::string>> createSharedPointer (

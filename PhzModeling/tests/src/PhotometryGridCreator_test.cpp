@@ -45,7 +45,7 @@ struct PhotometryGridCreator_Fixture {
         content.push_back(pair.first);
       }
 
-      return std::move(content);
+      return content;
     }
 
   private:

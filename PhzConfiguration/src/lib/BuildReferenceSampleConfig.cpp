@@ -88,7 +88,7 @@ std::unique_ptr<Table::TableReader> BuildReferenceSampleConfig::getPhosphorosCat
   else {
    reader.reset(new Table::FitsReader(m_phosphoros_catalog.native()));
   }
-  return std::move(reader);
+  return reader;
 }
 
 }  // namespace PhzConfiguration
