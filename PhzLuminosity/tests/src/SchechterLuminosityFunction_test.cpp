@@ -338,10 +338,12 @@ BOOST_FIXTURE_TEST_CASE(test_functional_form_mag, SchechterLuminosityFunction_Fi
               phi[i], mo[j], alpha[k], true };
 
           auto computed = function(m[h]);
+          auto expected = result[i][j][k][h];
 
-          auto error = std::abs(result[i][j][k][h]-computed)/result[i][j][k][h];
 
-          BOOST_CHECK(error<1e-10);
+          auto error = std::abs(expected-computed)/expected;
+
+          BOOST_CHECK(error < 1e-10);
 
 
         }
@@ -652,10 +654,13 @@ BOOST_FIXTURE_TEST_CASE(test_functional_form_flux, SchechterLuminosityFunction_F
                phi[i], lo[j], alpha[k], false };
 
            auto computed = function(l[h]);
+           auto expected = result[i][j][k][h];
 
-           auto error = std::abs(result[i][j][k][h]-computed)/result[i][j][k][h];
 
-           BOOST_CHECK(error<1e-10);
+           auto error = std::abs(expected-computed)/expected;
+
+
+           BOOST_CHECK(error < 1e-10);
 
 
          }
@@ -916,8 +921,10 @@ BOOST_FIXTURE_TEST_CASE (test_functional_integrate_flux, SchechterLuminosityFunc
               phi[i], lo[j], alpha[k], false };
 
           auto computed = function.integrate(l[h], l[h + 1]);
+          auto expected = result[i][j][k][h];
 
-          BOOST_CHECK_CLOSE(computed, result[i][j][k][h], 1e-6);
+
+          BOOST_CHECK_CLOSE(computed, expected, 1e-6);
         }
       }
     }
@@ -1176,7 +1183,10 @@ BOOST_FIXTURE_TEST_CASE (test_functional_integrate_mag, SchechterLuminosityFunct
 
           auto computed = function.integrate(m[h], m[h + 1]);
 
-          BOOST_CHECK_CLOSE(computed, result[i][j][k][h], 1e-6);
+          auto expected = result[i][j][k][h];
+
+
+          BOOST_CHECK_CLOSE(computed, expected, 1e-6);
         }
       }
     }
