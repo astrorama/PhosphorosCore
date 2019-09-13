@@ -110,7 +110,7 @@ BOOST_FIXTURE_TEST_CASE(emptyFilter_test, SedClassifier_fixture) {
 
 
 BOOST_FIXTURE_TEST_CASE(nominal_case_test, SedClassifier_fixture) {
-  auto classifier = PhzNzPrior::SedClassifier(mock_provider, mock_provider, 2., 3.);
+  auto classifier = PhzNzPrior::SedClassifier(mock_provider, mock_provider, 1., 2.);
 
   auto SED_list = std::vector<XYDataset::QualifiedName> {SED_0, SED_1, SED_2};
   auto result = classifier(filter_B, filter_I, SED_list);
@@ -129,9 +129,9 @@ BOOST_FIXTURE_TEST_CASE(nominal_case_test, SedClassifier_fixture) {
   BOOST_CHECK(groups.find(key) != groups.end());
 
   // check the content
-  BOOST_CHECK(result.findGroupContaining(SED_0).first == "T1");
-  BOOST_CHECK(result.findGroupContaining(SED_1).first == "T2");
-  BOOST_CHECK(result.findGroupContaining(SED_2).first == "T3");
+  BOOST_CHECK_EQUAL(result.findGroupContaining(SED_0).first, "T1");
+  BOOST_CHECK_EQUAL(result.findGroupContaining(SED_1).first, "T2");
+  BOOST_CHECK_EQUAL(result.findGroupContaining(SED_2).first, "T3");
 }
 
 
