@@ -30,10 +30,10 @@ double SchechterLuminosityFunction::operator()(const double luminosity) const {
   if (m_in_mag) {
     double ms_m = 0.4 * (m_mag_L_star - luminosity);
     double value = 0.4*std::log(10.)*m_phi_star*std::pow(10., ms_m*(m_alpha+1))*std::exp(-std::pow(10., ms_m));
-    if (value > 1) {
+   /* if (value > 1) {
       logger.warn() << "Luminosity function computation for " << luminosity << " gives a result bigger than 1:" << value;
       value = 1;
-    }
+    }*/
     return value;
   } else {
     double l_l_star = luminosity/m_mag_L_star;
