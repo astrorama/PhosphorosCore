@@ -27,18 +27,21 @@ SchechterLuminosityFunction::SchechterLuminosityFunction(double phi_star, double
 
 
 double SchechterLuminosityFunction::operator()(const double luminosity) const {
+  double value  = 0;
   if (m_in_mag) {
     double ms_m = 0.4 * (m_mag_L_star - luminosity);
-    double value = 0.4*std::log(10.)*m_phi_star*std::pow(10., ms_m*(m_alpha+1))*std::exp(-std::pow(10., ms_m));
-   /* if (value > 1) {
-      logger.warn() << "Luminosity function computation for " << luminosity << " gives a result bigger than 1:" << value;
-      value = 1;
-    }*/
-    return value;
+    value = 0.4*std::log(10.)*m_phi_star*std::pow(10., ms_m*(m_alpha+1))*std::exp(-std::pow(10., ms_m));
+
   } else {
     double l_l_star = luminosity/m_mag_L_star;
-    return (m_phi_star/m_mag_L_star)*std::pow(l_l_star, m_alpha)*std::exp(-l_l_star);
+    value = (m_phi_star/m_mag_L_star)*std::pow(l_l_star, m_alpha)*std::exp(-l_l_star);
   }
+
+  if (value > 100) {
+       logger.warn() << "Luminosity function computation for " << luminosity << " gives a result bigger than 100:" << value;
+       value = 100;
+     }
+   return value;
 }
 
 double SchechterLuminosityFunction::integrate(const double a, const double b) const {
