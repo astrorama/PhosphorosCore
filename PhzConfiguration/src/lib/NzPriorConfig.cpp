@@ -134,12 +134,16 @@ void NzPriorConfig::preInitialize(const UserValues& args) {
         << args.at(NZ_PRIOR).as<std::string>() << " (allowed values: YES, NO)";
   }
 
-  if (args.at(NZ_PRIOR_BFILTER).as<std::string>() == "") {
-     throw Elements::Exception() << "Missing " << NZ_PRIOR_BFILTER;
-  }
+  if (args.at(NZ_PRIOR).as<std::string>() == "YES") {
 
-  if (args.at(NZ_PRIOR_IFILTER).as<std::string>() == "") {
-     throw Elements::Exception() << "Missing " << NZ_PRIOR_IFILTER;
+    if (args.at(NZ_PRIOR_BFILTER).as<std::string>() == "") {
+       throw Elements::Exception() << "Missing " << NZ_PRIOR_BFILTER;
+    }
+
+    if (args.at(NZ_PRIOR_IFILTER).as<std::string>() == "") {
+       throw Elements::Exception() << "Missing " << NZ_PRIOR_IFILTER;
+    }
+
   }
 
 }
