@@ -93,7 +93,7 @@ BOOST_FIXTURE_TEST_CASE(priorValues_high_flux_test, NzPrior_Fixture) {
 
      auto expected = 1.0;
      if (z > 1) {
-       expected = std::numeric_limits<double>::min();
+       expected = std::numeric_limits<double>::lowest();
      }
 
      for (auto it = posterior_grid.begin().fixAxisByValue<PhzDataModel::ModelParameter::Z>(z); it != posterior_grid.end(); ++it) {

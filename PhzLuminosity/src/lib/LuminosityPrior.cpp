@@ -121,7 +121,7 @@ void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
       double prior = std::log(*p_it);
       if (*p_it == 0) {
         *l_it = min_value;
-      } else  if (isfinite(prior)) {
+      } else  if (std::isfinite(prior)) {
           *l_it += prior;
       }
   }

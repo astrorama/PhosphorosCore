@@ -68,6 +68,9 @@ static const std::string NZ_PRIOR_CSTT2 {"Nz-prior_cst_T2"};
 static const std::string NZ_PRIOR_CSTT3 {"Nz-prior_cst_T3"};
 
 
+static const std::string NZ_PRIOR_EFFECTIVENESS {"Nz-prior-effectiveness"};
+
+
 NzPriorConfig::NzPriorConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PriorConfig>();
   declareDependency<SedProviderConfig>();
@@ -123,6 +126,8 @@ auto NzPriorConfig::getProgramOptions() -> std::map<std::string, OptionDescripti
          "Value for the Cst' param for T2 region (Default=0.8891)"},
     {NZ_PRIOR_CSTT3.c_str(), po::value<double>()->default_value(0.8874),
           "Value for the Cst' param for T3 region (Default=0.8874)"},
+    {NZ_PRIOR_EFFECTIVENESS.c_str(), po::value<double>()->default_value(1.),
+          "A value in the range [0,1] showing how strongly to apply the N(z) prior"},
 
   }}};
 }
@@ -179,6 +184,8 @@ void NzPriorConfig::initialize(const UserValues& args) {
     double cst_t2 = args.at(NZ_PRIOR_CSTT2).as<double>();
     double cst_t3 = args.at(NZ_PRIOR_CSTT3).as<double>();
 
+    double effectiveness = args.at(NZ_PRIOR_EFFECTIVENESS).as<double>();
+
     auto param = PhzNzPrior::NzPriorParam(z0_t1, km_t1, alpha_t1, k_t1, f_t1, cst_t1,
                                        z0_t2, km_t2, alpha_t2, k_t2, f_t2, cst_t2,
                                        z0_t3, km_t3, alpha_t3,             cst_t3);
@@ -204,7 +211,7 @@ void NzPriorConfig::initialize(const UserValues& args) {
     auto sed_groups = sed_classifier(b_filter, i_filter, SEDs);
 
     // Add the prior
-    getDependency<PriorConfig>().addPrior(PhzNzPrior::NzPrior(sed_groups, i_filter, param));
+    getDependency<PriorConfig>().addPrior(PhzNzPrior::NzPrior(sed_groups, i_filter, param, effectiveness));
 
   }
 }

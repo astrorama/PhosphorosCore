@@ -25,8 +25,11 @@ static Elements::Logging logger = Elements::Logging::getLogger("NzPrior");
 NzPrior::NzPrior(
    const PhzDataModel::QualifiedNameGroupManager& sedGroupManager,
    const XYDataset::QualifiedName& i_filter_name,
-   const NzPriorParam& prior_param): m_sedGroupManager{sedGroupManager},
-       m_i_filter_name{i_filter_name}, m_prior_param{prior_param} {}
+   const NzPriorParam& prior_param,
+   double effectiveness): m_sedGroupManager{sedGroupManager},
+       m_i_filter_name{i_filter_name},
+       m_prior_param{prior_param},
+       m_effectiveness{effectiveness} {}
 
 
  double pt__m0(double ft, double kt, double m0) {
@@ -91,21 +94,44 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
   double mag_Iab = -2.5*std::log10(flux_ptr->flux/3.631E9);
 
   auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
-  for (auto grid_iter=posterior_grid.begin(); grid_iter != posterior_grid.end(); ++grid_iter) {
+
+  PhzDataModel::DoubleGrid prior_grid {posterior_grid.getAxesTuple()};
+  for (auto& cell : prior_grid) {
+    cell = 1.;
+  }
+
+  for (auto grid_iter=prior_grid.begin(); grid_iter != prior_grid.end(); ++grid_iter) {
     double z = grid_iter.axisValue<PhzDataModel::ModelParameter::Z>();
     auto sed = grid_iter.axisValue<PhzDataModel::ModelParameter::SED>();
 
     if (mag_Iab < 20) {
       if (z > 1) {
-        *grid_iter = std::numeric_limits<double>::min();
+        *grid_iter = 0;
       }
     } else {
-      *grid_iter += std::log(computeP_T_z__m0(mag_Iab, z, sed));
+      *grid_iter = computeP_T_z__m0(mag_Iab, z, sed);
     }
   }
 
-}
+  // Apply the effectiveness to the prior.
+  for (auto& v : prior_grid) {
+    v = (1 - m_effectiveness) + m_effectiveness * v;
+  }
 
+  double min_value = std::numeric_limits<double>::lowest();
+  // Apply the prior to the likelihood
+  for (auto l_it = posterior_grid.begin(), p_it = prior_grid.begin();
+            l_it != posterior_grid.end();
+            ++l_it, ++p_it) {
+      double prior = std::log(*p_it);
+      if (*p_it == 0) {
+        *l_it = min_value;
+      } else  if (std::isfinite(prior)) {
+          *l_it += prior;
+      }
+  }
+
+}
 
 }
 }
