@@ -243,11 +243,16 @@ std::size_t getFixedZIndex(const GridContainer::GridAxis<double>& z_axis, double
 }
 
 template <int FixedAxis>
-typename PhzDataModel::Pdf1DParam<FixedAxis> expandPointPdf(const PhzDataModel::Pdf1DParam<FixedAxis> &pdf, const GridContainer::GridAxis<double> target_axis) {
+typename PhzDataModel::Pdf1DParam<FixedAxis> expandPointPdf(const PhzDataModel::Pdf1DParam<FixedAxis>& pdf,
+                                                            const GridContainer::GridAxis<double> target_axis,
+                                                            bool do_normalize_pdf) {
   PhzDataModel::Pdf1DParam<FixedAxis> new_pdf(target_axis);
   double single_x = pdf.template getAxis<0>()[0];
   std::size_t fixed_z_i = getFixedZIndex(target_axis, single_x);
   new_pdf.at(fixed_z_i) = 1.;
+  if (do_normalize_pdf) {
+    normalizePdf(new_pdf);
+  }
   return new_pdf;
 }
 
@@ -413,7 +418,7 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
     if (pdz.size() == 1) {
       auto& original_model_grid = first_region_results.get<RegResType::ORIGINAL_MODEL_GRID_REFERENCE>();
       auto& z_axis = original_model_grid.get().getAxis<PhzDataModel::ModelParameter::Z>();
-      pdz = std::move(expandPointPdf<PhzDataModel::ModelParameter::Z>(pdz, z_axis));
+      pdz = std::move(expandPointPdf<PhzDataModel::ModelParameter::Z>(pdz, z_axis, m_do_normalize_pdf));
     }
     results.set<ResType::Z_1D_PDF>(std::move(pdz));
   }
