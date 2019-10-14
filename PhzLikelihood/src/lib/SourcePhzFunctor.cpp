@@ -164,6 +164,7 @@ void normalizePdf(PhzDataModel::Pdf1D<AxisType>& pdf) {
     xs.push_back(iter.template axisValue<0>());
     ys.push_back(*iter);
   }
+
   auto as_function = MathUtils::interpolate(xs, ys, MathUtils::InterpolationType::LINEAR);
   double integral = MathUtils::integrate(*as_function, xs.front(), xs.back());
   for (auto& cell : pdf) {
@@ -227,6 +228,33 @@ typename PhzDataModel::Pdf1DParam<FixedAxis> combine1DPdfs(const std::map<std::s
   return combined_pdf;
 }
 
+std::size_t getFixedZIndex(const GridContainer::GridAxis<double>& z_axis, double fixed_z) {
+  int i = 0;
+  for (auto& z : z_axis) {
+    if (z >= fixed_z) {
+      break;
+    }
+    ++i;
+  }
+  if (i != 0 && (fixed_z - z_axis[i-1]) < (z_axis[i] - fixed_z)) {
+    --i;
+  }
+  return i;
+}
+
+template <int FixedAxis>
+typename PhzDataModel::Pdf1DParam<FixedAxis> expandPointPdf(const PhzDataModel::Pdf1DParam<FixedAxis>& pdf,
+                                                            const GridContainer::GridAxis<double> target_axis,
+                                                            bool do_normalize_pdf) {
+  PhzDataModel::Pdf1DParam<FixedAxis> new_pdf(target_axis);
+  double single_x = pdf.template getAxis<0>()[0];
+  std::size_t fixed_z_i = getFixedZIndex(target_axis, single_x);
+  new_pdf.at(fixed_z_i) = 1.;
+  if (do_normalize_pdf) {
+    normalizePdf(new_pdf);
+  }
+  return new_pdf;
+}
 
 template <int FixedAxis>
 typename PhzDataModel::Pdf1DParam<FixedAxis> combineLikelihood1DPdfs(const std::map<std::string, PhzDataModel::RegionResults>& reg_result_map, bool do_normalize_pdf) {
@@ -267,21 +295,6 @@ typename PhzDataModel::Pdf1DParam<FixedAxis> combineLikelihood1DPdfs(const std::
 }
 
 
-std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixed_z) {
-  auto& z_axis = grid.getAxis<PhzDataModel::ModelParameter::Z>();
-  int i = 0;
-  for (auto& z : z_axis) {
-    if (z >= fixed_z) {
-      break;
-    }
-    ++i;
-  }
-  if (i != 0 && (fixed_z - z_axis[i-1]) < (z_axis[i] - fixed_z)) {
-    --i;
-  }
-  return i;
-}
-
 } // end of anonymous namespace
 
 
@@ -315,6 +328,7 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
     bool first=true;
     for(auto functor_ptr : m_model_funct_list){
       if (first){
+        region_results.set<RegResType::ORIGINAL_MODEL_GRID_REFERENCE>(model_grid);
         current_grid = std::move((*functor_ptr)(pair.first, model_grid, source));
         first=false;
       }
@@ -399,7 +413,14 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
     results.set<ResType::EBV_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::EBV>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::Z_1D_PDF>()) {
-    results.set<ResType::Z_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
+    auto pdz = combine1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf);
+    // When the redshift has been fixed, interpolate to the original axis configuration
+    if (pdz.size() == 1) {
+      auto& original_model_grid = first_region_results.get<RegResType::ORIGINAL_MODEL_GRID_REFERENCE>();
+      auto& z_axis = original_model_grid.get().getAxis<PhzDataModel::ModelParameter::Z>();
+      pdz = std::move(expandPointPdf<PhzDataModel::ModelParameter::Z>(pdz, z_axis, m_do_normalize_pdf));
+    }
+    results.set<ResType::Z_1D_PDF>(std::move(pdz));
   }
 
 
