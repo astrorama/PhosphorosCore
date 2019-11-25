@@ -47,6 +47,17 @@ struct PhzPhotometryGridName_Fixture {
 
 BOOST_AUTO_TEST_SUITE (PhotometryGridSerialization_test)
 
+template<typename I, typename O>
+struct archive {
+  typedef I iarchive;
+  typedef O oarchive;
+};
+
+typedef archive<boost::archive::binary_iarchive, boost::archive::binary_oarchive> binary_archive;
+typedef archive<boost::archive::text_iarchive, boost::archive::text_oarchive> text_archive;
+
+typedef boost::mpl::list<binary_archive, text_archive> archive_types;
+
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
@@ -93,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE(serializationException_test, PhzPhotometryGridName_Fixtu
   BOOST_CHECK_THROW((oa3 << grid_ptr),Elements::Exception);
 }
 
-BOOST_FIXTURE_TEST_CASE(serialization_test, PhzPhotometryGridName_Fixture) {
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, T, archive_types, PhzPhotometryGridName_Fixture) {
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the serialization of the Photometry Grid");
   BOOST_TEST_MESSAGE(" ");
@@ -106,11 +117,12 @@ BOOST_FIXTURE_TEST_CASE(serialization_test, PhzPhotometryGridName_Fixture) {
   original_grid(1,1,0,0)=photometry_4;
   Euclid::PhzDataModel::PhotometryGrid *original_grid_ptr=&original_grid;
   std::stringstream stream;
-  boost::archive::text_oarchive oa(stream);
+  {
+    typename T::oarchive oa(stream);
+    oa << original_grid_ptr;
+  }
 
-  oa<<original_grid_ptr;
-
-  boost::archive::text_iarchive ia(stream);
+  typename T::iarchive ia(stream);
 
   Euclid::PhzDataModel::PhotometryGrid *retrived_grid_ptr;
   ia >> retrived_grid_ptr;

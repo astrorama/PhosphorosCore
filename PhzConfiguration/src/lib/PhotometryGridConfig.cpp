@@ -22,15 +22,16 @@
  * @author nikoapos
  */
 
-#include <fstream>
 #include <algorithm>
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 
 #include "GridContainer/serialize.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
+#include "PhzDataModel/ArchiveFormat.h"
 
 #include "Configuration/ConfigManager.h"
 #include "Configuration/PhotometricBandMappingConfig.h"
@@ -47,6 +48,7 @@ namespace PhzConfiguration {
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
 static const std::string MODEL_GRID_FILE {"model-grid-file"};
+
 
 PhotometryGridConfig::PhotometryGridConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<CatalogTypeConfig>();
@@ -66,6 +68,17 @@ auto PhotometryGridConfig::getProgramOptions() -> std::map<std::string, OptionDe
   }}};
 }
 
+template <typename IArchive>
+static void readModelGridFile (std::ifstream&in, PhzDataModel::PhotometryGridInfo& info,
+                               std::map<std::string, PhzDataModel::PhotometryGrid>& grids) {
+  IArchive iarchive{in};
+  iarchive >> info;
+
+  for (auto& pair : info.region_axes_map) {
+    grids.emplace(std::make_pair(pair.first, GridContainer::gridImport<PhzDataModel::PhotometryGrid, IArchive>(in)));
+  }
+}
+
 void PhotometryGridConfig::initialize(const UserValues& args) {
   auto intermediate_dir = getDependency<IntermediateDirConfig>().getIntermediateDir();
   auto catalog_type = getDependency<CatalogTypeConfig>().getCatalogType();
@@ -78,12 +91,21 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
   }
 
   std::ifstream in {filename.string()};
-  boost::archive::binary_iarchive bia {in};
-  bia >> m_info;
-  for (auto& pair : m_info.region_axes_map) {
-    m_grids.emplace(std::make_pair(pair.first, GridContainer::gridBinaryImport<PhzDataModel::PhotometryGrid>(in)));
+  auto format = PhzDataModel::guessArchiveFormat(in);
+
+  switch (format) {
+    case PhzDataModel::ArchiveFormat::BINARY:
+      logger.info() << "Model grid in binary format";
+      readModelGridFile<boost::archive::binary_iarchive>(in, m_info, m_grids);
+      break;
+    case PhzDataModel::ArchiveFormat::TEXT:
+      logger.info() << "Model grid in text format";
+      readModelGridFile<boost::archive::text_iarchive>(in, m_info, m_grids);
+      break;
+    default:
+      throw Elements::Exception() << "Unknown model grid format";
   }
-  
+
   // Here we try to get the PhotometricBandMappingConfig. If this is throws, it
   // means the PhotometryGridConfig is not used together with a Photometry catalog,
   // so we need to do nothing. Otherwise we set the photometries to the correct
