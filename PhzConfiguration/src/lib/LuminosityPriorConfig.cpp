@@ -27,6 +27,8 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include <boost/archive/binary_iarchive.hpp>
+#include <PhzDataModel/ArchiveFormat.h>
+#include <boost/archive/text_iarchive.hpp>
 #include "GridContainer/serialize.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzConfiguration/LuminosityPriorConfig.h"
@@ -109,6 +111,15 @@ void LuminosityPriorConfig::preInitialize(const UserValues& args) {
   }
 }
 
+template <typename IArchive>
+static PhzDataModel::PhotometryGrid readModelGrid(std::istream& in) {
+  IArchive bia{in};
+  // Skip the PhotometryGridInfo object
+  PhzDataModel::PhotometryGridInfo info;
+  bia >> info;
+  return GridContainer::gridImport<PhzDataModel::PhotometryGrid, IArchive>(in);
+}
+
 void LuminosityPriorConfig::initialize(const UserValues& args) {
   m_is_configured = args.count(LUMINOSITY_PRIOR)==1
       && args.find(LUMINOSITY_PRIOR)->second.as<std::string>().compare("YES")==0;
@@ -133,15 +144,28 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
                                    << " option) does not exist: " << filename.string();
      }
 
-     std::ifstream in{filename.string()};
+     // Read grids from the file
+     typedef std::function<PhzDataModel::PhotometryGrid(std::istream&)> GridInputFunction;
 
-     // Skip the PhotometryGridInfo object
-     PhzDataModel::PhotometryGridInfo info;
-     boost::archive::binary_iarchive bia {in};
-     bia >> info;
+     std::ifstream in {filename.string()};
+     auto format = PhzDataModel::guessArchiveFormat(in);
+
+     GridInputFunction input_function;
+     switch (format) {
+       case PhzDataModel::ArchiveFormat::BINARY:
+         logger.info() << "Model grid in binary format";
+         input_function = &readModelGrid<boost::archive::binary_iarchive>;
+         break;
+       case PhzDataModel::ArchiveFormat::TEXT:
+         logger.info() << "Model grid in text format";
+         input_function = &readModelGrid<boost::archive::text_iarchive>;
+         break;
+       default:
+         throw Elements::Exception() << "Unknown model grid format";
+     }
 
      // Read grids from the file
-     auto grid = GridContainer::gridBinaryImport<PhzDataModel::PhotometryGrid>(in);
+     auto grid = input_function(in);
 
      // get the luminosity calculator
      m_luminosity_model_grid.reset(new PhzDataModel::PhotometryGrid{std::move(grid)});
