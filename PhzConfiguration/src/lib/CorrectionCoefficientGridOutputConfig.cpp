@@ -22,10 +22,7 @@
  * @author Florian Dubath
  */
 
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <cstdlib>
+#include <boost/archive/text_oarchive.hpp>
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/CorrectionCoefficientGridOutputConfig.h"
@@ -35,6 +32,7 @@
 #include "PhzUtils/FileUtils.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
+#include "PhzDataModel/ArchiveFormat.h"
 
 
 namespace po = boost::program_options;
@@ -44,6 +42,7 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 static const std::string OUTPUT_CORRECTION_COEFFICIENT_GRID {"output-galactic-correction-coefficient-grid"};
+static const std::string OUTPUT_CORRECTION_COEFFICIENT_GRID_FORMAT {"output-galactic-correction-coefficient-grid-format"};
 
 static Elements::Logging logger = Elements::Logging::getLogger("CorrectionCoefficientGridOutputConfig");
 
@@ -57,7 +56,9 @@ CorrectionCoefficientGridOutputConfig::CorrectionCoefficientGridOutputConfig(lon
 auto CorrectionCoefficientGridOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Compute Galactic Correction Coefficient Grid options", {
     {OUTPUT_CORRECTION_COEFFICIENT_GRID.c_str(), boost::program_options::value<std::string>(),
-        "The filename of the file to export in binary format the correction coefficient grid"}
+        "The filename of the file to export in binary format the correction coefficient grid"},
+    {OUTPUT_CORRECTION_COEFFICIENT_GRID_FORMAT.c_str(), boost::program_options::value<std::string>()->default_value("BINARY"),
+      "The output format for the model grid. Possible values: BINARY, TEXT"}
   }}};
 }
 
@@ -76,37 +77,67 @@ static std::string getFilenameFromOptions(const std::map<std::string, po::variab
   return result.string();
 }
 
+template <typename OArchive>
+static void outputFunction(const std::string &filename, IgmConfig &igm_config,
+                           const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
+  auto logger = Elements::Logging::getLogger("PhzOutput");
+  std::ofstream out {filename};
+  std::vector<XYDataset::QualifiedName> filter_list {};
+  auto& first_phot = *(grid_map.begin()->second.begin());
+  for (auto iter = first_phot.begin(); iter != first_phot.end(); ++iter) {
+    filter_list.emplace_back(iter.filterName());
+  }
+  OArchive boa {out};
+  // Store the info object describing the grids
+  PhzDataModel::PhotometryGridInfo info {
+    grid_map,
+    igm_config.getIgmAbsorptionType(),
+    filter_list};
+  boa << info;
+  // Store the grids themselves
+  for (auto& pair : grid_map) {
+    GridContainer::gridExport<OArchive>(out, pair.second);
+  }
+  logger.info() << "Created the model grid in file " << filename;
+}
+
 void CorrectionCoefficientGridOutputConfig::initialize(const UserValues& args) {
   // Extract file option
-    std::string filename = getFilenameFromOptions(args,
-        getDependency<IntermediateDirConfig>().getIntermediateDir(),
-        getDependency<CatalogTypeConfig>().getCatalogType());
+  std::string filename = getFilenameFromOptions(args,
+      getDependency<IntermediateDirConfig>().getIntermediateDir(),
+      getDependency<CatalogTypeConfig>().getCatalogType());
 
-    // Check directory and write permissions
-    Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
+  // Check directory and write permissions
+  Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
+  typedef std::function<void(const std::string&, IgmConfig&,
+                             const std::map<std::string, PhzDataModel::PhotometryGrid>&)> InnerOutputFunction;
 
-    m_output_function = [this,filename](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
-         auto logger = Elements::Logging::getLogger("PhzOutput");
-         std::ofstream out {filename};
-         std::vector<XYDataset::QualifiedName> filter_list {};
-         auto& first_phot = *(grid_map.begin()->second.begin());
-         for (auto iter = first_phot.begin(); iter != first_phot.end(); ++iter) {
-           filter_list.emplace_back(iter.filterName());
-         }
-         boost::archive::binary_oarchive boa {out};
-         // Store the info object describing the grids
-         PhzDataModel::PhotometryGridInfo info {
-             grid_map,
-             getDependency<IgmConfig>().getIgmAbsorptionType(),
-             filter_list};
-         boa << info;
-         // Store the grids themselves
-         for (auto& pair : grid_map) {
-           GridContainer::gridBinaryExport(out, pair.second);
-         }
-         logger.info() << "Created the model grid in file " << filename;
-       };
+  InnerOutputFunction inner_output_function;
+
+  std::string output_format_str = "BINARY";
+  if (args.find(OUTPUT_CORRECTION_COEFFICIENT_GRID_FORMAT) != args.end()) {
+    output_format_str = args.at(OUTPUT_CORRECTION_COEFFICIENT_GRID_FORMAT).as<std::string>();
+  }
+
+  auto output_format = PhzDataModel::archiveFormatFromString(output_format_str);
+  switch (output_format) {
+      case PhzDataModel::ArchiveFormat::BINARY:
+        inner_output_function = &outputFunction<boost::archive::binary_oarchive>;
+        break;
+      case PhzDataModel::ArchiveFormat::TEXT:
+        inner_output_function = &outputFunction<boost::archive::text_oarchive>;
+        break;
+      default:
+        throw Elements::Exception() << "Invalid output format " << output_format_str;
+  }
+
+  m_output_function = [this, filename, inner_output_function](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
+    auto logger = Elements::Logging::getLogger("PhzOutput");
+    auto igm_config = getDependency<IgmConfig>();
+    inner_output_function(filename, igm_config, grid_map);
+    logger.info() << "Created the model grid in file " << filename;
+  };
 }
 
 
