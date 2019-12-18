@@ -29,6 +29,9 @@ namespace PhzOutput {
 namespace ColumnHandlers {
 
 Id::Id(std::type_index type): m_id_type(type) {
+  if (type != typeid(std::string)) {
+    m_id_type = typeid(int64_t);
+  }
 }
 
 std::vector<Table::ColumnInfo::info_type> Id::getColumnInfoList() const {

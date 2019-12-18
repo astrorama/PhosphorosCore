@@ -18,6 +18,19 @@ namespace PhzOutput {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
+struct HduIdVisitor: public boost::static_visitor<void> {
+private:
+  CCfits::HDU& m_hdu;
+
+public:
+  HduIdVisitor(CCfits::HDU& hdu): m_hdu(hdu) {}
+
+  template <typename T>
+  void operator()(const T& id) const {
+    m_hdu.addKey("ID", id, "");
+  }
+};
+
 template<PhzDataModel::RegionResultType GridType>
 LikelihoodHandler<GridType>::LikelihoodHandler(boost::filesystem::path out_dir)
           : m_out_dir{std::move(out_dir)} {
@@ -40,7 +53,8 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
     GridContainer::gridFitsExport(filename, pair.first, grid);
     CCfits::FITS fits (filename, CCfits::Write);
     auto& array_hdu = fits.extension(fits.extension().size() - grid.axisNumber());
-    array_hdu.addKey("ID", source.getId(), "");
+
+    boost::apply_visitor(HduIdVisitor{array_hdu}, source.getId());
   }
   
   logger.debug() << "Created file " << filename << " for source " << id;
