@@ -23,6 +23,7 @@
  */
 
 #include <algorithm>
+#include <fstream>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 

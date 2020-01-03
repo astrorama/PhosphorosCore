@@ -54,7 +54,9 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
     CCfits::FITS fits (filename, CCfits::Write);
     auto& array_hdu = fits.extension(fits.extension().size() - grid.axisNumber());
 
-    boost::apply_visitor(HduIdVisitor{array_hdu}, source.getId());
+    HduIdVisitor visitor{array_hdu};
+    auto source_id = source.getId();
+    boost::apply_visitor(visitor, source_id);
   }
   
   logger.debug() << "Created file " << filename << " for source " << id;
