@@ -12,6 +12,7 @@
 #include "ElementsKernel/Exception.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzPhotometricCorrection/FindMedianPhotometricCorrectionsFunctor.h"
+#include "PhzUtils/Multithreading.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
@@ -25,6 +26,12 @@ static std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDat
   // Iterate through the sources and calcualte their optimal photometric corerctions
   std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap> result {};
   for (; source != source_end; ++source) {
+
+      if (PhzUtils::getStopThreadsFlag()) {
+          throw Elements::Exception() << "Stopped by the user";
+      }
+
+
       auto source_id = source->getId();
       // Check that the source is one of the sources we have the best fit models and
       // the scale factor

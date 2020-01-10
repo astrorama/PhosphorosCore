@@ -42,6 +42,12 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
   using type = std::reference_wrapper<const PhotometryGrid>;
 };
 
+template <RegionResultType T>
+struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
+                              T == RegionResultType::ORIGINAL_MODEL_GRID_REFERENCE
+                      >::type> {
+  using type = std::reference_wrapper<const PhotometryGrid>;
+};
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<

@@ -32,6 +32,8 @@ namespace PhzDataModel {
 enum class RegionResultType {
   /// A reference to the model photometry grid representing the region
   MODEL_GRID_REFERENCE,
+  /// A reference to the original model photometry grid, before slicing by a fixed value on an axis
+  ORIGINAL_MODEL_GRID_REFERENCE,
   /// A reference to the source photometry for which the results are computed
   SOURCE_PHOTOMETRY_REFERENCE,
   /// The model grid slice, when we have a fixed redshift. Note that this exists
