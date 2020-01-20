@@ -35,6 +35,8 @@ elements_add_unit_test(FindMeanPhotometricCorrectionsFunctor_test tests/src/Find
                        LINK_LIBRARIES PhzPhotometricCorrection TYPE Boost)
 elements_add_unit_test(FindWeightedMeanPhotometricCorrectionsFunctor_test tests/src/FindWeightedMeanPhotometricCorrectionsFunctor_test.cpp
                        LINK_LIBRARIES PhzPhotometricCorrection TYPE Boost)
+elements_add_unit_test(ParallelSourceHandler_test tests/src/ParallelSourceHandler_test.cpp
+                       LINK_LIBRARIES PhzPhotometricCorrection TYPE Boost)
 
 #===== Tests using GMock =======================================================
 if(GMOCK_FOUND)

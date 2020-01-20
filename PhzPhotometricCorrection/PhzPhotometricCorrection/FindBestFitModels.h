@@ -74,7 +74,7 @@ public:
   std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> operator()(
       SourceIter source_begin, SourceIter source_end,
       const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
-      const PhzDataModel::PhotometricCorrectionMap& photometric_correction);
+      const PhzDataModel::PhotometricCorrectionMap& photometric_correction) const;
   
 private:
   

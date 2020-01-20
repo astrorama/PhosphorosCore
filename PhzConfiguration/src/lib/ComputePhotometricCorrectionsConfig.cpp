@@ -42,7 +42,6 @@
 #include "PhzConfiguration/CorrectionCoefficientGridConfig.h"
 #include "PhzConfiguration/ModelGridModificationConfig.h"
 #include "PhzConfiguration/GalactiAbsorptionModelGridModifConfig.h"
-
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
@@ -54,6 +53,7 @@
 #include "PhzConfiguration/AxisFunctionPriorConfig.h"
 #include "PhzConfiguration/AxisWeightPriorConfig.h"
 #include "PhzConfiguration/GenericGridPriorConfig.h"
+#include "PhzConfiguration/MultithreadConfig.h"
 
 #include "PhzConfiguration/ComputePhotometricCorrectionsConfig.h"
 #include "CheckPhotometries.h"
@@ -96,6 +96,7 @@ ComputePhotometricCorrectionsConfig::ComputePhotometricCorrectionsConfig(long ma
   declareDependency<CorrectionCoefficientGridConfig>();
   declareDependency<ModelGridModificationConfig>();
   declareDependency<GalactiAbsorptionModelGridModifConfig>();
+  declareDependency<MultithreadConfig>();
 }
 
 auto ComputePhotometricCorrectionsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
