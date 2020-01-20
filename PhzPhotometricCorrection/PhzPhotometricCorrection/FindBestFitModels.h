@@ -70,8 +70,9 @@ public:
    * @throws ElementsException
    *    if any of the source is missing the Photometry information
    */
+  template <typename SourceIter>
   std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> operator()(
-      const SourceCatalog::Catalog& calibration_catalog,
+      SourceIter source_begin, SourceIter source_end,
       const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
       const PhzDataModel::PhotometricCorrectionMap& photometric_correction);
   
