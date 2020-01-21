@@ -16,6 +16,7 @@
 #include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
 #include "PhzLikelihood/ScaleFactorFunctor.h"
 #include "PhzLikelihood/ChiSquareLikelihoodLogarithm.h"
+#include "PhzUtils/Multithreading.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
@@ -75,6 +76,10 @@ std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> FindBestFitM
   };
 
   for (; source != source_end; ++source) {
+
+    if (PhzUtils::getStopThreadsFlag()) {
+      throw Elements::Exception() << "Stopped by the user";
+    }
 
     auto source_id = source->getId();
     auto redshift_ptr = source->template getAttribute<SourceCatalog::SpectroscopicRedshift>();
