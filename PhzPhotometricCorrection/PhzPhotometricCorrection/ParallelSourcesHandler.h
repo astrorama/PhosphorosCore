@@ -114,8 +114,13 @@ public:
       assert(this_begin < end);
       assert(this_end <= end);
 
-      m_thread_pool.submit([&intermediate_results, this, this_begin, this_end, i, chunk_size, &args...](void) {
-        intermediate_results[i] = m_wrapped(this_begin, this_end, std::forward<Args>(args)...);
+      // This trick allows compiling with older gcc compilers that do not support
+      // forwarding variadic arguments inside a lambda
+      // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=47226
+      auto f = std::bind(m_wrapped, this_begin, this_end, std::cref(args)...);
+
+      m_thread_pool.submit([&intermediate_results, f, i](void) {
+        intermediate_results[i] = f();
       });
     }
 

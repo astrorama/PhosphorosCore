@@ -6,6 +6,7 @@
 
 #include "PhzPhotometricCorrection/ParallelSourcesHandler.h"
 #include <boost/test/unit_test.hpp>
+#include <map>
 #include <numeric>
 
 using namespace Euclid::PhzPhotometricCorrection;
