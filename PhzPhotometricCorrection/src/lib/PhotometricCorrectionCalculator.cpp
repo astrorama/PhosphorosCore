@@ -51,7 +51,7 @@ PhzDataModel::PhotometricCorrectionMap PhotometricCorrectionCalculator::operator
       throw Elements::Exception() << "Stopped by the user";
     }
     auto best_fit_model_map = m_find_best_fit_models(
-                                            catalog, model_grid_map, phot_corr);
+                                            catalog.begin(), catalog.end(), model_grid_map, phot_corr);
     auto scale_factor_map = m_calculate_scale_factors_map(
                                             catalog.begin(), catalog.end(),
                                             best_fit_model_map);

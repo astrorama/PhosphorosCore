@@ -27,7 +27,8 @@ public:
   typedef SourceCatalog::Source::id_type source_id_type;
   
   typedef std::function<std::map<source_id_type, SourceCatalog::Photometry>(
-                  const SourceCatalog::Catalog& calibration_catalog,
+                  SourceCatalog::Catalog::const_iterator source_begin,
+                  SourceCatalog::Catalog::const_iterator source_end,
                   const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
                   const PhzDataModel::PhotometricCorrectionMap& photometric_correction
             )> FindBestFitModelsFunction;

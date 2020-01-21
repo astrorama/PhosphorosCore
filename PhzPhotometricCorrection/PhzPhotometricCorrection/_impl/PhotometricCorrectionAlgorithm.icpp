@@ -93,7 +93,7 @@ PhzDataModel::PhotometricCorrectionMap PhotometricCorrectionAlgorithm::operator 
                                   SourceIter source_begin, SourceIter source_end,
                                   const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, double>& scale_factor_map,
                                   const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhot>& model_phot_map,
-                                  PhotometricCorrectionSelector<SourceIter> selector) {
+                                  PhotometricCorrectionSelector<SourceIter> selector) const {
 
   // Check that we have some sources
   if (source_begin == source_end) {
