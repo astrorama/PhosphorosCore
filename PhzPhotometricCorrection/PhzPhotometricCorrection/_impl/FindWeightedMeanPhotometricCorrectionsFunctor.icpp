@@ -5,6 +5,7 @@
  */
 
 #include <set>
+#include <cmath>
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
@@ -32,8 +33,10 @@ template <typename SourceIter>
   for (auto& source_phot_corr_pair : source_phot_corr_map) {
     for (auto& phot_corr_pair : source_phot_corr_pair.second) {
       double weight = source_weights_map.at(source_phot_corr_pair.first).at(phot_corr_pair.first);
-      result[phot_corr_pair.first] += phot_corr_pair.second * weight;
-      total_weights[phot_corr_pair.first] += weight;
+      if (std::isfinite(weight)) {
+        result[phot_corr_pair.first] += phot_corr_pair.second * weight;
+        total_weights[phot_corr_pair.first] += weight;
+      }
     }
   }
   for (auto& pair : result) {

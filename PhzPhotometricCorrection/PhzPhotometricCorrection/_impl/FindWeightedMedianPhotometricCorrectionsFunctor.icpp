@@ -5,6 +5,7 @@
  */
 
 #include <set>
+#include <cmath>
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
@@ -32,8 +33,11 @@ template <typename SourceIter>
           source_phot_corr_iter!=source_phot_corr_map.end(); ++source_phot_corr_iter, ++ source_weight_iter) {
     for (auto phot_corr_iter=source_phot_corr_iter->second.begin(), weight_iter=source_weight_iter->second.begin();
           phot_corr_iter!=source_phot_corr_iter->second.end(); ++phot_corr_iter, ++ weight_iter) {
-      ordered_source_phot_corr[phot_corr_iter->first].insert({phot_corr_iter->second, weight_iter->second});
-      total_weights[phot_corr_iter->first] += weight_iter->second;
+
+      if (std::isfinite(weight_iter->second)) {
+        ordered_source_phot_corr[phot_corr_iter->first].insert({phot_corr_iter->second, weight_iter->second});
+        total_weights[phot_corr_iter->first] += weight_iter->second;
+      }
     }
   }
 
