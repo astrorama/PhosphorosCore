@@ -64,7 +64,7 @@ public:
                     SourceIter source_begin, SourceIter source_end,
                     const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, double>& scale_factor_map,
                     const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhot>& model_phot_map,
-                    PhotometricCorrectionSelector<SourceIter> selector=FindMedianPhotometricCorrectionsFunctor{});
+                    PhotometricCorrectionSelector<SourceIter> selector=FindMedianPhotometricCorrectionsFunctor{}) const;
                     
 };
 

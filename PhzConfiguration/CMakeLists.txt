@@ -11,6 +11,7 @@ elements_depends_on_subdirs(PhzLikelihood)
 elements_depends_on_subdirs(PhzPhotometricCorrection)
 elements_depends_on_subdirs(PhzUtils)
 elements_depends_on_subdirs(PhzLuminosity)
+elements_depends_on_subdirs(PhzNzPrior)
 elements_depends_on_subdirs(PhzReferenceSample)
 elements_depends_on_subdirs(Configuration)
 
@@ -22,8 +23,8 @@ if(ELEMENTS_HIDE_WARNINGS)
   endif()
 endif()
 elements_add_library(PhzConfiguration src/lib/*.cpp
-                     LINK_LIBRARIES XYDataset PhzDataModel PhzOutput PhzPhotometricCorrection PhzLikelihood PhzModeling PhzUtils PhzLuminosity ElementsKernel Configuration
-                     INCLUDE_DIRS XYDataset MathUtils PhzDataModel PhzUtils PhzLuminosity
+                     LINK_LIBRARIES XYDataset PhzDataModel PhzOutput PhzPhotometricCorrection PhzNzPrior PhzLikelihood PhzModeling PhzUtils PhzLuminosity ElementsKernel Configuration
+                     INCLUDE_DIRS XYDataset MathUtils PhzDataModel PhzUtils PhzLuminosity PhzNzPrior
                      PUBLIC_HEADERS PhzConfiguration)
 elements_add_unit_test(CatalogTypeConfig_test tests/src/CatalogTypeConfig_test.cpp 
                      LINK_LIBRARIES PhzConfiguration

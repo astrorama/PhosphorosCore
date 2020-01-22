@@ -22,6 +22,7 @@
  * @author Florian Dubath
  */
 
+#include <fstream>
 #include <boost/archive/text_oarchive.hpp>
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"

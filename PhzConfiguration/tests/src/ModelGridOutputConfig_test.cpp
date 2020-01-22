@@ -88,9 +88,9 @@ struct archive {
   static std::string getFormatOption() { return  OptionStr; };
 };
 
-const char bin_opt[] = "BINARY";
+constexpr char bin_opt[] = "BINARY";
 typedef archive<boost::archive::binary_iarchive, bin_opt> binary_archive;
-const char text_opt[] = "TEXT";
+constexpr char text_opt[] = "TEXT";
 typedef archive<boost::archive::text_iarchive, text_opt> text_archive;
 
 typedef boost::mpl::list<binary_archive, text_archive> archive_types;

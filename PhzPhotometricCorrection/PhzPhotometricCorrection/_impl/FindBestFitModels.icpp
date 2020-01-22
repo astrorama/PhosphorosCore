@@ -16,6 +16,7 @@
 #include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
 #include "PhzLikelihood/ScaleFactorFunctor.h"
 #include "PhzLikelihood/ChiSquareLikelihoodLogarithm.h"
+#include "PhzUtils/Multithreading.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
@@ -43,11 +44,13 @@ FindBestFitModels<SourceCalculatorFunctor>::FindBestFitModels(
           m_model_funct_list(model_funct_list) {
 }
 
+//template<>
 template<typename SourceCalculatorFunctor>
+template<typename SourceIter>
 std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> FindBestFitModels<SourceCalculatorFunctor>::operator()(
-    const SourceCatalog::Catalog& calibration_catalog,
+    SourceIter source, SourceIter source_end,
     const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
-    const PhzDataModel::PhotometricCorrectionMap& photometric_correction) {
+    const PhzDataModel::PhotometricCorrectionMap& photometric_correction) const {
 
   using namespace std;
   auto logger = Elements::Logging::getLogger("FindBestFitModels");
@@ -72,12 +75,14 @@ std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> FindBestFitM
     return false;
   };
 
-  for (auto& source : calibration_catalog) {
+  for (; source != source_end; ++source) {
 
-    auto source_id = source.getId();
+    if (PhzUtils::getStopThreadsFlag()) {
+      throw Elements::Exception() << "Stopped by the user";
+    }
 
-    shared_ptr < SourceCatalog::SpectroscopicRedshift > redshift_ptr =
-        source.getAttribute<SourceCatalog::SpectroscopicRedshift>();
+    auto source_id = source->getId();
+    auto redshift_ptr = source->template getAttribute<SourceCatalog::SpectroscopicRedshift>();
 
     if (redshift_ptr==nullptr){
           throw Elements::Exception()<<"Source with Id "<< source_id
@@ -94,8 +99,7 @@ std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> FindBestFitM
       continue;
     }
 
-    shared_ptr < SourceCatalog::Photometry > photometry_ptr =
-        source.getAttribute<SourceCatalog::Photometry>();
+    auto photometry_ptr = source->template getAttribute<SourceCatalog::Photometry>();
     if (photometry_ptr==nullptr){
           throw Elements::Exception()<<"Source with Id "<< source_id
               << " has no photometry attribute";
@@ -110,7 +114,7 @@ std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> FindBestFitM
         m_model_funct_list
     );
 
-    const PhzDataModel::SourceResults& res = source_phz_calculator(source);
+    const PhzDataModel::SourceResults& res = source_phz_calculator(*source);
     auto& best_model =  res.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
     auto photo = SourceCatalog::Photometry{*best_model};
 

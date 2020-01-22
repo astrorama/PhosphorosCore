@@ -40,6 +40,7 @@
 #include "PhzConfiguration/LuminosityFunctionConfig.h"
 #include "PhzConfiguration/PhotometricCorrectionConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
+#include "PhzConfiguration/NzPriorConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/MarginalizationConfig.h"
 #include "PhzConfiguration/VolumePriorConfig.h"
@@ -99,6 +100,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<LuminosityFunctionConfig>();
   declareDependency<LuminositySedGroupConfig>();
   declareDependency<PriorConfig>();
+  declareDependency<NzPriorConfig>();
   declareDependency<PhotometricCorrectionConfig>();
   declareDependency<CatalogTypeConfig>();
   declareDependency<ResultsDirConfig>();
