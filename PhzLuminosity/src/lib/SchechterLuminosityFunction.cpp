@@ -34,7 +34,7 @@ double SchechterLuminosityFunction::operator()(const double luminosity) const {
 
   } else {
     double l_l_star = luminosity/m_mag_L_star;
-    value = (m_phi_star/m_mag_L_star)*std::pow(l_l_star, m_alpha)*std::exp(-l_l_star);
+    value = luminosity*(m_phi_star/m_mag_L_star)*std::pow(l_l_star, m_alpha)*std::exp(-l_l_star);
   }
 
   if (value > 100) {
