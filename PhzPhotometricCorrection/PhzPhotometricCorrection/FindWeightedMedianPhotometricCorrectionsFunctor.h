@@ -16,7 +16,7 @@ namespace PhzPhotometricCorrection {
  * @class FindWeightedMedianPhotometricCorrectionsFunctor
  *
  * @brief
- * This functor extract the weighted median values for the Photometric Corrections
+ * This functor columnDescriptionsFromAxes the weighted median values for the Photometric Corrections
  * (one for each filter) based on the individual source's corrections. The weights
  * are obtained at the inverse of the relative error 1/(Delta Flux/Flux)
  */

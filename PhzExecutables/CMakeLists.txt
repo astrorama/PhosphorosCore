@@ -9,11 +9,8 @@ elements_depends_on_subdirs(PhzOutput)
 elements_depends_on_subdirs(PhzPhotometricCorrection)
 elements_depends_on_subdirs(PhzReferenceSample)
 elements_depends_on_subdirs(PhzGalacticCorrection)
-
 elements_add_library(PhzExecutables src/lib/*.cpp
-                     LINK_LIBRARIES
-                        ElementsKernel PhzConfiguration PhzDataModel PhzModeling PhzLikelihood PhzOutput
-                        PhzPhotometricCorrection PhzReferenceSample
+                     LINK_LIBRARIES ElementsKernel PhzConfiguration PhzDataModel PhzModeling PhzLikelihood PhzOutput PhzPhotometricCorrection PhzReferenceSample
                      PUBLIC_HEADERS PhzExecutables)
 
 
@@ -32,5 +29,7 @@ elements_add_executable(PhosphorosBuildReferenceSample src/program/BuildReferenc
                      LINK_LIBRARIES ElementsKernel PhzExecutables)
 elements_add_executable(PhosphorosComputeGalacticAbsorptionCoefficientGrid src/program/ComputeGalacticAbsorptionCoefficientGrid.cpp
                      LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling PhzGalacticCorrection)
+elements_add_executable(PhzModelGrid2Fits src/program/PhzModelGrid2Fits.cpp
+                     LINK_LIBRARIES ElementsKernel PhzExecutables)
 
 elements_install_conf_files()

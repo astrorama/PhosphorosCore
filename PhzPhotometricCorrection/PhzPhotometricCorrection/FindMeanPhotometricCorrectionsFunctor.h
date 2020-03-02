@@ -17,7 +17,7 @@ namespace PhzPhotometricCorrection {
  * @class FindMeanPhotometricCorrectionsFunctor
  *
  * @brief
- * This functor extract the mean values for the Photometric Corrections
+ * This functor columnDescriptionsFromAxes the mean values for the Photometric Corrections
  * (one for each filter) based on the individual source's corrections.
  */
 class FindMeanPhotometricCorrectionsFunctor {

@@ -21,7 +21,7 @@ namespace PhzPhotometricCorrection {
  * @class FindMedianPhotometricCorrectionsFunctor
  *
  * @brief
- * This functor extract the median values for the Photometric Corrections
+ * This functor columnDescriptionsFromAxes the median values for the Photometric Corrections
  * (one for each filter) based on the individual source's corrections.
  */
 class FindMedianPhotometricCorrectionsFunctor{
