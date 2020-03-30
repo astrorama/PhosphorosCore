@@ -13,6 +13,7 @@
 #include "ElementsKernel/Real.h"
 #include "ElementsKernel/Exception.h"
 #include "PhzDataModel/serialization/PhotometryGrid.h"
+#include "PhzDataModel/Photometry.h"
 
 struct PhzPhotometryGridName_Fixture {
 
@@ -174,5 +175,55 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, T, archive_types, PhzPhotom
   }
 }
 
-BOOST_AUTO_TEST_SUITE_END ()
 
+BOOST_FIXTURE_TEST_CASE(toTable_test, PhzPhotometryGridName_Fixture) {
+  auto axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes};
+  original_grid(0, 0, 0, 0) = photometry_1;
+  original_grid(1, 0, 0, 0) = photometry_2;
+  original_grid(0, 1, 0, 0) = photometry_3;
+  original_grid(1, 1, 0, 0) = photometry_4;
+
+  auto table = Euclid::GridContainer::gridContainerToTable(original_grid);
+  auto column_info = table.getColumnInfo();
+
+  BOOST_CHECK_EQUAL(table.size(), 4);
+  BOOST_CHECK_EQUAL(column_info->size(), 8);
+  BOOST_CHECK(column_info->getDescription("Z").type == typeid(double));
+  BOOST_CHECK(column_info->getDescription("E(B-V)").type == typeid(double));
+  BOOST_CHECK(column_info->getDescription("filtre1").type == typeid(double));
+  BOOST_CHECK(column_info->getDescription("filtre1_error").type == typeid(double));
+  BOOST_CHECK(column_info->getDescription("filter2").type == typeid(double));
+  BOOST_CHECK(column_info->getDescription("filter2_error").type == typeid(double));
+
+  // Note that QualifiedName must be translated into std::string when writing the table
+  BOOST_CHECK(column_info->getDescription("Reddening_Curve").type == typeid(std::string));
+  BOOST_CHECK(column_info->getDescription("SED").type == typeid(std::string));
+
+  // Verify values
+  for (auto& row: table) {
+    auto z = boost::get<double>(row["Z"]);
+    auto ebv = boost::get<double>(row["E(B-V)"]);
+    auto reddening = Euclid::XYDataset::QualifiedName(boost::get<std::string>(row["Reddening_Curve"]));
+    auto sed = Euclid::XYDataset::QualifiedName(boost::get<std::string>(row["SED"]));
+
+    auto z_idx = std::distance(zs.begin(), std::find(zs.begin(), zs.end(), z));
+    auto ebv_idx = std::distance(ebvs.begin(), std::find(ebvs.begin(), ebvs.end(), ebv));
+    auto r_idx = std::distance(reddeing_curves.begin(), std::find(reddeing_curves.begin(), reddeing_curves.end(), reddening));
+    auto s_idx = std::distance(seds.begin(), std::find(seds.begin(), seds.end(), sed));
+
+    auto cell = original_grid.at(z_idx, ebv_idx, r_idx, s_idx);
+
+    for (auto fname : *filter_1) {
+      auto flux = boost::get<double>(row[fname]);
+      auto error = boost::get<double>(row[fname + "_error"]);
+
+      auto gflux = cell.find(fname);
+      BOOST_CHECK_EQUAL(gflux->flux, flux);
+      BOOST_CHECK_EQUAL(gflux->error, error);
+    }
+  }
+}
+
+
+BOOST_AUTO_TEST_SUITE_END ()
