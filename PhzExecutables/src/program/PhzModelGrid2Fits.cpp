@@ -25,7 +25,6 @@
 #include <string>
 
 #include <boost/program_options.hpp>
-#include <boost/algorithm/string.hpp>
 #include "ElementsKernel/ProgramHeaders.h"
 #include "AlexandriaKernel/memory_tools.h"
 #include "Configuration/ConfigManager.h"
@@ -33,7 +32,7 @@
 #include "Table/FitsWriter.h"
 #include "PhzConfiguration/PhzModelGrid2FitsConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
-#include "GridContainer/GridContainerToTable.h"
+#include "PhzDataModel/Photometry.h"
 
 using namespace Euclid::Table;
 using namespace Euclid::Configuration;
@@ -49,30 +48,6 @@ namespace fs = boost::filesystem;
 static Elements::Logging logger = Elements::Logging::getLogger("PhzModelGrid2Fits");
 
 static long config_manager_id = getUniqueManagerId();
-
-/**
- * Specialization for mapping a Photometry object into a set of cells.
- * Two columns will be generated: one with the flux, and another with the error
- */
-namespace Euclid { namespace GridContainer {
-template<>
-struct GridCellToTable<Euclid::SourceCatalog::Photometry> {
-  static void addColumnDescriptions(const Photometry& p, std::vector<ColumnDescription>& columns) {
-    auto& photo_ref = p;
-    for (auto piter = photo_ref.begin(); piter != photo_ref.end(); ++piter) {
-      columns.emplace_back(piter.filterName(), typeid(double));
-      columns.emplace_back(piter.filterName() + "_error", typeid(double));
-    }
-  }
-
-  static void addCells(const Photometry& photometry, std::vector<Row::cell_type>& row) {
-    for (auto& p : photometry) {
-      row.emplace_back(p.flux);
-      row.emplace_back(p.error);
-    }
-  }
-};
-}}
 
 /**
  * @class PhzModelGrid2Fits
