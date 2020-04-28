@@ -31,12 +31,16 @@ struct PhotometryGridCreator_Fixture {
       std::vector<std::pair<double, double>> copied_values {};
       try {
         for (auto& sed_pair : m_storage.at(qualified_name)) {
-          copied_values.push_back( std::make_pair(sed_pair.first,sed_pair.second));
+          copied_values.push_back(std::make_pair(sed_pair.first, sed_pair.second));
         }
-      } catch (std::out_of_range&){
+      } catch (std::out_of_range&) {
         return nullptr;
       }
       return std::unique_ptr<Euclid::XYDataset::XYDataset>{new Euclid::XYDataset::XYDataset(std::move(copied_values))};
+    }
+
+    std::string getParameter(const Euclid::XYDataset::QualifiedName& qualified_name, const std::string& key_word) override {
+       return key_word;
     }
 
     std::vector<Euclid::XYDataset::QualifiedName> listContents(const std::string&) override {
@@ -49,7 +53,7 @@ struct PhotometryGridCreator_Fixture {
     }
 
   private:
-    std::map<Euclid::XYDataset::QualifiedName,Euclid::XYDataset::XYDataset> m_storage{};
+    std::map<Euclid::XYDataset::QualifiedName, Euclid::XYDataset::XYDataset> m_storage {};
   };
 
   std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider;
