@@ -77,6 +77,7 @@ std::map<XYDataset::QualifiedName, XYDataset::XYDataset> buildFilterMap(
       logger.info() << "Filter " << *begin << " is in energy.";
     } else {
       result.insert(std::make_pair(*begin, std::move(*dataset_ptr)));
+      logger.info() << "Filter " << *begin << " is in photon count.";
     }
     ++begin;
   }
