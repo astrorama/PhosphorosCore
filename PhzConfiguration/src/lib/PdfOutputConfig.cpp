@@ -135,7 +135,9 @@ void PdfOutputConfig::initialize(const UserValues& args) {
   if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isMissingPhotometryEnabled() ||
       getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled() ) {
         getDependency<OutputCatalogConfig>().addColumnHandler(
-            std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Flags{}}
+            std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Flags{
+              getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isMissingPhotometryEnabled(),
+              getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled()}}
         );
       }
 

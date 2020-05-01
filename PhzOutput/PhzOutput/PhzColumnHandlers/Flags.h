@@ -35,7 +35,7 @@ class Flags : public ColumnHandler {
   
 public:
   
-  Flags();
+  Flags(bool add_missing, bool add_upper);
   
   virtual ~Flags() = default;
   
@@ -44,6 +44,11 @@ public:
   std::vector<Table::Row::cell_type> convertResults(
                     const SourceCatalog::Source& source,
                     const PhzDataModel::SourceResults& results) const override;
+
+private:
+  bool m_add_missing;
+  bool m_add_upper;
+
 };
 
 } /* namespace ColumnHandlers */
