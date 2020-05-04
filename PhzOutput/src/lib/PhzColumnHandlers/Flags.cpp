@@ -27,13 +27,18 @@ namespace Euclid {
 namespace PhzOutput {
 namespace ColumnHandlers {
 
-Flags::Flags() {}
+Flags::Flags(bool add_missing, bool add_upper): m_add_missing{add_missing}, m_add_upper{add_upper} {}
 
 std::vector<Table::ColumnInfo::info_type> Flags::getColumnInfoList() const {
-  return std::vector<Table::ColumnInfo::info_type> {
-    Table::ColumnInfo::info_type("Missing-data-flag", typeid(bool)),
-    Table::ColumnInfo::info_type("Upper-limit-flag", typeid(bool))
-  };
+  std::vector<Table::ColumnInfo::info_type>  result {};
+  if (m_add_missing) {
+    result.push_back(Table::ColumnInfo::info_type("Missing-data-flag", typeid(bool)));
+  }
+  if (m_add_upper) {
+    result.push_back(Table::ColumnInfo::info_type("Upper-limit-flag", typeid(bool)));
+  }
+
+  return result;
 }
 
 std::vector<Table::Row::cell_type> Flags::convertResults(
@@ -48,8 +53,14 @@ std::vector<Table::Row::cell_type> Flags::convertResults(
     upper_limit_flag |= (*it).upper_limit_flag;
         missing_data_flag |= (*it).missing_photometry_flag;
       }
-
-  return std::vector<Table::Row::cell_type> {missing_data_flag, upper_limit_flag};
+  std::vector<Table::Row::cell_type> result{};
+  if (m_add_missing) {
+     result.push_back(missing_data_flag);
+   }
+  if (m_add_upper) {
+     result.push_back(upper_limit_flag);
+   }
+  return result;
 }
 
 } /* namespace ColumnHandlers */
