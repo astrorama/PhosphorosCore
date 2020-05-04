@@ -5,6 +5,7 @@ set -ex
 export VERBOSE=1
 export CTEST_OUTPUT_ON_FAILURE=1
 export BRANCH=$1
+export LC_ALL=C
 
 # Platform-specific configuration
 source /etc/os-release
