@@ -131,15 +131,14 @@ void PdfOutputConfig::initialize(const UserValues& args) {
     }
   }
 
+  bool missing_photometry = getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isMissingPhotometryEnabled();
+  bool upper_limit = getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled();
 
-  if (getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isMissingPhotometryEnabled() ||
-      getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled() ) {
+  if ( missing_photometry || upper_limit) {
         getDependency<OutputCatalogConfig>().addColumnHandler(
-            std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Flags{
-              getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isMissingPhotometryEnabled(),
-              getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled()}}
+            std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Flags{ missing_photometry,upper_limit}}
         );
-      }
+  }
 
   if (m_format == "INDIVIDUAL-HDUS") {
     m_out_pdf_dir = getDependency<PhzOutputDirConfig>().getPhzOutputDir();
