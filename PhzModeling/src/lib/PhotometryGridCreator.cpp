@@ -4,12 +4,15 @@
  * @author Florian Dubath
  */
 
+#include <boost/algorithm/string.hpp>
 #include <future>
 #include <atomic>
 #include <thread>
 #include <atomic>
 #include <chrono>
 #include <iterator>
+#include <string>
+
 #include "ElementsKernel/Logging.h"
 #include "MathUtils/interpolation/interpolation.h"
 
@@ -33,6 +36,15 @@ namespace PhzModeling {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhotometryGridCreator");
 
+XYDataset::XYDataset divideByLambda(const XYDataset::XYDataset& filter) {
+  std::vector<std::pair<double, double>> vector_pair;
+  for (auto iter = filter.begin(); iter != filter.end(); iter++) {
+    vector_pair.push_back(std::make_pair(iter->first, iter->second / iter->first));
+  }
+
+  return  XYDataset::XYDataset::factory(vector_pair);
+}
+
 template<typename NameIter>
 std::map<XYDataset::QualifiedName, XYDataset::XYDataset> buildMap(
           XYDataset::XYDatasetProvider& provider, NameIter begin, NameIter end) {
@@ -43,6 +55,30 @@ std::map<XYDataset::QualifiedName, XYDataset::XYDataset> buildMap(
       throw Elements::Exception() << "Failed to find dataset: " << begin->qualifiedName();
     }
     result.insert(std::make_pair(*begin, std::move(*dataset_ptr)));
+    ++begin;
+  }
+  return result;
+}
+
+template<typename NameIter>
+std::map<XYDataset::QualifiedName, XYDataset::XYDataset> buildFilterMap(
+          XYDataset::XYDatasetProvider& provider, NameIter begin, NameIter end) {
+  std::map<XYDataset::QualifiedName, XYDataset::XYDataset> result {};
+  std::string energy_value {"energy"};
+  while (begin != end) {
+    auto dataset_ptr = provider.getDataset(*begin);
+    std::string parameter_value = provider.getParameter(*begin, "FilterType");
+    boost::algorithm::to_lower(parameter_value);
+    if (!dataset_ptr) {
+      throw Elements::Exception() << "Failed to find dataset: " << begin->qualifiedName();
+    }
+    if (parameter_value.compare(energy_value) == 0) {
+      result.insert(std::make_pair(*begin, divideByLambda(std::move(*dataset_ptr))));
+      logger.info() << "Filter " << *begin << " is in energy.";
+    } else {
+      result.insert(std::make_pair(*begin, std::move(*dataset_ptr)));
+      logger.info() << "Filter " << *begin << " is in photon count.";
+    }
     ++begin;
   }
   return result;
@@ -118,7 +154,7 @@ PhzDataModel::PhotometryGrid PhotometryGridCreator::createGrid(
             ProgressListener progress_listener) {
 
   // Create the maps
-  auto filter_map = buildMap(*m_filter_provider, filter_name_list.begin(), filter_name_list.end());
+  auto filter_map = buildFilterMap(*m_filter_provider, filter_name_list.begin(), filter_name_list.end());
   auto sed_name_list = std::get<PhzDataModel::ModelParameter::SED>(parameter_space);
   auto sed_map = buildMap(*m_sed_provider, sed_name_list.begin(), sed_name_list.end());
   auto reddening_curve_list = std::get<PhzDataModel::ModelParameter::REDDENING_CURVE>(parameter_space);
