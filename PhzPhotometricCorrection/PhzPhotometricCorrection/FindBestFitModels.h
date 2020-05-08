@@ -8,10 +8,13 @@
 #define PHZPHOTOMETRICCORRECTION_FINDBESTFITMODELS_H
 
 #include <map>
+#include <vector>
+#include <memory>
 #include "SourceCatalog/Catalog.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
+#include "PhzLikelihood/ProcessModelGridFunctor.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
@@ -36,7 +39,10 @@ public:
   using LikelihoodGridFunction = PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction;
   using PriorFunction = PhzLikelihood::SourcePhzFunctor::PriorFunction;
   
-  FindBestFitModels(LikelihoodGridFunction likelihood_func, std::vector<PriorFunction> priors = {});
+  FindBestFitModels(LikelihoodGridFunction likelihood_func,
+                    std::vector<PriorFunction> priors = {},
+                    std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> marginalization_func_list = {PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}},
+                    std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list ={});
 
   /**
    * @brief Map each input source to the model which is the best match,
@@ -57,23 +63,25 @@ public:
    *
    * @return An object of type std::map, with keys of type int64 t,
    * representing the IDs of the sources, and values of type
-   * PhzDataModel::PhotometryGrid::const iterator, pointing to a cell of the
-   * input Model Photometry Grid, representing the best fitted model for the source.
+   * SourceCatalog::Photometry representing the best fitted model for the source.
    *
    * @throws ElementsException
    *    if any of the source is missing the Spec-Z information
    * @throws ElementsException
    *    if any of the source is missing the Photometry information
    */
-  std::map<SourceCatalog::Source::id_type, PhzDataModel::PhotometryGrid::const_iterator> operator()(
-      const SourceCatalog::Catalog& calibration_catalog,
+  template <typename SourceIter>
+  std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> operator()(
+      SourceIter source_begin, SourceIter source_end,
       const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
-      const PhzDataModel::PhotometricCorrectionMap& photometric_correction);
+      const PhzDataModel::PhotometricCorrectionMap& photometric_correction) const;
   
 private:
   
   LikelihoodGridFunction m_likelihood_func;
   std::vector<PriorFunction> m_priors;
+  std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> m_marginalization_func_list;
+  std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> m_model_funct_list;
   
 };
 

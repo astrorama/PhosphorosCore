@@ -38,6 +38,10 @@
 #include "PhzPhotometricCorrection/FindWeightedMeanPhotometricCorrectionsFunctor.h"
 #include "PhzPhotometricCorrection/FindWeightedMedianPhotometricCorrectionsFunctor.h"
 
+#include "PhzConfiguration/DustColumnDensityColumnConfig.h"
+#include "PhzConfiguration/CorrectionCoefficientGridConfig.h"
+#include "PhzConfiguration/ModelGridModificationConfig.h"
+#include "PhzConfiguration/GalactiAbsorptionModelGridModifConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
@@ -49,9 +53,12 @@
 #include "PhzConfiguration/AxisFunctionPriorConfig.h"
 #include "PhzConfiguration/AxisWeightPriorConfig.h"
 #include "PhzConfiguration/GenericGridPriorConfig.h"
+#include "PhzConfiguration/MultithreadConfig.h"
 
 #include "PhzConfiguration/ComputePhotometricCorrectionsConfig.h"
 #include "CheckPhotometries.h"
+
+
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -83,6 +90,13 @@ ComputePhotometricCorrectionsConfig::ComputePhotometricCorrectionsConfig(long ma
   declareDependency<AxisFunctionPriorConfig>();
   declareDependency<AxisWeightPriorConfig>();
   declareDependency<GenericGridPriorConfig>();
+
+
+  declareDependency<DustColumnDensityColumnConfig>();
+  declareDependency<CorrectionCoefficientGridConfig>();
+  declareDependency<ModelGridModificationConfig>();
+  declareDependency<GalactiAbsorptionModelGridModifConfig>();
+  declareDependency<MultithreadConfig>();
 }
 
 auto ComputePhotometricCorrectionsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {

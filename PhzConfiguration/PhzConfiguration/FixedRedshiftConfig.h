@@ -50,6 +50,11 @@ public:
 
   void initialize(const UserValues& args) override;
 
+  bool isRedshiftFixed();
+
+private:
+  bool m_do_fix_redshift = false;
+
 }; /* End of FixedRedshiftConfig class */
 
 } /* namespace PhzConfiguration */

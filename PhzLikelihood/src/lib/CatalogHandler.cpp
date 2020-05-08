@@ -6,6 +6,7 @@
 
 #include "ElementsKernel/Logging.h"
 #include "PhzLikelihood/CatalogHandler.h"
+#include "PhzLikelihood/ProcessModelGridFunctor.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -15,9 +16,15 @@ CatalogHandler::CatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_
                                LikelihoodGridFunction likelihood_grid_func,
                                std::vector<PriorFunction> priors,
                                std::vector<MarginalizationFunction> marginalization_func_list,
+                               std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list,
                                bool doNormalizePdf)
-            : m_source_phz_func{std::move(phot_corr_map), phot_grid_map, std::move(likelihood_grid_func),
-                                std::move(priors), std::move(marginalization_func_list), doNormalizePdf} {
+            : m_source_phz_func{std::move(phot_corr_map),
+                                phot_grid_map,
+                                std::move(likelihood_grid_func),
+                                std::move(priors),
+                                std::move(marginalization_func_list),
+                                std::move(model_funct_list),
+                                doNormalizePdf} {
 }
 
 } // end of namespace PhzLikelihood

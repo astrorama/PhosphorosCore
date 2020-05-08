@@ -34,6 +34,7 @@
 #include "PhzConfiguration/PhotometricCorrectionConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzConfiguration/PdfOutputConfig.h"
+#include "PhzConfiguration/ModelGridModificationConfig.h"
 
 #include "PhzLikelihood/ParallelCatalogHandler.h"
 
@@ -91,10 +92,11 @@ void ComputeRedshifts::run(ConfigManager& config_manager) {
     auto& likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
     auto& phot_corr_map = config_manager.getConfiguration<PhotometricCorrectionConfig>().getPhotometricCorrectionMap();
     auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();
+    auto& model_func_list = config_manager.getConfiguration<ModelGridModificationConfig>().getProcessModelGridFunctors();
     bool do_normalize_pdf = config_manager.getConfiguration<PdfOutputConfig>().doNormalizePDFs();
     
     PhzLikelihood::ParallelCatalogHandler handler {phot_corr_map, model_phot_grid, likelihood_grid_func,
-                                                   priors, marginalization_func_list, do_normalize_pdf};
+                                                   priors, marginalization_func_list, model_func_list, do_normalize_pdf};
                                 
     auto table_reader = config_manager.getConfiguration<CatalogConfig>().getTableReader();
     auto catalog_converter = config_manager.getConfiguration<CatalogConfig>().getTableToCatalogConverter();

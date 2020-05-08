@@ -63,7 +63,7 @@ public:
    */
   virtual ~OutputFileConfig() = default;
 
-  auto getProgramOptions () -> std::map<std::string, OptionDescriptionList> {
+  auto getProgramOptions () -> std::map<std::string, OptionDescriptionList> override {
     return { {"Output file options", {
           { OUTPUT_FILE.c_str(), po::value<std::string>(),
             "The path of the output file"}

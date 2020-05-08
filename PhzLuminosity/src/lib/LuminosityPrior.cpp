@@ -7,6 +7,8 @@
 
 #include "ElementsKernel/Logging.h"
 #include <functional>
+#include <cmath>
+#include <math.h>
 #include "MathUtils/function/Function.h"
 #include "PhzLuminosity/LuminosityPrior.h"
 #include "PhzDataModel/DoubleGrid.h"
@@ -32,7 +34,7 @@ m_effectiveness{effectiveness} {
 }
 
 void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
-  
+
   // Get from the results the input
   auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
   const auto& scale_factor_grid = results.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
@@ -81,12 +83,19 @@ void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
       scal_iter.fixAxisByIndex<PhzDataModel::ModelParameter::SED>(sed_index);
       scal_iter.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(z_index);
 
+
+
       while (prior_iter != prior_grid.end()) {
         double luminosity = (*m_luminosity_calculator)(scal_iter);
 
-        *prior_iter = luminosity_function(luminosity + m_mag_shift);
-        if (*prior_iter > max) {
-          max = *prior_iter;
+        if (!std::isfinite(luminosity)) {
+          *prior_iter = 0;
+          logger.warn() << "Undefined luminosity in the prior computation.";
+        } else {
+           *prior_iter = luminosity_function(luminosity);  //+ m_mag_shift
+           if (*prior_iter > max) {
+             max = *prior_iter;
+           }
         }
 
         ++prior_iter;
@@ -95,25 +104,26 @@ void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
     }
   }
   
+
   // Apply the effectiveness to the prior. WARNING: At the moment we do not
   // normalize the prior yet, as the max value might be different between the
   // parameter space regions.
   for (auto& v : prior_grid) {
     v = max * (1 - m_effectiveness) + m_effectiveness * v;
   }
-  
-  double min_value = std::exp(std::numeric_limits<double>::min());
 
+  double min_value = std::numeric_limits<double>::lowest();
+  
   // Apply the prior to the likelihood
   for (auto l_it = posterior_grid.begin(), p_it = prior_grid.begin();
             l_it != posterior_grid.end();
             ++l_it, ++p_it) {
-
-    if (*p_it <= min_value) {
-      *l_it = std::numeric_limits<double>::min();
-    } else {
-      *l_it += std::log(*p_it);
-    }
+      double prior = std::log(*p_it);
+      if (*p_it == 0) {
+        *l_it = min_value;
+      } else  if (std::isfinite(prior)) {
+          *l_it += prior;
+      }
   }
 }
 

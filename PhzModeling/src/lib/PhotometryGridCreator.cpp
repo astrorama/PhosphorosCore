@@ -184,7 +184,7 @@ PhzDataModel::PhotometryGrid PhotometryGridCreator::createGrid(
     f.get();
   }
 
-  return std::move(photometry_grid);
+  return photometry_grid;
 }
 
 

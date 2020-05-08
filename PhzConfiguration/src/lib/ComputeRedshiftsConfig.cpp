@@ -40,8 +40,8 @@
 #include "PhzConfiguration/LuminosityFunctionConfig.h"
 #include "PhzConfiguration/PhotometricCorrectionConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
+#include "PhzConfiguration/NzPriorConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
-#include "PhzConfiguration/ResultsDirConfig.h"
 #include "PhzConfiguration/MarginalizationConfig.h"
 #include "PhzConfiguration/VolumePriorConfig.h"
 #include "PhzConfiguration/MultithreadConfig.h"
@@ -57,8 +57,13 @@
 #include "PhzConfiguration/OutputStatisticsConfig.h"
 #include "PhzConfiguration/CopyColumnsConfig.h"
 
+#include "PhzConfiguration/DustColumnDensityColumnConfig.h"
+#include "PhzConfiguration/CorrectionCoefficientGridConfig.h"
+#include "PhzConfiguration/ModelGridModificationConfig.h"
+#include "PhzConfiguration/FixedRedshiftModelGridModifConfig.h"
+#include "PhzConfiguration/GalactiAbsorptionModelGridModifConfig.h"
+
 #include "PhzOutput/PdfOutput.h"
-#include "PhzOutput/LikelihoodHandler.h"
 #include "PhzOutput/LikelihoodHandler.h"
 #include "PhzOutput/PhzCatalog.h"
 #include "PhzOutput/PhzColumnHandlers/Id.h"
@@ -95,6 +100,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<LuminosityFunctionConfig>();
   declareDependency<LuminositySedGroupConfig>();
   declareDependency<PriorConfig>();
+  declareDependency<NzPriorConfig>();
   declareDependency<PhotometricCorrectionConfig>();
   declareDependency<CatalogTypeConfig>();
   declareDependency<ResultsDirConfig>();
@@ -112,6 +118,14 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<PdfOutputConfig>();
   declareDependency<OutputStatisticsConfig>();
   declareDependency<CopyColumnsConfig>();
+
+  declareDependency<DustColumnDensityColumnConfig>();
+  declareDependency<CorrectionCoefficientGridConfig>();
+  declareDependency<ModelGridModificationConfig>();
+  declareDependency<FixedRedshiftModelGridModifConfig>();
+  declareDependency<GalactiAbsorptionModelGridModifConfig>();
+
+
 }
 
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {

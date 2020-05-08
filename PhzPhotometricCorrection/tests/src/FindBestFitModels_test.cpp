@@ -126,7 +126,7 @@ struct FindBestFitModels_Fixture {
 
        ++filter_iter;
      }
-     return move(result);
+     return result;
    }
    
    PhzLikelihood::LikelihoodGridFunctor likelihood_func {
@@ -157,14 +157,14 @@ BOOST_FIXTURE_TEST_CASE(Functional_call_test, FindBestFitModels_Fixture) {
   auto test_object = FindBestFitModels<PhzLikelihood::SourcePhzFunctor>(likelihood_func);
   std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
   model_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
-  auto result_map = test_object(sources,model_grid_map,correctionMap);
+  auto result_map = test_object(sources.begin(), sources.end(), model_grid_map,correctionMap);
 }
 
 BOOST_FIXTURE_TEST_CASE(Functional_call_mock_test, FindBestFitModels_Fixture) {
   auto test_object = FindBestFitModels<SourcePhzCalculatorMock>(likelihood_func);
   std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
   model_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
-  auto result_map = test_object(sources,model_grid_map,correctionMap);
+  auto result_map = test_object(sources.begin(), sources.end(), model_grid_map, correctionMap);
 }
 
 BOOST_FIXTURE_TEST_CASE(Functional_call_throw_test, FindBestFitModels_Fixture) {
@@ -172,9 +172,9 @@ BOOST_FIXTURE_TEST_CASE(Functional_call_throw_test, FindBestFitModels_Fixture) {
   std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
   model_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
 
-  BOOST_CHECK_THROW(test_object(sources_missing_spectro,model_grid_map,correctionMap),Elements::Exception);
+  BOOST_CHECK_THROW(test_object(sources_missing_spectro.begin(), sources_missing_spectro.end(), model_grid_map,correctionMap),Elements::Exception);
 
-  BOOST_CHECK_THROW(test_object(sources_missing_photo,model_grid_map,correctionMap),Elements::Exception);
+  BOOST_CHECK_THROW(test_object(sources_missing_photo.begin(), sources_missing_photo.end() ,model_grid_map,correctionMap),Elements::Exception);
 }
 
 

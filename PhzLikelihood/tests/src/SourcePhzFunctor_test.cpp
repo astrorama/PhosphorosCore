@@ -11,6 +11,7 @@
 
 #include "ElementsKernel/Real.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
+#include "SourceCatalog/Source.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
 #include "PhzLikelihood/SumMarginalizationFunctor.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
@@ -46,6 +47,10 @@ struct SourcePhzFunctor_Fixture {
   SourceCatalog::Photometry photometry_4 { filters, values_4 };
   SourceCatalog::Photometry photometry_source { filters, values_source };
 
+  std::vector<std::shared_ptr<SourceCatalog::Attribute>>
+      attibuteVector{std::shared_ptr<SourceCatalog::Photometry>(new SourceCatalog::Photometry{ filters, values_source })};
+  SourceCatalog::Source source = SourceCatalog::Source(1, attibuteVector);
+
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs,
       reddeing_curves, seds);
   PhzDataModel::PhotometryGrid photo_grid { axes };
@@ -74,7 +79,7 @@ struct SourcePhzFunctor_Fixture {
 
       ++filter_iter;
     }
-    return move(result);
+    return result;
   }
 
   SourcePhzFunctor_Fixture() {
@@ -108,7 +113,7 @@ BOOST_FIXTURE_TEST_CASE(SourcePhzFunctor_test, SourcePhzFunctor_Fixture) {
   PhzLikelihood::SourcePhzFunctor functor(correctionMap, photo_grid_map,
       likelihood_function.getFunctorObject(), {},
       {PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}});
-  auto best_model = functor(photometry_source);
+  auto best_model = functor(source);
 
 }
 

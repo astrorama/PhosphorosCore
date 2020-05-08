@@ -62,5 +62,16 @@ elements_add_unit_test(AxisWeightPrior_test tests/src/AxisWeightPrior_test.cpp
 elements_add_unit_test(GenericGridPrior_test tests/src/GenericGridPrior_test.cpp 
                      LINK_LIBRARIES PhzLikelihood
                      TYPE Boost)
+endif(GMOCK_FOUND)     
+                
+elements_add_unit_test(FixRedshiftProcessModelGridFunctor_test tests/src/FixRedshiftProcessModelGridFunctor_test.cpp 
+                     LINK_LIBRARIES PhzLikelihood
+                     TYPE Boost)
+                     
+elements_add_unit_test(GalacticAbsorptionProcessModelGridFunctor_test tests/src/GalacticAbsorptionProcessModelGridFunctor_test.cpp 
+                     LINK_LIBRARIES PhzLikelihood
+                     TYPE Boost)
+                                          
+                     
 
-endif(GMOCK_FOUND)
+

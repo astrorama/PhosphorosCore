@@ -82,6 +82,19 @@ struct ModelGridOutputConfig_fixture : public ConfigManager_fixture {
 
 BOOST_AUTO_TEST_SUITE (ModelGridOutputConfig_test)
 
+template<typename I, const char *OptionStr>
+struct archive {
+  typedef I iarchive;
+  static std::string getFormatOption() { return  OptionStr; };
+};
+
+constexpr char bin_opt[] = "BINARY";
+typedef archive<boost::archive::binary_iarchive, bin_opt> binary_archive;
+constexpr char text_opt[] = "TEXT";
+typedef archive<boost::archive::text_iarchive, text_opt> text_archive;
+
+typedef boost::mpl::list<binary_archive, text_archive> archive_types;
+
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
@@ -158,7 +171,7 @@ BOOST_FIXTURE_TEST_CASE(directory_test, ModelGridOutputConfig_fixture) {
 // Test the getOutputFunction
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, ModelGridOutputConfig_fixture) {
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunction_test, T, archive_types, ModelGridOutputConfig_fixture) {
   // Given
   config_manager.registerConfiguration<ModelGridOutputConfig>();
   config_manager.closeRegistration();
@@ -166,6 +179,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, ModelGridOutputConfig_fixture) {
   // Create a binary file
   fs::path test_file = temp_dir.path() / "test" / "directory" / "creation" / "test_writing_binary_file.dat";
   options_map["output-model-grid"].value() = test_file.string();
+  options_map["output-model-grid-format"].value() = T::getFormatOption();
   options_map["filter-name"].value() = std::vector<std::string>{};
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter1");
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
@@ -188,10 +202,10 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, ModelGridOutputConfig_fixture) {
   // Read the binary file created
   std::ifstream ifs {};
   ifs.open (test_file.string(), std::ios::binary);
-  boost::archive::binary_iarchive ia(ifs);
+  typename T::iarchive ia(ifs);
   Euclid::PhzDataModel::PhotometryGridInfo info;
   ia >> info;
-  auto retrieved_grid = GridContainer::gridBinaryImport<PhzDataModel::PhotometryGrid>(ifs);
+  auto retrieved_grid = GridContainer::gridImport<PhzDataModel::PhotometryGrid, typename T::iarchive>(ifs);
 
   // Then
   BOOST_CHECK_EQUAL("MADAU", info.igm_method);
@@ -205,7 +219,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunction_test, ModelGridOutputConfig_fixture) {
 // Test the getOutputFunction with relative path
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(getOutputFunctionRelative_test, ModelGridOutputConfig_fixture) {
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionRelative_test, T, archive_types, ModelGridOutputConfig_fixture) {
   // Given
   config_manager.registerConfiguration<ModelGridOutputConfig>();
   config_manager.closeRegistration();
@@ -214,6 +228,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionRelative_test, ModelGridOutputConfig_fi
   fs::path test_file = temp_dir.path() / "CatalogType" / "ModelGrids" / "my" / "path" / "test_writing_binary_file.dat";
   fs::path out_put_model_grid { fs::path("my") / fs::path("path") / fs::path("test_writing_binary_file.dat") };
   options_map["output-model-grid"].value() = out_put_model_grid.string();
+  options_map["output-model-grid-format"].value() = T::getFormatOption();
   options_map["filter-name"].value() = std::vector<std::string>{};
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter1");
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
@@ -236,10 +251,10 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionRelative_test, ModelGridOutputConfig_fi
   // Read the binary file created
   std::ifstream ifs {};
   ifs.open (test_file.string(), std::ios::binary);
-  boost::archive::binary_iarchive ia(ifs);
+  typename T::iarchive ia(ifs);
   Euclid::PhzDataModel::PhotometryGridInfo info;
   ia >> info;
-  auto retrieved_grid = GridContainer::gridBinaryImport<PhzDataModel::PhotometryGrid>(ifs);
+  auto retrieved_grid = GridContainer::gridImport<PhzDataModel::PhotometryGrid, typename T::iarchive>(ifs);
 
   // Then
   BOOST_CHECK_EQUAL("MADAU", info.igm_method);
@@ -253,7 +268,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionRelative_test, ModelGridOutputConfig_fi
 // Test the getOutputFunction with default path
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(getOutputFunctionDefault_test, ModelGridOutputConfig_fixture) {
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionDefault_test, T, archive_types, ModelGridOutputConfig_fixture) {
   // Given
    config_manager.registerConfiguration<ModelGridOutputConfig>();
    config_manager.closeRegistration();
@@ -261,6 +276,7 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionDefault_test, ModelGridOutputConfig_fix
   // Create a binary file
   fs::path test_file = temp_dir.path() / "CatalogType" / "ModelGrids/model_grid.dat";
   options_map["filter-name"].value() = std::vector<std::string>{};
+  options_map["output-model-grid-format"].value() = T::getFormatOption();
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter1");
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
 
@@ -282,10 +298,10 @@ BOOST_FIXTURE_TEST_CASE(getOutputFunctionDefault_test, ModelGridOutputConfig_fix
   // Read the binary file created
   std::ifstream ifs {};
   ifs.open (test_file.string(), std::ios::binary);
-  boost::archive::binary_iarchive ia(ifs);
+  typename T::iarchive ia(ifs);
   Euclid::PhzDataModel::PhotometryGridInfo info;
   ia >> info;
-  auto retrieved_grid = GridContainer::gridBinaryImport<PhzDataModel::PhotometryGrid>(ifs);
+  auto retrieved_grid = GridContainer::gridImport<PhzDataModel::PhotometryGrid, typename T::iarchive>(ifs);
 
   // Then
   BOOST_CHECK_EQUAL("MADAU", info.igm_method);

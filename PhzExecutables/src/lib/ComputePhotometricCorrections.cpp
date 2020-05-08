@@ -22,19 +22,23 @@
  */
 
 #include "ElementsKernel/Logging.h"
-
 #include "Configuration/CatalogConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/ComputePhotometricCorrectionsConfig.h"
 #include "PhzConfiguration/LikelihoodGridFuncConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
+#include "PhzConfiguration/MarginalizationConfig.h"
 
 #include "PhzPhotometricCorrection/FindBestFitModels.h"
 #include "PhzPhotometricCorrection/CalculateScaleFactorMap.h"
 #include "PhzPhotometricCorrection/PhotometricCorrectionAlgorithm.h"
 #include "PhzPhotometricCorrection/PhotometricCorrectionCalculator.h"
+#include "PhzPhotometricCorrection/ParallelSourcesHandler.h"
 
 #include "PhzExecutables/ComputePhotometricCorrections.h"
+#include "PhzConfiguration/ModelGridModificationConfig.h"
+
+#include "PhzUtils/Multithreading.h"
 
 using namespace Euclid::Configuration;
 using namespace Euclid::PhzConfiguration;
@@ -71,16 +75,29 @@ void ComputePhotometricCorrections::run(ConfigManager& config_manager) {
   auto& likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
   auto scale_factor_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getScaleFactorFunction();
   auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();
+  auto& marginalization_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
+  auto& model_func_list = config_manager.getConfiguration<ModelGridModificationConfig>().getProcessModelGridFunctors();
   auto& output_func = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getOutputFunction();
   auto& stop_criteria = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getStopCriteria();
 
-  FindBestFitModels<PhzLikelihood::SourcePhzFunctor> find_best_fit_models {likelihood_grid_func, priors};
-  CalculateScaleFactorMap calculate_scale_factor_map {scale_factor_func};
-  PhotometricCorrectionAlgorithm phot_corr_algorighm {};
+  auto& threads = PhzUtils::getThreadNumber();
+
+  logger.info() << "Using " << threads << " threads";
+
+  ThreadPool thread_pool(threads);
+
+  ParallelIteratorHandler<FindBestFitModels<PhzLikelihood::SourcePhzFunctor>> find_best_fit_models{threads, thread_pool,
+                                                                                                   likelihood_grid_func,
+                                                                                                   priors,
+                                                                                                   marginalization_func_list,
+                                                                                                   model_func_list};
+
+  ParallelIteratorHandler<CalculateScaleFactorMap> calculate_scale_factor_map{threads, thread_pool, scale_factor_func};
+  PhotometricCorrectionAlgorithm phot_corr_algorithm;
   auto selector = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getPhotometricCorrectionSelector();
 
   PhotometricCorrectionCalculator calculator {find_best_fit_models,
-                              calculate_scale_factor_map, phot_corr_algorighm};
+                                              calculate_scale_factor_map, phot_corr_algorithm};
 
   auto phot_corr_map = calculator(catalog, model_phot_grid, stop_criteria, selector, m_progress_listener);
 
