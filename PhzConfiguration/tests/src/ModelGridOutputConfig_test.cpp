@@ -78,6 +78,10 @@ struct ModelGridOutputConfig_fixture : public ConfigManager_fixture {
   }
 };
 
+boost::test_tools::assertion_result not_root(boost::unit_test::test_unit_id) {
+  return geteuid() != 0;
+}
+
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE (ModelGridOutputConfig_test)
@@ -124,7 +128,8 @@ BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
 // Test the permission check
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(permission_exception_test, ModelGridOutputConfig_fixture) {
+BOOST_FIXTURE_TEST_CASE(permission_exception_test, ModelGridOutputConfig_fixture,
+                        *boost::unit_test::precondition(not_root)) {
   // Given
   config_manager.registerConfiguration<ModelGridOutputConfig>();
   config_manager.closeRegistration();
