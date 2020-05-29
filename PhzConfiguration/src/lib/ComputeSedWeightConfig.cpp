@@ -30,6 +30,8 @@
 #include "PhzConfiguration/SedConfig.h"
 #include "PhzConfiguration/AuxDataDirConfig.h"
 #include <boost/filesystem/operations.hpp>
+#include "PhzConfiguration/SedProviderConfig.h"
+#include "PhzConfiguration/FilterProviderConfig.h"
 
 
 namespace po = boost::program_options;
@@ -44,7 +46,9 @@ static const std::string SED_WEIGHT_OUTPUT {"SED-Weight-Output"};
 ComputeSedWeightConfig::ComputeSedWeightConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<AuxDataDirConfig>();
   declareDependency<SedConfig>();
+  declareDependency<SedProviderConfig>();
   declareDependency<FilterConfig>();
+  declareDependency<FilterProviderConfig>();
 }
 
 
