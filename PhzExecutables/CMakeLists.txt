@@ -31,5 +31,7 @@ elements_add_executable(PhosphorosComputeGalacticAbsorptionCoefficientGrid src/p
                      LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling PhzGalacticCorrection)
 elements_add_executable(PhzModelGrid2Fits src/program/PhzModelGrid2Fits.cpp
                      LINK_LIBRARIES ElementsKernel PhzExecutables)
+elements_add_executable(PhosphorosComputeSedWeight src/program/ComputeSedWeight.cpp
+                     LINK_LIBRARIES ElementsKernel PhzExecutables)
 
 elements_install_conf_files()
