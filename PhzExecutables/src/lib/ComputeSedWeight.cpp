@@ -97,8 +97,8 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
     csw_logger.info() << "Filter =" << ordered_filters[i].first << " lambda ="  << ordered_filters[i].second;
   }
 
-
   // 3) compute colors (filter N+1 - filter N)
+
 
   // 4) make group & compute minimal distance
 
