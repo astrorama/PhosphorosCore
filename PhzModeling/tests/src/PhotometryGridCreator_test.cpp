@@ -48,6 +48,10 @@ struct PhotometryGridCreator_Fixture {
       return content;
     }
 
+    std::string getParameter(const Euclid::XYDataset::QualifiedName& qualified_name, const std::string& key_word) override {
+       return key_word;
+    }
+
   private:
     std::map<Euclid::XYDataset::QualifiedName,Euclid::XYDataset::XYDataset> m_storage{};
   };

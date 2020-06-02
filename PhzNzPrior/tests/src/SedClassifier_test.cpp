@@ -68,6 +68,10 @@ struct MockProvider: public XYDataset::XYDatasetProvider {
     }
     return std::unique_ptr<XYDataset::XYDataset>{new XYDataset::XYDataset{i->second}};
   }
+
+  std::string getParameter(const Euclid::XYDataset::QualifiedName& qualified_name, const std::string& key_word) override {
+      return key_word;
+   }
 };
 
 struct SedClassifier_fixture {
