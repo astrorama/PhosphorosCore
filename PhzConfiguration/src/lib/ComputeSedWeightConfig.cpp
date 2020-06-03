@@ -57,7 +57,7 @@ auto ComputeSedWeightConfig::getProgramOptions() -> std::map<std::string, Option
   return {{"Compute SED Weight options", {
 
     {SED_WEIGHT_OUTPUT.c_str(), po::value<std::string>()->default_value("SedWeight.ascii"),
-          "Path of the file into which output the SED weights. relative path are relative to <AuxDataDir>/AxisPriors/sed/"}
+          "Path of the file into which output the SED weights. Relative path are relative to <AuxDataDir>/AxisPriors/sed/"}
 
   }}};
 }
