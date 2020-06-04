@@ -44,11 +44,13 @@ namespace PhzExecutables {
 class ComputeSedWeight {
 
 public:
-  ComputeSedWeight();
+  ComputeSedWeight(long sampling_number = 5000000);
 
   void run(Configuration::ConfigManager& config_manager);
 
 
+
+  //------------- Ordering filter and computing colors -------------------------
 
   std::vector<std::pair<XYDataset::QualifiedName, double>> orderFilters(
       const std::vector<XYDataset::QualifiedName> & filter_list,
@@ -60,15 +62,20 @@ public:
       const std::shared_ptr<XYDataset::XYDatasetProvider> sed_provider,
       const std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider);
 
-  double maxGap(std::vector<std::vector<double>> sed_distances);
+  //------------- Computing the distance between the SED and the Groups --------
 
-  double groupDistance(std::vector<size_t> sed_group_1,
-                        std::vector<size_t> sed_group_2,
-                        std::vector<std::vector<double>> sed_distances);
+  double distance(std::vector<double> colors_1, std::vector<double> colors_2);
 
   std::vector<std::vector<double>> computeSedDistance(std::vector<std::vector<double>> seds_colors);
 
-  double distance(std::vector<double> colors_1, std::vector<double> colors_2);
+  double groupDistance(std::vector<size_t> sed_group_1,
+                         std::vector<size_t> sed_group_2,
+                         std::vector<std::vector<double>> sed_distances);
+
+  double maxGap(std::vector<std::vector<double>> sed_distances);
+
+
+  //------------- Computing the weights ----------------------------------------
 
   std::vector<double> getWeights(std::vector<std::vector<double>> seds_colors, double radius);
 
@@ -79,7 +86,7 @@ public:
 
 
 private:
-
+  long m_sampling_number;
 }; /* End of ComputeSedWeight class */
 
 } /* namespace PhzExecutables */

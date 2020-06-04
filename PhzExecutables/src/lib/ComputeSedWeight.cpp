@@ -56,7 +56,9 @@ namespace PhzExecutables {
 Elements::Logging csw_logger = Elements::Logging::getLogger("PhosphorosComputeSedWeight");
 
 
-ComputeSedWeight::ComputeSedWeight() {}
+ComputeSedWeight::ComputeSedWeight(long sampling_number) {
+  m_sampling_number = sampling_number;
+}
 
 std::vector<std::pair<XYDataset::QualifiedName, double>> ComputeSedWeight::orderFilters(
     const std::vector<XYDataset::QualifiedName> & filter_list,
@@ -130,6 +132,7 @@ std::vector<std::vector<double>> ComputeSedWeight::computeSedColors(
       auto filtered = functor(*(sedXY.get()),
                                    std::make_pair(x[0], x[x.size()-1]),
                                    *(filter.get()));
+
       std::vector<double> x_fil{};
       std::vector<double> y_fil{};
       iter = filtered.begin();
@@ -139,7 +142,7 @@ std::vector<std::vector<double>> ComputeSedWeight::computeSedColors(
               ++iter;
       }
       auto filtered_func = MathUtils::interpolate(x_fil, y_fil, MathUtils::InterpolationType::LINEAR);
-      double num = MathUtils::integrate(*(filtered_func.get()), x_fil[0], x_fil[x.size()-1]);
+      double num = MathUtils::integrate(*(filtered_func.get()), x_fil[0], x_fil[x_fil.size()-1]);
       sed_fluxes.push_back(num/norm);
     }
     fluxes.push_back(sed_fluxes);
@@ -216,13 +219,15 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
     sed_groups.push_back(group);
   }
 
+
   // Merge the groups
   while (sed_groups.size() > 2) {
+    csw_logger.info() << "Start merge process with " << sed_groups.size() << " Groups.";
     double dist_min = 1000.0;
     size_t index_1 = -1;
     size_t index_2 = -1;
-    for (size_t group_index_1 = 0; group_index_1 < sed_groups.size(); ++group_index_1) {
-      for (size_t group_index_2 = group_index_1; group_index_2 < sed_groups.size(); ++group_index_2) {
+    for (size_t group_index_1 = 0; group_index_1 < sed_groups.size() -1; ++group_index_1) {
+      for (size_t group_index_2 = group_index_1 +1; group_index_2 < sed_groups.size(); ++group_index_2) {
           double dist = groupDistance(sed_groups[group_index_1], sed_groups[group_index_2], sed_distances);
           if (dist < dist_min) {
             dist_min = dist;
@@ -232,7 +237,7 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
        }
     }
 
-    csw_logger.info() << "Merging Group " << index_2 << "with Group " << index_1 << "Distance:" << dist_min;
+    csw_logger.info() << "Merging Group " << index_2 << " with Group " << index_1 << " Distance:" << dist_min;
     for (size_t sed_index = 0; sed_index < sed_groups[index_2].size(); ++sed_index) {
       sed_groups[index_1].push_back(sed_groups[index_2][sed_index]);
     }
@@ -283,9 +288,8 @@ std::vector<double> ComputeSedWeight::getWeights(std::vector<std::vector<double>
    std::random_device rd;
    std::mt19937 mt(rd());
 
-   long sample_number = 100000;
    long total_matches = 0;
-   for (long sample_index = 0; sample_index < sample_number; ++sample_index) {
+   for (long sample_index = 0; sample_index < m_sampling_number; ++sample_index) {
      std::vector<double> sample_color{};
      for (size_t color_index = 0; color_index < ranges.size(); ++color_index) {
        std::uniform_real_distribution<double> dist(ranges[color_index].first - radius, ranges[color_index].second + radius);
