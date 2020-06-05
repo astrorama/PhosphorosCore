@@ -45,7 +45,7 @@ auto OutputCatalogConfig::getProgramOptions() -> std::map<std::string, OptionDes
 return {{"Output options", {
     {OUTPUT_CATALOG_FORMAT.c_str(), po::value<std::string>()->default_value("ASCII"),
         "The format of the PHZ catalog file (one of ASCII (default), FITS)"},
-    {OUTPUT_FLUSH_SIZE.c_str(), po::value<uint>()->default_value(500),
+    {OUTPUT_FLUSH_SIZE.c_str(), po::value<int>()->default_value(500),
         "The chunk size with which the results are flushed to the files"}
   }}};
 }

@@ -137,7 +137,7 @@ auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, Option
           "The output posteriors flag for creating the file (YES/NO, default: NO)"}
     }},
     {"Input catalog options", {
-      {INPUT_BUFFER_SIZE.c_str(), po::value<std::size_t>()->default_value(5000),
+      {INPUT_BUFFER_SIZE.c_str(), po::value<int>()->default_value(5000),
           "The size of input sources chunk that are kept in memory at the same time"}
     }}
   };
