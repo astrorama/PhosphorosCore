@@ -148,6 +148,7 @@ std::vector<std::vector<double>> ComputeSedWeight::computeSedColors(
     PhzModeling::ApplyFilterFunctor functor{};
   std::vector<std::vector<double>> fluxes{};
 
+  size_t progress = 0;
   for (auto sed_iter = sed_list.begin(); sed_iter != sed_list.end(); ++sed_iter) {
     std::vector<double> sed_fluxes{};
     for (size_t filter_index = 0; filter_index < ordered_filters.size(); ++filter_index) {
@@ -182,6 +183,8 @@ std::vector<std::vector<double>> ComputeSedWeight::computeSedColors(
       sed_fluxes.push_back(num/norm);
     }
     fluxes.push_back(sed_fluxes);
+    ++progress;
+    m_progress_listener(static_cast<int>((33*progress)/sed_list.size()), 100);
   }
 
   std::vector<std::vector<double>> colors{};
@@ -255,6 +258,7 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
     sed_groups.push_back(group);
   }
 
+  size_t initial_size = sed_groups.size();
 
   // Merge the groups
   while (sed_groups.size() > 2) {
@@ -285,6 +289,7 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
     }
 
     sed_groups.erase(iter);
+    m_progress_listener( static_cast<int>((33*(initial_size - sed_groups.size()))/initial_size) +33, 100);
   }
 
   // Only 2 groups left: return the distance in between
@@ -330,7 +335,7 @@ std::vector<double> ComputeSedWeight::getWeights(std::vector<std::vector<double>
 
        int percentil = static_cast<int>((100*(m_sampling_number*sed_index + draw_index+1))/total);
              if (percentil != current_percentil) {
-               m_progress_listener(m_sampling_number*sed_index + draw_index+1, total);
+               m_progress_listener(static_cast<int>(33*(m_sampling_number*sed_index + draw_index+1)/total) + 67, 100);
                current_percentil = percentil;
              }
      }
