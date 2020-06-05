@@ -35,6 +35,10 @@ struct FileUtils_Fixture {
 
 };
 
+boost::test_tools::assertion_result not_root(boost::unit_test::test_unit_id) {
+  return geteuid() != 0;
+}
+
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE (FileUtils_test)
@@ -43,8 +47,8 @@ BOOST_AUTO_TEST_SUITE (FileUtils_test)
 // Test the exception of the CreateDirectoryIfAny function
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(CreateDirectoryIfAny_exception_test, FileUtils_Fixture) {
-
+BOOST_FIXTURE_TEST_CASE(CreateDirectoryIfAny_exception_test, FileUtils_Fixture,
+                        *boost::unit_test::precondition(not_root)) {
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the exception of the directory_write_protected function");
   BOOST_TEST_MESSAGE(" ");
@@ -65,7 +69,8 @@ BOOST_FIXTURE_TEST_CASE(CreateDirectoryIfAny_exception_test, FileUtils_Fixture) 
 // Test the exception of CheckWritePermission function
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(CheckWritePermission_exception_test, FileUtils_Fixture) {
+BOOST_FIXTURE_TEST_CASE(CheckWritePermission_exception_test, FileUtils_Fixture,
+                        *boost::unit_test::precondition(not_root)) {
 
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the exception of the CheckWritePermission function");
@@ -88,7 +93,8 @@ BOOST_FIXTURE_TEST_CASE(CheckWritePermission_exception_test, FileUtils_Fixture) 
 // Test the exception of checkDirectoryWithFile function
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(checkCreateDirectoryWithFile_exception_test, FileUtils_Fixture) {
+BOOST_FIXTURE_TEST_CASE(checkCreateDirectoryWithFile_exception_test, FileUtils_Fixture,
+                        *boost::unit_test::precondition(not_root)) {
 
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the exception from the checkDirAndWritePermission function");
@@ -108,7 +114,8 @@ BOOST_FIXTURE_TEST_CASE(checkCreateDirectoryWithFile_exception_test, FileUtils_F
 // Test the exception of checkDirectoryWithFile function
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(checkCreateDirectoryOnly_exception_test, FileUtils_Fixture) {
+BOOST_FIXTURE_TEST_CASE(checkCreateDirectoryOnly_exception_test, FileUtils_Fixture,
+                        *boost::unit_test::precondition(not_root)) {
 
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing the exception from the checkDirectoryOnly function");

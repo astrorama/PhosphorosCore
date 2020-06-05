@@ -23,12 +23,14 @@
  */
 
 #include <sstream>
+#include "Configuration/PhotometryCatalogConfig.h"
 #include "PhzConfiguration/PdfOutputConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
 #include "PhzConfiguration/PhzOutputDirConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PdfOutputFlagsConfig.h"
 #include "PhzOutput/PhzColumnHandlers/Pdf.h"
+#include "PhzOutput/PhzColumnHandlers/Flags.h"
 #include "PhzOutput/PdfOutput.h"
 
 namespace po = boost::program_options;
@@ -44,6 +46,7 @@ PdfOutputConfig::PdfOutputConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<OutputCatalogConfig>();
   declareDependency<PhotometryGridConfig>();
   declareDependency<PdfOutputFlagsConfig>();
+  declareDependency<Euclid::Configuration::PhotometryCatalogConfig>();
 }
 
 auto PdfOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -128,6 +131,15 @@ void PdfOutputConfig::initialize(const UserValues& args) {
     }
   }
 
+  bool missing_photometry = getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isMissingPhotometryEnabled();
+  bool upper_limit = getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled();
+
+  if ( missing_photometry || upper_limit) {
+        getDependency<OutputCatalogConfig>().addColumnHandler(
+            std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Flags{ missing_photometry,upper_limit}}
+        );
+  }
+
   if (m_format == "INDIVIDUAL-HDUS") {
     m_out_pdf_dir = getDependency<PhzOutputDirConfig>().getPhzOutputDir();
   }
@@ -137,7 +149,7 @@ void PdfOutputConfig::initialize(const UserValues& args) {
 
 }
 
-bool PdfOutputConfig::doNormalizePDFs() const{
+bool PdfOutputConfig::doNormalizePDFs() const {
   if (getCurrentState() < Configuration::Configuration::State::FINAL) {
     throw Elements::Exception()
         << "Call to doNormalizePDFs() on a not initialized instance.";
