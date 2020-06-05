@@ -174,8 +174,8 @@ void ComputeRedshiftsConfig::preInitialize(const UserValues& args) {
         << ": " << args.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>();
   }
 
-  if (args.at(INPUT_BUFFER_SIZE).as<std::size_t>() == 0) {
-    throw Elements::Exception() << "Option " << INPUT_BUFFER_SIZE << " cannot be 0";
+  if (args.at(INPUT_BUFFER_SIZE).as<int>() <= 0) {
+    throw Elements::Exception() << "Option " << INPUT_BUFFER_SIZE << " must be bigger than 0";
   }
 
 }
@@ -243,7 +243,7 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
     m_out_posterior_dir = output_dir / "posteriors";
   }
 
-  m_input_buffer_size = args.at(INPUT_BUFFER_SIZE).as<std::size_t>();
+  m_input_buffer_size = args.at(INPUT_BUFFER_SIZE).as<int>();
 }
 
 
