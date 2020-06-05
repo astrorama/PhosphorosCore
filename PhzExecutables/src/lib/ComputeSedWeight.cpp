@@ -43,6 +43,7 @@
 #include "Table/ColumnInfo.h"
 
 #include "PhzExecutables/ComputeSedWeight.h"
+#include "PhzUtils/Multithreading.h"
 
 
 using namespace Euclid::Configuration;
@@ -335,6 +336,9 @@ std::vector<double> ComputeSedWeight::getWeights(std::vector<std::vector<double>
      }
      weight[sed_index] = total_match/(m_sampling_number);
      total_weight += weight[sed_index];
+     if (PhzUtils::getStopThreadsFlag()) {
+        throw Elements::Exception() << "Stopped by the user";
+     }
    }
 
    // Normalization
@@ -377,13 +381,17 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
                                                              sed_list, sed_provider,
                                                              filter_provider);
 
-
+  if (PhzUtils::getStopThreadsFlag()) {
+     throw Elements::Exception() << "Stopped by the user";
+  }
   // 3) make group & compute minimal distance
   std::vector<std::vector<double>> sed_distances = computeSedDistance(colors);
   double max_gap = maxGap(sed_distances);
   logger.info() << "Maximum gap :" << max_gap;
   double radius = max_gap/2.0;
-
+  if (PhzUtils::getStopThreadsFlag()) {
+     throw Elements::Exception() << "Stopped by the user";
+  }
   // 4) compute weights
   auto weights = getWeights(colors, radius);
 
