@@ -51,12 +51,47 @@ using namespace Euclid::PhzConfiguration;
 namespace Euclid {
 namespace PhzExecutables {
 
+namespace {
+
+Elements::Logging logger = Elements::Logging::getLogger("PhosphorosComputeSedWeight");
 
 
-Elements::Logging csw_logger = Elements::Logging::getLogger("PhosphorosComputeSedWeight");
+class DefaultProgressReporter {
+
+public:
+
+  void operator()(size_t step, size_t total) {
+    int percentage_done = 100. * step / total;
+    auto now_time = std::chrono::system_clock::now();
+    auto time_diff = now_time - m_last_time;
+    if (percentage_done > m_last_progress || std::chrono::duration_cast<std::chrono::seconds>(time_diff).count() >= 5) {
+      m_last_progress = percentage_done;
+      m_last_time = now_time;
+      logger.info() << "Progress: " << percentage_done << " % (" << step << "/" << total << ")";
+    }
+  }
+
+private:
+
+  int m_last_progress = -1;
+  std::chrono::time_point<std::chrono::system_clock> m_last_time = std::chrono::system_clock::now();
+
+};
+
+} // Anonymous namespace
 
 
-ComputeSedWeight::ComputeSedWeight(long sampling_number) {
+
+
+
+
+ComputeSedWeight::ComputeSedWeight(long sampling_number) : m_progress_listener(DefaultProgressReporter{}) {
+  m_sampling_number = sampling_number;
+}
+
+
+ComputeSedWeight::ComputeSedWeight(ProgressListener progress_listener, long sampling_number)
+        : m_progress_listener(progress_listener) {
   m_sampling_number = sampling_number;
 }
 
@@ -93,7 +128,7 @@ std::vector<std::pair<XYDataset::QualifiedName, double>> ComputeSedWeight::order
     }
 
     for (size_t filter_index = 0; filter_index < ordered_filters.size(); ++filter_index) {
-      csw_logger.info() << "Filter =" << ordered_filters[filter_index].first << " lambda ="
+      logger.info() << "Filter =" << ordered_filters[filter_index].first << " lambda ="
                         << ordered_filters[filter_index].second;
     }
 
@@ -222,7 +257,7 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
 
   // Merge the groups
   while (sed_groups.size() > 2) {
-    csw_logger.info() << "Start merge process with " << sed_groups.size() << " Groups.";
+    logger.info() << "Start merge process with " << sed_groups.size() << " Groups.";
     double dist_min = 1000.0;
     size_t index_1 = -1;
     size_t index_2 = -1;
@@ -237,7 +272,7 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
        }
     }
 
-    csw_logger.info() << "Merging Group " << index_2 << " with Group " << index_1 << " Distance:" << dist_min;
+    logger.info() << "Merging Group " << index_2 << " with Group " << index_1 << " Distance:" << dist_min;
     for (size_t sed_index = 0; sed_index < sed_groups[index_2].size(); ++sed_index) {
       sed_groups[index_1].push_back(sed_groups[index_2][sed_index]);
     }
@@ -289,7 +324,9 @@ std::vector<double> ComputeSedWeight::getWeights(std::vector<std::vector<double>
    std::mt19937 mt(rd());
 
    long total_matches = 0;
-   for (long sample_index = 0; sample_index < m_sampling_number; ++sample_index) {
+   int current_percentil = 0;
+   while (total_matches < m_sampling_number) {
+
      std::vector<double> sample_color{};
      for (size_t color_index = 0; color_index < ranges.size(); ++color_index) {
        std::uniform_real_distribution<double> dist(ranges[color_index].first - radius, ranges[color_index].second + radius);
@@ -306,9 +343,15 @@ std::vector<double> ComputeSedWeight::getWeights(std::vector<std::vector<double>
 
      size_t match_number = match.size();
      if (match_number > 0) {
-       total_matches += 1;
+       ++total_matches;
        for (size_t match_index = 0; match_index < match_number; ++match_index) {
          weight[match[match_index]] += 1.0/match_number;
+       }
+
+       int percentil = (int)((100*total_matches)/m_sampling_number);
+       if (percentil != current_percentil) {
+         m_progress_listener(total_matches, m_sampling_number);
+         current_percentil = percentil;
        }
      }
 
@@ -339,8 +382,8 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
   auto output_file = config_manager.getConfiguration<ComputeSedWeightConfig>().getOutputFile();
 
 
-  csw_logger.info() << "Compute weight for " << sed_list.size() << "SEDs";
-  csw_logger.info() << "Using " << filter_list.size() << "filters";
+  logger.info() << "Compute weight for " << sed_list.size() << "SEDs";
+  logger.info() << "Using " << filter_list.size() << "filters";
 
 
   // 1) compute filter center wavelength & order filters by center wavelength
@@ -357,14 +400,14 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
   // 3) make group & compute minimal distance
   std::vector<std::vector<double>> sed_distances = computeSedDistance(colors);
   double max_gap = maxGap(sed_distances);
-  csw_logger.info() << "Maximum gap :" << max_gap;
+  logger.info() << "Maximum gap :" << max_gap;
   double radius = max_gap/2.0;
 
   // 4) compute weights
   auto weights = getWeights(colors, radius);
 
   // 5) output weights
-  csw_logger.info() << "Outputing the SEDs' weight in file " << output_file;
+  logger.info() << "Outputing the SEDs' weight in file " << output_file;
   std::vector<Table::ColumnInfo::info_type> info_list {
         Table::ColumnInfo::info_type("SED", typeid(std::string)),
         Table::ColumnInfo::info_type("Weight", typeid(double))

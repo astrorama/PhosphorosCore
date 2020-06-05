@@ -32,6 +32,7 @@
 #include "PhzLikelihood/ParallelCatalogHandler.h"
 #include "XYDataset/QualifiedName.h"
 #include "XYDataset/XYDatasetProvider.h"
+#include "PhzLikelihood/ParallelCatalogHandler.h"
 
 namespace Euclid {
 namespace PhzExecutables {
@@ -44,7 +45,14 @@ namespace PhzExecutables {
 class ComputeSedWeight {
 
 public:
+
+  using ProgressListener = PhzLikelihood::ParallelCatalogHandler::ProgressListener;
+
   ComputeSedWeight(long sampling_number = 5000000);
+
+  ComputeSedWeight(ProgressListener progress_listener, long sampling_number = 5000000);
+
+
 
   void run(Configuration::ConfigManager& config_manager);
 
@@ -87,6 +95,7 @@ public:
 
 private:
   long m_sampling_number;
+  ProgressListener m_progress_listener;
 }; /* End of ComputeSedWeight class */
 
 } /* namespace PhzExecutables */
