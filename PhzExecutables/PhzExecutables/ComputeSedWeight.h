@@ -48,9 +48,9 @@ public:
 
   using ProgressListener = PhzLikelihood::ParallelCatalogHandler::ProgressListener;
 
-  ComputeSedWeight(long sampling_number = 5000000);
+  ComputeSedWeight(long sampling_number = 100000);
 
-  ComputeSedWeight(ProgressListener progress_listener, long sampling_number = 5000000);
+  ComputeSedWeight(ProgressListener progress_listener, long sampling_number = 100000);
 
 
 
