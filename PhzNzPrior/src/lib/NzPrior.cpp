@@ -40,7 +40,7 @@ NzPrior::NzPrior(
    return z0t + kmt*(m0 - 20);
  }
 
-double NzPrior::computeP_T_z__m0(double m0, double z, XYDataset::QualifiedName sed) {
+double NzPrior::computeP_T_z__m0(double m0, double z, const XYDataset::QualifiedName& sed) {
   if (z <= 0.0) {
     z = 1e-4;
   }
@@ -102,7 +102,7 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
 
   for (auto grid_iter=prior_grid.begin(); grid_iter != prior_grid.end(); ++grid_iter) {
     double z = grid_iter.axisValue<PhzDataModel::ModelParameter::Z>();
-    auto sed = grid_iter.axisValue<PhzDataModel::ModelParameter::SED>();
+    const auto& sed = grid_iter.axisValue<PhzDataModel::ModelParameter::SED>();
 
     if (mag_Iab < 20) {
       if (z > 1) {
