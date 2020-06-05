@@ -29,12 +29,7 @@ public:
 
   typedef CatalogHandler::LikelihoodGridFunction LikelihoodGridFunction;
 
-  /**
-   * Defines the signature of the functions which can be used as listeners for
-   * the progress of the catalog handling. The first parameter is the
-   * number of the current step and the second is the total number of steps.
-   */
-  typedef std::function<void(size_t step, size_t total)> ProgressListener;
+  typedef CatalogHandler::ProgressListener ProgressListener;
 
   /**
    * Constructs a new ParallelCatalogHandler instance. If the given photometric

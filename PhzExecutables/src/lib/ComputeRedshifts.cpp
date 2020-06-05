@@ -85,7 +85,19 @@ ComputeRedshifts::ComputeRedshifts(ProgressListener progress_listener)
 }
 
 
-void ComputeRedshifts::run(ConfigManager& config_manager) {
+void ComputeRedshifts::run(Configuration::ConfigManager &config_manager) {
+  uint threads = PhzUtils::getThreadNumber();
+  if (threads > 1) {
+    doRun<PhzLikelihood::ParallelCatalogHandler>(config_manager);
+  }
+  else {
+    doRun<PhzLikelihood::CatalogHandler>(config_manager);
+  }
+}
+
+
+template <typename CatalogHandler>
+void ComputeRedshifts::doRun(ConfigManager& config_manager) {
 
     auto& model_phot_grid = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
     auto& marginalization_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
@@ -94,9 +106,9 @@ void ComputeRedshifts::run(ConfigManager& config_manager) {
     auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();
     auto& model_func_list = config_manager.getConfiguration<ModelGridModificationConfig>().getProcessModelGridFunctors();
     bool do_normalize_pdf = config_manager.getConfiguration<PdfOutputConfig>().doNormalizePDFs();
-    
-    PhzLikelihood::ParallelCatalogHandler handler {phot_corr_map, model_phot_grid, likelihood_grid_func,
-                                                   priors, marginalization_func_list, model_func_list, do_normalize_pdf};
+
+    CatalogHandler handler {phot_corr_map, model_phot_grid, likelihood_grid_func,
+                            priors, marginalization_func_list, model_func_list, do_normalize_pdf};
                                 
     auto table_reader = config_manager.getConfiguration<CatalogConfig>().getTableReader();
     auto catalog_converter = config_manager.getConfiguration<CatalogConfig>().getTableToCatalogConverter();
