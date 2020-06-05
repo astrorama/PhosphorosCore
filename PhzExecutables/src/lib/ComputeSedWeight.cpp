@@ -292,73 +292,54 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
 
 
 std::vector<double> ComputeSedWeight::getWeights(std::vector<std::vector<double>> seds_colors, double radius) {
-  // Sampling range definition
-   std::vector<std::pair<double, double>> ranges{};
-   for (size_t color_index = 0; color_index < seds_colors[0].size(); ++color_index) {
-     ranges.push_back(std::make_pair(1000.0, 0.0));
-   }
-
-   for (size_t sed_index = 0; sed_index < seds_colors.size(); ++sed_index) {
-     for (size_t color_index = 0; color_index < seds_colors[0].size(); ++color_index) {
-       double current_min = ranges[color_index].first;
-       double current_max = ranges[color_index].second;
-       double color_value = seds_colors[sed_index][color_index];
-       if (color_value < current_min) {
-         ranges[color_index].first = color_value;
-       }
-       if (color_value > current_max) {
-         ranges[color_index].second = color_value;
-       }
-     }
-   }
-
    std::vector<double> weight{};
    for (size_t sed_index = 0; sed_index < seds_colors.size(); ++sed_index) {
      weight.push_back(0.0);
    }
 
+   size_t sed_number = seds_colors.size();
+   size_t color_number = seds_colors[0].size();
 
 
    // Random sample
    std::random_device rd;
    std::mt19937 mt(rd());
-
-   long total_matches = 0;
+   double total_weight = 0;
+   long total =  m_sampling_number * sed_number;
    int current_percentil = 0;
-   while (total_matches < m_sampling_number) {
-
-     std::vector<double> sample_color{};
-     for (size_t color_index = 0; color_index < ranges.size(); ++color_index) {
-       std::uniform_real_distribution<double> dist(ranges[color_index].first - radius, ranges[color_index].second + radius);
-       double draw = dist(mt);
-       sample_color.push_back(draw);
-     }
-
-     std::vector<size_t> match{};
-     for (size_t sed_index = 0; sed_index < seds_colors.size(); ++sed_index) {
-      if (distance(sample_color, seds_colors[sed_index]) <= radius) {
-        match.push_back(sed_index);
-      }
-     }
-
-     size_t match_number = match.size();
-     if (match_number > 0) {
-       ++total_matches;
-       for (size_t match_index = 0; match_index < match_number; ++match_index) {
-         weight[match[match_index]] += 1.0/match_number;
+   for (size_t sed_index = 0; sed_index < sed_number; ++sed_index) {
+     double total_match = 0;
+     for (long draw_index = 0; draw_index < m_sampling_number; ++draw_index) {
+       std::vector<double> sample_color{};
+       for (size_t color_index = 0; color_index < color_number; ++color_index) {
+         std::uniform_real_distribution<double> dist(seds_colors[sed_index][color_index] - radius,
+                                                     seds_colors[sed_index][color_index] + radius);
+         double draw = dist(mt);
+         sample_color.push_back(draw);
        }
 
-       int percentil = (int)((100*total_matches)/m_sampling_number);
-       if (percentil != current_percentil) {
-         m_progress_listener(total_matches, m_sampling_number);
-         current_percentil = percentil;
+       size_t match_number = 0;
+       for (size_t sed_index_match = 0; sed_index_match < sed_number; ++sed_index_match) {
+         if (distance(sample_color, seds_colors[sed_index_match]) <= radius) {
+           ++match_number;
+         }
        }
-     }
 
+       total_match += 1.0/match_number;
+
+       int percentil = static_cast<int>((100*(m_sampling_number*sed_index + draw_index+1))/total);
+             if (percentil != current_percentil) {
+               m_progress_listener(m_sampling_number*sed_index + draw_index+1, total);
+               current_percentil = percentil;
+             }
+     }
+     weight[sed_index] = total_match/(m_sampling_number);
+     total_weight += weight[sed_index];
    }
 
+   // Normalization
    for (size_t sed_index = 0; sed_index < seds_colors.size(); ++sed_index) {
-     weight[sed_index] /= total_matches;
+        weight[sed_index] /= total_weight;
    }
 
    return weight;

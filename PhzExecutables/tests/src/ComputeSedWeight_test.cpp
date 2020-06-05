@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE(maxGap_test) {
 
 //-----------------------------------------------------------------------------
 BOOST_AUTO_TEST_CASE(getWeights_simple_test) {
-  ComputeSedWeight computer = ComputeSedWeight(5000000);
+  ComputeSedWeight computer = ComputeSedWeight();
 
    std::vector<std::vector<double>> seds_colors {{1, 1},
                                                  {2, 1},
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(getWeights_simple_test) {
 }
 
 BOOST_AUTO_TEST_CASE(getWeights_test) {
-  ComputeSedWeight computer = ComputeSedWeight(5000000);
+  ComputeSedWeight computer = ComputeSedWeight();
 
   // on color 1 5 sed on a row on color 2 same color
   //  0    1    2            3     4     index
