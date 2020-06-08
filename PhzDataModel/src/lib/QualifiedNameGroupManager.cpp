@@ -11,20 +11,11 @@
 namespace Euclid {
 namespace PhzDataModel {
 
-// This method takes advantage that the two sets are ordered to check if they
-// overlap. It is faster than the std::set_intersection because it returns right
-// after the first common element and because it does not require memory
-// allocations for the result.
-static bool overlapingSets(const std::set<XYDataset::QualifiedName>& first,
-                           const std::set<XYDataset::QualifiedName>& second) {
-  auto it1 = first.begin();
-  auto it2 = second.begin();
-  while (it1 != first.end() && it2 != second.end()) {
-    if (*it1 < *it2) {
-      ++it1;
-    } else if (*it2 < * it1) {
-      ++ it2;
-    } else {
+static bool overlapingSets(const std::unordered_set<XYDataset::QualifiedName>& first,
+                           const std::unordered_set<XYDataset::QualifiedName>& second) {
+
+  for (auto& it1 : first) {
+    if (second.count(it1)) {
       return true;
     }
   }
@@ -43,6 +34,10 @@ QualifiedNameGroupManager::QualifiedNameGroupManager(group_list_type groups)
             << " and " << it2->first << " overlap";
       }
     }
+
+    for (auto& qn : it1->second) {
+      m_reverse_groups.emplace(qn, *it1);
+    }
   }
 }
 
@@ -51,10 +46,9 @@ auto QualifiedNameGroupManager::getManagedGroups() const -> const group_list_typ
 }
 
 auto QualifiedNameGroupManager::findGroupContaining(const XYDataset::QualifiedName& name) const -> const group_type& {
-  for (auto& pair : m_groups) {
-    if (pair.second.find(name) != pair.second.end()) {
-      return pair;
-    }
+  auto it = m_reverse_groups.find(name);
+  if (it != m_reverse_groups.end()) {
+    return it->second;
   }
   throw Elements::Exception() << "Cannot find '" << name.qualifiedName()
                               << "' in any group";

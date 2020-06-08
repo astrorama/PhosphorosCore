@@ -79,9 +79,9 @@ PhzDataModel::QualifiedNameGroupManager SedClassifier::operator()(const XYDatase
     }
     auto filter_info_i = PhzModeling::BuildFilterInfoFunctor {}(*i_ptr);
 
-    std::set<XYDataset::QualifiedName> T1_sed_set{};
-    std::set<XYDataset::QualifiedName> T2_sed_set{};
-    std::set<XYDataset::QualifiedName> T3_sed_set{};
+    PhzDataModel::QualifiedNameGroupManager::set_type T1_sed_set{};
+    PhzDataModel::QualifiedNameGroupManager::set_type T2_sed_set{};
+    PhzDataModel::QualifiedNameGroupManager::set_type T3_sed_set{};
 
     auto sed_iter = seds.begin();
     while (sed_iter != seds.end()) {
@@ -103,7 +103,7 @@ PhzDataModel::QualifiedNameGroupManager SedClassifier::operator()(const XYDatase
       ++sed_iter;
     }
 
-    auto groupList = std::map<std::string, std::set<XYDataset::QualifiedName>>();
+    auto groupList = PhzDataModel::QualifiedNameGroupManager::group_list_type();
 
     groupList.insert(std::make_pair("T1", T1_sed_set));
     groupList.insert(std::make_pair("T2", T2_sed_set));

@@ -44,7 +44,7 @@ double NzPrior::computeP_T_z__m0(double m0, double z, const XYDataset::Qualified
   if (z <= 0.0) {
     z = 1e-4;
   }
-  auto group_name = m_sedGroupManager.findGroupContaining(sed).first;
+  const auto& group_name = m_sedGroupManager.findGroupContaining(sed).first;
 
   double res = 0;
   if (group_name == "T1") {

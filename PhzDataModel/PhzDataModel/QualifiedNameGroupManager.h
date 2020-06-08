@@ -7,8 +7,8 @@
 #ifndef _PHZDATAMODEL_QUALIFIEDNAMEGROUPMANAGER_H
 #define _PHZDATAMODEL_QUALIFIEDNAMEGROUPMANAGER_H
 
-#include <set>
-#include <map>
+#include <unordered_set>
+#include <unordered_map>
 #include <string>
 #include <utility>
 #include "XYDataset/QualifiedName.h"
@@ -25,9 +25,10 @@ namespace PhzDataModel {
 class QualifiedNameGroupManager {
 
 public:
-  
-  using group_list_type = std::map<std::string, std::set<XYDataset::QualifiedName>>;
-  using group_type = std::map<std::string, std::set<XYDataset::QualifiedName>>::value_type;
+
+  using set_type = std::unordered_set<XYDataset::QualifiedName>;
+  using group_list_type = std::unordered_map<std::string, set_type>;
+  using group_type = std::unordered_map<std::string, set_type>::value_type;
 
   /**
    * @brief Constructs a new QualifiedNameGroupManager
@@ -60,7 +61,8 @@ public:
 
 private:
   
-  std::map<std::string, std::set<XYDataset::QualifiedName>> m_groups;
+  group_list_type m_groups;
+  std::unordered_map<XYDataset::QualifiedName, group_type> m_reverse_groups;
 
 }; /* End of QualifiedNameGroupManager class */
 
