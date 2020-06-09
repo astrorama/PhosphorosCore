@@ -41,22 +41,18 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
-  std::vector<SourceCatalog::FluxErrorPair> computeCorrectedPhotometry(
-                                                       SourceCatalog::Photometry::const_iterator model_begin,
-                                                       SourceCatalog::Photometry::const_iterator model_end,
-                                                       SourceCatalog::Photometry::const_iterator corr_begin,
-                                                       double dust_density
-                                                       ){
-    std::vector<SourceCatalog::FluxErrorPair> result{};
-    auto nitems = model_end - model_begin;
-    result.reserve(nitems);
+  static void computeCorrectedPhotometry(SourceCatalog::Photometry::const_iterator model_begin,
+                                  SourceCatalog::Photometry::const_iterator model_end,
+                                  SourceCatalog::Photometry::const_iterator corr_begin,
+                                  double dust_density,
+                                  SourceCatalog::Photometry::iterator out_begin) {
     while (model_begin!=model_end){
-      result.emplace_back(SourceCatalog::FluxErrorPair((*model_begin).flux * std::pow(10,-0.4 * (*corr_begin).flux * dust_density),0.));
+      out_begin->flux = (*model_begin).flux * std::pow(10,-0.4 * (*corr_begin).flux * dust_density);
+      out_begin->error = 0.;
       ++model_begin;
       ++corr_begin;
+      ++out_begin;
     }
-
-    return result;
   }
 
 
@@ -86,11 +82,12 @@ namespace PhzLikelihood {
     auto current_result = corrected_grid.begin();
     while (current_model!=model_grid_end){
 
-      (*current_result).updateFluxValues(computeCorrectedPhotometry(
+      computeCorrectedPhotometry(
            (*current_model).begin(),
            (*current_model).end(),
            (*current_corr).begin(),
-           dust_ebv ));
+           dust_ebv ,
+           current_result->begin());
        ++current_model;
        ++current_corr;
        ++current_result;
