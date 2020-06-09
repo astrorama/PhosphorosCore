@@ -113,14 +113,17 @@ std::vector<std::pair<XYDataset::QualifiedName, double>> ComputeSedWeight::order
             ++iter;
       }
 
+      // Compute the average lambda
       auto filter = MathUtils::interpolate(x, y, MathUtils::InterpolationType::LINEAR);
       double norm = MathUtils::integrate(*(filter.get()), x[0], x[x.size()-1]);
 
       auto filter_wavelength = MathUtils::interpolate(x, xy, MathUtils::InterpolationType::LINEAR);
       double num = MathUtils::integrate(*(filter_wavelength.get()), x[0], x[x.size()-1]);
 
+
       double lambda = num/norm;
 
+      // order filters based on the average transmission
       auto insert_iter = ordered_filters.begin();
       while (insert_iter != ordered_filters.end() && (*insert_iter).second < lambda) {
         ++insert_iter;
