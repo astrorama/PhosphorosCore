@@ -129,9 +129,9 @@ BOOST_AUTO_TEST_CASE(seds_distance_test) {
   BOOST_CHECK_EQUAL(3, distances[0].size());
 
   // diagonal
-  BOOST_CHECK_CLOSE(1000.0, distances[0][0], 0.00001);
-  BOOST_CHECK_CLOSE(1000.0, distances[1][1], 0.00001);
-  BOOST_CHECK_CLOSE(1000.0, distances[2][2], 0.00001);
+  BOOST_CHECK_CLOSE(0.0, distances[0][0], 0.00001);
+  BOOST_CHECK_CLOSE(0.0, distances[1][1], 0.00001);
+  BOOST_CHECK_CLOSE(0.0, distances[2][2], 0.00001);
 
   // upper off diagonal
   BOOST_CHECK_CLOSE(0.2, distances[0][1], 0.00001);
