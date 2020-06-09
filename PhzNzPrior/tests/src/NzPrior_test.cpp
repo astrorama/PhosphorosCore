@@ -46,11 +46,11 @@ struct NzPrior_Fixture {
   PhzDataModel::DoubleGrid& posterior_grid = results.set<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>(axes);
   
   // Group manager
-  std::set<XYDataset::QualifiedName> T1_sed_set{XYDataset::QualifiedName{"sed1"}};
-  std::set<XYDataset::QualifiedName> T2_sed_set{XYDataset::QualifiedName{"sed2"}};
-  std::set<XYDataset::QualifiedName> T3_sed_set{XYDataset::QualifiedName{"sed3"}};
+  PhzDataModel::QualifiedNameGroupManager::set_type T1_sed_set{XYDataset::QualifiedName{"sed1"}};
+  PhzDataModel::QualifiedNameGroupManager::set_type T2_sed_set{XYDataset::QualifiedName{"sed2"}};
+  PhzDataModel::QualifiedNameGroupManager::set_type T3_sed_set{XYDataset::QualifiedName{"sed3"}};
 
-  PhzDataModel::QualifiedNameGroupManager group_manager{std::map<std::string, std::set<XYDataset::QualifiedName>>{
+  PhzDataModel::QualifiedNameGroupManager group_manager{{
         std::make_pair("T1", T1_sed_set),
         std::make_pair("T2", T2_sed_set),
         std::make_pair("T3", T3_sed_set)

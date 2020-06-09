@@ -28,7 +28,7 @@ public:
 void operator()(PhzDataModel::RegionResults& results);
 
 private:
-  double computeP_T_z__m0(double m0, double z, XYDataset::QualifiedName sed);
+  double computeP_T_z__m0(double m0, double z, const XYDataset::QualifiedName& sed);
   PhzDataModel::QualifiedNameGroupManager m_sedGroupManager;
   XYDataset::QualifiedName m_i_filter_name;
   NzPriorParam m_prior_param;
