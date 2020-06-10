@@ -52,6 +52,8 @@ struct PhotometryGridCreator_Fixture {
       return content;
     }
 
+  
+
   private:
     std::map<Euclid::XYDataset::QualifiedName, Euclid::XYDataset::XYDataset> m_storage {};
   };

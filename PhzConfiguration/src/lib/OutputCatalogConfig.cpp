@@ -45,7 +45,7 @@ auto OutputCatalogConfig::getProgramOptions() -> std::map<std::string, OptionDes
 return {{"Output options", {
     {OUTPUT_CATALOG_FORMAT.c_str(), po::value<std::string>()->default_value("ASCII"),
         "The format of the PHZ catalog file (one of ASCII (default), FITS)"},
-    {OUTPUT_FLUSH_SIZE.c_str(), po::value<uint>()->default_value(500),
+    {OUTPUT_FLUSH_SIZE.c_str(), po::value<int>()->default_value(500),
         "The chunk size with which the results are flushed to the files"}
   }}};
 }
@@ -58,7 +58,7 @@ void OutputCatalogConfig::preInitialize(const UserValues& args) {
         << ": " << args.at(OUTPUT_CATALOG_FORMAT).as<std::string>();
   }
   
-  if (args.at(OUTPUT_FLUSH_SIZE).as<uint>() <= 0) {
+  if (args.at(OUTPUT_FLUSH_SIZE).as<int>() <= 0) {
     throw Elements::Exception() << "Option " << OUTPUT_FLUSH_SIZE << " must be "
         << "positive, but was: " << args.at(OUTPUT_FLUSH_SIZE).as<int>();
   }
@@ -88,7 +88,7 @@ void OutputCatalogConfig::initialize(const UserValues& args) {
     m_out_catalog_file = output_dir / "phz_cat.fits";
   }
   
-  m_flush_size = args.at(OUTPUT_FLUSH_SIZE).as<uint>();
+  m_flush_size = args.at(OUTPUT_FLUSH_SIZE).as<int>();
 }
 
 std::unique_ptr<PhzOutput::OutputHandler> OutputCatalogConfig::getOutputHandler() const {
