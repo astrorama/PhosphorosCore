@@ -239,7 +239,7 @@ std::vector<std::vector<double>> ComputeSedWeight::computeSedDistance(std::vecto
 double ComputeSedWeight::groupDistance(std::vector<size_t> sed_group_1,
                       std::vector<size_t> sed_group_2,
                       std::vector<std::vector<double>> sed_distances) {
-  double min = 100000.0;
+  double min = std::numeric_limits<double>::infinity();
   for (auto iter_group_1 = sed_group_1.begin(); iter_group_1 !=  sed_group_1.end(); ++iter_group_1) {
     for (auto iter_group_2 = sed_group_2.begin(); iter_group_2 !=  sed_group_2.end(); ++iter_group_2) {
       double dist = sed_distances[*iter_group_1][*iter_group_2];
@@ -266,7 +266,7 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
   // Merge the groups
   while (sed_groups.size() > 2) {
     logger.info() << "Start merge process with " << sed_groups.size() << " Groups.";
-    double dist_min = 100000.0;
+    double dist_min = std::numeric_limits<double>::infinity();
     size_t index_1 = -1;
     size_t index_2 = -1;
     for (size_t group_index_1 = 0; group_index_1 < sed_groups.size() -1; ++group_index_1) {
