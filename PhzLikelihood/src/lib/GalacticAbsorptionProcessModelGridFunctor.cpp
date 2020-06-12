@@ -41,23 +41,18 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
-  SourceCatalog::Photometry computeCorrectedPhotometry(
-                                                       SourceCatalog::Photometry::const_iterator model_begin,
-                                                       SourceCatalog::Photometry::const_iterator model_end,
-                                                       SourceCatalog::Photometry::const_iterator corr_begin,
-                                                       double dust_density
-                                                       ){
-    std::shared_ptr<std::vector<std::string>> filter_names_ptr {new std::vector<std::string>{}};
-    std::vector<SourceCatalog::FluxErrorPair> result{};
+  static void computeCorrectedPhotometry(SourceCatalog::Photometry::const_iterator model_begin,
+                                  SourceCatalog::Photometry::const_iterator model_end,
+                                  SourceCatalog::Photometry::const_iterator corr_begin,
+                                  double dust_density,
+                                  SourceCatalog::Photometry::iterator out_begin) {
     while (model_begin!=model_end){
-      result.push_back(SourceCatalog::FluxErrorPair((*model_begin).flux * std::pow(10,-0.4 * (*corr_begin).flux * dust_density),0.));
-      auto filter_name = model_begin.filterName();
-      filter_names_ptr->push_back(std::move(filter_name));
+      out_begin->flux = (*model_begin).flux * std::pow(10,-0.4 * (*corr_begin).flux * dust_density);
+      out_begin->error = 0.;
       ++model_begin;
       ++corr_begin;
+      ++out_begin;
     }
-
-    return  SourceCatalog::Photometry{filter_names_ptr,std::move(result)};
   }
 
 
@@ -81,17 +76,18 @@ namespace PhzLikelihood {
 
     double dust_ebv = m_dust_map_sed_bpc * dust_ebv_ptr->getDustColumnDensity();
 
-
     auto current_model = model_grid.begin();
     auto model_grid_end = model_grid.end();
     auto current_corr = m_coefficient_grid.at(region_name).begin();
     auto current_result = corrected_grid.begin();
     while (current_model!=model_grid_end){
-       *current_result=computeCorrectedPhotometry(
+
+      computeCorrectedPhotometry(
            (*current_model).begin(),
            (*current_model).end(),
            (*current_corr).begin(),
-           dust_ebv );
+           dust_ebv ,
+           current_result->begin());
        ++current_model;
        ++current_corr;
        ++current_result;

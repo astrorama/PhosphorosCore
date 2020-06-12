@@ -55,7 +55,9 @@ public:
 
 
 private:
-  
+  template <typename CatalogHandler>
+  void doRun(Configuration::ConfigManager& config_manager);
+
   ProgressListener m_progress_listener;
 
 }; /* End of ComputeRedshifts class */

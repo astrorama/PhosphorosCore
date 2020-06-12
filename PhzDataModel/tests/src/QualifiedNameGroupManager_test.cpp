@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_SUITE (QualifiedNameGroupManager_test)
 BOOST_AUTO_TEST_CASE( constructorWithOverlappingGroups ) {
 
   // Given
-  std::map<std::string, std::set<XYDataset::QualifiedName>> groups {
+  QualifiedNameGroupManager::group_list_type groups {
     {"first", {{"one"}, {"two"}, {"common"}, {"three"}}},
     {"second", {{"four"}, {"common"}, {"five"}, {"six"}}}
   };
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE( constructorWithOverlappingGroups ) {
 BOOST_AUTO_TEST_CASE( getManagedGroups ) {
 
   // Given
-  std::map<std::string, std::set<XYDataset::QualifiedName>> groups {
+  QualifiedNameGroupManager::group_list_type groups {
     {"first", {{"one"}, {"two"}, {"three"}}},
     {"second", {{"four"}, {"five"}, {"six"}}}
   };
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE( getManagedGroups ) {
 BOOST_AUTO_TEST_CASE( findGroupContaining ) {
 
   // Given
-  std::map<std::string, std::set<XYDataset::QualifiedName>> groups {
+  QualifiedNameGroupManager::group_list_type groups {
     {"first", {{"one"}, {"two"}, {"three"}}},
     {"second", {{"four"}, {"five"}, {"six"}}}
   };

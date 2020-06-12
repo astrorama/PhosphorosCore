@@ -98,8 +98,8 @@ void LuminositySedGroupConfig::initialize (const UserValues& args) {
 
     // Build a set of all the grid seds that either match exactly a user input
     // or they belong to a group the user gave
-    std::set<XYDataset::QualifiedName> user_seds {sed_names.begin(), sed_names.end()};
-    std::set<XYDataset::QualifiedName> group_seds {};
+    PhzDataModel::QualifiedNameGroupManager::set_type user_seds {sed_names.begin(), sed_names.end()};
+    PhzDataModel::QualifiedNameGroupManager::set_type group_seds {};
     for (auto& user_sed : user_seds) {
       for (auto& grid_sed : grid_seds) {
         if (user_sed == grid_sed || grid_sed.belongsInGroup(user_sed)) {

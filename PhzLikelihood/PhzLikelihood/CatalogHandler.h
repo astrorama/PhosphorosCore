@@ -38,6 +38,13 @@ public:
   typedef SourcePhzFunctor::LikelihoodGridFunction LikelihoodGridFunction;
 
   /**
+ * Defines the signature of the functions which can be used as listeners for
+ * the progress of the catalog handling. The first parameter is the
+ * number of the current step and the second is the total number of steps.
+ */
+  typedef std::function<void(size_t step, size_t total)> ProgressListener;
+
+  /**
    * Constructs a new CatalogHandler instance. If the given photometric
    * correction map does not contain corrections for all the filters of the
    * given model photometries an exception is thrown.
@@ -85,7 +92,8 @@ public:
    */
   template<typename SourceIter>
   void handleSources(SourceIter source_begin, SourceIter source_end,
-                     PhzOutput::OutputHandler& out_handler) const;
+                     PhzOutput::OutputHandler& out_handler,
+                     ProgressListener progress_listener=ProgressListener{}) const;
 
 private:
 
