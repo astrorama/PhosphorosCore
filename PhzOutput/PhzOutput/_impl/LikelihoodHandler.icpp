@@ -16,6 +16,20 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzOutput {
 
+template <PhzDataModel::RegionResultType GridType>
+struct FullGridOutputTraits;
+
+template <>
+struct FullGridOutputTraits<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID> {
+  static std::string filename() {return "likelihood";}
+};
+
+template <>
+struct FullGridOutputTraits<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID> {
+  static std::string filename() {return "posterior";}
+};
+
+
 static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
 
 struct HduIdVisitor: public boost::static_visitor<void> {
@@ -32,12 +46,25 @@ public:
 };
 
 template<PhzDataModel::RegionResultType GridType>
-LikelihoodHandler<GridType>::LikelihoodHandler(boost::filesystem::path out_dir)
-          : m_out_dir{std::move(out_dir)} {
+LikelihoodHandler<GridType>::LikelihoodHandler(boost::filesystem::path out_dir, bool do_sample, size_t sample_number, size_t flush_chunk_size)
+          : m_out_dir{std::move(out_dir)}, m_do_sample{do_sample}, m_sample_number{sample_number}, m_flush_chunk_size{flush_chunk_size},m_counter (0) {
+    if (m_do_sample) {
+      m_out_file = m_out_dir / (FullGridOutputTraits<GridType>::filename()+".fits");
+      // Check directory and write permissions
+      Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
+      m_fits_file = std::make_shared<CCfits::FITS>("!"+m_out_file.string(), CCfits::RWmode::Write);
+    } else {
+      // Check directory and write permissions
+      Euclid::PhzUtils::checkCreateDirectoryOnly(m_out_dir.string());
+    }
+}
 
-  // Check directory and write permissions
-  Euclid::PhzUtils::checkCreateDirectoryOnly(m_out_dir.string());
-
+template <PhzDataModel::RegionResultType GridType>
+LikelihoodHandler<GridType>::~LikelihoodHandler() {
+  if (m_do_sample) {
+    auto logger = Elements::Logging::getLogger("LikelihoodHandler");
+    logger.info() << "Created " << FullGridOutputTraits<GridType>::filename() << " samplings in file " << m_out_file.string();
+  }
 }
 
 template<PhzDataModel::RegionResultType GridType>
@@ -45,21 +72,68 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
                                           const SourceCatalog::Source& source,
                                           const PhzDataModel::SourceResults& results) {
   std::string id = boost::lexical_cast<std::string>(source.getId());
-  std::string filename = (m_out_dir/(id+".fits")).string();
-  fs::remove(filename);
   
-  for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
-    auto& grid = pair.second.get<GridType>();
-    GridContainer::gridFitsExport(filename, pair.first, grid);
-    CCfits::FITS fits (filename, CCfits::Write);
-    auto& array_hdu = fits.extension(fits.extension().size() - grid.axisNumber());
+  if (m_do_sample) {
+    // create a single fits file with the sampling
+    // Count the number of sources saved
+     ++m_counter;
+/*
+     // Create the columnInfo object
+     std::shared_ptr<Euclid::Table::ColumnInfo> column_info {new Euclid::Table::ColumnInfo {{
+       //Euclid::Table::ColumnInfo::info_type(PdfOutput_impl::PdfOutputTraits<GT, Parameter>::column_name(),
+       //                                       typeid(typename PdfOutput_impl::PdfOutputTraits<GT, Parameter>::column_type)),
+       //Euclid::Table::ColumnInfo::info_type("Probability", typeid(double))
+     }}};
 
-    HduIdVisitor visitor{array_hdu};
-    auto source_id = source.getId();
-    boost::apply_visitor(visitor, source_id);
+     /// Draw the sampling
+
+     // Transfer pdf data to rows
+     std::vector<Table::Row> row_list {};
+     auto& pdf = results.get<PdfOutput_impl::PdfOutputTraits<GT, Parameter>::result_type>();
+     for (auto iter=pdf.begin(); iter!=pdf.end(); ++iter) {
+       auto axis_value = PdfOutput_impl::PdfOutputTraits<GT, Parameter>::convertToColumnType(iter.template axisValue<0>());
+       row_list.push_back(Table::Row{{axis_value, *iter}, column_info});
+     }
+
+     Table::Table pdf_table{row_list};
+
+     Table::FitsWriter fits_writer {m_fits_file};
+     fits_writer.setHduName(boost::lexical_cast<std::string>(source.getId()));
+     fits_writer.addData(pdf_table);
+
+     // Close and reopen the FITS object for efficiency reason
+     if (m_counter % m_flush_chunk_size == 0) {
+       m_fits_file->destroy();
+       m_fits_file = std::make_shared<CCfits::FITS>(m_out_file.string(), CCfits::RWmode::Write);
+       m_counter = 0;
+     }
+
+
+
+
+
+    */
+
+
+
+  } else {
+    // Output full grid in a separate file
+    std::string filename = (m_out_dir/(id+".fits")).string();
+    fs::remove(filename);
+
+    for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
+      auto& grid = pair.second.get<GridType>();
+      GridContainer::gridFitsExport(filename, pair.first, grid);
+      CCfits::FITS fits (filename, CCfits::Write);
+      auto& array_hdu = fits.extension(fits.extension().size() - grid.axisNumber());
+
+      HduIdVisitor visitor{array_hdu};
+      auto source_id = source.getId();
+      boost::apply_visitor(visitor, source_id);
+    }
+
+    logger.debug() << "Created file " << filename << " for source " << id;
   }
-  
-  logger.debug() << "Created file " << filename << " for source " << id;
 }
 
 } // end of namespace PhzOutput

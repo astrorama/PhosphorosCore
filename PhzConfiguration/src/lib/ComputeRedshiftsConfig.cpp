@@ -82,6 +82,12 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
+
+
+
+
+static const std::string FULL_GRID_SAMPLING_FLAG {"full-PDF-samplig"};
+static const std::string GRID_SAMPLING_NUMBER {"PDF-sample-number"};
 static const std::string CREATE_OUTPUT_LIKELIHOODS_FLAG {"create-output-likelihoods"};
 static const std::string CREATE_OUTPUT_POSTERIORS_FLAG {"create-output-posteriors"};
 static const std::string INPUT_BUFFER_SIZE {"input-buffer-size"};
@@ -131,10 +137,14 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
 auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {
     {"Output options", {
+      {FULL_GRID_SAMPLING_FLAG.c_str(), po::value<std::string>()->default_value("YES"),
+          "Output sampling of the likelihood/Posterior instead of the full grids (YES/NO, default: YES)"},
+      {GRID_SAMPLING_NUMBER.c_str(), po::value<int>()->default_value(1000),
+          "Number of sample of the Likelihood/Posterior (default: 1000)"},
       {CREATE_OUTPUT_LIKELIHOODS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
-          "The output likelihoods flag for creating the file (YES/NO, default: NO)"},
+          "Decide if the likelihoods have to be outputed (YES/NO, default: NO)"},
       {CREATE_OUTPUT_POSTERIORS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
-          "The output posteriors flag for creating the file (YES/NO, default: NO)"}
+          "Decide if the Posteriors have to be outputed  (YES/NO, default: NO)"}
     }},
     {"Input catalog options", {
       {INPUT_BUFFER_SIZE.c_str(), po::value<int>()->default_value(5000),
@@ -142,6 +152,7 @@ auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, Option
     }}
   };
 }
+
 
 class MultiOutputHandler : public PhzOutput::OutputHandler {
 public:
@@ -174,10 +185,19 @@ void ComputeRedshiftsConfig::preInitialize(const UserValues& args) {
         << ": " << args.at(CREATE_OUTPUT_POSTERIORS_FLAG).as<std::string>();
   }
 
+  if (args.at(FULL_GRID_SAMPLING_FLAG).as<std::string>() != "YES" &&
+      args.at(FULL_GRID_SAMPLING_FLAG).as<std::string>() != "NO") {
+    throw Elements::Exception() << "Invalid value for option " << FULL_GRID_SAMPLING_FLAG
+        << ": " << args.at(FULL_GRID_SAMPLING_FLAG).as<std::string>();
+  }
+
   if (args.at(INPUT_BUFFER_SIZE).as<int>() <= 0) {
     throw Elements::Exception() << "Option " << INPUT_BUFFER_SIZE << " must be bigger than 0";
   }
 
+  if (args.at(GRID_SAMPLING_NUMBER).as<int>() <= 0) {
+      throw Elements::Exception() << "Option " << GRID_SAMPLING_NUMBER << " must be bigger than 0";
+  }
 }
 
 
@@ -233,6 +253,9 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
     }
   }
 
+  m_do_sample_full_grids = (args.at(FULL_GRID_SAMPLING_FLAG).as<std::string>() == "YES");
+  m_sampling_number = args.at(GRID_SAMPLING_NUMBER).as<int>();
+
   m_likelihood_flag = (args.at(CREATE_OUTPUT_LIKELIHOODS_FLAG).as<std::string>() == "YES");
   if (m_likelihood_flag) {
     m_out_likelihood_dir = output_dir / "likelihoods";
@@ -266,14 +289,14 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
         new PhzOutput::LikelihoodHandler<
                 PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID
-        > {m_out_likelihood_dir}});
+        > {m_out_likelihood_dir, m_do_sample_full_grids, m_sampling_number}});
   }
 
   if (m_posterior_flag) {
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
         new PhzOutput::LikelihoodHandler<
                 PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID
-        > {m_out_posterior_dir}});
+        > {m_out_posterior_dir, m_do_sample_full_grids, m_sampling_number}});
   }
 
   return output_handler;

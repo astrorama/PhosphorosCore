@@ -77,10 +77,14 @@ public:
 private:
 
   bool m_cat_flag = false;
+
+  std::size_t m_sampling_number = 1000;
+  bool m_do_sample_full_grids = true;
   bool m_likelihood_flag = false;
   boost::filesystem::path m_out_likelihood_dir;
   bool m_posterior_flag = false;
   boost::filesystem::path m_out_posterior_dir;
+
   std::size_t m_input_buffer_size = 5000;
 
 }; /* End of ComputeRedshiftsConfig class */
