@@ -19,7 +19,7 @@ class LikelihoodHandler : public OutputHandler {
 
 public:
 
-  LikelihoodHandler(boost::filesystem::path out_dir, bool do_sample, size_t sample_number = 1000, size_t flush_chunk_size = 500);
+  LikelihoodHandler(boost::filesystem::path out_dir, bool do_sample, size_t sample_number = 1000, size_t chunk_size = 10000);
 
   virtual ~LikelihoodHandler();
 
@@ -32,11 +32,18 @@ private:
   boost::filesystem::path m_out_dir;
   bool m_do_sample;
   size_t m_sample_number;
-  size_t m_flush_chunk_size;
-  int64_t m_counter;   // Counting the number of sources
+  size_t m_chunk_size;
 
-  boost::filesystem::path       m_out_file;  // Filename of the output fits file
-  std::shared_ptr<CCfits::FITS> m_fits_file; // Pointer to the FITS file object
+  size_t                        m_current_file_id = 0;
+  boost::filesystem::path       m_current_out_file;  // Filename of the output fits file
+  std::shared_ptr<CCfits::FITS> m_current_fits_file;  // Pointer to the FITS file object
+  std::shared_ptr<Euclid::Table::ColumnInfo> m_ampling_column_info;
+
+
+  boost::filesystem::path       m_index_file;   // Filename of the output fits file
+  std::shared_ptr<CCfits::FITS> m_index_fits_file;  // Pointer to the FITS file object
+  std::shared_ptr<Euclid::Table::ColumnInfo> m_index_column_info;
+  int64_t m_counter;   // Counting the number of sources
 };
 
 } // end of namespace PhzOutput

@@ -88,6 +88,7 @@ namespace PhzConfiguration {
 
 static const std::string FULL_GRID_SAMPLING_FLAG {"full-PDF-samplig"};
 static const std::string GRID_SAMPLING_NUMBER {"PDF-sample-number"};
+static const std::string SOURCES_NUMBER_PER_SAMPLING_FILE {"PDF-sample-file-source-number"};
 static const std::string CREATE_OUTPUT_LIKELIHOODS_FLAG {"create-output-likelihoods"};
 static const std::string CREATE_OUTPUT_POSTERIORS_FLAG {"create-output-posteriors"};
 static const std::string INPUT_BUFFER_SIZE {"input-buffer-size"};
@@ -141,6 +142,8 @@ auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, Option
           "Output sampling of the likelihood/Posterior instead of the full grids (YES/NO, default: YES)"},
       {GRID_SAMPLING_NUMBER.c_str(), po::value<int>()->default_value(1000),
           "Number of sample of the Likelihood/Posterior (default: 1000)"},
+      {SOURCES_NUMBER_PER_SAMPLING_FILE.c_str(), po::value<int>()->default_value(10000),
+           "When the Likelihood/Posterior is sampled, set the number of sources per output file (default: 10000)"},
       {CREATE_OUTPUT_LIKELIHOODS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
           "Decide if the likelihoods have to be outputed (YES/NO, default: NO)"},
       {CREATE_OUTPUT_POSTERIORS_FLAG.c_str(), po::value<std::string>()->default_value("NO"),
@@ -255,6 +258,7 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
 
   m_do_sample_full_grids = (args.at(FULL_GRID_SAMPLING_FLAG).as<std::string>() == "YES");
   m_sampling_number = args.at(GRID_SAMPLING_NUMBER).as<int>();
+  m_sources_per_file = args.at(SOURCES_NUMBER_PER_SAMPLING_FILE).as<int>();
 
   m_likelihood_flag = (args.at(CREATE_OUTPUT_LIKELIHOODS_FLAG).as<std::string>() == "YES");
   if (m_likelihood_flag) {
@@ -289,14 +293,14 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
         new PhzOutput::LikelihoodHandler<
                 PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID
-        > {m_out_likelihood_dir, m_do_sample_full_grids, m_sampling_number}});
+        > {m_out_likelihood_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
   }
 
   if (m_posterior_flag) {
     result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
         new PhzOutput::LikelihoodHandler<
                 PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID
-        > {m_out_posterior_dir, m_do_sample_full_grids, m_sampling_number}});
+        > {m_out_posterior_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
   }
 
   return output_handler;
