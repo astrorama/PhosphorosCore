@@ -10,6 +10,7 @@
 #include "ElementsKernel/Logging.h"
 #include "GridContainer/serialize.h"
 #include "PhzUtils/FileUtils.h"
+#include "PhzDataModel/PhzModel.h"
 
 namespace fs = boost::filesystem;
 
@@ -46,21 +47,22 @@ public:
 };
 
 template<PhzDataModel::RegionResultType GridType>
-LikelihoodHandler<GridType>::LikelihoodHandler(boost::filesystem::path out_dir, bool do_sample, size_t sample_number, size_t chunk_size)
+LikelihoodHandler<GridType>::LikelihoodHandler(boost::filesystem::path out_dir, bool do_sample, int64_t sample_number, int64_t chunk_size)
           : m_out_dir{std::move(out_dir)}, m_do_sample{do_sample}, m_sample_number{sample_number}, m_chunk_size{chunk_size},m_counter (0) {
 
       Euclid::PhzUtils::checkCreateDirectoryOnly(m_out_dir.string());
 
       if (m_do_sample) {
-        m_index_file = m_out_dir / "Index_File_"(FullGridOutputTraits<GridType>::filename()+".fits");
+        std::string file_name = "Index_File_" + FullGridOutputTraits<GridType>::filename() + ".fits";
+        m_index_file = m_out_dir / file_name;
         m_index_fits_file = std::make_shared<CCfits::FITS>("!"+m_index_file.string(), CCfits::RWmode::Write);
         // Create the columnInfo object
         m_index_column_info  = std::shared_ptr<Euclid::Table::ColumnInfo>{new Euclid::Table::ColumnInfo {{
           Euclid::Table::ColumnInfo::info_type("OBJECT_ID", typeid(std::string)),
           Euclid::Table::ColumnInfo::info_type("FILE_NAME", typeid(std::string))
         }}};
-
-        m_current_out_file = m_out_dir / "Sample_File_"(FullGridOutputTraits<GridType>::filename()+"_"+std::to_string(m_current_file_id)+".fits");
+        std::string samp_file_name = "Sample_File_" + FullGridOutputTraits<GridType>::filename()+"_"+std::to_string(m_current_file_id)+".fits";
+        m_current_out_file = m_out_dir / samp_file_name;
         m_current_fits_file = std::make_shared<CCfits::FITS>("!"+m_current_out_file.string(), CCfits::RWmode::Write);
         m_ampling_column_info  = std::shared_ptr<Euclid::Table::ColumnInfo>{new Euclid::Table::ColumnInfo {{
                 Euclid::Table::ColumnInfo::info_type("OBJECT_ID", typeid(std::string)),
@@ -87,12 +89,8 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
                                           const SourceCatalog::Source& source,
                                           const PhzDataModel::SourceResults& results) {
   std::string id = boost::lexical_cast<std::string>(source.getId());
-  
-
-
-
   if (m_do_sample) {
-     std::vector<Table::Row> samples_row_list {};
+    std::vector<Table::Row> samples_row_list {};
 
     // Count the number of sources saved when
      ++m_counter;
@@ -102,18 +100,86 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
        m_counter = 0;
        ++m_current_file_id;
        m_current_fits_file->destroy();
-       m_current_out_file = m_out_dir / "Sample_File_"(FullGridOutputTraits<GridType>::filename()+"_"+std::to_string(m_current_file_id)+".fits");
+       std::string file_name = "Sample_File_" + FullGridOutputTraits<GridType>::filename() + "_" + std::to_string(m_current_file_id) + ".fits";
+       m_current_out_file = m_out_dir / file_name;
        m_current_fits_file = std::make_shared<CCfits::FITS>("!"+m_current_out_file.string(), CCfits::RWmode::Write);
      }
 
      std::vector<Table::Row> index_row_list {};
-     index_row_list.push_back(Table::Row{{id, m_current_file_id}, m_index_column_info});
+     std::string samp_file_name = "Sample_File_" + FullGridOutputTraits<GridType>::filename()+"_"+std::to_string(m_current_file_id)+".fits";
+     index_row_list.push_back({{id, samp_file_name }, m_index_column_info});
      Table::FitsWriter index_fits_writer {m_index_fits_file};
      index_fits_writer.addData(Table::Table{index_row_list});
 
+
+     Table::FitsWriter sample_fits_writer {m_current_fits_file};
      if (m_counter == 0) {
-       // TODO insert index structure as comment
-     }
+       // TODO insert grid structure as comment
+       std::stringstream comment {};
+
+       comment << "MODEL-GRID : {";
+       size_t region_index = 0;
+       for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
+          comment << "\"" << pair.first << "\": {\"REGION_INDEX\":" << region_index <<",";
+          auto& grid = pair.second.get<GridType>();
+          auto& axis = grid.getAxesTuple();
+          auto& z_axis = std::get<0>(axis);
+          comment << "\"Z\":{";
+          size_t index=0;
+          for ( auto& knot_value : z_axis) {
+            comment << "\""<< index <<"\":\""<< knot_value << "\",";
+          }
+          comment.seekp(-1, comment.cur);
+          comment << "}";
+
+          auto& ebv_axis = std::get<1>(axis);
+          comment << "\"EBV\":{";
+          index=0;
+          for ( auto& knot_value : ebv_axis) {
+            comment << "\""<< index <<"\":\""<< knot_value << "\",";
+          }
+          comment.seekp(-1, comment.cur);
+          comment << "}";
+
+          auto& red_axis = std::get<2>(axis);
+          comment << "\"REDDENING_CURVE\":{";
+          index=0;
+          for ( auto& knot_value : red_axis) {
+            comment << "\""<< index <<"\":\""<< knot_value << "\",";
+          }
+          comment.seekp(-1, comment.cur);
+          comment << "}";
+
+          auto& sed_axis =  std::get<3>(axis);
+          comment << "\"SED\":{";
+          index=0;
+          for ( auto& knot_value : sed_axis) {
+            comment << "\""<< index <<"\":\""<< knot_value << "\",";
+          }
+          comment.seekp(-1, comment.cur);
+          comment << "}";
+          comment << "}";
+          ++region_index;
+       }
+       comment << "}";
+
+       /*
+       comment << Pdf_impl::PdfColumnTraits<GT, Parameter>::name_prefix() << "-BINS : {";
+    for (auto& knot_value : pdf_1d.template getAxis<0>()) {
+     comment << knot_value << ',';
+    }
+    comment.seekp(-1, comment.cur);
+    comment << '}';
+    m_knots_comment = comment.str();
+       *
+       * */
+
+
+
+      sample_fits_writer.addComment(comment.str());
+
+    }
+
 
      // TODO draw sample
      std::vector<int> grid_region_index{};
@@ -124,7 +190,7 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
 
      std::vector<Table::Row> sampling_row_list {};
      index_row_list.push_back(Table::Row{{id, grid_region_index, sed_index, z_index, red_index, ebv_index}, m_ampling_column_info});
-     Table::FitsWriter sample_fits_writer {m_current_fits_file};
+
      sample_fits_writer.addData(Table::Table{sampling_row_list});
 
   } else {

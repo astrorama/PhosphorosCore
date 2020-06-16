@@ -19,7 +19,7 @@ class LikelihoodHandler : public OutputHandler {
 
 public:
 
-  LikelihoodHandler(boost::filesystem::path out_dir, bool do_sample, size_t sample_number = 1000, size_t chunk_size = 10000);
+  LikelihoodHandler(boost::filesystem::path out_dir, bool do_sample, int64_t sample_number = 1000, int64_t chunk_size = 10000);
 
   virtual ~LikelihoodHandler();
 
@@ -31,8 +31,8 @@ private:
 
   boost::filesystem::path m_out_dir;
   bool m_do_sample;
-  size_t m_sample_number;
-  size_t m_chunk_size;
+  int64_t m_sample_number;
+  int64_t m_chunk_size;
 
   size_t                        m_current_file_id = 0;
   boost::filesystem::path       m_current_out_file;  // Filename of the output fits file
