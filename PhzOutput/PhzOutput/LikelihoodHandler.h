@@ -38,12 +38,12 @@ private:
   boost::filesystem::path       m_current_out_file;  // Filename of the output fits file
   std::shared_ptr<CCfits::FITS> m_current_fits_file;  // Pointer to the FITS file object
   std::shared_ptr<Euclid::Table::ColumnInfo> m_ampling_column_info;
-
+  size_t m_counter;   // Counting the number of sources
 
   boost::filesystem::path       m_index_file;   // Filename of the output fits file
   std::shared_ptr<CCfits::FITS> m_index_fits_file;  // Pointer to the FITS file object
   std::shared_ptr<Euclid::Table::ColumnInfo> m_index_column_info;
-  size_t m_counter;   // Counting the number of sources
+  std::vector<Table::Row> m_index_row_list {};
 };
 
 } // end of namespace PhzOutput
