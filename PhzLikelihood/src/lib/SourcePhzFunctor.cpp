@@ -343,10 +343,10 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
 
     if (first){
       region_results.set<RegResType::MODEL_GRID_REFERENCE>( model_grid );
+      region_results.set<RegResType::ORIGINAL_MODEL_GRID_REFERENCE>(model_grid);
     } else {
       auto& fixed_model_grid = region_results.set<RegResType::FIXED_REDSHIFT_MODEL_GRID>(std::move(current_grid));
       region_results.set<RegResType::MODEL_GRID_REFERENCE>(fixed_model_grid);
-
     }
 
 
