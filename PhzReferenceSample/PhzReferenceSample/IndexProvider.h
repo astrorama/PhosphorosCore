@@ -31,6 +31,11 @@
 #include <vector>
 #include <stdint.h>
 
+#  include <sys/types.h>
+#if defined(__APPLE__)
+#  include <sys/dtrace.h>
+#endif
+
 #include <boost/filesystem/path.hpp>
 
 namespace Euclid {
