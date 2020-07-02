@@ -52,10 +52,9 @@ std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> FindBestFitM
     const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
     const PhzDataModel::PhotometricCorrectionMap& photometric_correction) const {
 
-  using namespace std;
   auto logger = Elements::Logging::getLogger("FindBestFitModels");
 
-  auto best_fit_map = map<SourceCatalog::Source::id_type, SourceCatalog::Photometry>();
+  auto best_fit_map = std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry>();
   
   // We are going to ignore any source that its redshift is outside of all model
   // grid ranges, as it cannot give us any useful information. For this reason

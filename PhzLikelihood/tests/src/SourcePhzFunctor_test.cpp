@@ -17,9 +17,12 @@
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "tests/src/LikelihoodFunctionMock.h"
 
-using namespace std;
+using std::shared_ptr;
+using std::string;
+using std::vector;
 using namespace Euclid;
 using namespace std::placeholders;
+
 struct SourcePhzFunctor_Fixture {
 
   vector<double> zs { 0.0, 0.1 };

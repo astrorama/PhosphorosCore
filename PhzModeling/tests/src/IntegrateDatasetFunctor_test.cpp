@@ -8,7 +8,9 @@
 #include <boost/test/unit_test.hpp>
 #include "PhzModeling/IntegrateDatasetFunctor.h"
 
-using namespace std;
+using std::make_pair;
+using std::pair;
+using std::vector;
 using namespace Euclid;
 
 struct IntegrateDatasetFunctor_Fixture {
