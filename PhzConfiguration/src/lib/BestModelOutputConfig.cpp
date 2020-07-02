@@ -59,13 +59,13 @@ void BestModelOutputConfig::initialize(const UserValues& args) {
   
   if (args.at(CREATE_OUTPUT_BEST_MODEL_FLAG).as<std::string>() == "YES") {
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        make_unique<PhzOutput::ColumnHandlers::BestModel>(PhzDataModel::GridType::POSTERIOR)
+        Euclid::make_unique<PhzOutput::ColumnHandlers::BestModel>(PhzDataModel::GridType::POSTERIOR)
     );
   } else {
     // If the user does not want the full best model information we still give
     // the redshift as output
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        make_unique<PhzOutput::ColumnHandlers::BestModelOnlyZ>()
+        Euclid::make_unique<PhzOutput::ColumnHandlers::BestModelOnlyZ>()
     );
   }
 }
