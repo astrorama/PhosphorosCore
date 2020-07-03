@@ -17,7 +17,8 @@
 #include "PhzConfiguration/ComputeModelSedConfig.h"
 #include "Configuration/Utils.h"
 
-using namespace std;
+using std::cout;
+using std::map;
 using namespace Euclid::Configuration;
 using namespace Euclid::PhzConfiguration;
 using namespace Euclid::PhzModeling;

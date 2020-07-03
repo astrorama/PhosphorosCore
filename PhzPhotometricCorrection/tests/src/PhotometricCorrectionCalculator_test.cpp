@@ -9,7 +9,11 @@
 #include "ElementsKernel/EnableGMock.h"
 #include "PhzPhotometricCorrection/PhotometricCorrectionCalculator.h"
 
-using namespace std;
+using std::initializer_list;
+using std::make_shared;
+using std::map;
+using std::shared_ptr;
+using std::vector;
 using namespace Euclid;
 using namespace Euclid::PhzPhotometricCorrection;
 using namespace SourceCatalog;
@@ -21,14 +25,14 @@ public:
   virtual ~FindBestFitModelsMock() = default;
   MOCK_METHOD4(FunctorCall, map<Source::id_type,  SourceCatalog::Photometry>(
                   Catalog::const_iterator source_begin, Catalog::const_iterator source_end,
-                  const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
+                  const map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
                   const PhzDataModel::PhotometricCorrectionMap& photometric_correction));
   void expectFunctorCall(const Catalog& expected_catalog,
-                         const std::map<std::string, PhzDataModel::PhotometryGrid>& expected_model_grid_map,
+                         const map<std::string, PhzDataModel::PhotometryGrid>& expected_model_grid_map,
                          const PhzDataModel::PhotometricCorrectionMap& expected_phot_corr,
                          const map<Source::id_type, SourceCatalog::Photometry>& result) {
     EXPECT_CALL(*this, FunctorCall(_, _,
-        Truly([&expected_model_grid_map](const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map) { // Third argument check
+        Truly([&expected_model_grid_map](const map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map) { // Third argument check
           auto& expected_phot_grid = expected_model_grid_map.at("");
           auto& phot_grid = model_grid_map.at("");
           BOOST_CHECK_EQUAL(phot_grid.size(), expected_phot_grid.size());
@@ -68,7 +72,7 @@ public:
   Euclid::PhzPhotometricCorrection::PhotometricCorrectionCalculator::FindBestFitModelsFunction getFunctorObject() {
     return [=](const SourceCatalog::Catalog::const_iterator source_begin,
                const SourceCatalog::Catalog::const_iterator source_end,
-               const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
+               const map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
                const PhzDataModel::PhotometricCorrectionMap& photometric_correction) {
       return this->FunctorCall(source_begin, source_end, model_grid_map, photometric_correction);
     };
@@ -109,7 +113,7 @@ public:
   Euclid::PhzPhotometricCorrection::PhotometricCorrectionCalculator::CalculateScaleFactorsMapFunction getFunctorObject() {
     return [=](SourceCatalog::Catalog::const_iterator source_begin,
                SourceCatalog::Catalog::const_iterator source_end,
-               const std::map<Source::id_type,  SourceCatalog::Photometry>& model_phot_map) {
+               const map<Source::id_type,  SourceCatalog::Photometry>& model_phot_map) {
       return this->FunctorCall(source_begin, source_end, model_phot_map);
     };
   }
@@ -158,8 +162,8 @@ public:
   Euclid::PhzPhotometricCorrection::PhotometricCorrectionCalculator::CalculatePhotometricCorrectionFunction getFunctorObject() {
     return [=](SourceCatalog::Catalog::const_iterator source_begin,
                SourceCatalog::Catalog::const_iterator source_end,
-               const std::map<Source::id_type, double>& scale_factor_map,
-               const std::map<Source::id_type,  SourceCatalog::Photometry>& model_phot_map,
+               const map<Source::id_type, double>& scale_factor_map,
+               const map<Source::id_type,  SourceCatalog::Photometry>& model_phot_map,
                Euclid::PhzPhotometricCorrection::PhotometricCorrectionCalculator::SelectorFunction) {
       return this->FunctorCall(source_begin, source_end, scale_factor_map, model_phot_map);
     };
@@ -211,18 +215,18 @@ BOOST_AUTO_TEST_CASE(FunctorCallSuccess) {
           {{"Curve1"}, {"Curve2"}}, // Reddening Curves
           {{"SED1"}, {"SED2"}, {"SED3"}} // SEDs
   )};
-  std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
+  map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
   model_grid_map.emplace(std::make_pair(std::string{""}, std::move(model_phot_grid)));
   vector<PhzDataModel::PhotometricCorrectionMap> phot_corr_map_list {
     {{{"Filter1"}, 1.}, {{"Filter2"}, 1.}},
     {{{"Filter1"}, 2.}, {{"Filter2"}, 2.}},
     {{{"Filter1"}, 3.}, {{"Filter2"}, 3.}}
   };
-  vector<std::map<Source::id_type,  SourceCatalog::Photometry>> best_fit_map_list {
+  vector<map<Source::id_type,  SourceCatalog::Photometry>> best_fit_map_list {
     {{1, SourceCatalog::Photometry{*(model_grid_map.at("").cbegin())}}},
     {{2, SourceCatalog::Photometry{*(model_grid_map.at("").cbegin())}}}
   };
-  vector<std::map<Source::id_type, double>> scale_map_list {
+  vector<map<Source::id_type, double>> scale_map_list {
     {{1, 0.}}, {{2, 0.}}
   };
   

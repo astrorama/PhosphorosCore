@@ -22,8 +22,7 @@
 #include "PhzConfiguration/IgmConfig.h"
 
 
-
-using namespace std;
+using std::map;
 using namespace Euclid;
 using namespace Euclid::Configuration;
 using namespace Euclid::PhzConfiguration;

@@ -88,7 +88,7 @@ void CopyColumnsConfig::initialize(const UserValues& args) {
   // Add the output handler which will copy the columns
   auto column_info = getDependency<Euclid::Configuration::CatalogConfig>().getColumnInfo();
   getDependency<OutputCatalogConfig>().addColumnHandler(
-          make_unique<PhzOutput::ColumnHandlers::CopyColumns>(*column_info, columns_to_copy));
+          Euclid::make_unique<PhzOutput::ColumnHandlers::CopyColumns>(*column_info, columns_to_copy));
   
 }
 

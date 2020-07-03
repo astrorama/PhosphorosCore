@@ -12,7 +12,12 @@
 #include "SourceCatalog/Source.h"
 #include "PhzPhotometricCorrection/PhotometricCorrectionAlgorithm.h"
 
-using namespace std;
+using std::initializer_list;
+using std::make_shared;
+using std::map;
+using std::shared_ptr;
+using std::string;
+using std::vector;
 using namespace Euclid;
 using namespace Euclid::SourceCatalog;
 
