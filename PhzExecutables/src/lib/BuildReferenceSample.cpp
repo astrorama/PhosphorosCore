@@ -77,7 +77,7 @@ static std::vector<double> getPdzBins(std::string comment)
   boost::replace_all(comment, "\n", "");
   auto z_bins = boost::find_regex(comment, boost::regex{"Z-BINS : \\{.+\\}"});
   if (!z_bins) {
-    throw Elements::Exception() << "No Z-BINS entry";
+    return {};
   }
 
   std::string bins_str{z_bins.begin() + 10, z_bins.end() - 1};
@@ -120,7 +120,11 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
   auto phosphoros_reader = ref_sample_config.getPhosphorosCatalogReader();
 
   auto pdz_bins = getPdzBins(phosphoros_reader->getComment());
-  logger.debug() << "PDZ bins: " << pdz_bins;
+  if (pdz_bins.empty()) {
+    logger.warn() << "No PDZ bins found, skipping PDZ processing";
+  } else {
+    logger.debug() << "PDZ bins: " << pdz_bins;
+  }
 
   int64_t total = phosphoros_reader->rowsLeft();
   int64_t i = 0;
@@ -130,7 +134,6 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
 
     for (auto object : phosphoros_table) {
       auto obj_id = boost::get<int64_t>(object["ID"]);
-      auto pdz_vals = boost::get<std::vector<double>>(object["Z-1D-PDF"]);
       auto z = boost::get<double>(object["Z"]);
       auto ebv = boost::get<double>(object["E(B-V)"]);
       auto scale = boost::get<double>(object["Scale"]);
@@ -169,7 +172,10 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
         }
         ref_sample.addSedData(obj_id, XYDataset::XYDataset::factory(std::move(scaled_data)));
       }
-      ref_sample.addPdzData(obj_id, XYDataset::XYDataset::factory(pdz_bins, pdz_vals));
+      if (!pdz_bins.empty()) {
+        auto pdz_vals = boost::get<std::vector<double>>(object["Z-1D-PDF"]);
+        ref_sample.addPdzData(obj_id, XYDataset::XYDataset::factory(pdz_bins, pdz_vals));
+      }
 
       ++i;
       m_progress_listener(i, total);
