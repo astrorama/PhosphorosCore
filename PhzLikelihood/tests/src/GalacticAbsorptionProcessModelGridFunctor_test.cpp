@@ -37,7 +37,9 @@
 #include "SourceCatalog/Attribute.h"
 #include "PhzDataModel/CatalogAttributes/DustColumnDensity.h"
 
-using namespace std;
+using std::get;
+using std::shared_ptr;
+using std::vector;
 using namespace Euclid;
 using namespace Euclid::PhzLikelihood;
 

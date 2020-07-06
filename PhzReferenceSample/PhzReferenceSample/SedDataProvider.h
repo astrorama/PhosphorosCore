@@ -28,6 +28,11 @@
 #include <fstream>
 #include <boost/filesystem/path.hpp>
 
+#  include <sys/types.h>
+#if defined(__APPLE__)
+#  include <sys/dtrace.h>
+#endif
+
 namespace Euclid {
 namespace ReferenceSample {
 

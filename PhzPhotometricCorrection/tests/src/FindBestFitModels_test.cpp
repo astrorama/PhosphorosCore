@@ -22,8 +22,11 @@
 namespace Euclid {
 namespace PhzPhotometricCorrection {
 
+using std::initializer_list;
+using std::make_shared;
+using std::shared_ptr;
+using std::vector;
 using namespace std::placeholders;
-using namespace std;
 
 struct FindBestFitModels_Fixture {
   vector<double> zs { 0.0, 0.1 };

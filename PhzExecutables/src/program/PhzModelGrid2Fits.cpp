@@ -40,7 +40,6 @@ using namespace Euclid::PhzConfiguration;
 
 using Euclid::SourceCatalog::Photometry;
 using Euclid::GridContainer::gridContainerToTable;
-using Euclid::make_unique;
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -80,13 +79,13 @@ public:
 
     std::unique_ptr<FitsWriter> writer;
     if (output_config.squash())
-      writer = make_unique<FitsWriter>(output_config.getOutputCatalog().native());
+      writer = Euclid::make_unique<FitsWriter>(output_config.getOutputCatalog().native());
 
     for (auto& grid : grid_map) {
       logger.info() << "Writing grid " << grid.first;
 
       if (!output_config.squash()) {
-        writer = make_unique<FitsWriter>(output_config.getOutputCatalog().native());
+        writer = Euclid::make_unique<FitsWriter>(output_config.getOutputCatalog().native());
         writer->setHduName(grid.first);
       }
 

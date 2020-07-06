@@ -13,7 +13,7 @@
 
 #include "PhzLikelihood/ChiSquareLikelihoodLogarithm.h"
 
-using namespace std;
+using std::vector;
 using namespace Euclid;
 using namespace Euclid::PhzLikelihood;
 using namespace Euclid::PhzLikelihood::_Impl;

@@ -13,7 +13,8 @@
 
 #include "PhzLikelihood/ScaleFactorFunctor.h"
 
-using namespace std;
+using std::make_tuple;
+using std::vector;
 using namespace Euclid;
 using namespace Euclid::PhzLikelihood;
 using namespace Euclid::PhzLikelihood::_Impl;

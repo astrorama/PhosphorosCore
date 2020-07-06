@@ -54,9 +54,9 @@ PhzCatalog::PhzCatalog(boost::filesystem::path out_file, Format format,
   
   Euclid::PhzUtils::checkCreateDirectoryWithFile(m_out_file.string());
   if (format == Format::ASCII) {
-      m_writer = make_unique<Table::AsciiWriter>(m_out_file.string());
+      m_writer = Euclid::make_unique<Table::AsciiWriter>(m_out_file.string());
     } else {
-      m_writer = make_unique<Table::FitsWriter>(m_out_file.string(), true);
+      m_writer = Euclid::make_unique<Table::FitsWriter>(m_out_file.string(), true);
     }
     for (auto& c : comments) {
       m_writer->addComment(c);
