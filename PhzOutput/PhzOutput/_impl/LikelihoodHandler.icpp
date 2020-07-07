@@ -12,6 +12,7 @@
 #include "GridContainer/serialize.h"
 #include "PhzUtils/FileUtils.h"
 #include "PhzDataModel/PhzModel.h"
+#include "boost/lexical_cast.hpp"
 
 namespace fs = boost::filesystem;
 
@@ -92,6 +93,57 @@ LikelihoodHandler<GridType>::~LikelihoodHandler() {
 }
 
 template<PhzDataModel::RegionResultType GridType>
+size_t LikelihoodHandler<GridType>::getRegionForDraw(std::map<size_t, double>& region_volume, double region_draw) const {
+  size_t region_idx = 0;
+  double already_counted = region_volume.at(region_idx);
+  while (already_counted < region_draw) {
+    ++region_idx;
+    if(region_idx>=region_volume.size()) {
+      region_idx = region_volume.size() -1;
+      break;
+    } else {
+      already_counted += region_volume.at(region_idx);
+    }
+  }
+
+  return region_idx;
+
+}
+
+template<PhzDataModel::RegionResultType GridType>
+double LikelihoodHandler<GridType>::interpolateProbability(double z_0,
+                                                           double z_1,
+                                                           double ebv_0,
+                                                           double ebv_1,
+                                                           double p_00,
+                                                           double p_01,
+                                                           double p_10,
+                                                           double p_11,
+                                                           double z_p,
+                                                           double ebv_p) const {
+       // interpolation in z (if needed)
+       double prob_ebv1 = z_0!=z_1 ? p_00 + (z_p - z_0)*(p_10 - p_00)/(z_1 - z_0) : p_00;
+       double prob_ebv2 = z_0!=z_1 ? p_01 + (z_p - z_0)*(p_11 - p_01)/(z_1 - z_0) : p_01;
+
+       // interpolation in ebv (if needed)
+       double prob = ebv_0!=ebv_1 ? prob_ebv1 + (ebv_p - ebv_0)*(prob_ebv2 - prob_ebv1)/(ebv_1 - ebv_0) : prob_ebv1;
+       return prob;
+}
+
+template<PhzDataModel::RegionResultType GridType>
+std::pair<size_t, size_t> LikelihoodHandler<GridType>::gteIndex(const Euclid::GridContainer::GridAxis<double>& axis_values, double value) {
+       size_t index_up = 0;
+       while (axis_values[index_up] < value) {
+         ++index_up;
+       }
+       size_t index_down = index_up!=0 ? index_up -1 : 0;
+
+       return std::make_pair(index_down, index_up);
+}
+
+
+
+template<PhzDataModel::RegionResultType GridType>
 void LikelihoodHandler<GridType>::handleSourceOutput(
                                           const SourceCatalog::Source& source,
                                           const PhzDataModel::SourceResults& results) {
@@ -127,8 +179,8 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
           auto& axis = grid.getAxesTuple();
           size_t index=0;
 
-    /*    auto& z_axis = std::get<0>(axis);
-          comment << "\"Z\":{";
+          auto& z_axis = std::get<0>(axis);
+                comment << "\"Z\":{";
           for ( auto& knot_value : z_axis) {
             comment << "\""<< index <<"\":\""<< knot_value << "\",";
             ++index;
@@ -144,7 +196,7 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
             ++index;
           }
           comment.seekp(-1, comment.cur);
-          comment << "}";*/
+          comment << "}";
 
           auto& red_axis = std::get<2>(axis);
           comment << "\"REDDENING_CURVE\":{";
@@ -176,7 +228,7 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
 
 
      // 1) "Volume" of the different regions
-     std::map<size_t,int64_t> region_volume{};
+     std::map<size_t, double> region_volume{};
      size_t total_volume = 0;
      size_t region_index = 0;
      std::map<size_t, std::string> region_index_map {};
@@ -185,16 +237,74 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
      for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
         auto& grid = pair.second.get<GridType>();
         auto& axis = grid.getAxesTuple();
+
+        auto& z_axis = std::get<0>(axis);
+        std::vector<double> z_knots {};
+        z_knots.push_back((*z_axis.begin())/2.0);
+
+        for (auto& knot_value : z_axis) {
+          z_knots.push_back(knot_value/2.0);
+        }
+
+        z_knots.push_back(*(--z_axis.end())/2.0);
+
+        std::vector<double> z_weight {};
+        auto iter_p = z_knots.begin();
+        ++iter_p;
+        ++iter_p;
+        auto iter_m = z_knots.begin();
+        while (iter_p!=z_knots.end()){
+          z_weight.push_back(*iter_p - *iter_m);
+          ++iter_p;
+          ++iter_m;
+        }
+
+        auto& ebv_axis = std::get<1>(axis);
+        std::vector<double> ebv_knots {};
+        ebv_knots.push_back(*(ebv_axis.begin())/2.0);
+
+        for (auto& knot_value : ebv_axis) {
+          ebv_knots.push_back(knot_value/2.0);
+        }
+
+        ebv_knots.push_back(*(--ebv_axis.end())/2.0);
+
+        std::vector<double> ebv_weight {};
+        auto ebv_iter_p = ebv_knots.begin();
+        ++ebv_iter_p;
+        ++ebv_iter_p;
+        auto ebv_iter_m = ebv_knots.begin();
+        while (ebv_iter_p!=ebv_knots.end()){
+          ebv_weight.push_back(*ebv_iter_p - *ebv_iter_m);
+          ++ebv_iter_p;
+          ++ebv_iter_m;
+        }
+
+        double region_prob = 0;
+        for (size_t sed_index = 0; sed_index<std::get<3>(axis).size(); ++sed_index){
+          for (size_t red_index = 0; red_index<std::get<2>(axis).size(); ++red_index){
+            for (size_t ebv_index = 0; ebv_index<ebv_weight.size(); ++ebv_index){
+              for (size_t z_index = 0; z_index<z_weight.size(); ++z_index){
+                 region_prob += exp(grid.at(z_index,ebv_index,red_index,sed_index))*z_weight[z_index]*ebv_weight[ebv_index];
+
+               }
+             }
+           }
+         }
+
+
+
         double  region_max_value = exp(*(pair.second.get<FullGridOutputTraits<GridType>::bestModelIterator>()));
 
         if (max_value < region_max_value) {
           max_value = region_max_value;
         }
-        int64_t vol = std::get<0>(axis).size()*std::get<1>(axis).size()*std::get<2>(axis).size()*std::get<3>(axis).size();
-        region_volume[region_index] = vol;
-        total_volume += vol;
+
+
+        region_volume[region_index] = region_prob;
+        total_volume += region_prob;
         region_index_map[region_index]=pair.first;
-        //loggerPhz.info() << "Region " << pair.first << " Max prob= " << region_max_value << " volume="<< vol;
+        loggerPhz.info() << "Region " << pair.first << " Max prob= " << region_max_value << " region_prob="<< region_prob;
         ++region_index;
         //loggerPhz.info() << "volume of the Region " << pair.first << " :"<<vol;
      }
@@ -208,29 +318,16 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
 
      std::random_device rd;  //Will be used to obtain a seed for the random number engine
      std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-     std::uniform_real_distribution<> distrib_region(0, 1.0);
+     std::uniform_real_distribution<> distrib_region(0, total_volume);
      std::uniform_real_distribution<> distrib_prob(0, max_value);
 
-     auto& region_map = results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>();
+     loggerPhz.info() << "Max Probability  " << max_value;
 
      while (grid_region_index.size() < m_sample_number) {
-       // loggerPhz.info() << "Sampling  " << grid_region_index.size();
+       //loggerPhz.info() << "Sampling  " << grid_region_index.size();
        double region_draw =  distrib_region(gen);
 
-       //loggerPhz.info() << "Region draw  " << region_draw;
-       int region_idx = 0;
-       double already_counted = region_volume.at(region_idx)/(1.0*total_volume);
-       while (already_counted < region_draw) {
-         //loggerPhz.info() << "already_counted " << already_counted <<" "<<region_volume.at(region_idx);
-         ++region_idx;
-
-         if(region_idx>=region_volume.size()) {
-           region_idx = region_volume.size() -1;
-           break;
-         } else {
-           already_counted += region_volume.at(region_idx)/(1.0*total_volume);
-         }
-       }
+       size_t region_idx = getRegionForDraw(region_volume,region_draw);
 
        auto& result_map = results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>();
        auto& grid = result_map.at(region_index_map.at(region_idx)).get<GridType>();
@@ -249,45 +346,37 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
        int sed_idx = distrib_sed(gen);
 
        // get the indexes for the bilinear interpolation: those are the indexes of the knot after the value
-       size_t z_index_up = 0;
-       while (z_axis[z_index_up] < z_val) {
-         ++z_index_up;
-       }
+       auto z_pair = gteIndex(z_axis, z_val);
+       auto ebv_pair = gteIndex(ebv_axis, ebv_val);
 
-       size_t ebv_index_up = 0;
-       while (ebv_axis[ebv_index_up] < ebv_val) {
-        ++ebv_index_up;
-       }
+       double p_00 = exp(grid.at(z_pair.first, ebv_pair.first, red_idx, sed_idx));
+       double p_01 = exp(grid.at(z_pair.first, ebv_pair.second, red_idx, sed_idx));
+       double p_10 = exp(grid.at(z_pair.second, ebv_pair.first, red_idx, sed_idx));
+       double p_11 = exp(grid.at(z_pair.second, ebv_pair.second, red_idx, sed_idx));
 
-       size_t z_index_down = z_index_up!=0 ? z_index_up -1 : 0;
-       size_t ebv_index_down = ebv_index_up!=0?ebv_index_up -1 : 0;
+       if (p_00+p_01+p_10+p_11 > 0) {
+         //get the for points
+         float z_0 = z_axis[z_pair.first];
+         float z_1 = z_axis[z_pair.second];
+         float ebv_0 = ebv_axis[ebv_pair.first];
+         float ebv_1 = ebv_axis[ebv_pair.second];
 
-       //get the for points
-       float z_1 = z_axis[z_index_down];
-       float z_2 = z_axis[z_index_up];
-       float ebv_1 = ebv_axis[ebv_index_down];
-       float ebv_2 = ebv_axis[ebv_index_up];
+         double prob = interpolateProbability(z_0, z_1, ebv_0, ebv_1,
+                                              p_00, p_01, p_10, p_11,
+                                              z_val, ebv_val);
 
-       double prob11 = exp(grid.at(z_index_down, ebv_index_down, red_idx, sed_idx));
-       double prob12 = exp(grid.at(z_index_down, ebv_index_up, red_idx, sed_idx));
-       double prob21 = exp(grid.at(z_index_up, ebv_index_down, red_idx, sed_idx));
-       double prob22 = exp(grid.at(z_index_up, ebv_index_up, red_idx, sed_idx));
 
-       // interpolation in z (if needed)
-       double prob_ebv1 = z_index_up!=z_index_down ? prob11 + (z_val - z_1)*(prob21 - prob11)/(z_2 - z_1) : prob11;
-       double prob_ebv2 = z_index_up!=z_index_down ? prob12 + (z_val - z_1)*(prob22 - prob12)/(z_2 - z_1) : prob12;
-       // interpolation in ebv (if needed)
-       double prob = ebv_index_up!=ebv_index_down ? prob_ebv1 + (ebv_val - ebv_1)*(prob_ebv2 - prob_ebv1)/(ebv_2 - ebv_1) : prob_ebv1;
+         double draw = distrib_prob(gen);
+         //loggerPhz.info() << "region_idx  " << region_idx << " draw  " << draw << " prob  " << prob;
+         if (draw<=prob) {
+           //loggerPhz.info() << "Sampling  in region:" << region_idx << " z " << z_val<< " ebv " << ebv_val<< " red " << red_idx<< " sed " << sed_idx << " Sampling prob:" << prob << " draw " << draw << " current_accepted_number " << grid_region_index.size();
 
-       double draw = distrib_prob(gen);
-       if (draw<=prob) {
-         //loggerPhz.info() << "Sampling  in region:" << region_idx << " z " << z_val<< " ebv " << ebv_val<< " red " << red_idx<< " sed " << sed_idx << " Sampling prob:" << prob << " draw " << draw << " current_accepted_number " << grid_region_index.size();
-
-         grid_region_index.push_back(region_idx);
-         sed_index.push_back(sed_idx);
-         z_value.push_back(z_val);
-         red_index.push_back(red_idx);
-         ebv_value.push_back(ebv_val);
+           grid_region_index.push_back(region_idx);
+           sed_index.push_back(sed_idx);
+           z_value.push_back(z_val);
+           red_index.push_back(red_idx);
+           ebv_value.push_back(ebv_val);
+         }
        }
      }
      //loggerPhz.info() << "Add data to the sampling file ";

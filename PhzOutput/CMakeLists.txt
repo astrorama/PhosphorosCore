@@ -12,3 +12,6 @@ elements_add_library(PhzOutput src/lib/*.cpp src/lib/PhzColumnHandlers/*.cpp
 elements_add_unit_test(MultithreadHandler_test tests/src/MultithreadHandler_test.cpp 
                      LINK_LIBRARIES PhzOutput
                      TYPE Boost)
+elements_add_unit_test(LikelihoodHandler_test tests/src/LikelihoodHandler_test.cpp 
+                     LINK_LIBRARIES PhzOutput
+                     TYPE Boost)

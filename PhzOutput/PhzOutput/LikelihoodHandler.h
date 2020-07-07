@@ -7,6 +7,8 @@
 #ifndef PHZOUTPUT_LIKELIHOODHANDLER_H
 #define	PHZOUTPUT_LIKELIHOODHANDLER_H
 
+#include <map>
+#include <utility>
 #include <boost/filesystem.hpp>
 #include "PhzDataModel/RegionResults.h"
 #include "PhzOutput/OutputHandler.h"
@@ -22,6 +24,20 @@ public:
   LikelihoodHandler(boost::filesystem::path out_dir, bool do_sample, size_t sample_number = 1000, size_t chunk_size = 10000);
 
   virtual ~LikelihoodHandler();
+
+  size_t getRegionForDraw(std::map<size_t, double>& region_volume, double region_draw) const;
+  double interpolateProbability(double z_0,
+                                double z_1,
+                                double ebv_0,
+                                double ebv_1,
+                                double p_00,
+                                double p_01,
+                                double p_10,
+                                double p_11,
+                                double z_p,
+                                double ebv_p) const;
+
+  std::pair<size_t, size_t> gteIndex(const Euclid::GridContainer::GridAxis<double>&  axis_values, double value);
 
   void handleSourceOutput(const SourceCatalog::Source& source,
                           const PhzDataModel::SourceResults& results) override;
