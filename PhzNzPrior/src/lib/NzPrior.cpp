@@ -100,6 +100,13 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
     cell = 1.;
   }
 
+  // Check if the FLAGS are already inserted, if not add it
+  try {
+    results.get<PhzDataModel::RegionResultType::FLAGS>();
+  } catch (Elements::Exception&){
+    results.set<PhzDataModel::RegionResultType::FLAGS>(std::map<std::string, bool>{});
+  }
+
   if (!flux_ptr->missing_photometry_flag) {
       // flux is in micro Jy the AB mag factor is then 3613E6
       double mag_Iab = -2.5*std::log10(flux_ptr->flux/3.631E9);
