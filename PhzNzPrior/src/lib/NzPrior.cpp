@@ -27,11 +27,9 @@ NzPrior::NzPrior(
    const PhzDataModel::QualifiedNameGroupManager& sedGroupManager,
    const XYDataset::QualifiedName& i_filter_name,
    const NzPriorParam& prior_param,
-   double missing_photometry_flag,
    double effectiveness): m_sedGroupManager{sedGroupManager},
        m_i_filter_name{i_filter_name},
        m_prior_param{prior_param},
-       m_missing_photometry_flag{missing_photometry_flag},
        m_effectiveness{effectiveness} {}
 
 
@@ -102,7 +100,7 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
     cell = 1.;
   }
 
-  if (flux_ptr->flux != m_missing_photometry_flag) {
+  if (!flux_ptr->missing_photometry_flag) {
       // flux is in micro Jy the AB mag factor is then 3613E6
       double mag_Iab = -2.5*std::log10(flux_ptr->flux/3.631E9);
 

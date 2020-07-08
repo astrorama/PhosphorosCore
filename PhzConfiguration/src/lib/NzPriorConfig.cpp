@@ -32,7 +32,6 @@
 #include "PhzConfiguration/SedProviderConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
-#include "Configuration/PhotometryCatalogConfig.h"
 #include "PhzNzPrior/NzPrior.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/RegionResults.h"
@@ -77,7 +76,6 @@ NzPriorConfig::NzPriorConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<SedProviderConfig>();
   declareDependency<FilterProviderConfig>();
   declareDependency<PhotometryGridConfig>();
-  declareDependency<Euclid::Configuration::PhotometryCatalogConfig>();
 
 
 }
@@ -213,12 +211,9 @@ void NzPriorConfig::initialize(const UserValues& args) {
     // Classify the SEDs
     auto sed_groups = sed_classifier(b_filter, i_filter, SEDs);
 
-    // get the missing photometry flag
-    double missing_photometry_flag = getDependency<Euclid::Configuration::PhotometryCatalogConfig>().getMissingPhotometryFlag();
-
 
     // Add the prior
-    getDependency<PriorConfig>().addPrior(PhzNzPrior::NzPrior(sed_groups, i_filter, param, missing_photometry_flag, effectiveness));
+    getDependency<PriorConfig>().addPrior(PhzNzPrior::NzPrior(sed_groups, i_filter, param, effectiveness));
 
   }
 }
