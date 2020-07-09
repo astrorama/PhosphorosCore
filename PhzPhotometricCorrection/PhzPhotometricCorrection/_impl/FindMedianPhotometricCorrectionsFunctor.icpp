@@ -10,12 +10,16 @@
 
 
 #include <map>
+#include <cmath>
 #include <set>
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
+#include "ElementsKernel/Logging.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
+
+static Elements::Logging MedianCorrFunctorlogger = Elements::Logging::getLogger("FindMedianPhotometricCorrectionsFunctor");
 
 template <typename SourceIter>
   PhzDataModel::PhotometricCorrectionMap FindMedianPhotometricCorrectionsFunctor::operator()(
@@ -23,9 +27,18 @@ template <typename SourceIter>
       SourceIter, SourceIter){
   // Order the photometries for each filter, by storring them in multisets
     std::map<XYDataset::QualifiedName, std::multiset<double>> ordered_source_phot_corr;
+    bool first = true;
     for (auto& source_phot_corr_pair : source_phot_corr_map) {
+      if (first) {
+           for (auto& phot_corr_pair : source_phot_corr_pair.second) {
+             ordered_source_phot_corr[phot_corr_pair.first]={};
+           }
+           first = false;
+      }
       for (auto& phot_corr_pair : source_phot_corr_pair.second) {
-        ordered_source_phot_corr[phot_corr_pair.first].insert(phot_corr_pair.second);
+        if (!std::isnan(phot_corr_pair.second)){
+          ordered_source_phot_corr[phot_corr_pair.first].insert(phot_corr_pair.second);
+        }
       }
     }
 
@@ -33,10 +46,15 @@ template <typename SourceIter>
     PhzDataModel::PhotometricCorrectionMap result {};
     for (auto& pair : ordered_source_phot_corr) {
       size_t size = pair.second.size();
-      double median = (size % 2 == 0)
-                      ? (*std::next(pair.second.begin(), size/2 - 1) + *std::next(pair.second.begin(), size/2)) / 2
-                      : *std::next(pair.second.begin(), size/2);
-      result[pair.first] = median;
+      if ( size == 0) {
+            MedianCorrFunctorlogger.warn()<< "The photometry band " << pair.first << " has no reliable source. Set the correction to 1";
+            result[pair.first] = 1.0;
+       } else {
+            double median = (size % 2 == 0)
+                            ? (*std::next(pair.second.begin(), size/2 - 1) + *std::next(pair.second.begin(), size/2)) / 2
+                            : *std::next(pair.second.begin(), size/2);
+            result[pair.first] = median;
+       }
     }
     return result;
 }
