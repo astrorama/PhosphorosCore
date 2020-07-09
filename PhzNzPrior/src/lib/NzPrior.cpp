@@ -21,6 +21,7 @@ namespace PhzNzPrior {
 
 static Elements::Logging logger = Elements::Logging::getLogger("NzPrior");
 
+static const std::string MISSING_FLUX_FOR_NZ_FLAG {"MISSING_FLUX_FOR_NZ_FLAG"};
 
 NzPrior::NzPrior(
    const PhzDataModel::QualifiedNameGroupManager& sedGroupManager,
@@ -90,8 +91,7 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
                                 << " in the source Photometry";
   }
 
-  // flux is in micro Jy the AB mag factor is then 3613E6
-  double mag_Iab = -2.5*std::log10(flux_ptr->flux/3.631E9);
+
 
   auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
 
@@ -100,22 +100,37 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
     cell = 1.;
   }
 
-  for (auto grid_iter=prior_grid.begin(); grid_iter != prior_grid.end(); ++grid_iter) {
-    double z = grid_iter.axisValue<PhzDataModel::ModelParameter::Z>();
-    const auto& sed = grid_iter.axisValue<PhzDataModel::ModelParameter::SED>();
-
-    if (mag_Iab < 20) {
-      if (z > 1) {
-        *grid_iter = 0;
-      }
-    } else {
-      *grid_iter = computeP_T_z__m0(mag_Iab, z, sed);
-    }
+  // Check if the FLAGS are already inserted, if not add it
+  try {
+    results.get<PhzDataModel::RegionResultType::FLAGS>();
+  } catch (Elements::Exception&){
+    results.set<PhzDataModel::RegionResultType::FLAGS>(std::map<std::string, bool>{});
   }
 
-  // Apply the effectiveness to the prior.
-  for (auto& v : prior_grid) {
-    v = (1 - m_effectiveness) + m_effectiveness * v;
+  if (!flux_ptr->missing_photometry_flag) {
+      // flux is in micro Jy the AB mag factor is then 3613E6
+      double mag_Iab = -2.5*std::log10(flux_ptr->flux/3.631E9);
+
+      for (auto grid_iter=prior_grid.begin(); grid_iter != prior_grid.end(); ++grid_iter) {
+        double z = grid_iter.axisValue<PhzDataModel::ModelParameter::Z>();
+        const auto& sed = grid_iter.axisValue<PhzDataModel::ModelParameter::SED>();
+
+        if (mag_Iab < 20) {
+          if (z > 1) {
+            *grid_iter = 0;
+          }
+        } else {
+          *grid_iter = computeP_T_z__m0(mag_Iab, z, sed);
+        }
+      }
+
+      // Apply the effectiveness to the prior.
+      for (auto& v : prior_grid) {
+        v = (1 - m_effectiveness) + m_effectiveness * v;
+      }
+  } else {
+      // The flux needed for computing the N(Z) prior is missing => use a flat prior and flag the source
+      results.get<PhzDataModel::RegionResultType::FLAGS>().insert({MISSING_FLUX_FOR_NZ_FLAG, true});
   }
 
   double min_value = std::numeric_limits<double>::lowest();

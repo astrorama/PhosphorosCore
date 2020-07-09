@@ -62,9 +62,11 @@ struct NzPrior_Fixture {
   std::shared_ptr<std::vector<std::string>> filter_vector{new std::vector<std::string> { "FI"}};
   std::vector<SourceCatalog::FluxErrorPair> photometry_vector_low { SourceCatalog::FluxErrorPair(10, 1)};
   std::vector<SourceCatalog::FluxErrorPair> photometry_vector_high { SourceCatalog::FluxErrorPair(100, 1)};
+  std::vector<SourceCatalog::FluxErrorPair> photometry_vector_missing { SourceCatalog::FluxErrorPair(50, 1,true)};
 
   SourceCatalog::Photometry photometry_low {filter_vector, photometry_vector_low};
   SourceCatalog::Photometry photometry_high {filter_vector, photometry_vector_high};
+  SourceCatalog::Photometry photometry_missing {filter_vector, photometry_vector_missing};
 
   //PhzDataModel::RegionResultType::SOURCE_PHOTOMETRY_REFERENCE
 };
@@ -88,6 +90,8 @@ BOOST_FIXTURE_TEST_CASE(priorValues_high_flux_test, NzPrior_Fixture) {
    prior(results);
 
    // Then
+   auto flag_map = results.get<PhzDataModel::RegionResultType::FLAGS>();
+   BOOST_CHECK(flag_map.count("MISSING_FLUX_FOR_NZ_FLAG") == 0);
    for (std::size_t i = 0; i < zs.size(); ++i) {
      auto z = zs.at(i);
 
@@ -120,6 +124,8 @@ BOOST_FIXTURE_TEST_CASE(priorValues_low_flux_test, NzPrior_Fixture) {
 
   // Then
 
+   auto flag_map = results.get<PhzDataModel::RegionResultType::FLAGS>();
+   BOOST_CHECK(flag_map.count("MISSING_FLUX_FOR_NZ_FLAG") == 0);
 for (size_t z_index=0; z_index < zs.size();++z_index){
   for (size_t sed_index=0; sed_index < seds.size();++sed_index){
     auto iter = posterior_grid.begin();
@@ -141,6 +147,39 @@ for (size_t z_index=0; z_index < zs.size();++z_index){
 
 
 
+}
+
+BOOST_FIXTURE_TEST_CASE(priorValues_missing_flux_test, NzPrior_Fixture) {
+  // Given
+  results.set<PhzDataModel::RegionResultType::SOURCE_PHOTOMETRY_REFERENCE>(photometry_missing);
+  for (auto& l : posterior_grid) {
+    l = 1.;
+  }
+
+  auto prior = PhzNzPrior::NzPrior(group_manager, fliter, PhzNzPrior::NzPriorParam::defaultParam());
+
+  // When
+   prior(results);
+
+   // Then
+
+   auto flag_map = results.get<PhzDataModel::RegionResultType::FLAGS>();
+
+   BOOST_CHECK(flag_map.count("MISSING_FLUX_FOR_NZ_FLAG") > 0);
+   BOOST_CHECK(flag_map.at("MISSING_FLUX_FOR_NZ_FLAG") );
+
+
+   for (std::size_t i = 0; i < zs.size(); ++i) {
+     auto z = zs.at(i);
+
+     auto expected = 1.0;
+
+     for (auto it = posterior_grid.begin().fixAxisByValue<PhzDataModel::ModelParameter::Z>(z); it != posterior_grid.end(); ++it) {
+       BOOST_CHECK_CLOSE_FRACTION(*it, expected, 1E-4);
+     }
+
+
+   }
 }
 
 
