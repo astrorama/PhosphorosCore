@@ -77,6 +77,7 @@ NzPriorConfig::NzPriorConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<FilterProviderConfig>();
   declareDependency<PhotometryGridConfig>();
 
+
 }
 
 auto NzPriorConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -209,6 +210,7 @@ void NzPriorConfig::initialize(const UserValues& args) {
 
     // Classify the SEDs
     auto sed_groups = sed_classifier(b_filter, i_filter, SEDs);
+
 
     // Add the prior
     getDependency<PriorConfig>().addPrior(PhzNzPrior::NzPrior(sed_groups, i_filter, param, effectiveness));
