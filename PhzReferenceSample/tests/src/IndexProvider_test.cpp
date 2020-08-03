@@ -25,10 +25,10 @@
 #include <ElementsKernel/Exception.h>
 #include <ElementsKernel/Temporary.h>
 
-#include "PhzReferenceSample/IndexProvider.h"
+#include "PhzReferenceSample/LegacyIndexProvider.h"
 
 
-using Euclid::ReferenceSample::IndexProvider;
+using Euclid::ReferenceSample::LegacyIndexProvider;
 using Elements::TempDir;
 
 //-----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ struct IndexProvider_Fixture {
 
 BOOST_AUTO_TEST_CASE( open_non_existing ) {
   try {
-    IndexProvider idx{"/invalid/path"};
+    LegacyIndexProvider idx{"/invalid/path"};
     BOOST_FAIL("Should have failed!");
   }
   catch (...) {
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE( open_non_existing ) {
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE( empty_index, IndexProvider_Fixture ) {
-  IndexProvider idx{m_index_bin};
+  LegacyIndexProvider idx{m_index_bin};
 
   BOOST_CHECK_EQUAL(idx.size(), 0);
   BOOST_CHECK_EQUAL(idx.getMissingSeds().size(), 0);
@@ -71,13 +71,13 @@ BOOST_FIXTURE_TEST_CASE( empty_index, IndexProvider_Fixture ) {
 
   BOOST_CHECK_THROW(idx.getLocation(10), Elements::Exception);
   // Not added yet to the index
-  BOOST_CHECK_THROW(idx.setLocation(10, IndexProvider::ObjectLocation{}), Elements::Exception);
+  BOOST_CHECK_THROW(idx.setLocation(10, LegacyIndexProvider::ObjectLocation{}), Elements::Exception);
 }
 
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE ( add_one, IndexProvider_Fixture ) {
-  IndexProvider idx{m_index_bin};
+  LegacyIndexProvider idx{m_index_bin};
 
   idx.createObject(10);
 
@@ -104,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE ( add_one, IndexProvider_Fixture ) {
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE ( add_one_with_data, IndexProvider_Fixture ) {
-  IndexProvider idx{m_index_bin};
+  LegacyIndexProvider idx{m_index_bin};
 
   idx.createObject(10);
   idx.setLocation(10, {0, 1, 100, 2, 543});
@@ -124,13 +124,13 @@ BOOST_FIXTURE_TEST_CASE ( add_one_with_data, IndexProvider_Fixture ) {
 
 BOOST_FIXTURE_TEST_CASE ( create_and_reopen, IndexProvider_Fixture ) {
   {
-    IndexProvider idx{m_index_bin};
+    LegacyIndexProvider idx{m_index_bin};
 
     idx.createObject(10);
     idx.setLocation(10, {0, 1, 100, 2, 543});
   }
 
-  IndexProvider idx{m_index_bin};
+  LegacyIndexProvider idx{m_index_bin};
 
   auto loc = idx.getLocation(10);
   BOOST_CHECK_EQUAL(loc.sed_file, 1);

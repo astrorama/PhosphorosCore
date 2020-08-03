@@ -1,8 +1,4 @@
 /**
- * @file src/lib/IndexProvider.cpp
- * @date 08/07/18
- * @author aalvarez
- *
  * @copyright (C) 2012-2020 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -21,161 +17,62 @@
  *
  */
 
-#include <fstream>
-#include <ElementsKernel/Exception.h>
-#include <boost/filesystem.hpp>
 #include "PhzReferenceSample/IndexProvider.h"
+#include <fstream>
+#include <boost/filesystem/operations.hpp>
+#include "NdArray/io/NpyMmap.h"
 
 namespace Euclid {
 namespace ReferenceSample {
 
-static const size_t INDEX_ENTRY_SIZE = 28;
+using NdArray::mmapNpy;
+using NdArray::createMmapNpy;
+using NdArray::NdArray;
 
-void IndexProvider::validateLocation(const ObjectLocation &e) {
-  if (e.sed_pos < -1) {
-    throw Elements::Exception() << "Negative SED offset";
-  }
-  if (e.pdz_pos < -1) {
-    throw Elements::Exception() << "Negative PDZ offset";
-  }
-}
-
-IndexProvider::IndexProvider(const boost::filesystem::path &path): m_fd{new std::fstream} {
-  try {
-    auto index_size = boost::filesystem::file_size(path);
-    if (index_size % INDEX_ENTRY_SIZE != 0) {
-      throw Elements::Exception() << "The reference sample index is corrupted: " << path;
+IndexProvider::IndexProvider(const boost::filesystem::path& path) : m_path{path} {
+  if (boost::filesystem::exists(path)) {
+    m_data = Euclid::make_unique<NdArray<int64_t>>(
+      mmapNpy<int64_t>(path, boost::iostreams::mapped_file_base::readwrite, 2147483648));
+    if (m_data->shape().size() != 2) {
+      throw Elements::Exception() << "Expected an array with two dimensions";
+    }
+    if (m_data->shape()[1] != 3) {
+      throw Elements::Exception() << "The second dimension is expected to be of size 3";
     }
 
-    m_fd->exceptions(std::ios::failbit);
-    m_fd->open(path.native(), std::ios::binary | std::ios::in | std::ios::out);
-    m_fd->seekg(0, std::ios::beg);
-
-    size_t nentries = index_size / INDEX_ENTRY_SIZE;
-    m_ids.reserve(nentries);
-
-    m_fd->exceptions(std::ios::badbit);
-
-    int64_t id;
-    while (!m_fd->read(reinterpret_cast<char *>(&id), sizeof(id)).eof()) {
-      auto &entry = m_index[id];
-      m_fd->read(reinterpret_cast<char *>(&entry.sed_file), sizeof(entry.sed_file));
-      m_fd->read(reinterpret_cast<char *>(&entry.sed_pos), sizeof(entry.sed_pos));
-      m_fd->read(reinterpret_cast<char *>(&entry.pdz_file), sizeof(entry.pdz_file));
-      m_fd->read(reinterpret_cast<char *>(&entry.pdz_pos), sizeof(entry.pdz_pos));
-
-      validateLocation(entry);
-
-      entry.index_position = m_index.size();
-
-      m_ids.push_back(id);
-      m_sed_files.insert(entry.sed_file);
-      m_pdz_files.insert(entry.pdz_file);
+    auto n_items = m_data->shape()[0];
+    for (size_t i = 0; i < n_items; ++i) {
+      m_index[m_data->at(i, 0)] = ObjectLocation{m_data->at(i, 1), m_data->at(i, 2)};
     }
   }
-  catch (const std::exception &e) {
-    throw Elements::Exception() << "Failed to open index " << path << ": " << e.what();
+  else {
+    // Touch file so umask is honored
+    std::ofstream _ (path.native());
+    // Create mmap version
+    m_data = Euclid::make_unique<NdArray<int64_t>>(
+      createMmapNpy<int64_t>(path, {0, 3}, 2147483648));
   }
 }
 
-size_t IndexProvider::size() const {
-  return m_ids.size();
-}
-
-const std::vector<int64_t> &IndexProvider::getIds() const {
-  return m_ids;
-}
-
-const std::set<uint16_t> &IndexProvider::getSedFiles() const {
-  return m_sed_files;
-}
-
-const std::set<uint16_t> &IndexProvider::getPdzFiles() const {
-  return m_pdz_files;
-}
-
-IndexProvider::ObjectLocation IndexProvider::getLocation(int64_t id) const {
-  try {
-    return m_index.at(id);
+void IndexProvider::add(int64_t id, const ObjectLocation& location) {
+  if (m_index.count(id)) {
+    throw Elements::Exception() << "Can not modify an object in place";
   }
-  catch (...) {
-    throw Elements::Exception() << "Could not find index entry for " << id;
-  }
+  NdArray<int64_t> entry{1, 3};
+  entry.at(0, 0) = id;
+  entry.at(0, 1) = location.file;
+  entry.at(0, 2) = location.offset;
+  m_data->concatenate(entry);
+  m_index[id] = location;
 }
 
-void IndexProvider::setLocation(int64_t id, const Euclid::ReferenceSample::IndexProvider::ObjectLocation &loc) {
-  m_fd->clear();
-  m_fd->exceptions(std::ios::badbit | std::ios::failbit);
-
-  auto m_index_i = m_index.find(id);
-  if (m_index_i == m_index.end()) {
-    throw Elements::Exception() << "The object " << id << " has not been created yet";
+auto IndexProvider::get(int64_t id) const -> ObjectLocation {
+  auto i = m_index.find(id);
+  if (i != m_index.end()) {
+    return i->second;
   }
-
-  validateLocation(loc);
-
-  m_fd->seekp(m_index_i->second.index_position * INDEX_ENTRY_SIZE + sizeof(int64_t), std::ios::beg);
-
-  m_fd->write(reinterpret_cast<const char *>(&loc.sed_file), sizeof(loc.sed_file));
-  m_fd->write(reinterpret_cast<const char *>(&loc.sed_pos), sizeof(loc.sed_pos));
-  m_fd->write(reinterpret_cast<const char *>(&loc.pdz_file), sizeof(loc.pdz_file));
-  m_fd->write(reinterpret_cast<const char *>(&loc.pdz_pos), sizeof(loc.pdz_pos));
-
-  m_index_i->second = loc;
-  m_sed_files.insert(loc.sed_file);
-  m_pdz_files.insert(loc.pdz_file);
+  return {-1, -1};
 }
 
-std::vector<int64_t> IndexProvider::getMissingSeds() const {
-  std::vector<int64_t> result;
-
-  for (auto entry: m_index) {
-    if (entry.second.sed_pos < 0) {
-      result.push_back(entry.first);
-    }
-  }
-
-  return result;
-}
-
-std::vector<int64_t> IndexProvider::getMissingPdz() const {
-  std::vector<int64_t> result;
-
-  for (auto entry: m_index) {
-    if (entry.second.pdz_pos < 0) {
-      result.push_back(entry.first);
-    }
-  }
-
-  return result;
-}
-
-void IndexProvider::createObject(int64_t id) {
-  m_fd->clear();
-  m_fd->exceptions(std::ios::badbit | std::ios::failbit);
-
-  if (m_index.count(id) > 0) {
-    throw Elements::Exception() << "The object " << id << " already exists on the index";
-  }
-
-  ObjectLocation loc{m_ids.size(), 0, -1, 0, -1};
-
-  try {
-    m_fd->seekp(0, std::ios::end);
-    m_fd->write(reinterpret_cast<char *>(&id), sizeof(id));
-    m_fd->write(reinterpret_cast<char *>(&loc.sed_file), sizeof(loc.sed_file));
-    m_fd->write(reinterpret_cast<char *>(&loc.sed_pos), sizeof(loc.sed_pos));
-    m_fd->write(reinterpret_cast<char *>(&loc.pdz_file), sizeof(loc.pdz_file));
-    m_fd->write(reinterpret_cast<char *>(&loc.pdz_pos), sizeof(loc.pdz_pos));
-
-    m_ids.push_back(id);
-
-    m_index[id] = loc;
-  }
-  catch (const std::exception &e) {
-    throw Elements::Exception() << "Failed to insert a new object: " << e.what();
-  }
-}
-
-}  // namespace PhzReferenceSample
-}  // namespace Euclid
+} // end of namespace ReferenceSample
+} // end of namespace Euclid

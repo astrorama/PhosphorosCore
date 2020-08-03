@@ -24,6 +24,7 @@
 #ifndef _REFERENCESAMPLE_REFERENCESAMPLE_H
 #define _REFERENCESAMPLE_REFERENCESAMPLE_H
 
+#include "LegacyIndexProvider.h"
 #include "IndexProvider.h"
 #include "SedDataProvider.h"
 #include "PdzDataProvider.h"
@@ -151,7 +152,8 @@ public:
 private:
   boost::filesystem::path m_root_path;
   size_t m_max_file_size;
-  IndexProvider m_index_provider;
+  LegacyIndexProvider m_index_provider;
+  IndexProvider m_pdz_index;
   std::vector<std::unique_ptr<SedDataProvider>> m_sed_providers;
   std::vector<std::unique_ptr<PdzDataProvider>> m_pdz_providers;
 
