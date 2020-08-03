@@ -37,7 +37,6 @@ PdzDataProvider::PdzDataProvider(const boost::filesystem::path& path,
                                  size_t max_size)
   : m_data_path{path}, m_max_size{max_size}, m_length{0} {
   if (boost::filesystem::exists(m_data_path)) {
-
     m_array = Euclid::make_unique<NdArray<float>>(
       mmapNpy<float>(m_data_path, boost::iostreams::mapped_file_base::readwrite,
                      m_max_size + 1024));

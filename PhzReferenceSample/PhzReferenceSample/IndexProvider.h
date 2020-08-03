@@ -21,6 +21,7 @@
 #define _REFERENCESAMPLE_INDEXPROVIDER_H
 
 #include <map>
+#include <set>
 #include <boost/filesystem/path.hpp>
 #include "NdArray/NdArray.h"
 
@@ -78,6 +79,24 @@ public:
    *    The location of the data, or an ObjectLocation initialized to {-1, -1} if not present
    */
   ObjectLocation get(int64_t id) const;
+
+  /**
+   * @return
+   *    How many objects are indexed
+   */
+  size_t size() const;
+
+  /**
+   * @return
+   *    Known unique file ids
+   */
+  std::set<size_t> getFiles() const;
+
+  /**
+   * @return
+   *    Known object ids
+   */
+  std::vector<int64_t> getIds() const;
 
 private:
   boost::filesystem::path m_path;

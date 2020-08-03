@@ -74,5 +74,26 @@ auto IndexProvider::get(int64_t id) const -> ObjectLocation {
   return {-1, -1};
 }
 
+size_t IndexProvider::size() const {
+  return m_index.size();
+}
+
+std::set<size_t> IndexProvider::getFiles() const {
+  std::set<size_t> files;
+  for (size_t i = 0; i < m_data->shape()[0]; ++i) {
+    files.emplace(m_data->at(i, 1));
+  }
+  return files;
+}
+
+std::vector<int64_t> IndexProvider::getIds() const {
+  std::vector<int64_t> ids;
+  ids.reserve(m_index.size());
+  for (auto &p : m_index) {
+    ids.emplace_back(p.first);
+  }
+  return ids;
+}
+
 } // end of namespace ReferenceSample
 } // end of namespace Euclid

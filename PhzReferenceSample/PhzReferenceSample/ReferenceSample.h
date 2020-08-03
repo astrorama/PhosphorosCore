@@ -24,7 +24,6 @@
 #ifndef _REFERENCESAMPLE_REFERENCESAMPLE_H
 #define _REFERENCESAMPLE_REFERENCESAMPLE_H
 
-#include "LegacyIndexProvider.h"
 #include "IndexProvider.h"
 #include "SedDataProvider.h"
 #include "PdzDataProvider.h"
@@ -104,20 +103,6 @@ public:
   boost::optional<XYDataset::XYDataset> getPdzData(int64_t id) const;
 
   /**
-   * Register a new object ID on the reference sample.
-   * @param id
-   *    The object ID.
-   * @throw Elements::Exception
-   *    On failure to write to the index file, or if the id already exists.
-   */
-  void createObject(int64_t id);
-
-  /**
-   * @return A list of registered objects without a corresponding SED.
-   */
-  std::vector<int64_t> getMissingSeds() const;
-
-  /**
    * Store SED data for the given object.
    * @param id
    *    The object ID.
@@ -128,11 +113,6 @@ public:
    *    the bins are not in ascending order.
    */
   void addSedData(int64_t id, const XYDataset::XYDataset &data);
-
-  /**
-   * @return A list if registered objects without a corresponding PDZ.
-   */
-  std::vector<int64_t> getMissingPdz() const;
 
   /**
    * Sotre PDZ data for the given object.
@@ -152,13 +132,14 @@ public:
 private:
   boost::filesystem::path m_root_path;
   size_t m_max_file_size;
-  LegacyIndexProvider m_index_provider;
-  IndexProvider m_pdz_index;
+  IndexProvider m_pdz_index, m_sed_index;
+  std::map<size_t, size_t> m_sed_prov_for_size;
   std::vector<std::unique_ptr<SedDataProvider>> m_sed_providers;
   std::vector<std::unique_ptr<PdzDataProvider>> m_pdz_providers;
 
   void initSedProviders();
   void initPdzProviders();
+  void createNewSedProvider();
 };  // End of PhzReferenceSample class
 
 }  // namespace PhzReferenceSample
