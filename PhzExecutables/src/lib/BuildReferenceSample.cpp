@@ -112,9 +112,14 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
   };
 
   auto ref_sample_config = config_manager.getConfiguration<BuildReferenceSampleConfig>();
+  auto ref_sample_path = ref_sample_config.getReferenceSamplePath();
 
   logger.info() << "Creating Reference Sample dir";
-  auto ref_sample = ReferenceSample::create(ref_sample_config.getReferenceSamplePath());
+  if (boost::filesystem::exists(ref_sample_path) && ref_sample_config.overwrite()) {
+    boost::filesystem::remove_all(ref_sample_path);
+  }
+  auto ref_sample = ReferenceSample::create(ref_sample_config.getReferenceSamplePath(),
+                                            ref_sample_config.getMaxSize());
 
   logger.info() << "Reading the Phosphoros catalog";
   auto phosphoros_reader = ref_sample_config.getPhosphorosCatalogReader();
