@@ -42,8 +42,7 @@ struct PdzDataProvider_Fixture {
   boost::filesystem::path m_pdz_bin;
   XYDataset pdz{{{0, 0}, {1, 4}, {2, 3}, {3, 1}}};
 
-  PdzDataProvider_Fixture(): m_pdz_bin{m_top_dir.path() / "pdz_data_1.bin"} {
-    std::ofstream _{m_pdz_bin.native()};
+  PdzDataProvider_Fixture(): m_pdz_bin{m_top_dir.path() / "pdz_data_1.bin"} {;
   }
 
   virtual ~PdzDataProvider_Fixture() {
@@ -69,12 +68,9 @@ BOOST_FIXTURE_TEST_CASE( add_one, PdzDataProvider_Fixture ) {
   PdzDataProvider pdz_provider {m_pdz_bin};
   BOOST_CHECK_EQUAL(pdz_provider.size(), 0);
 
-  auto offset = pdz_provider.addPdz(10, pdz);
+  auto offset = pdz_provider.addPdz(pdz);
+  auto recovered = pdz_provider.readPdz(offset);
 
-  int64_t id;
-  auto recovered = pdz_provider.readPdz(offset, &id);
-
-  BOOST_CHECK_EQUAL(id, 10);
   BOOST_CHECK(checkAllClose(recovered, pdz));
 }
 
@@ -82,9 +78,7 @@ BOOST_FIXTURE_TEST_CASE( add_one, PdzDataProvider_Fixture ) {
 
 BOOST_FIXTURE_TEST_CASE( bad_read_offset, PdzDataProvider_Fixture ) {
   PdzDataProvider pdz_provider {m_pdz_bin};
-
-  int64_t id;
-  BOOST_CHECK_THROW(pdz_provider.readPdz(100, &id), Elements::Exception);
+  BOOST_CHECK_THROW(pdz_provider.readPdz(100), Elements::Exception);
 }
 
 //-----------------------------------------------------------------------------
@@ -92,12 +86,11 @@ BOOST_FIXTURE_TEST_CASE( bad_read_offset, PdzDataProvider_Fixture ) {
 BOOST_FIXTURE_TEST_CASE( add_two, PdzDataProvider_Fixture ) {
   PdzDataProvider pdz_provider {m_pdz_bin};
 
-  auto off10 = pdz_provider.addPdz(10, pdz);
-  pdz_provider.addPdz(11, pdz);
+  auto off10 = pdz_provider.addPdz(pdz);
+  pdz_provider.addPdz(pdz);
 
   int64_t id;
-  auto recovered = pdz_provider.readPdz(off10, &id);
-  BOOST_CHECK_EQUAL(id, 10);
+  auto recovered = pdz_provider.readPdz(off10);
   BOOST_CHECK(checkAllClose(recovered, pdz));
 }
 
@@ -109,9 +102,9 @@ BOOST_FIXTURE_TEST_CASE( add_wrong_bins, PdzDataProvider_Fixture ) {
   XYDataset pdz_wrong_size{{{0, 0}, {1, 0}}};
   XYDataset pdz_different{{{2, 0}, {4, 4}, {8, 3}, {10, 1}}};
 
-  pdz_provider.addPdz(10, pdz);
-  BOOST_CHECK_THROW(pdz_provider.addPdz(11, pdz_wrong_size), Elements::Exception);
-  BOOST_CHECK_THROW(pdz_provider.addPdz(11, pdz_different), Elements::Exception);
+  pdz_provider.addPdz(pdz);
+  BOOST_CHECK_THROW(pdz_provider.addPdz(pdz_wrong_size), Elements::Exception);
+  BOOST_CHECK_THROW(pdz_provider.addPdz(pdz_different), Elements::Exception);
 
 }
 
@@ -122,7 +115,7 @@ BOOST_FIXTURE_TEST_CASE( decreasing_bins, PdzDataProvider_Fixture ) {
 
   XYDataset pdz_decreasing{{{10, 0}, {9, 4}, {8, 3}, {7, 1}}};
 
-  BOOST_CHECK_THROW(pdz_provider.addPdz(11, pdz_decreasing), Elements::Exception);
+  BOOST_CHECK_THROW(pdz_provider.addPdz(pdz_decreasing), Elements::Exception);
 
 }
 
@@ -133,16 +126,13 @@ BOOST_FIXTURE_TEST_CASE( open_and_close, PdzDataProvider_Fixture ) {
 
   {
     PdzDataProvider pdz_provider{m_pdz_bin};
-    offset = pdz_provider.addPdz(10, pdz);
+    offset = pdz_provider.addPdz(pdz);
   }
 
   PdzDataProvider pdz_provider{m_pdz_bin};
   BOOST_CHECK_NE(pdz_provider.size(), 0);
 
-  int64_t id;
-  auto recovered = pdz_provider.readPdz(offset, &id);
-
-  BOOST_CHECK_EQUAL(id, 10);
+  auto recovered = pdz_provider.readPdz(offset);
   BOOST_CHECK(checkAllClose(recovered, pdz));
 }
 
