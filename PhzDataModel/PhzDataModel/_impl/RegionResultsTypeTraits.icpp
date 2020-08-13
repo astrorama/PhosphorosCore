@@ -130,6 +130,13 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
   using type = PhzDataModel::Pdf1DParam<ModelParameter::Z>;
 };
 
+template <RegionResultType T>
+struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
+                                    T == RegionResultType::FLAGS
+                             >::type> {
+  using type = std::map<std::string, bool>;
+};
+
 
 } /* namespace PhzDataModel */
 } /* namespace Euclid */

@@ -5,9 +5,13 @@
  */
 
 #include <set>
+#include <cmath>
+#include "ElementsKernel/Logging.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
+
+static Elements::Logging meanCorrlogger = Elements::Logging::getLogger("FindMeanPhotometricCorrectionsFunctor");
 
 template <typename SourceIter>
   PhzDataModel::PhotometricCorrectionMap FindMeanPhotometricCorrectionsFunctor::operator()(
@@ -15,13 +19,30 @@ template <typename SourceIter>
             SourceIter, SourceIter) {
   
   PhzDataModel::PhotometricCorrectionMap result {};
+  PhzDataModel::PhotometricCorrectionMap result_count {};
+  bool first = true;
   for (auto& source_phot_corr_pair : source_phot_corr_map) {
+    if (first) {
+      for (auto& phot_corr_pair : source_phot_corr_pair.second) {
+        result[phot_corr_pair.first] = 0;
+        result_count[phot_corr_pair.first] = 0;
+      }
+      first = false;
+    }
     for (auto& phot_corr_pair : source_phot_corr_pair.second) {
-      result[phot_corr_pair.first] += phot_corr_pair.second;
+      if (!std::isnan(phot_corr_pair.second)) {
+        result[phot_corr_pair.first] += phot_corr_pair.second;
+        result_count[phot_corr_pair.first] += 1;
+      }
     }
   }
   for (auto& pair : result) {
-    pair.second /= source_phot_corr_map.size();
+    if ( result_count[pair.first] == 0) {
+      meanCorrlogger.warn()<< "The photometry band " << pair.first << " has no reliable source. Set the correction to 1";
+      pair.second = 1.0;
+    } else {
+      pair.second /= result_count[pair.first];
+    }
   }
   return result;
 }

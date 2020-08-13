@@ -60,10 +60,16 @@ public:
 
   std::unique_ptr<Table::TableReader> getPhosphorosCatalogReader(void) const;
 
+  bool overwrite() const;
+
+  size_t getMaxSize() const;
+
 private:
   boost::filesystem::path m_reference_sample_out;
   boost::filesystem::path m_phosphoros_catalog;
   std::string m_catalog_format;
+  bool m_overwrite;
+  size_t m_max_size;
 };  // End of BuildReferenceSampleConfig class
 
 }  // namespace PhzConfiguration

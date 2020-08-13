@@ -174,10 +174,17 @@ public:
         double flux_obs =  m_integrate_funct(x_reddened, filter_iter->getRange());
 
         double a_sed_x =  0.0;
+
         // if the flux is not null we can compute the correction coef
-        if (flux_int != 0) {
+        if (flux_int != 0 && flux_obs > 0 && flux_int > 0) {
           a_sed_x = -5.*std::log10(flux_obs/flux_int)/0.6;
-        }
+        } else {
+          logger.info() << "A correction coefficient where not computed and set to 0. "
+          << "This can be due to SED fully outside of the filter range or may point to negative values in the filter transmissions.";
+          if (flux_obs < 0 || flux_int < 0) {
+            logger.warn() << "A computed flux is negative: check your filter transmission for un-physical negatives values! ";
+          }
+       }
         (*corr_iter).flux = a_sed_x;
 
         ++corr_iter;

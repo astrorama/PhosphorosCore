@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_SUITE (ReferenceSample_test)
 struct ReferenceSamplePath_Fixture {
   TempPath m_top_dir;
 
-  ReferenceSamplePath_Fixture(): m_top_dir{""} {
+  ReferenceSamplePath_Fixture() {
   }
 
   virtual ~ReferenceSamplePath_Fixture() {
@@ -56,7 +56,7 @@ struct EmptyReferenceSample_Fixture: ReferenceSamplePath_Fixture {
 };
 
 struct ReferenceSampleData_Fixture {
-  std::vector<int64_t> m_obj_ids{10, 11, 12, 1000};
+  std::vector<int64_t> m_obj_ids{10, 11, 12};
   std::vector<XYDataset> m_sed{
     {{{100,  1}, {105,  2}, {110,  3}}},
     {{{500, 10}, {505, 12}, {510, 14}}},
@@ -75,7 +75,6 @@ struct ReferenceSampleData_Fixture {
 
   void populate(ReferenceSample &ref) {
     for (size_t i = 0; i < m_obj_ids.size(); ++i) {
-      ref.createObject(m_obj_ids[i]);
       if (i < m_sed.size()) {
         ref.addSedData(m_obj_ids[i], m_sed[i]);
       }
@@ -115,32 +114,6 @@ BOOST_FIXTURE_TEST_CASE ( test_create_new_success, ReferenceSamplePath_Fixture) 
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE ( test_open_missing, ReferenceSamplePath_Fixture ) {
-  try {
-    ReferenceSample ref(m_top_dir.path());
-    BOOST_FAIL("Should have failed");
-  }
-  catch (const Elements::Exception&) {
-    // Pass
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE ( test_open_missing_index, EmptyReferenceSample_Fixture) {
-  boost::filesystem::remove(m_top_dir.path() / "index.bin");
-
-  try {
-    ReferenceSample ref(m_top_dir.path());
-    BOOST_FAIL("Should have failed");
-  }
-  catch (const Elements::Exception&) {
-    //Pass
-  }
-}
-
-//-----------------------------------------------------------------------------
-
 BOOST_FIXTURE_TEST_CASE ( test_size, ReferenceSample_Fixture ) {
   BOOST_CHECK_EQUAL(m_ref.size(), m_obj_ids.size());
 }
@@ -150,30 +123,6 @@ BOOST_FIXTURE_TEST_CASE ( test_size, ReferenceSample_Fixture ) {
 BOOST_FIXTURE_TEST_CASE ( test_getIds, ReferenceSample_Fixture ) {
   auto ids = m_ref.getIds();
   BOOST_CHECK_EQUAL_COLLECTIONS(ids.begin(), ids.end(), m_obj_ids.begin(), m_obj_ids.end());
-}
-
-//-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE ( test_getSed_wrongId, ReferenceSample_Fixture ) {
-  BOOST_CHECK_THROW(m_ref.getSedData(5000), Elements::Exception);
-}
-
-//-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE ( test_getSed_corrupted, ReferenceSample_Fixture ) {
-  int64_t bad_index = 55;
-
-  // Corrupt the file intentionally
-  {
-    IndexProvider idx{m_top_dir.path() / "index.bin"};
-    auto loc = idx.getLocation(10);
-
-    std::fstream fd((m_top_dir.path() / "sed_data_1.bin").native(), std::ios::in | std::ios::out);
-    fd.seekp(loc.sed_pos);
-    fd.write(reinterpret_cast<char *>(&bad_index), sizeof(bad_index));
-  }
-
-  BOOST_CHECK_THROW(m_ref.getSedData(10), Elements::Exception);
 }
 
 //-----------------------------------------------------------------------------
@@ -191,30 +140,6 @@ BOOST_FIXTURE_TEST_CASE ( test_getSed, ReferenceSample_Fixture ) {
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE ( test_getPdz_wrongId, ReferenceSample_Fixture ) {
-  BOOST_CHECK_THROW(m_ref.getPdzData(5000), Elements::Exception);
-}
-
-//-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE ( test_getPdz_corrupted, ReferenceSample_Fixture ) {
-  int64_t bad_index = 55;
-
-  // Corrupt the file intentionally
-  {
-    IndexProvider idx{m_top_dir.path() / "index.bin"};
-    auto loc = idx.getLocation(10);
-
-    std::fstream fd((m_top_dir.path() / "pdz_data_1.bin").native(), std::ios::in | std::ios::out);
-    fd.seekp(loc.pdz_pos);
-    fd.write(reinterpret_cast<char *>(&bad_index), sizeof(bad_index));
-  }
-
-  BOOST_CHECK_THROW(m_ref.getPdzData(10), Elements::Exception);
-}
-
-//-----------------------------------------------------------------------------
-
 BOOST_FIXTURE_TEST_CASE ( test_getPdz_missing, ReferenceSample_Fixture ) {
   BOOST_CHECK(!m_ref.getPdzData(1000));
 }
@@ -224,31 +149,6 @@ BOOST_FIXTURE_TEST_CASE ( test_getPdz_missing, ReferenceSample_Fixture ) {
 BOOST_FIXTURE_TEST_CASE ( test_getPdz, ReferenceSample_Fixture ) {
   auto pdz = m_ref.getPdzData(11).get();
   BOOST_CHECK(checkAllClose(pdz, m_pdz[1]));
-}
-
-//-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE ( test_createDuplicated, ReferenceSample_Fixture ) {
-  BOOST_CHECK_THROW(m_ref.createObject(12), Elements::Exception);
-}
-
-//-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE ( test_createSuccess, ReferenceSample_Fixture ) {
-  m_ref.createObject(11111);
-  BOOST_CHECK_EQUAL(m_ref.size(), m_obj_ids.size() + 1);
-
-  auto missing_sed = m_ref.getMissingSeds();
-  BOOST_CHECK(std::find(missing_sed.begin(), missing_sed.end(), 11111) != missing_sed.end());
-
-  auto missing_pdz = m_ref.getMissingPdz();
-  BOOST_CHECK(std::find(missing_pdz.begin(), missing_pdz.end(), 11111) != missing_pdz.end());
-}
-
-//-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE ( test_addSed_wrongId, ReferenceSample_Fixture ) {
-  BOOST_CHECK_THROW(m_ref.addSedData(50000, m_sed[2]), Elements::Exception);
 }
 
 //-----------------------------------------------------------------------------
@@ -266,10 +166,7 @@ BOOST_FIXTURE_TEST_CASE ( test_addSed_wrongWavelength, ReferenceSample_Fixture )
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE ( test_addSed_success, ReferenceSample_Fixture ) {
-  BOOST_REQUIRE(!m_ref.getSedData(1000));
-
   m_ref.addSedData(1000, m_additional[0]);
-  BOOST_CHECK_EQUAL(m_ref.getMissingSeds().size(), 0);
   auto sed = m_ref.getSedData(1000).get();
   BOOST_CHECK(checkAllClose(sed, m_additional[0]));
 }
@@ -277,12 +174,12 @@ BOOST_FIXTURE_TEST_CASE ( test_addSed_success, ReferenceSample_Fixture ) {
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE ( test_addSed_newDataFile, ReferenceSampleOnDisk_Fixture ) {
-  auto file_size = boost::filesystem::file_size(m_top_dir.path() / "sed_data_1.bin");
+  auto file_size = boost::filesystem::file_size(m_top_dir.path() / "sed_data_1.npy");
 
   ReferenceSample ref{m_top_dir.path(), file_size};
   ref.addSedData(1000, m_additional[0]);
 
-  BOOST_CHECK(boost::filesystem::exists(m_top_dir.path() / "sed_data_2.bin"));
+  BOOST_CHECK(boost::filesystem::exists(m_top_dir.path() / "sed_data_2.npy"));
 
   auto sed = ref.getSedData(1000).get();
   BOOST_CHECK(checkAllClose(sed, m_additional[0]));
@@ -291,9 +188,6 @@ BOOST_FIXTURE_TEST_CASE ( test_addSed_newDataFile, ReferenceSampleOnDisk_Fixture
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE ( test_addSed_notInOrder, ReferenceSample_Fixture ) {
-  m_ref.createObject(5555);
-  m_ref.createObject(6666);
-
   m_ref.addSedData(6666, m_additional[0]);
   m_ref.addSedData(5555, m_additional[1]);
 
@@ -301,12 +195,6 @@ BOOST_FIXTURE_TEST_CASE ( test_addSed_notInOrder, ReferenceSample_Fixture ) {
   BOOST_CHECK(checkAllClose(sed6, m_additional[0]));
   auto sed5 = m_ref.getSedData(5555).get();
   BOOST_CHECK(checkAllClose(sed5, m_additional[1]));
-}
-
-//-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE ( test_addPdz_wrongId, ReferenceSample_Fixture ) {
-  BOOST_CHECK_THROW(m_ref.addPdzData(50000, m_pdz[2]), Elements::Exception);
 }
 
 //-----------------------------------------------------------------------------
@@ -327,7 +215,6 @@ BOOST_FIXTURE_TEST_CASE ( test_addPdz_success, ReferenceSample_Fixture ) {
   BOOST_REQUIRE(!m_ref.getPdzData(1000));
 
   m_ref.addPdzData(1000, m_additional[0]);
-  BOOST_CHECK_EQUAL(m_ref.getMissingPdz().size(), 0);
   auto pdz = m_ref.getPdzData(1000).get();
   BOOST_CHECK(checkAllClose(pdz, m_additional[0]));
 }
@@ -335,12 +222,12 @@ BOOST_FIXTURE_TEST_CASE ( test_addPdz_success, ReferenceSample_Fixture ) {
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE ( test_addPdz_newDataFile, ReferenceSampleOnDisk_Fixture ) {
-  auto file_size = boost::filesystem::file_size(m_top_dir.path() / "pdz_data_1.bin");
+  auto file_size = boost::filesystem::file_size(m_top_dir.path() / "pdz_data_1.npy");
 
   ReferenceSample ref{m_top_dir.path(), file_size};
   ref.addPdzData(1000, m_additional[0]);
 
-  BOOST_CHECK(boost::filesystem::exists(m_top_dir.path() / "pdz_data_2.bin"));
+  BOOST_CHECK(boost::filesystem::exists(m_top_dir.path() / "pdz_data_2.npy"));
 
   auto pdz = ref.getPdzData(1000).get();
   BOOST_CHECK(checkAllClose(pdz, m_additional[0]));
@@ -349,9 +236,6 @@ BOOST_FIXTURE_TEST_CASE ( test_addPdz_newDataFile, ReferenceSampleOnDisk_Fixture
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE ( test_addPdz_notInOrder, ReferenceSample_Fixture ) {
-  m_ref.createObject(5555);
-  m_ref.createObject(6666);
-
   m_ref.addPdzData(6666, m_additional[0]);
   m_ref.addPdzData(5555, m_additional[1]);
 

@@ -65,7 +65,12 @@ static std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDat
     PhzDataModel::PhotometricCorrectionMap source_phot_corr {};
     for (auto source_iter=source_phot_ptr->begin(); source_iter!=source_phot_ptr->end(); ++source_iter) {
       auto model_ptr = model_photometry.find(source_iter.filterName());
-      source_phot_corr[source_iter.filterName()] = scale->second * model_ptr->flux / (*source_iter).flux;
+      // Skip photometries which are upper limit or missing
+      if (!model_ptr->missing_photometry_flag && !model_ptr->upper_limit_flag) {
+        source_phot_corr[source_iter.filterName()] = scale->second * model_ptr->flux / (*source_iter).flux;
+      } else {
+        source_phot_corr[source_iter.filterName()] = NAN;
+      }
     }
     result[source->getId()] = std::move(source_phot_corr);
   }

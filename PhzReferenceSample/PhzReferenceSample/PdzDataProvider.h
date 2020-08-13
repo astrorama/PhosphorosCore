@@ -24,6 +24,7 @@
 #ifndef _REFERENCESAMPLE_PDZDATAPROVIDER_H
 #define _REFERENCESAMPLE_PDZDATAPROVIDER_H
 
+#include "NdArray/NdArray.h"
 #include "XYDataset/XYDataset.h"
 
 #include <fstream>
@@ -55,11 +56,13 @@ public:
    * Constructor
    * @param path
    *    The path to the PDZ data file.
-   * @note It does *not* create the data file.
+   * @param max_size
+   *    The maximum number of elements expected to be added. Defaults to 1 GiB.
    * @throw Elements::Exception
    *    On failure to read the PDZ bins (only if the file is not empty)
    */
-  PdzDataProvider(const boost::filesystem::path &path);
+  PdzDataProvider(const boost::filesystem::path& path,
+                  std::size_t max_size = 1 << 30);
 
   /**
    * Move constructor.
@@ -70,14 +73,11 @@ public:
    * Get the PDZ stored on the given file position.
    * @param position
    *    Address inside the file where the PDZ is stored.
-   * @param id
-   *    ID of the object to which the PDZ is associated.
-   *    It should be used to verify if the data correspond to the expected object.
    * @return The PDZ data
    * @throw Element::Exception
    *    If the position is negative, or on failure to read.
    */
-  XYDataset::XYDataset readPdz(int64_t position, int64_t *id) const;
+  XYDataset::XYDataset readPdz(int64_t position) const;
 
   /**
    * @return Size on disk of the data file.
@@ -86,23 +86,19 @@ public:
 
   /**
    * Store a new PDZ entry.
-   * @param id
-   *    Object ID.
    * @param data
    *    PDZ data. The X axis contains the bins, and the Y axis the values.
-   * @return
-   *    Position on the file where the PDZ has been writen.
    * @throw Elements::Exception
    *    On failure to write to disk, if the bins
    *    do not match the stored bins, or, only for the first stored pdz, if the
    *    bins are not in ascending order.
    */
-  int64_t addPdz(int64_t id, const XYDataset::XYDataset &data);
+  int64_t addPdz(const XYDataset::XYDataset &data);
 
 private:
-  boost::filesystem::path m_path;
-  // Reading mutates the file descriptor, but not the file on disk
-  mutable std::unique_ptr<std::fstream> m_fd;
+  boost::filesystem::path m_data_path;
+  size_t m_max_size;
+  std::unique_ptr<NdArray::NdArray<float>> m_array;
 
   uint32_t m_length;
   std::vector<float> m_bins;

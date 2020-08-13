@@ -112,9 +112,14 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
   };
 
   auto ref_sample_config = config_manager.getConfiguration<BuildReferenceSampleConfig>();
+  auto ref_sample_path = ref_sample_config.getReferenceSamplePath();
 
   logger.info() << "Creating Reference Sample dir";
-  auto ref_sample = ReferenceSample::create(ref_sample_config.getReferenceSamplePath());
+  if (boost::filesystem::exists(ref_sample_path) && ref_sample_config.overwrite()) {
+    boost::filesystem::remove_all(ref_sample_path);
+  }
+  auto ref_sample = ReferenceSample::create(ref_sample_config.getReferenceSamplePath(),
+                                            ref_sample_config.getMaxSize());
 
   logger.info() << "Reading the Phosphoros catalog";
   auto phosphoros_reader = ref_sample_config.getPhosphorosCatalogReader();
@@ -162,10 +167,9 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
       ModelDatasetGrid grid {grid_axes, std::move(sed_map), std::move(reddening_curve_map),
                              ExtinctionFunctor{}, RedshiftFunctor{}, igm_function};
 
-      ref_sample.createObject(obj_id);
-      for (auto &sed : grid) {
+      for (auto &cell : grid) {
         std::vector<std::pair<double, double>> scaled_data {};
-        for (auto it = sed.begin(); it != sed.end(); ++it) {
+        for (auto it = cell.begin(); it != cell.end(); ++it) {
           auto scaled_point = *it;
           scaled_point.second *= scale;
           scaled_data.push_back(std::move(scaled_point));

@@ -6,9 +6,12 @@
 
 #include <set>
 #include <cmath>
+#include "ElementsKernel/Logging.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
+
+static Elements::Logging weightedMeanlogger = Elements::Logging::getLogger("FindWeightedMeanPhotometricCorrectionsFunctor");
 
 template <typename SourceIter>
   PhzDataModel::PhotometricCorrectionMap FindWeightedMeanPhotometricCorrectionsFunctor::operator()(
@@ -23,14 +26,26 @@ template <typename SourceIter>
     auto source_phot_ptr = source->template getAttribute<SourceCatalog::Photometry>();
     PhzDataModel::PhotometricCorrectionMap source_weights {};
     for (auto iter=source_phot_ptr->begin(); iter!=source_phot_ptr->end(); ++iter) {
-      source_weights[iter.filterName()] = (*iter).flux / (*iter).error;
+      if (!(*iter).missing_photometry_flag && !(*iter).upper_limit_flag) {
+        source_weights[iter.filterName()] = (*iter).flux / (*iter).error;
+      } else {
+        source_weights[iter.filterName()] = NAN;
+      }
     }
     source_weights_map[source->getId()] = std::move(source_weights);
   }
   
   PhzDataModel::PhotometricCorrectionMap result {};
   PhzDataModel::PhotometricCorrectionMap total_weights {};
+  bool first = true;
   for (auto& source_phot_corr_pair : source_phot_corr_map) {
+    if (first) {
+      for (auto& phot_corr_pair : source_phot_corr_pair.second) {
+        result[phot_corr_pair.first] = 0.;
+        total_weights[phot_corr_pair.first] = 0.;
+      }
+      first = false;
+    }
     for (auto& phot_corr_pair : source_phot_corr_pair.second) {
       double weight = source_weights_map.at(source_phot_corr_pair.first).at(phot_corr_pair.first);
       if (std::isfinite(weight)) {
@@ -40,7 +55,12 @@ template <typename SourceIter>
     }
   }
   for (auto& pair : result) {
-    pair.second /= total_weights[pair.first];
+    if ( total_weights[pair.first] == 0) {
+      weightedMeanlogger.warn()<< "The photometry band " << pair.first << " has no reliable source. Set the correction to 1";
+      pair.second = 1.0;
+    } else {
+      pair.second /= total_weights[pair.first];
+    }
   }
   return result;
 }

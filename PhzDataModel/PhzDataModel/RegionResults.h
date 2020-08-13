@@ -17,7 +17,7 @@
  */
 
 /*
- * @file PhzDataModel/sRegionResults.h
+ * @file PhzDataModel/RegionResults.h
  * @author nikoapos
  */
 
@@ -73,7 +73,9 @@ enum class RegionResultType {
   /// The logarithm of the normalization of the likelihood grid and the 1D PDFs
   LIKELIHOOD_NORMALIZATION_LOG,
   /// The logarithm of the normalization of the posterior grid and the 1D PDFs
-  NORMALIZATION_LOG
+  NORMALIZATION_LOG,
+  /// Computation Flags
+  FLAGS
 };
 
 using RegionResults = TypedEnumMap<RegionResultType>;

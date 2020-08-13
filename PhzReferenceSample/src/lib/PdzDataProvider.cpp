@@ -22,77 +22,75 @@
  */
 
 #include <ElementsKernel/Exception.h>
+#include <NdArray/io/NpyMmap.h>
 #include <boost/filesystem/operations.hpp>
 #include "PhzReferenceSample/PdzDataProvider.h"
 
 namespace Euclid {
 namespace ReferenceSample {
 
-PdzDataProvider::PdzDataProvider(const boost::filesystem::path &path)
-: m_path{path}, m_fd{new std::fstream}, m_length{0}
-{
-  m_fd->exceptions(std::ios::failbit);
-  try {
-    m_fd->open(path.c_str(), std::ios::binary | std::ios::in | std::ios::out);
+using NdArray::mmapNpy;
+using NdArray::createMmapNpy;
+using NdArray::NdArray;
 
-    // Read header
-    m_fd->exceptions(std::ios::badbit);
-    m_fd->peek();
-    if (!m_fd->eof()) {
-      m_fd->read(reinterpret_cast<char *>(&m_length), sizeof(m_length));
-      m_bins.resize(m_length);
-      m_fd->read(reinterpret_cast<char *>(m_bins.data()), sizeof(decltype(m_bins)::value_type) * m_bins.size());
+PdzDataProvider::PdzDataProvider(const boost::filesystem::path& path,
+                                 size_t max_size)
+  : m_data_path{path}, m_max_size{max_size}, m_length{0} {
+  if (boost::filesystem::exists(m_data_path)) {
+    m_array = Euclid::make_unique<NdArray<float>>(
+      mmapNpy<float>(m_data_path, boost::iostreams::mapped_file_base::readwrite,
+                     m_max_size + 1024));
+
+    if (m_array->shape().size() != 2) {
+      throw Elements::Exception() << "Expected an NdArray with two dimensions";
+    }
+
+    m_length = m_array->shape()[1];
+    m_bins.resize(m_length);
+    for (uint32_t i = 0; i < m_length; ++i) {
+      m_bins[i] = m_array->at(0, i);
     }
   }
-  catch (const std::ios::failure &e) {
-    throw Elements::Exception() << "Failed to open the SED file " << path << " (" << e.what() << ")";
+  else {
+    // We can not create the file yet: we need to know the size of the binning
+    // Just touch it to get hold of the name and fail soon if we can not write here
+    std::fstream stream;
+    stream.exceptions(~std::ios_base::goodbit);
+    stream.open(path.native(), std::ios_base::out);
   }
 }
 
-XYDataset::XYDataset PdzDataProvider::readPdz(int64_t position, int64_t *id) const {
-  m_fd->clear();
-  m_fd->exceptions(std::ios::failbit | std::ios::badbit);
-
+XYDataset::XYDataset PdzDataProvider::readPdz(int64_t position) const {
   if (position < 0) {
     throw Elements::Exception() << "Negative offset";
   }
-
-  try {
-    m_fd->seekg(position, std::ios_base::beg);
-
-    // Object ID
-    m_fd->read(reinterpret_cast<char *>(id), sizeof(*id));
-
-    std::vector<float> data(m_length);
-    m_fd->read(reinterpret_cast<char *>(data.data()), sizeof(float) * data.size());
-
-    // Organize by pairs
-    std::vector<std::pair<double, double>> reshaped(m_length);
-
-    for (uint32_t i = 0; i < m_length; ++i) {
-      std::tie(reshaped[i].first, reshaped[i].second) = std::make_tuple(m_bins[i], data[i]);
-    }
-
-    return {std::move(reshaped)};
+  if (!m_array) {
+    throw Elements::Exception() << "Need to create the PDZ file first";
   }
-  catch (const std::exception &e) {
-    throw Elements::Exception() << "Failed to read the PDZ: " << e.what();
+
+  std::vector<std::pair<double, double>> data(m_length);
+  for (uint32_t i = 0; i < m_length; ++i) {
+    data[i].first = m_bins[i];
+    data[i].second = m_array->at(position, i);
   }
+  return data;
 }
 
 size_t PdzDataProvider::size() const {
-  return boost::filesystem::file_size(m_path);
+  if (m_array)
+    return boost::filesystem::file_size(m_data_path);
+  return 0;
 }
 
-int64_t PdzDataProvider::addPdz(int64_t id, const Euclid::XYDataset::XYDataset &data) {
-  std::vector<float> bins, values;
-
+int64_t PdzDataProvider::addPdz(const Euclid::XYDataset::XYDataset &data) {
+  std::vector<float> bins;
+  NdArray<float> values({1, data.size()});
   bins.reserve(data.size());
-  values.reserve(data.size());
 
+  size_t i = 0;
   for (auto p : data) {
-    bins.push_back(p.first);
-    values.push_back(p.second);
+    bins.emplace_back(p.first);
+    values.at(0, i++) = p.second;
   }
 
   if (m_bins.empty())
@@ -100,20 +98,8 @@ int64_t PdzDataProvider::addPdz(int64_t id, const Euclid::XYDataset::XYDataset &
   else
     validateBins(bins);
 
-  try {
-    m_fd->clear();
-    m_fd->exceptions(std::ios::failbit | std::ios::badbit);
-
-    int64_t offset = m_fd->seekp(0, std::ios::end).tellp();
-
-    m_fd->write(reinterpret_cast<char *>(&id), sizeof(id));
-    m_fd->write(reinterpret_cast<char *>(values.data()), sizeof(float) * values.size());
-
-    return offset;
-  }
-  catch (const std::exception &e) {
-    throw Elements::Exception() << "Failed to add PDZ: " << e.what();
-  }
+  m_array->concatenate(values);
+  return m_array->shape()[0] - 1;
 }
 
 void PdzDataProvider::setBins(const std::vector<float> &bins) {
@@ -122,18 +108,13 @@ void PdzDataProvider::setBins(const std::vector<float> &bins) {
   }
 
   try {
-    m_fd->clear();
-    m_fd->exceptions(std::ios::failbit | std::ios::badbit);
-
     m_bins = bins;
     m_length = bins.size();
+    m_array = Euclid::make_unique<NdArray<float>>(
+      createMmapNpy<float>(m_data_path, {1, m_length}, m_max_size + 1024)
+    );
 
-    if (m_fd->seekp(0, std::ios::end).tellp() > 0) {
-      throw Elements::Exception() << "PDZ bins already set!";
-    }
-
-    m_fd->write(reinterpret_cast<char *>(&m_length), sizeof(m_length));
-    m_fd->write(reinterpret_cast<const char *>(bins.data()), sizeof(float) * bins.size());
+    std::copy(bins.begin(), bins.end(), m_array->begin());
   }
   catch (const std::exception &e) {
     throw Elements::Exception() << "Failed to write the PDZ bins: " << e.what();
