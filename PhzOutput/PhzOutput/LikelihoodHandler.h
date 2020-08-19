@@ -12,6 +12,7 @@
 #include <boost/filesystem.hpp>
 #include "PhzDataModel/RegionResults.h"
 #include "PhzOutput/OutputHandler.h"
+#include "PhzOutput/GridSampler.h"
 
 namespace Euclid {
 namespace PhzOutput {
@@ -25,20 +26,6 @@ public:
 
   virtual ~LikelihoodHandler();
 
-  size_t getRegionForDraw(std::map<size_t, double>& region_volume, double region_draw) const;
-  double interpolateProbability(double z_0,
-                                double z_1,
-                                double ebv_0,
-                                double ebv_1,
-                                double p_00,
-                                double p_01,
-                                double p_10,
-                                double p_11,
-                                double z_p,
-                                double ebv_p) const;
-
-  std::pair<size_t, size_t> gteIndex(const Euclid::GridContainer::GridAxis<double>&  axis_values, double value);
-
   void handleSourceOutput(const SourceCatalog::Source& source,
                           const PhzDataModel::SourceResults& results) override;
 
@@ -51,15 +38,22 @@ private:
   size_t m_chunk_size;
 
   size_t                        m_current_file_id = 0;
+  bool                          m_current_file_has_comment = false;
   boost::filesystem::path       m_current_out_file;  // Filename of the output fits file
   std::shared_ptr<CCfits::FITS> m_current_fits_file;  // Pointer to the FITS file object
-  std::shared_ptr<Euclid::Table::ColumnInfo> m_ampling_column_info;
+  std::shared_ptr<Euclid::Table::ColumnInfo> m_sampling_column_info;
   size_t m_counter;   // Counting the number of sources
 
   boost::filesystem::path       m_index_file;   // Filename of the output fits file
   std::shared_ptr<CCfits::FITS> m_index_fits_file;  // Pointer to the FITS file object
   std::shared_ptr<Euclid::Table::ColumnInfo> m_index_column_info;
   std::vector<Table::Row> m_index_row_list {};
+  GridSampler<GridType> m_grid_sampler;
+
+  std::string getFileName(int file_id);
+  void createAndOpenSampleFile();
+  void closeSampleFile();
+
 };
 
 } // end of namespace PhzOutput

@@ -27,12 +27,12 @@
 #include <algorithm>
 
 #include "PhzDataModel/PhzModel.h"
-#include "PhzOutput/LikelihoodHandler.h"
+#include "PhzOutput/GridSampler.h"
 
 using namespace Euclid;
 using namespace Euclid::PhzOutput;
 
-struct LikelihoodHandler_fixture {
+struct GridSampler_fixture {
   std::map<size_t, double> region_prob_map =  {
           {0,0.2},
           {1,0.3},
@@ -44,14 +44,14 @@ struct LikelihoodHandler_fixture {
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (LikelihoodHandler_test)
+BOOST_AUTO_TEST_SUITE (GridSampler_trest)
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(test_getRegionForDraw, LikelihoodHandler_fixture) {
+BOOST_FIXTURE_TEST_CASE(test_getRegionForDraw, GridSampler_fixture) {
 
   // Given
-  LikelihoodHandler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID> handler({"Dummy/path/"}, false);
+  auto handler =Euclid::PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>{};
   
   // Then
   BOOST_CHECK_EQUAL(handler.getRegionForDraw(region_prob_map, 0.0), 0);
@@ -66,10 +66,10 @@ BOOST_FIXTURE_TEST_CASE(test_getRegionForDraw, LikelihoodHandler_fixture) {
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(test_interpolateProbability, LikelihoodHandler_fixture) {
+BOOST_FIXTURE_TEST_CASE(test_interpolateProbability, GridSampler_fixture) {
 
   // Given
-  LikelihoodHandler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID> handler({"Dummy/path/"}, false);
+  auto handler =Euclid::PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>{};
 
   // when
   double z_0 = 0.0;
@@ -93,10 +93,10 @@ BOOST_FIXTURE_TEST_CASE(test_interpolateProbability, LikelihoodHandler_fixture) 
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE(test_gteIndex, LikelihoodHandler_fixture) {
+BOOST_FIXTURE_TEST_CASE(test_gteIndex, GridSampler_fixture) {
 
   // Given
-  LikelihoodHandler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID> handler({"Dummy/path/"}, false);
+  auto handler =Euclid::PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>{};
 
   // when
   std::vector<double> axis_value{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0};

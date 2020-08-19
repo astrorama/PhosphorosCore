@@ -14,6 +14,7 @@
 #include "PhzDataModel/PhzModel.h"
 #include "boost/lexical_cast.hpp"
 
+
 namespace fs = boost::filesystem;
 
 namespace Euclid {
@@ -52,9 +53,11 @@ public:
 
 template<PhzDataModel::RegionResultType GridType>
 LikelihoodHandler<GridType>::LikelihoodHandler(boost::filesystem::path out_dir, bool do_sample, size_t sample_number, size_t chunk_size)
-          : m_out_dir{std::move(out_dir)}, m_do_sample{do_sample}, m_sample_number{sample_number}, m_chunk_size{chunk_size},m_counter (0) {
+          : m_out_dir{std::move(out_dir)}, m_do_sample{do_sample}, m_sample_number{sample_number}, m_chunk_size{chunk_size}, m_counter (0) ,    m_grid_sampler{sample_number}{
 
+      //loggerPhz.info()<<"Consctuctor call";
       Euclid::PhzUtils::checkCreateDirectoryOnly(m_out_dir.string());
+
 
       if (m_do_sample) {
         std::string file_name = "Index_File_" + FullGridOutputTraits<GridType>::filename() + ".fits";
@@ -65,16 +68,16 @@ LikelihoodHandler<GridType>::LikelihoodHandler(boost::filesystem::path out_dir, 
           Euclid::Table::ColumnInfo::info_type("OBJECT_ID", typeid(std::string)),
           Euclid::Table::ColumnInfo::info_type("FILE_NAME", typeid(std::string))
         }}};
-        std::string samp_file_name = "Sample_File_" + FullGridOutputTraits<GridType>::filename()+"_"+std::to_string(m_current_file_id)+".fits";
-        m_current_out_file = m_out_dir / samp_file_name;
-        m_current_fits_file = std::make_shared<CCfits::FITS>("!"+m_current_out_file.string(), CCfits::RWmode::Write);
-        m_ampling_column_info  = std::shared_ptr<Euclid::Table::ColumnInfo>{new Euclid::Table::ColumnInfo {{
+
+        createAndOpenSampleFile();
+
+        m_sampling_column_info  = std::shared_ptr<Euclid::Table::ColumnInfo>{new Euclid::Table::ColumnInfo {{
                 Euclid::Table::ColumnInfo::info_type("OBJECT_ID", typeid(std::string)),
-                Euclid::Table::ColumnInfo::info_type("GRID_REGION_INDEX", typeid(std::vector<int>)),
-                Euclid::Table::ColumnInfo::info_type("SED_INDEX", typeid(std::vector<int>)),
-                Euclid::Table::ColumnInfo::info_type("REDSHIFT", typeid(std::vector<float>)),
-                Euclid::Table::ColumnInfo::info_type("RED_CURVE_INDEX", typeid(std::vector<int>)),
-                Euclid::Table::ColumnInfo::info_type("EB_V", typeid(std::vector<float>))
+                Euclid::Table::ColumnInfo::info_type("GRID_REGION_INDEX", typeid(int)),
+                Euclid::Table::ColumnInfo::info_type("SED_INDEX", typeid(int)),
+                Euclid::Table::ColumnInfo::info_type("REDSHIFT", typeid(float)),
+                Euclid::Table::ColumnInfo::info_type("RED_CURVE_INDEX", typeid(int)),
+                Euclid::Table::ColumnInfo::info_type("EB_V", typeid(float))
            }}};
       }
 
@@ -93,222 +96,69 @@ LikelihoodHandler<GridType>::~LikelihoodHandler() {
 }
 
 template<PhzDataModel::RegionResultType GridType>
-size_t LikelihoodHandler<GridType>::getRegionForDraw(std::map<size_t, double>& region_volume, double region_draw) const {
-  size_t region_idx = 0;
-  double already_counted = region_volume.at(region_idx);
-  while (already_counted < region_draw) {
-    ++region_idx;
-    if(region_idx>=region_volume.size()) {
-      region_idx = region_volume.size() -1;
-      break;
-    } else {
-      already_counted += region_volume.at(region_idx);
-    }
-  }
-
-  return region_idx;
-
+std::string  LikelihoodHandler<GridType>::getFileName(int file_id) {
+  return "Sample_File_" + FullGridOutputTraits<GridType>::filename()+"_"+std::to_string(file_id)+".fits";
 }
 
 template<PhzDataModel::RegionResultType GridType>
-double LikelihoodHandler<GridType>::interpolateProbability(double z_0,
-                                                           double z_1,
-                                                           double ebv_0,
-                                                           double ebv_1,
-                                                           double p_00,
-                                                           double p_01,
-                                                           double p_10,
-                                                           double p_11,
-                                                           double z_p,
-                                                           double ebv_p) const {
-       // interpolation in z (if needed)
-       double prob_ebv1 = z_0!=z_1 ? p_00 + (z_p - z_0)*(p_10 - p_00)/(z_1 - z_0) : p_00;
-       double prob_ebv2 = z_0!=z_1 ? p_01 + (z_p - z_0)*(p_11 - p_01)/(z_1 - z_0) : p_01;
-
-       // interpolation in ebv (if needed)
-       double prob = ebv_0!=ebv_1 ? prob_ebv1 + (ebv_p - ebv_0)*(prob_ebv2 - prob_ebv1)/(ebv_1 - ebv_0) : prob_ebv1;
-       return prob;
+void LikelihoodHandler<GridType>::createAndOpenSampleFile() {
+    m_counter = 0;
+    m_current_file_has_comment=false;
+    ++m_current_file_id;
+    std::string samp_file_name = getFileName(m_current_file_id);
+    m_current_out_file = m_out_dir / samp_file_name;
+    m_current_fits_file = std::make_shared<CCfits::FITS>("!"+m_current_out_file.string(), CCfits::RWmode::Write);
+    loggerPhz.info() << "Creating new sample files ";
 }
 
 template<PhzDataModel::RegionResultType GridType>
-std::pair<size_t, size_t> LikelihoodHandler<GridType>::gteIndex(const Euclid::GridContainer::GridAxis<double>& axis_values, double value) {
-       size_t index_up = 0;
-       while (axis_values[index_up] < value) {
-         ++index_up;
-       }
-       size_t index_down = index_up!=0 ? index_up -1 : 0;
-
-       return std::make_pair(index_down, index_up);
+void LikelihoodHandler<GridType>::closeSampleFile() {
+    m_current_fits_file->destroy();
 }
-
-
 
 template<PhzDataModel::RegionResultType GridType>
 void LikelihoodHandler<GridType>::handleSourceOutput(
                                           const SourceCatalog::Source& source,
                                           const PhzDataModel::SourceResults& results) {
   std::string id = boost::lexical_cast<std::string>(source.getId());
+
   loggerPhz.info() << "Outputing the "<< FullGridOutputTraits<GridType>::filename() << " for souce with id "<< id;
+
+
   if (m_do_sample) {
     std::vector<Table::Row> samples_row_list {};
-    std::string samp_file_name = "Sample_File_" + FullGridOutputTraits<GridType>::filename()+"_"+std::to_string(m_current_file_id)+".fits";
 
-     if (m_counter >= m_chunk_size) {
-       // change file
-       m_counter = 0;
-       ++m_current_file_id;
-       m_current_fits_file->destroy();
-       samp_file_name = "Sample_File_" + FullGridOutputTraits<GridType>::filename() + "_" + std::to_string(m_current_file_id) + ".fits";
-       m_current_out_file = m_out_dir / samp_file_name;
-       m_current_fits_file = std::make_shared<CCfits::FITS>("!"+m_current_out_file.string(), CCfits::RWmode::Write);
-       loggerPhz.info() << "Creating new sample files ";
-     }
+    // 1) "Volume" of the different regions
+    std::map<size_t, std::string> region_index_map {};
+    std::map<size_t, double> region_volume{};
+    std::map<size_t, double> region_cell_volume{};
+    std::map<size_t,  std::vector<posterior_cell>> region_cells{};
+    size_t total_volume = 0;
+    size_t region_index = 0;
 
-     Table::FitsWriter sample_fits_writer {m_current_fits_file};
-
-     if (m_counter == 0) {
-       std::stringstream comment {};
-       comment << "MODEL-GRID : {";
-       size_t region_index = 0;
-       for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
-
-          //loggerPhz.info() << "Build comment for region  "<<pair.first;
-
-          comment << "\"" << pair.first << "\": {\"REGION_INDEX\":" << region_index <<",";
-          auto& grid = pair.second.get<GridType>();
-          auto& axis = grid.getAxesTuple();
-          size_t index=0;
-
-          auto& z_axis = std::get<0>(axis);
-                comment << "\"Z\":{";
-          for ( auto& knot_value : z_axis) {
-            comment << "\""<< index <<"\":\""<< knot_value << "\",";
-            ++index;
-          }
-          comment.seekp(-1, comment.cur);
-          comment << "}";
-
-          auto& ebv_axis = std::get<1>(axis);
-          comment << "\"EBV\":{";
-          index=0;
-          for ( auto& knot_value : ebv_axis) {
-            comment << "\""<< index <<"\":\""<< knot_value << "\",";
-            ++index;
-          }
-          comment.seekp(-1, comment.cur);
-          comment << "}";
-
-          auto& red_axis = std::get<2>(axis);
-          comment << "\"REDDENING_CURVE\":{";
-          index=0;
-          for ( auto& knot_value : red_axis) {
-            comment << "\""<< index <<"\":\""<< knot_value << "\",";
-            ++index;
-          }
-          comment.seekp(-1, comment.cur);
-          comment << "}";
-
-          auto& sed_axis =  std::get<3>(axis);
-          comment << "\"SED\":{";
-          index=0;
-          for ( auto& knot_value : sed_axis) {
-            comment << "\""<< index <<"\":\""<< knot_value << "\",";
-            ++index;
-          }
-          comment.seekp(-1, comment.cur);
-          comment << "}";
-          comment << "}";
-          ++region_index;
-       }
-       comment << "}";
-      sample_fits_writer.addComment(comment.str());
-
-      loggerPhz.info() << "Add comment to the sample file ";
-    }
-
-
-     // 1) "Volume" of the different regions
-     std::map<size_t, double> region_volume{};
-     size_t total_volume = 0;
-     size_t region_index = 0;
-     std::map<size_t, std::string> region_index_map {};
-     double max_value = 0;
-
-     for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
+    for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
+       // get the sub-grid
         auto& grid = pair.second.get<GridType>();
         auto& axis = grid.getAxesTuple();
-
         auto& z_axis = std::get<0>(axis);
-        std::vector<double> z_knots {};
-        z_knots.push_back((*z_axis.begin())/2.0);
-
-        for (auto& knot_value : z_axis) {
-          z_knots.push_back(knot_value/2.0);
-        }
-
-        z_knots.push_back(*(--z_axis.end())/2.0);
-
-        std::vector<double> z_weight {};
-        auto iter_p = z_knots.begin();
-        ++iter_p;
-        ++iter_p;
-        auto iter_m = z_knots.begin();
-        while (iter_p!=z_knots.end()){
-          z_weight.push_back(*iter_p - *iter_m);
-          ++iter_p;
-          ++iter_m;
-        }
-
         auto& ebv_axis = std::get<1>(axis);
-        std::vector<double> ebv_knots {};
-        ebv_knots.push_back(*(ebv_axis.begin())/2.0);
 
-        for (auto& knot_value : ebv_axis) {
-          ebv_knots.push_back(knot_value/2.0);
-        }
-
-        ebv_knots.push_back(*(--ebv_axis.end())/2.0);
-
-        std::vector<double> ebv_weight {};
-        auto ebv_iter_p = ebv_knots.begin();
-        ++ebv_iter_p;
-        ++ebv_iter_p;
-        auto ebv_iter_m = ebv_knots.begin();
-        while (ebv_iter_p!=ebv_knots.end()){
-          ebv_weight.push_back(*ebv_iter_p - *ebv_iter_m);
-          ++ebv_iter_p;
-          ++ebv_iter_m;
-        }
-
-        double region_prob = 0;
-        for (size_t sed_index = 0; sed_index<std::get<3>(axis).size(); ++sed_index){
-          for (size_t red_index = 0; red_index<std::get<2>(axis).size(); ++red_index){
-            for (size_t ebv_index = 0; ebv_index<ebv_weight.size(); ++ebv_index){
-              for (size_t z_index = 0; z_index<z_weight.size(); ++z_index){
-                 region_prob += exp(grid.at(z_index,ebv_index,red_index,sed_index))*z_weight[z_index]*ebv_weight[ebv_index];
-
-               }
-             }
-           }
-         }
-
-
-
-        double  region_max_value = exp(*(pair.second.get<FullGridOutputTraits<GridType>::bestModelIterator>()));
-
-        if (max_value < region_max_value) {
-          max_value = region_max_value;
-        }
-
-
+        double region_prob = m_grid_sampler.computeRegionOverallProbability(pair.second);
         region_volume[region_index] = region_prob;
         total_volume += region_prob;
         region_index_map[region_index]=pair.first;
-        loggerPhz.info() << "Region " << pair.first << " Max prob= " << region_max_value << " region_prob="<< region_prob;
+
+        //// List the cell in the region
+        auto region_cell_pair = m_grid_sampler.computeEnclsingVolumeOfCells(pair.second);
+        region_cell_volume[region_index] = region_cell_pair.first;
+        region_cells[region_index] = region_cell_pair.second;
+
+       // loggerPhz.info() << "Region " << pair.first << " region_prob="<< region_prob << " region_volume="<< total_cell_vol;
+
         ++region_index;
-        //loggerPhz.info() << "volume of the Region " << pair.first << " :"<<vol;
      }
-     //loggerPhz.info() << "Total volume = " << total_volume << " Max prob value = " << max_value;
+
+    // loggerPhz.info() << "Total volume = " << total_volume;
 
      std::vector<int> grid_region_index{};
      std::vector<int> sed_index{};
@@ -319,54 +169,36 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
      std::random_device rd;  //Will be used to obtain a seed for the random number engine
      std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
      std::uniform_real_distribution<> distrib_region(0, total_volume);
-     std::uniform_real_distribution<> distrib_prob(0, max_value);
 
-     loggerPhz.info() << "Max Probability  " << max_value;
 
      while (grid_region_index.size() < m_sample_number) {
-       //loggerPhz.info() << "Sampling  " << grid_region_index.size();
+       // Select a region
        double region_draw =  distrib_region(gen);
-
-       size_t region_idx = getRegionForDraw(region_volume,region_draw);
+       size_t region_idx = m_grid_sampler.getRegionForDraw(region_volume, region_draw);
 
        auto& result_map = results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>();
        auto& grid = result_map.at(region_index_map.at(region_idx)).get<GridType>();
        auto& axis = grid.getAxesTuple();
-
-       std::uniform_int_distribution<> distrib_red(0, std::get<2>(axis).size()-1);
-       std::uniform_int_distribution<> distrib_sed(0, std::get<3>(axis).size()-1);
        auto& z_axis = std::get<0>(axis);
        auto& ebv_axis = std::get<1>(axis);
-       std::uniform_real_distribution<> distrib_z(z_axis[0], z_axis[z_axis.size()-1]);
-       std::uniform_real_distribution<> distrib_ebv(ebv_axis[0], ebv_axis[ebv_axis.size()-1]);
 
-       float z_val = distrib_z(gen);
-       float ebv_val = distrib_ebv(gen);
-       int red_idx = distrib_red(gen);
-       int sed_idx = distrib_sed(gen);
-
-       // get the indexes for the bilinear interpolation: those are the indexes of the knot after the value
-       auto z_pair = gteIndex(z_axis, z_val);
-       auto ebv_pair = gteIndex(ebv_axis, ebv_val);
-
-       double p_00 = exp(grid.at(z_pair.first, ebv_pair.first, red_idx, sed_idx));
-       double p_01 = exp(grid.at(z_pair.first, ebv_pair.second, red_idx, sed_idx));
-       double p_10 = exp(grid.at(z_pair.second, ebv_pair.first, red_idx, sed_idx));
-       double p_11 = exp(grid.at(z_pair.second, ebv_pair.second, red_idx, sed_idx));
-
-       if (p_00+p_01+p_10+p_11 > 0) {
-         //get the for points
-         float z_0 = z_axis[z_pair.first];
-         float z_1 = z_axis[z_pair.second];
-         float ebv_0 = ebv_axis[ebv_pair.first];
-         float ebv_1 = ebv_axis[ebv_pair.second];
-
-         double prob = interpolateProbability(z_0, z_1, ebv_0, ebv_1,
-                                              p_00, p_01, p_10, p_11,
-                                              z_val, ebv_val);
+       // select a cell in the region
+       std::uniform_real_distribution<> distrib_cell(0, region_cell_volume[region_idx]);
+       double cell_draw = distrib_cell(gen);
+       size_t cell_index = m_grid_sampler.getCellForDraw(region_cells[region_idx], cell_draw);
 
 
-         double draw = distrib_prob(gen);
+       // draw a point in the cell
+       auto& cell = region_cells[region_idx][cell_index];
+       size_t sed_idx = cell.sed_index;
+       size_t red_idx = cell.red_curve_index;
+       auto point_in_cell = m_grid_sampler.drawPointInCell(cell, result_map.at(region_index_map.at(region_idx)), gen);
+       float z_val = point_in_cell.first.first;
+       float ebv_val = point_in_cell.first.second;
+       double prob = point_in_cell.second;
+
+       std::uniform_int_distribution<> distrib_prob(0, cell.max_value);
+       double draw = distrib_prob(gen);
          //loggerPhz.info() << "region_idx  " << region_idx << " draw  " << draw << " prob  " << prob;
          if (draw<=prob) {
            //loggerPhz.info() << "Sampling  in region:" << region_idx << " z " << z_val<< " ebv " << ebv_val<< " red " << red_idx<< " sed " << sed_idx << " Sampling prob:" << prob << " draw " << draw << " current_accepted_number " << grid_region_index.size();
@@ -377,16 +209,36 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
            red_index.push_back(red_idx);
            ebv_value.push_back(ebv_val);
          }
-       }
      }
-     //loggerPhz.info() << "Add data to the sampling file ";
+
+     loggerPhz.info() << "Add data to the sampling file ";
      std::vector<Table::Row> sampling_row_list {};
-     sampling_row_list.push_back(Table::Row{{id, grid_region_index, sed_index, z_value, red_index, ebv_value}, m_ampling_column_info});
+     for (size_t sample_idx = 0; sample_idx < grid_region_index.size(); ++sample_idx) {
+      // loggerPhz.info() << "Adding sample number "<<sample_idx;
+       sampling_row_list.push_back(Table::Row{{id, grid_region_index[sample_idx], sed_index[sample_idx], z_value[sample_idx], red_index[sample_idx], ebv_value[sample_idx]}, m_sampling_column_info});
+     }
+
+    if (m_counter >= m_chunk_size) {
+      createAndOpenSampleFile();
+    }
+
+    Table::FitsWriter sample_fits_writer {m_current_fits_file};
+
+    if (!m_current_file_has_comment) {
+      m_current_file_has_comment = true;
+      auto comment = m_grid_sampler.createComment(results);
+      sample_fits_writer.addComment(comment.str());
+      loggerPhz.info() << "Add comment to the sample file ";
+    }
+
      sample_fits_writer.addData(Table::Table{sampling_row_list});
+
      //loggerPhz.info() << "Add info to index file ";
+     std::string samp_file_name = getFileName(m_current_file_id);
      m_index_row_list.push_back({{id, samp_file_name }, m_index_column_info});
 
      ++m_counter;
+
 
   } else {
     // Output full grid in a separate file
