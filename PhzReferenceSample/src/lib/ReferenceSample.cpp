@@ -98,13 +98,15 @@ void ReferenceSample::addSedData(int64_t id, const XYDataset::XYDataset &data) {
     throw Elements::Exception() << "SED for ID " << id << " is already set";
   }
 
+  size_t data_size = data.size() * 2 * sizeof(double);
+
   auto current_prov = m_sed_prov_for_size.find(data.size());
   if (current_prov == m_sed_prov_for_size.end()) {
     createNewSedProvider();
     current_prov = m_sed_prov_for_size.emplace(
       std::make_pair(data.size(), m_sed_providers.size() - 1)).first;
   }
-  else if (m_sed_providers[current_prov->second]->size() >= m_max_file_size) {
+  else if (m_sed_providers[current_prov->second]->size() + data_size >= m_max_file_size) {
     createNewSedProvider();
     current_prov->second = m_sed_providers.size() - 1;
   }
@@ -152,8 +154,9 @@ void ReferenceSample::addPdzData(int64_t id, const XYDataset::XYDataset &data) {
   }
 
   auto normalized = XYDataset::XYDataset::factory(x_axis, y_axis);
+  size_t data_size = normalized.size() * 2 * sizeof(double);
 
-  if (m_pdz_providers.back()->size() >= m_max_file_size) {
+  if (m_pdz_providers.back()->size() + data_size >= m_max_file_size) {
     uint16_t new_pdz_file = m_pdz_providers.size() + 1;
     auto pdz_filename = boost::str(boost::format(PDZ_DATA_NAME_PATTERN) % new_pdz_file);
     auto pdz_path = m_root_path / pdz_filename;
