@@ -149,7 +149,7 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
         region_index_map[region_index]=pair.first;
 
         //// List the cell in the region
-        auto region_cell_pair = m_grid_sampler.computeEnclsingVolumeOfCells(pair.second);
+        auto region_cell_pair = m_grid_sampler.computeEnclosingVolumeOfCells(pair.second);
         region_cell_volume[region_index] = region_cell_pair.first;
         region_cells[region_index] = region_cell_pair.second;
 

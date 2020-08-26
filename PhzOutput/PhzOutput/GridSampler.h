@@ -67,7 +67,7 @@ public:
  double computeRegionOverallProbability(const PhzDataModel::RegionResults& results) const;
 
 
- std::pair<double, std::vector<posterior_cell>> computeEnclsingVolumeOfCells(const PhzDataModel::RegionResults& results) const;
+ std::pair<double, std::vector<posterior_cell>> computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const;
 
  std::pair<std::pair<double,double>, double> drawPointInCell(const posterior_cell& cell, const PhzDataModel::RegionResults& results,  std::mt19937& gen) const;
 
