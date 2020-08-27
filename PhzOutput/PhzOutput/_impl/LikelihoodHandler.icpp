@@ -122,7 +122,7 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
                                           const PhzDataModel::SourceResults& results) {
   std::string id = boost::lexical_cast<std::string>(source.getId());
 
-  loggerPhz.info() << "Outputing the "<< FullGridOutputTraits<GridType>::filename() << " for souce with id "<< id;
+  loggerPhz.debug() << "Outputing the "<< FullGridOutputTraits<GridType>::filename() << " for souce with id "<< id;
 
 
   if (m_do_sample) {
@@ -211,7 +211,7 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
          }
      }
 
-     loggerPhz.info() << "Add data to the sampling file ";
+     loggerPhz.debug() << "Add data to the sampling file ";
      std::vector<Table::Row> sampling_row_list {};
      for (size_t sample_idx = 0; sample_idx < grid_region_index.size(); ++sample_idx) {
       // loggerPhz.info() << "Adding sample number "<<sample_idx;
