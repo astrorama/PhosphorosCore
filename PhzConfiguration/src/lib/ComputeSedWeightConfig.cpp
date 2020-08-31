@@ -32,6 +32,8 @@
 #include <boost/filesystem/operations.hpp>
 #include "PhzConfiguration/SedProviderConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
+
 
 
 namespace po = boost::program_options;
@@ -45,7 +47,7 @@ static const std::string SED_WEIGHT_OUTPUT {"SED-Weight-Output"};
 
 ComputeSedWeightConfig::ComputeSedWeightConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<AuxDataDirConfig>();
-  declareDependency<SedConfig>();
+  declareDependency<PhotometryGridConfig>();
   declareDependency<SedProviderConfig>();
   declareDependency<FilterConfig>();
   declareDependency<FilterProviderConfig>();
@@ -57,7 +59,7 @@ auto ComputeSedWeightConfig::getProgramOptions() -> std::map<std::string, Option
   return {{"Compute SED Weight options", {
 
     {SED_WEIGHT_OUTPUT.c_str(), po::value<std::string>()->default_value("SedWeight.ascii"),
-          "Path of the file into which output the SED weights. Relative path are relative to <AuxDataDir>/AxisPriors/sed/"}
+          "Path of the file into which output the SED weights. Relative path are relative to <AuxDataDir>/AxisPriors/GenericPriors/SedWeight/"}
 
   }}};
 }
@@ -85,6 +87,7 @@ const std::string& ComputeSedWeightConfig::getOutputFile() const {
    }
   return m_output_file;
 }
+
 
 } // PhzConfiguration namespace
 } // Euclid namespace
