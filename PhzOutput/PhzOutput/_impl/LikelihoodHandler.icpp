@@ -89,7 +89,7 @@ LikelihoodHandler<GridType>::~LikelihoodHandler() {
     Table::FitsWriter index_fits_writer {m_index_fits_file};
     index_fits_writer.addData(Table::Table{m_index_row_list});
     m_index_fits_file->destroy();
-    m_current_fits_file->destroy();
+    closeSampleFile();
     auto loggerEnd = Elements::Logging::getLogger("LikelihoodHandler");
     loggerEnd.info() << "Created " << FullGridOutputTraits<GridType>::filename() << " index file " << m_index_file.string();
   }
@@ -108,6 +108,7 @@ void LikelihoodHandler<GridType>::createAndOpenSampleFile() {
     std::string samp_file_name = getFileName(m_current_file_id);
     m_current_out_file = m_out_dir / samp_file_name;
     m_current_fits_file = std::make_shared<CCfits::FITS>("!"+m_current_out_file.string(), CCfits::RWmode::Write);
+    m_sample_fits_writer = std::make_shared<Table::FitsWriter>(m_current_fits_file);
     loggerPhz.info() << "Creating new sample files ";
 }
 
@@ -261,19 +262,18 @@ void LikelihoodHandler<GridType>::handleSourceOutput(
                                                           region_cells,
                                                           region_index_map);
     if (m_counter >= m_chunk_size) {
+      closeSampleFile();
       createAndOpenSampleFile();
     }
-
-    Table::FitsWriter sample_fits_writer {m_current_fits_file};
 
     if (!m_current_file_has_comment) {
       m_current_file_has_comment = true;
       auto comment = m_grid_sampler.createComment(results);
-      sample_fits_writer.addComment(comment.str());
+      m_sample_fits_writer->addComment(comment.str());
       loggerPhz.info() << "Add comment to the sample file ";
     }
 
-     sample_fits_writer.addData(Table::Table{sampling_row_list});
+    m_sample_fits_writer->addData(Table::Table{sampling_row_list});
 
      //loggerPhz.info() << "Add info to index file ";
      std::string samp_file_name = getFileName(m_current_file_id);

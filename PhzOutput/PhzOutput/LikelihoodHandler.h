@@ -41,6 +41,7 @@ private:
   bool                          m_current_file_has_comment = false;
   boost::filesystem::path       m_current_out_file;  // Filename of the output fits file
   std::shared_ptr<CCfits::FITS> m_current_fits_file;  // Pointer to the FITS file object
+  std::shared_ptr<Table::FitsWriter>             m_sample_fits_writer; // table writer around the fits file objects
   std::shared_ptr<Euclid::Table::ColumnInfo> m_sampling_column_info;
   size_t m_counter;   // Counting the number of sources
 
