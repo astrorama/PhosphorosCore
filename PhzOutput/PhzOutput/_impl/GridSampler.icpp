@@ -103,7 +103,7 @@ std::pair<size_t, size_t> GridSampler<GridType>::gteIndex(const Euclid::GridCont
 
 
 template<PhzDataModel::RegionResultType GridType>
-size_t GridSampler<GridType>::getRegionForDraw(std::map<size_t, double>& region_volume, double region_draw) const {
+size_t GridSampler<GridType>::getRegionForDraw(const std::map<size_t, double>& region_volume, double region_draw) const {
   size_t region_idx = 0;
   double already_counted = region_volume.at(region_idx);
   while (already_counted < region_draw) {
@@ -121,7 +121,7 @@ size_t GridSampler<GridType>::getRegionForDraw(std::map<size_t, double>& region_
 }
 
 template<PhzDataModel::RegionResultType GridType>
-size_t GridSampler<GridType>::getCellForDraw(std::vector<posterior_cell>& cells, double cell_draw) const {
+size_t GridSampler<GridType>::getCellForDraw(const std::vector<posterior_cell>& cells, double cell_draw) const {
   double current_vol = 0.;
   size_t cell_index = cells.size()-1;
   for (size_t cell_idx = 0; cell_idx < cells.size(); ++cell_idx) {

@@ -156,7 +156,7 @@ public:
  * @return
  * the index of the selected region
  **/
- size_t getRegionForDraw(std::map<size_t, double>& region_volume, double region_draw) const;
+ size_t getRegionForDraw(const std::map<size_t, double>& region_volume, double region_draw) const;
 
 /**
  * @brief
@@ -172,7 +172,7 @@ public:
  * @return
  * The index of the selected cell
  **/
- size_t  getCellForDraw(std::vector<posterior_cell>& cells, double cell_draw) const;
+ size_t  getCellForDraw(const std::vector<posterior_cell>& cells, double cell_draw) const;
 
  /**
   * @brief
