@@ -39,8 +39,6 @@ namespace ReferenceSample {
  * @class ReferenceSample
  * @brief
  *  Implementation of the NNPZ binary format for its reference sample
- * @see
- *  https://github.com/nikoapos/NNPZ/blob/master/doc/reference_sample_format.md
  */
 class ReferenceSample {
 
@@ -132,7 +130,7 @@ public:
 private:
   boost::filesystem::path m_root_path;
   size_t m_max_file_size;
-  IndexProvider m_pdz_index, m_sed_index;
+  IndexProvider m_index;
   std::map<size_t, size_t> m_sed_prov_for_size;
   std::vector<std::unique_ptr<SedDataProvider>> m_sed_providers;
   std::vector<std::unique_ptr<PdzDataProvider>> m_pdz_providers;
