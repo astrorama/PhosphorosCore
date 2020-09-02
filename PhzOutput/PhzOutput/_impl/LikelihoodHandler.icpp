@@ -5,18 +5,38 @@
  */
 
 #include <vector>
+#include <random>
 #include <CCfits/CCfits>
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "GridContainer/serialize.h"
 #include "PhzUtils/FileUtils.h"
+#include "PhzDataModel/PhzModel.h"
+#include "boost/lexical_cast.hpp"
+
 
 namespace fs = boost::filesystem;
 
 namespace Euclid {
 namespace PhzOutput {
 
-static Elements::Logging logger = Elements::Logging::getLogger("PhzOutput");
+template <PhzDataModel::RegionResultType GridType>
+struct FullGridOutputTraits;
+
+template <>
+struct FullGridOutputTraits<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID> {
+  static std::string filename() {return "likelihood";}
+  static constexpr auto bestModelIterator = PhzDataModel::RegionResultType::BEST_LIKELIHOOD_MODEL_ITERATOR;
+};
+
+template <>
+struct FullGridOutputTraits<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID> {
+  static std::string filename() {return "posterior";}
+  static constexpr auto bestModelIterator = PhzDataModel::RegionResultType::BEST_MODEL_ITERATOR;
+};
+
+
+static Elements::Logging loggerPhz = Elements::Logging::getLogger("PhzOutput");
 
 struct HduIdVisitor: public boost::static_visitor<void> {
 private:
@@ -32,34 +52,239 @@ public:
 };
 
 template<PhzDataModel::RegionResultType GridType>
-LikelihoodHandler<GridType>::LikelihoodHandler(boost::filesystem::path out_dir)
-          : m_out_dir{std::move(out_dir)} {
+LikelihoodHandler<GridType>::LikelihoodHandler(boost::filesystem::path out_dir, bool do_sample, size_t sample_number, size_t chunk_size)
+          : m_out_dir{std::move(out_dir)}, m_do_sample{do_sample}, m_sample_number{sample_number}, m_chunk_size{chunk_size}, m_counter (0) ,    m_grid_sampler{sample_number}{
 
-  // Check directory and write permissions
-  Euclid::PhzUtils::checkCreateDirectoryOnly(m_out_dir.string());
+      //loggerPhz.info()<<"Consctuctor call";
+      Euclid::PhzUtils::checkCreateDirectoryOnly(m_out_dir.string());
+
+
+      if (m_do_sample) {
+        std::string file_name = "Index_File_" + FullGridOutputTraits<GridType>::filename() + ".fits";
+        m_index_file = m_out_dir / file_name;
+        m_index_fits_file = std::make_shared<CCfits::FITS>("!"+m_index_file.string(), CCfits::RWmode::Write);
+        // Create the columnInfo object
+        m_index_column_info  = std::shared_ptr<Euclid::Table::ColumnInfo>{new Euclid::Table::ColumnInfo {{
+          Euclid::Table::ColumnInfo::info_type("OBJECT_ID", typeid(std::string)),
+          Euclid::Table::ColumnInfo::info_type("FILE_NAME", typeid(std::string))
+        }}};
+
+        createAndOpenSampleFile();
+
+        m_sampling_column_info  = std::shared_ptr<Euclid::Table::ColumnInfo>{new Euclid::Table::ColumnInfo {{
+                Euclid::Table::ColumnInfo::info_type("OBJECT_ID", typeid(std::string)),
+                Euclid::Table::ColumnInfo::info_type("GRID_REGION_INDEX", typeid(int)),
+                Euclid::Table::ColumnInfo::info_type("SED_INDEX", typeid(int)),
+                Euclid::Table::ColumnInfo::info_type("REDSHIFT", typeid(float)),
+                Euclid::Table::ColumnInfo::info_type("RED_CURVE_INDEX", typeid(int)),
+                Euclid::Table::ColumnInfo::info_type("EB_V", typeid(float))
+           }}};
+      }
 
 }
+
+template <PhzDataModel::RegionResultType GridType>
+LikelihoodHandler<GridType>::~LikelihoodHandler() {
+  if (m_do_sample) {
+    Table::FitsWriter index_fits_writer {m_index_fits_file};
+    index_fits_writer.addData(Table::Table{m_index_row_list});
+    m_index_fits_file->destroy();
+    closeSampleFile();
+    auto loggerEnd = Elements::Logging::getLogger("LikelihoodHandler");
+    loggerEnd.info() << "Created " << FullGridOutputTraits<GridType>::filename() << " index file " << m_index_file.string();
+  }
+}
+
+template<PhzDataModel::RegionResultType GridType>
+std::string  LikelihoodHandler<GridType>::getFileName(int file_id) {
+  return "Sample_File_" + FullGridOutputTraits<GridType>::filename()+"_"+std::to_string(file_id)+".fits";
+}
+
+template<PhzDataModel::RegionResultType GridType>
+void LikelihoodHandler<GridType>::createAndOpenSampleFile() {
+    m_counter = 0;
+    m_current_file_has_comment=false;
+    ++m_current_file_id;
+    std::string samp_file_name = getFileName(m_current_file_id);
+    m_current_out_file = m_out_dir / samp_file_name;
+    m_current_fits_file = std::make_shared<CCfits::FITS>("!"+m_current_out_file.string(), CCfits::RWmode::Write);
+    m_sample_fits_writer = std::make_shared<Table::FitsWriter>(m_current_fits_file);
+    loggerPhz.info() << "Creating new sample files ";
+}
+
+template<PhzDataModel::RegionResultType GridType>
+void LikelihoodHandler<GridType>::closeSampleFile() {
+    m_current_fits_file->destroy();
+}
+
+
+
+template<PhzDataModel::RegionResultType GridType>
+void LikelihoodHandler<GridType>::exportFullGrid(const SourceCatalog::Source& source,
+    const PhzDataModel::SourceResults& results) {
+      // Output full grid in a separate file
+      std::string id = boost::lexical_cast<std::string>(source.getId());
+      std::string filename = (m_out_dir/(id+".fits")).string();
+      fs::remove(filename);
+
+      for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
+        auto& grid = pair.second.get<GridType>();
+        GridContainer::gridFitsExport(filename, pair.first, grid);
+        CCfits::FITS fits (filename, CCfits::Write);
+        auto& array_hdu = fits.extension(fits.extension().size() - grid.axisNumber());
+
+        HduIdVisitor visitor{array_hdu};
+        auto source_id = source.getId();
+        boost::apply_visitor(visitor, source_id);
+      }
+
+      loggerPhz.debug() << "Created file " << filename << " for source " << id;
+}
+
+
+
+
+template<PhzDataModel::RegionResultType GridType>
+std::vector<Table::Row> LikelihoodHandler<GridType>::drawSample(
+          std::string source_id,
+          double total_volume,
+          const std::map<size_t, double>& region_volume,
+          const std::map<std::string, PhzDataModel::RegionResults>& result_map,
+          const std::map<size_t, double>& region_cell_volume,
+          const std::map<size_t,  std::vector<posterior_cell>>& region_cells,
+          const std::map<size_t, std::string>& region_index_map ) {
+
+  std::vector<int> grid_region_index{};
+  std::vector<int> sed_index{};
+  std::vector<int> red_index{};
+  std::vector<float> z_value{};
+  std::vector<float> ebv_value{};
+
+  std::random_device rd;  //Will be used to obtain a seed for the random number engine
+  std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+  std::uniform_real_distribution<> distrib_region(0, total_volume);
+
+
+  while (grid_region_index.size() < m_sample_number) {
+    // Select a region
+    double region_draw =  distrib_region(gen);
+    size_t region_idx = m_grid_sampler.getRegionForDraw(region_volume, region_draw);
+
+
+    // select a cell in the region
+    std::uniform_real_distribution<> distrib_cell(0, region_cell_volume.at(region_idx));
+    double cell_draw = distrib_cell(gen);
+    size_t cell_index = m_grid_sampler.getCellForDraw(region_cells.at(region_idx), cell_draw);
+
+
+    // draw a point in the cell
+    auto& cell = region_cells.at(region_idx)[cell_index];
+    size_t sed_idx = cell.sed_index;
+    size_t red_idx = cell.red_curve_index;
+    auto point_in_cell = m_grid_sampler.drawPointInCell(cell, result_map.at(region_index_map.at(region_idx)), gen);
+    float z_val = point_in_cell.first.first;
+    float ebv_val = point_in_cell.first.second;
+    double prob = point_in_cell.second;
+
+    std::uniform_int_distribution<> distrib_prob(0, cell.max_value);
+    double draw = distrib_prob(gen);
+
+      if (draw<=prob) {
+
+        grid_region_index.push_back(region_idx);
+        sed_index.push_back(sed_idx);
+        z_value.push_back(z_val);
+        red_index.push_back(red_idx);
+        ebv_value.push_back(ebv_val);
+      }
+  }
+
+  loggerPhz.debug() << "Add data to the sampling file ";
+  std::vector<Table::Row> sampling_row_list {};
+  for (size_t sample_idx = 0; sample_idx < grid_region_index.size(); ++sample_idx) {
+
+    sampling_row_list.push_back(Table::Row{{source_id,
+                                            grid_region_index[sample_idx],
+                                            sed_index[sample_idx],
+                                            z_value[sample_idx],
+                                            red_index[sample_idx],
+                                            ebv_value[sample_idx]},
+                                 m_sampling_column_info});
+  }
+
+  return sampling_row_list;
+}
+
 
 template<PhzDataModel::RegionResultType GridType>
 void LikelihoodHandler<GridType>::handleSourceOutput(
                                           const SourceCatalog::Source& source,
                                           const PhzDataModel::SourceResults& results) {
   std::string id = boost::lexical_cast<std::string>(source.getId());
-  std::string filename = (m_out_dir/(id+".fits")).string();
-  fs::remove(filename);
-  
-  for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
-    auto& grid = pair.second.get<GridType>();
-    GridContainer::gridFitsExport(filename, pair.first, grid);
-    CCfits::FITS fits (filename, CCfits::Write);
-    auto& array_hdu = fits.extension(fits.extension().size() - grid.axisNumber());
+  loggerPhz.debug() << "Outputing the "<< FullGridOutputTraits<GridType>::filename() << " for souce with id "<< id;
 
-    HduIdVisitor visitor{array_hdu};
-    auto source_id = source.getId();
-    boost::apply_visitor(visitor, source_id);
+  if (m_do_sample) {
+    std::vector<Table::Row> samples_row_list {};
+
+    // 1) "Volume" of the different regions
+    std::map<size_t, std::string> region_index_map {};
+    std::map<size_t, double> region_volume{};
+    std::map<size_t, double> region_cell_volume{};
+    std::map<size_t,  std::vector<posterior_cell>> region_cells{};
+    size_t total_volume = 0;
+    size_t region_index = 0;
+
+    for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
+       // get the sub-grid
+        /*auto& grid = pair.second.get<GridType>();
+        auto& axis = grid.getAxesTuple();
+        auto& z_axis = std::get<0>(axis);
+        auto& ebv_axis = std::get<1>(axis);*/
+
+        double region_prob = m_grid_sampler.computeRegionOverallProbability(pair.second);
+        region_volume[region_index] = region_prob;
+        total_volume += region_prob;
+        region_index_map[region_index]=pair.first;
+
+        //// List the cell in the region
+        auto region_cell_pair = m_grid_sampler.computeEnclosingVolumeOfCells(pair.second);
+        region_cell_volume[region_index] = region_cell_pair.first;
+        region_cells[region_index] = region_cell_pair.second;
+
+        ++region_index;
+     }
+
+    std::vector<Table::Row> sampling_row_list = drawSample(id,
+                                                          total_volume,
+                                                          region_volume,
+                                                          results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>(),
+                                                          region_cell_volume,
+                                                          region_cells,
+                                                          region_index_map);
+    if (m_counter >= m_chunk_size) {
+      closeSampleFile();
+      createAndOpenSampleFile();
+    }
+
+    if (!m_current_file_has_comment) {
+      m_current_file_has_comment = true;
+      auto comment = m_grid_sampler.createComment(results);
+      m_sample_fits_writer->addComment(comment.str());
+      loggerPhz.info() << "Add comment to the sample file ";
+    }
+
+    m_sample_fits_writer->addData(Table::Table{sampling_row_list});
+
+     //loggerPhz.info() << "Add info to index file ";
+     std::string samp_file_name = getFileName(m_current_file_id);
+
+     m_index_row_list.push_back({{id, samp_file_name }, m_index_column_info});
+
+     ++m_counter;
+
+  } else {
+    exportFullGrid(source, results);
   }
-  
-  logger.debug() << "Created file " << filename << " for source " << id;
 }
 
 } // end of namespace PhzOutput
