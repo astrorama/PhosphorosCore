@@ -350,41 +350,55 @@ std::vector<double> ComputeSedWeight::getWeights(std::vector<std::vector<double>
    return weight;
 }
 
+// To be tested
+std::string  ComputeSedWeight::getCellKey(double z_value, double ebv_value, XYDataset::QualifiedName curve_value) {
+  return std::to_string(z_value) +"_"+std::to_string(e_value) +"_"+ curve_value.qualifiedName();
+}
+
+std::pair<std::map<std::string, std::set<XYDataset::QualifiedName>>, long> ComputeSedWeight::getSedCollection(const PhzDataModel::PhotometryGridInfo& grid_info) {
+  // Get all the SED sets
+   std::map<std::string, std::set<XYDataset::QualifiedName>> cells_sed_collection{};
+
+   // iter over the regions
+   double total = 0;
+   for (auto region_iter = grid_info.region_axes_map.begin(); region_iter != grid_info.region_axes_map.end(); ++region_iter) {
+     // iter over the axis
+     auto& z_axis = std::get<0>((*region_iter).second);
+     auto& E_axis = std::get<1>((*region_iter).second);
+     auto& curve_axis = std::get<2>((*region_iter).second);
+     auto& sed_axis = std::get<3>((*region_iter).second);
+     for (auto& z_value : z_axis) {
+       for (auto& e_value : E_axis) {
+         for (auto& curve_value : curve_axis) {
+
+           std::string key =  getCellKey(z_value, e_value, curve_value);
+
+           // Add the key in the map if needed
+           if ( cells_sed_collection.find(key) == cells_sed_collection.end() ) {
+             cells_sed_collection.insert(std::make_pair(key, std::set<XYDataset::QualifiedName>{}));
+           }
+
+           for (auto& sed_value : sed_axis) {
+             cells_sed_collection[key].insert(sed_value);
+           }
+
+           ++total;
+         }
+       }
+     }
+   }
+
+   return std::make_pair(std::move(cells_sed_collection), total);
+}
+
 void ComputeSedWeight::run(ConfigManager& config_manager) {
 
   auto& grid_info = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGridInfo();
 
+  auto collection_pair = getSedCollection(grid_info);
   // Get all the SED sets
-  std::map<std::string, std::set<XYDataset::QualifiedName>> cells_sed_collection{};
-
-  // iter over the regions
-  double total = 0;
-  for (auto region_iter = grid_info.region_axes_map.begin(); region_iter != grid_info.region_axes_map.end(); ++region_iter) {
-    // iter over the axis
-    auto& z_axis = std::get<0>((*region_iter).second);
-    auto& E_axis = std::get<1>((*region_iter).second);
-    auto& curve_axis = std::get<2>((*region_iter).second);
-    auto& sed_axis = std::get<3>((*region_iter).second);
-    for (auto& z_value : z_axis) {
-      for (auto& e_value : E_axis) {
-        for (auto& curve_value : curve_axis) {
-
-          std::string key =  std::to_string(z_value) +"_"+std::to_string(e_value) +"_"+ curve_value.qualifiedName();
-
-          // Add the key in the map if needed
-          if ( cells_sed_collection.find(key) == cells_sed_collection.end() ) {
-            cells_sed_collection.insert(std::make_pair(key, std::set<XYDataset::QualifiedName>{}));
-          }
-
-          for (auto& sed_value : sed_axis) {
-            cells_sed_collection[key].insert(sed_value);
-          }
-
-          ++total;
-        }
-      }
-    }
-  }
+  double total = collection_pair.second;
+  std::map<std::string, std::set<XYDataset::QualifiedName>> cells_sed_collection = std::move(collection_pair.first);
 
   // compute filter center wavelength & order filters by center wavelength
   auto filter_list = config_manager.getConfiguration<FilterConfig>().getFilterList();
@@ -411,7 +425,7 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
            double z_value = z_axis[z_index];
            double e_value = E_axis[e_index];
            XYDataset::QualifiedName curve_value = curve_axis[curve_index];
-           std::string key =  std::to_string(z_value) +"_"+std::to_string(e_value) +"_"+ curve_value.qualifiedName();
+           std::string key = getCellKey(z_value, e_value, curve_value);
 
            if ( seds_weights_collection.find(cells_sed_collection[key]) == seds_weights_collection.end() ) {
             // compute weights
