@@ -84,7 +84,7 @@ static std::string to_string(IndexProvider::IndexKey key) {
     case IndexProvider::PDZ:
       return "pdz";
   }
-  assert(false);
+  throw Elements::Exception("Unexpected index key!");
 }
 
 void IndexProvider::add(int64_t id, IndexKey key, const ObjectLocation& location) {
