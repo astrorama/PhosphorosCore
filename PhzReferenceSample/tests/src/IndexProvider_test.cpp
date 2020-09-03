@@ -39,7 +39,7 @@ struct IndexProvider_Fixture {
   TempDir m_top_dir;
   boost::filesystem::path m_index_bin;
 
-  IndexProvider_Fixture(): m_index_bin{m_top_dir.path() / "index.npy"} {
+  IndexProvider_Fixture() : m_index_bin{m_top_dir.path() / "index.npy"} {
   }
 
   virtual ~IndexProvider_Fixture() {
@@ -49,7 +49,7 @@ struct IndexProvider_Fixture {
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( open_non_existing ) {
+BOOST_AUTO_TEST_CASE(open_non_existing) {
   try {
     IndexProvider{"/invalid/path"};
     BOOST_FAIL("Should have failed!");
@@ -61,50 +61,65 @@ BOOST_AUTO_TEST_CASE( open_non_existing ) {
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( empty_index, IndexProvider_Fixture ) {
+BOOST_FIXTURE_TEST_CASE(empty_index, IndexProvider_Fixture) {
   IndexProvider idx{m_index_bin};
 
   BOOST_CHECK_EQUAL(idx.size(), 0);
-  auto loc = idx.get(10);
+  auto loc = idx.get(10, IndexProvider::SED);
+  BOOST_CHECK_EQUAL(-1, loc.file);
+  BOOST_CHECK_EQUAL(-1, loc.offset);
+
+  loc = idx.get(10, IndexProvider::PDZ);
   BOOST_CHECK_EQUAL(-1, loc.file);
   BOOST_CHECK_EQUAL(-1, loc.offset);
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE ( add_one, IndexProvider_Fixture ) {
+BOOST_FIXTURE_TEST_CASE (add_one_sed, IndexProvider_Fixture) {
   IndexProvider idx{m_index_bin};
 
-  idx.add(10, {5, 25});
+  idx.add(10, IndexProvider::SED, {5, 25});
   auto ids = idx.getIds();
 
   BOOST_CHECK_EQUAL(ids.size(), 1);
   BOOST_CHECK_EQUAL(ids[0], 10);
 
-  auto loc = idx.get(10);
+  auto loc = idx.get(10, IndexProvider::SED);
   BOOST_CHECK_EQUAL(loc.file, 5);
   BOOST_CHECK_EQUAL(loc.offset, 25);
 
-  BOOST_CHECK_EQUAL(idx.getFiles().size(), 1);
-  BOOST_CHECK_EQUAL(idx.getFiles().size(), 1);
+  BOOST_CHECK_EQUAL(idx.getFiles(IndexProvider::SED).size(), 1);
+  BOOST_CHECK_EQUAL(idx.getFiles(IndexProvider::PDZ).size(), 0);
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE ( create_and_reopen, IndexProvider_Fixture ) {
+BOOST_FIXTURE_TEST_CASE (create_and_reopen, IndexProvider_Fixture) {
   {
     IndexProvider idx{m_index_bin};
 
-    idx.add(10, {6, 30});
+    idx.add(10, IndexProvider::SED, {6, 30});
+    idx.add(10, IndexProvider::PDZ, {42, 99});
+    idx.add(11, IndexProvider::PDZ, {43, 88});
   }
 
   IndexProvider idx{m_index_bin};
 
-  auto loc = idx.get(10);
+  auto loc = idx.get(10, IndexProvider::SED);
   BOOST_CHECK_EQUAL(loc.file, 6);
   BOOST_CHECK_EQUAL(loc.offset, 30);
 
-  BOOST_CHECK_EQUAL(idx.getFiles().size(), 1);
+  loc = idx.get(10, IndexProvider::PDZ);
+  BOOST_CHECK_EQUAL(loc.file, 42);
+  BOOST_CHECK_EQUAL(loc.offset, 99);
+
+  loc = idx.get(11, IndexProvider::PDZ);
+  BOOST_CHECK_EQUAL(loc.file, 43);
+  BOOST_CHECK_EQUAL(loc.offset, 88);
+
+  BOOST_CHECK_EQUAL(idx.getFiles(IndexProvider::SED).size(), 1);
+  BOOST_CHECK_EQUAL(idx.getFiles(IndexProvider::PDZ).size(), 2);
 }
 
 BOOST_AUTO_TEST_SUITE_END ()

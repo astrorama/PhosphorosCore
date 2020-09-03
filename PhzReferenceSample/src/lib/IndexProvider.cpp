@@ -29,47 +29,81 @@ using NdArray::mmapNpy;
 using NdArray::createMmapNpy;
 using NdArray::NdArray;
 
+static const std::vector<std::string> FIELDS{"id",
+                                             "sed_file", "sed_offset",
+                                             "pdz_file", "pdz_offset"};
+
 IndexProvider::IndexProvider(const boost::filesystem::path& path) : m_path{path} {
   if (boost::filesystem::exists(path)) {
     m_data = Euclid::make_unique<NdArray<int64_t>>(
-      mmapNpy<int64_t>(path, boost::iostreams::mapped_file_base::readwrite, 2147483648));
+      std::move(
+        mmapNpy<int64_t>(path, boost::iostreams::mapped_file_base::readwrite, 2147483648)
+      )
+    );
     if (m_data->shape().size() != 2) {
       throw Elements::Exception() << "Expected an array with two dimensions";
     }
-    if (m_data->shape()[1] != 3) {
-      throw Elements::Exception() << "The second dimension is expected to be of size 3";
+    if (m_data->shape()[1] != FIELDS.size()) {
+      throw Elements::Exception() << "The second dimension is expected to be of size "
+                                  << FIELDS.size();
     }
 
     auto n_items = m_data->shape()[0];
     for (size_t i = 0; i < n_items; ++i) {
-      m_index[m_data->at(i, 0)] = ObjectLocation{m_data->at(i, 1), m_data->at(i, 2)};
+      m_index[m_data->at(i, "id")] = i;
     }
   }
   else {
     // Touch file so umask is honored
-    std::ofstream _ (path.native());
+    std::ofstream _(path.native());
     // Create mmap version
     m_data = Euclid::make_unique<NdArray<int64_t>>(
-      createMmapNpy<int64_t>(path, {0, 3}, 2147483648));
+      std::move(
+        createMmapNpy<int64_t>(path, {0}, FIELDS, 2147483648)
+      )
+    );
   }
 }
 
-void IndexProvider::add(int64_t id, const ObjectLocation& location) {
+std::map<int64_t, size_t>::iterator IndexProvider::create(int64_t id) {
   if (m_index.count(id)) {
-    throw Elements::Exception() << "Can not modify an object in place";
+    throw Elements::Exception() << "The object " << id << " already exists on the index";
   }
-  NdArray<int64_t> entry{1, 3};
-  entry.at(0, 0) = id;
-  entry.at(0, 1) = location.file;
-  entry.at(0, 2) = location.offset;
+
+  NdArray<int64_t> entry{{1}, FIELDS};
+  std::fill(entry.begin(), entry.end(), -1);
+  entry.at(0, "id") = id;
   m_data->concatenate(entry);
-  m_index[id] = location;
+  return m_index.emplace(id, m_data->shape()[0] - 1).first;
 }
 
-auto IndexProvider::get(int64_t id) const -> ObjectLocation {
+static std::string to_string(IndexProvider::IndexKey key) {
+  switch (key) {
+    case IndexProvider::SED:
+      return "sed";
+    case IndexProvider::PDZ:
+      return "pdz";
+  }
+  throw Elements::Exception("Unexpected index key!");
+}
+
+void IndexProvider::add(int64_t id, IndexKey key, const ObjectLocation& location) {
+  auto i = m_index.find(id);
+  if (i == m_index.end()) {
+    i = create(id);
+  }
+
+  m_data->at(i->second, to_string(key) + "_file") = location.file;
+  m_data->at(i->second, to_string(key) + "_offset") = location.offset;
+}
+
+auto IndexProvider::get(int64_t id, IndexKey key) const -> ObjectLocation {
   auto i = m_index.find(id);
   if (i != m_index.end()) {
-    return i->second;
+    return ObjectLocation{
+      m_data->at(i->second, to_string(key) + "_file"),
+      m_data->at(i->second, to_string(key) + "_offset")
+    };
   }
   return {-1, -1};
 }
@@ -78,18 +112,20 @@ size_t IndexProvider::size() const {
   return m_index.size();
 }
 
-std::set<size_t> IndexProvider::getFiles() const {
+std::set<size_t> IndexProvider::getFiles(IndexKey key) const {
   std::set<size_t> files;
+  auto file_field = to_string(key) + "_file";
   for (size_t i = 0; i < m_data->shape()[0]; ++i) {
-    files.emplace(m_data->at(i, 1));
+    files.emplace(m_data->at(i, file_field));
   }
+  files.erase(-1);
   return files;
 }
 
 std::vector<int64_t> IndexProvider::getIds() const {
   std::vector<int64_t> ids;
   ids.reserve(m_index.size());
-  for (auto &p : m_index) {
+  for (auto& p : m_index) {
     ids.emplace_back(p.first);
   }
   return ids;

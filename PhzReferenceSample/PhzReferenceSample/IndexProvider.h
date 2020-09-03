@@ -31,12 +31,15 @@ namespace ReferenceSample {
 /**
  * @class IndexProvider
  * @details
- *  Stores indexing information (file + offset) as a numpy array with two dimensions:
- *  - The first axis corresponds to the number of objects
- *  - The second axis has three positions: object id, file index and offset
+ *  Stores indexing information (object ID plus a set of file + offset) as a numpy array.
  */
 class IndexProvider {
 public:
+
+  enum IndexKey {
+    SED, PDZ
+  };
+
   /**
    * Location of an object on a set of data files
    */
@@ -66,19 +69,23 @@ public:
    * Add a new entry to the index
    * @param id
    *    Object ID
+   * @param key
+   *    Index key, for instance, "sed" or "pdz"
    * @param location
    *    Location of the data
    */
-  void add(int64_t id, const ObjectLocation& location);
+  void add(int64_t id, IndexKey key, const ObjectLocation& location);
 
   /**
    * Get the position for a given object ID
    * @param id
    *    Object ID
+   * @param key
+   *    Index key, for instance, "sed" or "pdz"
    * @return
    *    The location of the data, or an ObjectLocation initialized to {-1, -1} if not present
    */
-  ObjectLocation get(int64_t id) const;
+  ObjectLocation get(int64_t id, IndexKey key) const;
 
   /**
    * @return
@@ -87,10 +94,12 @@ public:
   size_t size() const;
 
   /**
+   * @param key
+   *    Index key, for instance, "sed" or "pdz"
    * @return
    *    Known unique file ids
    */
-  std::set<size_t> getFiles() const;
+  std::set<size_t> getFiles(IndexKey key) const;
 
   /**
    * @return
@@ -101,7 +110,16 @@ public:
 private:
   boost::filesystem::path m_path;
   std::unique_ptr<NdArray::NdArray<int64_t>> m_data;
-  std::map<int64_t, ObjectLocation> m_index;
+  std::map<int64_t, size_t> m_index;
+
+  /**
+   * Register a new object ID on the reference sample.
+   * @param id
+   *    The object ID.
+   * @throw Elements::Exception
+   *    On failure to write to the index file, or if the id already exists.
+   */
+  std::map<int64_t, size_t>::iterator create(int64_t id);
 };
 
 } // end of namespace ReferenceSample
