@@ -350,12 +350,12 @@ std::vector<double> ComputeSedWeight::getWeights(std::vector<std::vector<double>
    return weight;
 }
 
-// To be tested
-std::string  ComputeSedWeight::getCellKey(double z_value, double ebv_value, XYDataset::QualifiedName curve_value) {
-  return std::to_string(z_value) +"_"+std::to_string(e_value) +"_"+ curve_value.qualifiedName();
+std::string  ComputeSedWeight::getCellKey(double z_value, double ebv_value, const XYDataset::QualifiedName& curve_value) const {
+  return std::to_string(z_value) +"_"+std::to_string(ebv_value) +"_"+ curve_value.qualifiedName();
 }
 
-std::pair<std::map<std::string, std::set<XYDataset::QualifiedName>>, long> ComputeSedWeight::getSedCollection(const PhzDataModel::PhotometryGridInfo& grid_info) {
+std::pair<std::map<std::string, std::set<XYDataset::QualifiedName>>, long>
+    ComputeSedWeight::getSedCollection(const PhzDataModel::PhotometryGridInfo& grid_info) const{
   // Get all the SED sets
    std::map<std::string, std::set<XYDataset::QualifiedName>> cells_sed_collection{};
 

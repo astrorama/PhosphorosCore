@@ -26,6 +26,7 @@
 #include <vector>
 #include "PhzExecutables/ComputeSedWeight.h"
 #include "XYDataset/XYDataset.h"
+#include "PhzDataModel/PhzModel.h"
 
 using namespace Euclid;
 using namespace Euclid::PhzExecutables;
@@ -347,6 +348,58 @@ BOOST_AUTO_TEST_CASE(computeSedColors_test) {
  BOOST_CHECK_CLOSE(0.752575, colors[1][1], 0.05);
 
 }
+//-----------------------------------------------------------------------------
+BOOST_AUTO_TEST_CASE(getCellKey_test) {
+  ComputeSedWeight computer = ComputeSedWeight();
+  XYDataset::QualifiedName r1{"red_1"};
+
+  auto key = computer.getCellKey(3.0,0.0,r1);
+  std::string expected = "3.000000_0.000000_red_1";
+
+  BOOST_CHECK_EQUAL(expected, key);
+
+}
+//-----------------------------------------------------------------------------
+BOOST_AUTO_TEST_CASE(getSedCollection_test) {
+  ComputeSedWeight computer = ComputeSedWeight();
+
+  std::vector<double> z_axis{0.0, 2.0, 4.0, 6.0};
+  std::vector<double> ebv_axis_1{0.0, 0.2, 0.5};
+  std::vector<double> ebv_axis_2{0.0, 0.2};
+  std::vector<XYDataset::QualifiedName> red_axis{XYDataset::QualifiedName{"red_1"}};
+  std::vector<XYDataset::QualifiedName> sed_axis_1{XYDataset::QualifiedName{"sed_1"}, XYDataset::QualifiedName{"sed_2"}};
+  std::vector<XYDataset::QualifiedName> sed_axis_2{XYDataset::QualifiedName{"sed_3"}};
+
+  auto axes_1 =  PhzDataModel::createAxesTuple(z_axis, ebv_axis_1, red_axis, sed_axis_1);  // 4x3x1 = 12
+  auto axes_2 =  PhzDataModel::createAxesTuple(z_axis, ebv_axis_2, red_axis, sed_axis_2);  // 4x2x1 = 8
+  BOOST_CHECK_EQUAL(std::get<0>(axes_1).size(), std::get<0>(axes_2).size());
+
+  std::map<std::string, PhzDataModel::ModelAxesTuple> region_map{};
+  region_map.insert(std::make_pair("region_1", std::move(axes_1)));
+  region_map.insert(std::make_pair("region_2", std::move(axes_2)));
+  BOOST_CHECK_EQUAL(region_map.size(), 2);
+
+
+
+  PhzDataModel::PhotometryGridInfo grid_info{};
+  grid_info.region_axes_map = std::move(region_map);
+
+  auto sed_collection = computer.getSedCollection(grid_info);
+
+  BOOST_CHECK_EQUAL(sed_collection.second, 20);  // 20  nodes in total
+  BOOST_CHECK_EQUAL(sed_collection.first.size(), 12);  // 12 different nodes
+
+  BOOST_CHECK_EQUAL(sed_collection.first.at("4.000000_0.200000_red_1").size(), 3);
+  BOOST_CHECK_EQUAL(sed_collection.first.at("4.000000_0.500000_red_1").size(), 2);
+
+
+}
+
+
+
+
+
+
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END ()
