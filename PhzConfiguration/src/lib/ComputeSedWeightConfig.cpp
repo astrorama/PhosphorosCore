@@ -59,7 +59,7 @@ auto ComputeSedWeightConfig::getProgramOptions() -> std::map<std::string, Option
   return {{"Compute SED Weight options", {
 
     {SED_WEIGHT_OUTPUT.c_str(), po::value<std::string>()->default_value("SedWeight.ascii"),
-          "Path of the file into which output the SED weights. Relative path are relative to <AuxDataDir>/AxisPriors/GenericPriors/SedWeight/"}
+          "Path of the file into which output the SED weights. Relative path are relative to <AuxDataDir>/GenericPriors/SedWeight/"}
 
   }}};
 }
@@ -73,7 +73,9 @@ void ComputeSedWeightConfig::initialize(const UserValues& args) {
     m_output_file = file_name;
   } else {
     // relative to
-    fs::path result = getDependency<AuxDataDirConfig>().getAuxDataDir() / "AxisPriors"/"sed"/file_name;
+    boost::filesystem::path dir(getDependency<AuxDataDirConfig>().getAuxDataDir() / "GenericPriors"/"SedWeight");
+    boost::filesystem::create_directory(dir);
+    fs::path result = getDependency<AuxDataDirConfig>().getAuxDataDir() / "GenericPriors"/"SedWeight"/file_name;
     m_output_file = result.string();
   }
 

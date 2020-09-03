@@ -470,6 +470,7 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
 
              prior_grid.at(z_index, e_index, curve_index, sed_index) =
                  seds_weights_collection[cells_sed_collection[key]][sed_value];
+
            }
            ++current;
            m_progress_listener(static_cast<int>((100*current)/total), 100);
@@ -490,6 +491,7 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
   // Store the grids themselves
   for (auto& pair : prior_grids) {
     GridContainer::gridExport<boost::archive::text_oarchive>(out, pair.second);
+
   }
   logger.info() << "Created the prior grid in file " << output_file;
 
