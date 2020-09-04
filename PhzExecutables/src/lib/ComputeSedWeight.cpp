@@ -29,6 +29,7 @@
 #include <random>
 
 #include "ElementsKernel/Logging.h"
+#include <boost/filesystem.hpp>
 
 
 #include "PhzConfiguration/ComputeSedWeightConfig.h"
@@ -48,6 +49,7 @@
 #include "PhzUtils/Multithreading.h"
 
 
+namespace fs = boost::filesystem;
 using namespace Euclid::Configuration;
 using namespace Euclid::PhzConfiguration;
 
@@ -182,6 +184,11 @@ std::vector<std::vector<double>> ComputeSedWeight::computeSedColors(
       auto filtered_func = MathUtils::interpolate(x_fil, y_fil, MathUtils::InterpolationType::LINEAR);
       double num = MathUtils::integrate(*(filtered_func.get()), x_fil[0], x_fil[x_fil.size()-1]);
       sed_fluxes.push_back(num/norm);
+
+      if (PhzUtils::getStopThreadsFlag()) {
+          throw Elements::Exception() << "Stopped by the user";
+      }
+
     }
     fluxes.push_back(sed_fluxes);
     ++progress;
@@ -287,6 +294,11 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
     }
 
     sed_groups.erase(iter);
+
+    if (PhzUtils::getStopThreadsFlag()) {
+        throw Elements::Exception() << "Stopped by the user";
+    }
+
   }
 
   // Only 2 groups left: return the distance in between
@@ -361,6 +373,7 @@ std::pair<std::map<std::string, std::set<XYDataset::QualifiedName>>, long>
 
    // iter over the regions
    double total = 0;
+   size_t grid_index=0;
    for (auto region_iter = grid_info.region_axes_map.begin(); region_iter != grid_info.region_axes_map.end(); ++region_iter) {
      // iter over the axis
      auto& z_axis = std::get<0>((*region_iter).second);
@@ -384,8 +397,15 @@ std::pair<std::map<std::string, std::set<XYDataset::QualifiedName>>, long>
 
            ++total;
          }
+
+         if (PhzUtils::getStopThreadsFlag()) {
+             throw Elements::Exception() << "Stopped by the user";
+         }
+
        }
      }
+     ++grid_index;
+     m_progress_listener(static_cast<int>((50.0*grid_index)/grid_info.region_axes_map.size()), 150);
    }
 
    return std::make_pair(std::move(cells_sed_collection), total);
@@ -473,7 +493,7 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
 
            }
            ++current;
-           m_progress_listener(static_cast<int>((100*current)/total), 100);
+           m_progress_listener(50+static_cast<int>((100*current)/total), 150);
          }
        }
      }
@@ -482,18 +502,16 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
   }
 
   // export the grid
-  auto output_file = config_manager.getConfiguration<ComputeSedWeightConfig>().getOutputFile();
+  fs::path output_file{config_manager.getConfiguration<ComputeSedWeightConfig>().getOutputFile()};
+  fs::remove(output_file);
+  fs::create_directories(output_file.parent_path());
 
-  std::ofstream out {output_file};
-  boost::archive::text_oarchive boa {out};
-  // Store the info object describing the grids
-  boa << grid_info;
   // Store the grids themselves
   for (auto& pair : prior_grids) {
-    GridContainer::gridExport<boost::archive::text_oarchive>(out, pair.second);
+    GridContainer::gridFitsExport(output_file, pair.first, pair.second);
 
   }
-  logger.info() << "Created the prior grid in file " << output_file;
+  logger.info() << "Created the prior grid in file " << output_file.string();
 
 }
 
