@@ -90,7 +90,7 @@ BOOST_FIXTURE_TEST_CASE(prior_application, AxisFunctionPrior_Fixture) {
     it.axisIndex<ModelParameter::EBV>() +
     it.axisIndex<ModelParameter::Z>();
 
-    double min_value = std::exp(std::numeric_limits<double>::min());
+    double min_value = std::exp(std::numeric_limits<double>::lowest());
 
     double log_value = std::numeric_limits<double>::min();
     if (prior_value > min_value) {

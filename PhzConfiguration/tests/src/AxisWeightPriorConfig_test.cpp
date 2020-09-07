@@ -63,7 +63,7 @@ struct AxisWeightPriorConfig_fixture : public ConfigManager_fixture {
   AxisWeightPriorConfig_fixture() {
     
     for (auto& l : posterior_grid) {
-      l = 1.;
+      l = 0.;
     }
     
     std::string model_grid_file = (temp_dir.path()/"model_grid.dat").string();
@@ -82,7 +82,7 @@ struct AxisWeightPriorConfig_fixture : public ConfigManager_fixture {
     fs::create_directories(prior_dir/"red-curve");
     
     std::ofstream sed_out {(prior_dir/"sed"/"sed_prior.txt").string()};
-    sed_out << "sed1 0\n";
+    sed_out << "sed1 0.01\n";
     sed_out << "sed2 .5\n";
     sed_out << "sed3 1\n";
     sed_out.close();
@@ -90,13 +90,13 @@ struct AxisWeightPriorConfig_fixture : public ConfigManager_fixture {
     std::ofstream sed_out2 {(prior_dir/"sed"/"sed_prior2.txt").string()};
     sed_out2 << "sed1 1\n";
     sed_out2 << "sed2 .5\n";
-    sed_out2 << "sed3 0\n";
+    sed_out2 << "sed3 0.01\n";
     sed_out2.close();
     
     std::ofstream red_curve_out {(prior_dir/"red-curve"/"red_curve_prior.txt").string()};
     red_curve_out << "red_curve1 1\n";
     red_curve_out << "red_curve2 .5\n";
-    red_curve_out << "red_curve3 0\n";
+    red_curve_out << "red_curve3 0.01\n";
     red_curve_out.close();
     
     options_map = registerConfigAndGetDefaultOptionsMap<AxisWeightPriorConfig>();
@@ -141,8 +141,10 @@ BOOST_FIXTURE_TEST_CASE(sed_prior, AxisWeightPriorConfig_fixture) {
   // Then
   BOOST_CHECK_EQUAL(prior_list.size(), 1);
   BOOST_CHECK_EQUAL(prior_list[0].target_type().name(), typeid(PhzLikelihood::AxisWeightPrior<ModelParameter::SED>).name());
+
+  std::vector<double> prior_value{0.01, 0.5, 1.0};
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, it.axisIndex<ModelParameter::SED>() / 2.);
+    BOOST_CHECK_CLOSE(*it, std::log(prior_value[it.axisIndex<ModelParameter::SED>()]), 0.001);
   }
   
 }
@@ -165,8 +167,12 @@ BOOST_FIXTURE_TEST_CASE(two_sed_priors, AxisWeightPriorConfig_fixture) {
   BOOST_CHECK_EQUAL(prior_list.size(), 2);
   BOOST_CHECK_EQUAL(prior_list[0].target_type().name(), typeid(PhzLikelihood::AxisWeightPrior<ModelParameter::SED>).name());
   BOOST_CHECK_EQUAL(prior_list[1].target_type().name(), typeid(PhzLikelihood::AxisWeightPrior<ModelParameter::SED>).name());
+
+
+  std::vector<double> prior_value{0.01, 0.25, 0.01};
+
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, it.axisIndex<ModelParameter::SED>() * (2 - it.axisIndex<ModelParameter::SED>()) / 4.);
+    BOOST_CHECK_CLOSE(*it, std::log(prior_value[it.axisIndex<ModelParameter::SED>()]), 0.001);
   }
   
 }
@@ -186,10 +192,12 @@ BOOST_FIXTURE_TEST_CASE(red_curve_prior, AxisWeightPriorConfig_fixture) {
   }
   
   // Then
+
+  std::vector<double> prior_value{1.0, 0.5, 0.01};
   BOOST_CHECK_EQUAL(prior_list.size(), 1);
   BOOST_CHECK_EQUAL(prior_list[0].target_type().name(), typeid(PhzLikelihood::AxisWeightPrior<ModelParameter::REDDENING_CURVE>).name());
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, (2 - it.axisIndex<ModelParameter::REDDENING_CURVE>()) / 2.);
+    BOOST_CHECK_CLOSE(*it, std::log(prior_value[it.axisIndex<ModelParameter::REDDENING_CURVE>()]), 0.001);
   }
   
 }
@@ -223,8 +231,11 @@ BOOST_FIXTURE_TEST_CASE(sed_red_curve_prior, AxisWeightPriorConfig_fixture) {
   }
   BOOST_CHECK(found_sed);
   BOOST_CHECK(found_red_curve);
+
+  std::vector<double> sed_prior_value{0.01, 0.5, 1.0};
+  std::vector<double> curve_prior_value{1.0, 0.5, 0.01};
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, it.axisIndex<ModelParameter::SED>() * (2 - it.axisIndex<ModelParameter::REDDENING_CURVE>()) / 4.);
+    BOOST_CHECK_CLOSE(*it, std::log(curve_prior_value[it.axisIndex<ModelParameter::REDDENING_CURVE>()]) + std::log(sed_prior_value[it.axisIndex<ModelParameter::SED>()]), 0.001);
   }
   
 }

@@ -44,11 +44,11 @@ struct AxisWeightPrior_Fixture {
   PhzDataModel::DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(axes);
   
   std::map<XYDataset::QualifiedName, double> sed_weights {
-    {{"sed1"}, 1.1}, {{"sed2"}, 1.2}
+    {{"sed1"}, 1.1}, {{"sed2"}, 0.8}
   };
   
   std::map<XYDataset::QualifiedName, double> red_curve_weights {
-    {{"red_curve1"}, 2.1}, {{"red_curve2"}, 2.2}
+    {{"red_curve1"}, 2.1}, {{"red_curve2"}, 0.7}
   };
   
 };
@@ -63,7 +63,7 @@ BOOST_FIXTURE_TEST_CASE(sed_axis_prior, AxisWeightPrior_Fixture) {
 
   // Given
   for (auto& l : posterior_grid) {
-    l = 1.;
+    l = 0.01;
   }
   AxisWeightPrior<ModelParameter::SED> prior {sed_weights};
 
@@ -72,7 +72,7 @@ BOOST_FIXTURE_TEST_CASE(sed_axis_prior, AxisWeightPrior_Fixture) {
   
   // Then
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, sed_weights[it.axisValue<ModelParameter::SED>()]);
+    BOOST_CHECK_CLOSE(*it, 0.01 + std::log(sed_weights[it.axisValue<ModelParameter::SED>()]), 0.001);
   }
 
 }
@@ -83,7 +83,7 @@ BOOST_FIXTURE_TEST_CASE(red_curve_axis_prior, AxisWeightPrior_Fixture) {
 
   // Given
   for (auto& l : posterior_grid) {
-    l = 1.;
+    l = 0.01;
   }
   AxisWeightPrior<ModelParameter::REDDENING_CURVE> prior {red_curve_weights};
 
@@ -92,7 +92,7 @@ BOOST_FIXTURE_TEST_CASE(red_curve_axis_prior, AxisWeightPrior_Fixture) {
   
   // Then
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, red_curve_weights[it.axisValue<ModelParameter::REDDENING_CURVE>()]);
+    BOOST_CHECK_CLOSE(*it, 0.01 + std::log(red_curve_weights[it.axisValue<ModelParameter::REDDENING_CURVE>()]), 0.001);
   }
 
 }
@@ -103,7 +103,7 @@ BOOST_FIXTURE_TEST_CASE(both_axes_prior, AxisWeightPrior_Fixture) {
 
   // Given
   for (auto& l : posterior_grid) {
-    l = 1.;
+    l = 0.01;
   }
   AxisWeightPrior<ModelParameter::SED> sed_prior {sed_weights};
   AxisWeightPrior<ModelParameter::REDDENING_CURVE> red_curve_prior {red_curve_weights};
@@ -114,7 +114,33 @@ BOOST_FIXTURE_TEST_CASE(both_axes_prior, AxisWeightPrior_Fixture) {
   
   // Then
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, sed_weights[it.axisValue<ModelParameter::SED>()] * red_curve_weights[it.axisValue<ModelParameter::REDDENING_CURVE>()]);
+    BOOST_CHECK_CLOSE(*it,
+                      0.01 + std::log(sed_weights[it.axisValue<ModelParameter::SED>()]) +
+                                  std::log(red_curve_weights[it.axisValue<ModelParameter::REDDENING_CURVE>()]),
+                      0.001);
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(zero_valued_prior, AxisWeightPrior_Fixture) {
+
+  // Given
+  for (auto& l : posterior_grid) {
+    l = 0.01;
+  }
+  std::map<XYDataset::QualifiedName, double> zero_sed_weights {
+     {{"sed1"}, 0.0}, {{"sed2"}, 0.0}
+   };
+  AxisWeightPrior<ModelParameter::SED> prior {zero_sed_weights};
+
+  // When
+  prior(results);
+
+  // Then
+  for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
+    BOOST_CHECK_CLOSE(*it, std::numeric_limits<double>::min(), 0.001);
   }
 
 }

@@ -35,8 +35,8 @@ struct AxisFunctionPrior_Fixture {
   
   RegionResults results {};
   
-  std::vector<double> zs {0.0, 0.1, 0.2, 0.3, 0.4};
-  std::vector<double> ebvs {0.0, 0.1, 0.3};
+  std::vector<double> zs {0.01, 0.1, 0.2, 0.3, 0.4};
+  std::vector<double> ebvs {0.01, 0.1, 0.3};
   std::vector<XYDataset::QualifiedName> reddeing_curves {{"red_curve1"}, {"red_curve2"}};
   std::vector<XYDataset::QualifiedName> seds {{"sed1"}, {"sed2"}};
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
@@ -57,6 +57,18 @@ struct MirrorFunction : public MathUtils::Function {
 
 };
 
+struct ZeroFunction : public MathUtils::Function {
+
+  std::unique_ptr<Function> clone() const override {
+    return std::unique_ptr<Function>{new ZeroFunction {}};
+  }
+
+  double operator()(const double x) const override {
+    return 0.0;
+  }
+
+};
+
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE (AxisFunctionPrior_test)
@@ -67,7 +79,7 @@ BOOST_FIXTURE_TEST_CASE(ebv_axis_prior, AxisFunctionPrior_Fixture) {
 
   // Given
   for (auto& l : posterior_grid) {
-    l = 1.;
+    l = 0.01;
   }
   AxisFunctionPrior<ModelParameter::EBV> prior {std::unique_ptr<Function>{new MirrorFunction {}}};
 
@@ -76,7 +88,7 @@ BOOST_FIXTURE_TEST_CASE(ebv_axis_prior, AxisFunctionPrior_Fixture) {
   
   // Then
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, it.axisValue<ModelParameter::EBV>());
+    BOOST_CHECK_CLOSE(*it, 0.01 + std::log(it.axisValue<ModelParameter::EBV>()), 0.001);
   }
   
 }
@@ -87,7 +99,7 @@ BOOST_FIXTURE_TEST_CASE(z_axis_prior, AxisFunctionPrior_Fixture) {
 
   // Given
   for (auto& l : posterior_grid) {
-    l = 1.;
+    l = 0.01;
   }
   AxisFunctionPrior<ModelParameter::Z> prior {std::unique_ptr<Function>{new MirrorFunction {}}};
 
@@ -96,7 +108,7 @@ BOOST_FIXTURE_TEST_CASE(z_axis_prior, AxisFunctionPrior_Fixture) {
   
   // Then
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, it.axisValue<ModelParameter::Z>());
+    BOOST_CHECK_CLOSE(*it, 0.01 + std::log(it.axisValue<ModelParameter::Z>()), 0.001);
   }
   
 }
@@ -107,7 +119,7 @@ BOOST_FIXTURE_TEST_CASE(both_axes_prior, AxisFunctionPrior_Fixture) {
 
   // Given
   for (auto& l : posterior_grid) {
-    l = 1.;
+    l = 0.;
   }
   AxisFunctionPrior<ModelParameter::Z> z_prior {std::unique_ptr<Function>{new MirrorFunction {}}};
   AxisFunctionPrior<ModelParameter::EBV> ebv_prior {std::unique_ptr<Function>{new MirrorFunction {}}};
@@ -118,9 +130,30 @@ BOOST_FIXTURE_TEST_CASE(both_axes_prior, AxisFunctionPrior_Fixture) {
   
   // Then
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, it.axisValue<ModelParameter::Z>() * it.axisValue<ModelParameter::EBV>());
+    BOOST_CHECK_CLOSE(*it, std::log(it.axisValue<ModelParameter::Z>()) + std::log(it.axisValue<ModelParameter::EBV>()), 0.001);
   }
   
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(zero_valued_prior, AxisFunctionPrior_Fixture) {
+
+  // Given
+  for (auto& l : posterior_grid) {
+    l = 0.01;
+  }
+
+  AxisFunctionPrior<ModelParameter::Z> prior {std::unique_ptr<Function>{new ZeroFunction {}}};
+
+   // When
+   prior(results);
+
+   // Then
+   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
+     BOOST_CHECK_CLOSE(*it, std::numeric_limits<double>::min(), 0.001);
+   }
+
 }
 
 //-----------------------------------------------------------------------------

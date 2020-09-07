@@ -31,12 +31,20 @@ AxisWeightPrior<AxisIndex>::AxisWeightPrior(std::map<XYDataset::QualifiedName, d
 
 template <int AxisIndex>
 void AxisWeightPrior<AxisIndex>::operator()(PhzDataModel::RegionResults& results) const {
+  double min_value = std::exp(std::numeric_limits<double>::lowest());
   auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
   auto& axis = posterior_grid.getAxis<AxisIndex>();
   for (std::size_t i = 0; i < axis.size(); ++i) {
     auto prior = m_weight_map.at(axis[i]);
-    for (auto& cell : posterior_grid.fixAxisByIndex<AxisIndex>(i)) {
-      cell = cell * prior;
+    if (prior <= min_value) {
+      for (auto& cell : posterior_grid.fixAxisByIndex<AxisIndex>(i)) {
+        cell = std::numeric_limits<double>::min();
+      }
+    } else {
+      auto log_prior = std::log(prior);
+      for (auto& cell : posterior_grid.fixAxisByIndex<AxisIndex>(i)) {
+        cell = cell + log_prior;
+      }
     }
   }
 }
