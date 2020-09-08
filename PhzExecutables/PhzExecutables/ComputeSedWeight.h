@@ -28,11 +28,13 @@
 #include <utility>
 #include <set>
 #include <vector>
+#include <string>
 #include "Configuration/ConfigManager.h"
 #include "PhzLikelihood/ParallelCatalogHandler.h"
 #include "XYDataset/QualifiedName.h"
 #include "XYDataset/XYDatasetProvider.h"
 #include "PhzLikelihood/ParallelCatalogHandler.h"
+#include "PhzDataModel/PhotometryGridInfo.h"
 
 namespace Euclid {
 namespace PhzExecutables {
@@ -86,6 +88,11 @@ public:
   //------------- Computing the weights ----------------------------------------
 
   std::vector<double> getWeights(std::vector<std::vector<double>> seds_colors, double radius);
+
+  //------------- handle the different set of SED ----------------------------------------
+  std::string getCellKey(double z_value, double ebv_value, const XYDataset::QualifiedName& curve_value) const ;
+
+  std::pair<std::map<std::string, std::set<XYDataset::QualifiedName>>, long> getSedCollection(const Euclid::PhzDataModel::PhotometryGridInfo& grid_info) const;
 
   /**
    * @brief Destructor
