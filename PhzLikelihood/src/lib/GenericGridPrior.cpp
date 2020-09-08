@@ -34,7 +34,7 @@ GenericGridPrior::GenericGridPrior(std::vector<PhzDataModel::DoubleGrid> prior_g
 
 void GenericGridPrior::operator()(PhzDataModel::RegionResults& results) const {
   auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
-  double min_value = std::exp(std::numeric_limits<double>::min());
+  double min_value = std::exp(std::numeric_limits<double>::lowest());
 
   for (auto& prior_grid : m_prior_grid_list) {
     if (prior_grid.getAxesTuple() == posterior_grid.getAxesTuple()) {

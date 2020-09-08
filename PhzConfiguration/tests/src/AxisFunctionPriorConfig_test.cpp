@@ -59,10 +59,14 @@ struct AxisFunctionPriorConfig_fixture : public ConfigManager_fixture {
   
   std::map<std::string, po::variable_value> options_map {};
   
+  std::vector<double> prior_value_z{0.01, 0.505, 1.0};
+  std::vector<double> prior_value_z_2{1.0, 0.505, 0.01};
+  std::vector<double> prior_value_ebv{1.0, 0.75, 0.5};
+
   AxisFunctionPriorConfig_fixture() {
     
     for (auto& l : posterior_grid) {
-      l = 1.;
+      l = 0.;
     }
 
     auto prior_dir = temp_dir.path() / "AxisPriors";
@@ -71,19 +75,24 @@ struct AxisFunctionPriorConfig_fixture : public ConfigManager_fixture {
     fs::create_directories(prior_dir/"ebv");
     
     std::ofstream z_out {(prior_dir/"z"/"z_prior.txt").string()};
-    z_out << "0 0\n";
+    z_out << "0 0.01\n";
     z_out << "1 1\n";
     z_out.close();
+
+
     
+
     std::ofstream z_out2 {(prior_dir/"z"/"z_prior2.txt").string()};
     z_out2 << "0 1\n";
-    z_out2 << "1 0\n";
+    z_out2 << "1 0.01\n";
     z_out2.close();
+
     
     std::ofstream ebv_out {(prior_dir/"ebv"/"ebv_prior.txt").string()};
     ebv_out << "0 1\n";
-    ebv_out << "1 0\n";
+    ebv_out << "1 0.5\n";
     ebv_out.close();
+
     
     options_map = registerConfigAndGetDefaultOptionsMap<AxisFunctionPriorConfig>();
     options_map["aux-data-dir"].value() = boost::any {temp_dir.path().string()};
@@ -126,7 +135,7 @@ BOOST_FIXTURE_TEST_CASE(z_prior, AxisFunctionPriorConfig_fixture) {
   BOOST_CHECK_EQUAL(prior_list.size(), 1);
   BOOST_CHECK_EQUAL(prior_list[0].target_type().name(), typeid(PhzLikelihood::AxisFunctionPrior<ModelParameter::Z>).name());
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, it.axisValue<ModelParameter::Z>());
+    BOOST_CHECK_CLOSE(*it, std::log(prior_value_z[it.axisIndex<ModelParameter::Z>()]), 0.001);
   }
   
 }
@@ -150,7 +159,7 @@ BOOST_FIXTURE_TEST_CASE(two_z_priors, AxisFunctionPriorConfig_fixture) {
   BOOST_CHECK_EQUAL(prior_list[0].target_type().name(), typeid(PhzLikelihood::AxisFunctionPrior<ModelParameter::Z>).name());
   BOOST_CHECK_EQUAL(prior_list[1].target_type().name(), typeid(PhzLikelihood::AxisFunctionPrior<ModelParameter::Z>).name());
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, it.axisValue<ModelParameter::Z>() * (1 - it.axisValue<ModelParameter::Z>()));
+    BOOST_CHECK_CLOSE(*it, std::log(prior_value_z[it.axisIndex<ModelParameter::Z>()]) +std::log(prior_value_z_2[it.axisIndex<ModelParameter::Z>()]), 0.001);
   }
   
 }
@@ -173,7 +182,7 @@ BOOST_FIXTURE_TEST_CASE(ebv_prior, AxisFunctionPriorConfig_fixture) {
   BOOST_CHECK_EQUAL(prior_list.size(), 1);
   BOOST_CHECK_EQUAL(prior_list[0].target_type().name(), typeid(PhzLikelihood::AxisFunctionPrior<ModelParameter::EBV>).name());
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, 1 - it.axisValue<ModelParameter::EBV>());
+    BOOST_CHECK_CLOSE(*it, std::log(prior_value_ebv[it.axisIndex<ModelParameter::EBV>()]), 0.001);
   }
   
 }
@@ -208,7 +217,8 @@ BOOST_FIXTURE_TEST_CASE(z_ebv_prior, AxisFunctionPriorConfig_fixture) {
   BOOST_CHECK(found_z);
   BOOST_CHECK(found_ebv);
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
-    BOOST_CHECK_EQUAL(*it, it.axisValue<ModelParameter::Z>() * (1 - it.axisValue<ModelParameter::EBV>()));
+    BOOST_CHECK_CLOSE(*it, std::log(prior_value_z[it.axisIndex<ModelParameter::Z>()]) +
+                           std::log(prior_value_ebv[it.axisIndex<ModelParameter::EBV>()]), 0.001);
   }
   
 }
