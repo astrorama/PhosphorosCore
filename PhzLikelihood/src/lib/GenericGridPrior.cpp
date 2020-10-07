@@ -42,7 +42,7 @@ void GenericGridPrior::operator()(PhzDataModel::RegionResults& results) const {
       auto post_it = posterior_grid.begin();
       for (; post_it != posterior_grid.end(); ++prior_it, ++post_it) {
         if (*prior_it <= min_value) {
-          *post_it = std::numeric_limits<double>::min();
+          *post_it = std::numeric_limits<double>::lowest();
         } else {
           *post_it += std::log(*prior_it);
         }

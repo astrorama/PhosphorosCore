@@ -123,7 +123,7 @@ BOOST_FIXTURE_TEST_CASE(single_prior, GenericGridPriorConfig_fixture) {
 
     double min_value = std::exp(std::numeric_limits<double>::lowest());
 
-    double log_value = std::numeric_limits<double>::min();
+    double log_value = std::numeric_limits<double>::lowest();
     if (prior_value > min_value){
       log_value =std::log(prior_value) +1.;
     }
@@ -157,7 +157,7 @@ BOOST_FIXTURE_TEST_CASE(two_priors, GenericGridPriorConfig_fixture) {
 
     double min_value = std::exp(std::numeric_limits<double>::lowest());
 
-    double log_value = std::numeric_limits<double>::min();
+    double log_value = std::numeric_limits<double>::lowest();
     if (prior_value > min_value) {
      log_value = 2*std::log(prior_value) +1.;
     }

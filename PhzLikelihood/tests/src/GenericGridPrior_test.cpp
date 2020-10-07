@@ -92,7 +92,7 @@ BOOST_FIXTURE_TEST_CASE(prior_application, AxisFunctionPrior_Fixture) {
 
     double min_value = std::exp(std::numeric_limits<double>::lowest());
 
-    double log_value = std::numeric_limits<double>::min();
+    double log_value = std::numeric_limits<double>::lowest();
     if (prior_value > min_value) {
       log_value = std::log(prior_value) + 1.;
     }
