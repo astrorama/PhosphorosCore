@@ -29,23 +29,27 @@
 #include <random>
 
 #include "ElementsKernel/Logging.h"
+#include <boost/filesystem.hpp>
+
 
 #include "PhzConfiguration/ComputeSedWeightConfig.h"
 #include "PhzConfiguration/FilterConfig.h"
-#include "PhzConfiguration/SedConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "MathUtils/interpolation/interpolation.h"
 #include "MathUtils/function/function_tools.h"
 #include "PhzModeling/ApplyFilterFunctor.h"
 
-#include "Table/AsciiWriter.h"
-#include "Table/ColumnInfo.h"
+#include "PhzDataModel/DoubleGrid.h"
+#include <boost/archive/text_oarchive.hpp>
+#include "PhzDataModel/serialization/PhotometryGridInfo.h"
 
 #include "PhzExecutables/ComputeSedWeight.h"
 #include "PhzUtils/Multithreading.h"
 
 
+namespace fs = boost::filesystem;
 using namespace Euclid::Configuration;
 using namespace Euclid::PhzConfiguration;
 
@@ -80,10 +84,6 @@ private:
 };
 
 } // Anonymous namespace
-
-
-
-
 
 
 ComputeSedWeight::ComputeSedWeight(long sampling_number) : m_progress_listener(DefaultProgressReporter{}) {
@@ -184,10 +184,14 @@ std::vector<std::vector<double>> ComputeSedWeight::computeSedColors(
       auto filtered_func = MathUtils::interpolate(x_fil, y_fil, MathUtils::InterpolationType::LINEAR);
       double num = MathUtils::integrate(*(filtered_func.get()), x_fil[0], x_fil[x_fil.size()-1]);
       sed_fluxes.push_back(num/norm);
+
+      if (PhzUtils::getStopThreadsFlag()) {
+          throw Elements::Exception() << "Stopped by the user";
+      }
+
     }
     fluxes.push_back(sed_fluxes);
     ++progress;
-    m_progress_listener(static_cast<int>((33*progress)/sed_list.size()), 100);
   }
 
   std::vector<std::vector<double>> colors{};
@@ -261,8 +265,6 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
     sed_groups.push_back(group);
   }
 
-  size_t initial_size = sed_groups.size();
-
   // Merge the groups
   while (sed_groups.size() > 2) {
     logger.info() << "Start merge process with " << sed_groups.size() << " Groups.";
@@ -292,7 +294,11 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
     }
 
     sed_groups.erase(iter);
-    m_progress_listener( static_cast<int>((33*(initial_size - sed_groups.size()))/initial_size) +33, 100);
+
+    if (PhzUtils::getStopThreadsFlag()) {
+        throw Elements::Exception() << "Stopped by the user";
+    }
+
   }
 
   // Only 2 groups left: return the distance in between
@@ -338,7 +344,6 @@ std::vector<double> ComputeSedWeight::getWeights(std::vector<std::vector<double>
 
        int percentil = static_cast<int>((100*(m_sampling_number*sed_index + draw_index+1))/total);
              if (percentil != current_percentil) {
-               m_progress_listener(static_cast<int>(33*(m_sampling_number*sed_index + draw_index+1)/total) + 67, 100);
                current_percentil = percentil;
              }
      }
@@ -357,73 +362,156 @@ std::vector<double> ComputeSedWeight::getWeights(std::vector<std::vector<double>
    return weight;
 }
 
+std::string  ComputeSedWeight::getCellKey(double z_value, double ebv_value, const XYDataset::QualifiedName& curve_value) const {
+  return std::to_string(z_value) +"_"+std::to_string(ebv_value) +"_"+ curve_value.qualifiedName();
+}
+
+std::pair<std::map<std::string, std::set<XYDataset::QualifiedName>>, long>
+    ComputeSedWeight::getSedCollection(const PhzDataModel::PhotometryGridInfo& grid_info) const{
+  // Get all the SED sets
+   std::map<std::string, std::set<XYDataset::QualifiedName>> cells_sed_collection{};
+
+   // iter over the regions
+   double total = 0;
+   size_t grid_index=0;
+   for (auto region_iter = grid_info.region_axes_map.begin(); region_iter != grid_info.region_axes_map.end(); ++region_iter) {
+     // iter over the axis
+     auto& z_axis = std::get<0>((*region_iter).second);
+     auto& E_axis = std::get<1>((*region_iter).second);
+     auto& curve_axis = std::get<2>((*region_iter).second);
+     auto& sed_axis = std::get<3>((*region_iter).second);
+     for (auto& z_value : z_axis) {
+       for (auto& e_value : E_axis) {
+         for (auto& curve_value : curve_axis) {
+
+           std::string key =  getCellKey(z_value, e_value, curve_value);
+
+           // Add the key in the map if needed
+           if ( cells_sed_collection.find(key) == cells_sed_collection.end() ) {
+             cells_sed_collection.insert(std::make_pair(key, std::set<XYDataset::QualifiedName>{}));
+           }
+
+           for (auto& sed_value : sed_axis) {
+             cells_sed_collection[key].insert(sed_value);
+           }
+
+           ++total;
+         }
+
+         if (PhzUtils::getStopThreadsFlag()) {
+             throw Elements::Exception() << "Stopped by the user";
+         }
+
+       }
+     }
+     ++grid_index;
+     m_progress_listener(static_cast<int>((50.0*grid_index)/grid_info.region_axes_map.size()), 150);
+   }
+
+   return std::make_pair(std::move(cells_sed_collection), total);
+}
 
 void ComputeSedWeight::run(ConfigManager& config_manager) {
 
-  auto sed_map = config_manager.getConfiguration<SedConfig>().getSedList();
+  auto& grid_info = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGridInfo();
 
-  // Gather all the SED from all grid regions
-  std::set<XYDataset::QualifiedName> sed_list {};
-  for (auto sed_reg_iter = sed_map.begin(); sed_reg_iter != sed_map.end(); ++sed_reg_iter) {
-    for (size_t sed_index = 0; sed_index < (*sed_reg_iter).second.size(); ++sed_index) {
-      sed_list.insert((*sed_reg_iter).second[sed_index]);
-    }
-  }
+  auto collection_pair = getSedCollection(grid_info);
+  // Get all the SED sets
+  double total = collection_pair.second;
+  std::map<std::string, std::set<XYDataset::QualifiedName>> cells_sed_collection = std::move(collection_pair.first);
 
-
+  // compute filter center wavelength & order filters by center wavelength
   auto filter_list = config_manager.getConfiguration<FilterConfig>().getFilterList();
-  auto output_file = config_manager.getConfiguration<ComputeSedWeightConfig>().getOutputFile();
-
-
-  logger.info() << "Compute weight for " << sed_list.size() << "SEDs";
-  logger.info() << "Using " << filter_list.size() << "filters";
-
-
-  // 1) compute filter center wavelength & order filters by center wavelength
   auto filter_provider = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
   std::vector<std::pair<XYDataset::QualifiedName, double>> ordered_filters = orderFilters(filter_list, filter_provider);
 
-  // 2) compute colors (filter N+1 - filter N)
   auto sed_provider = config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider();
-  std::vector<std::vector<double>> colors = computeSedColors(ordered_filters,
-                                                             sed_list, sed_provider,
-                                                             filter_provider);
 
-  if (PhzUtils::getStopThreadsFlag()) {
-     throw Elements::Exception() << "Stopped by the user";
+  // create the prior grid
+  std::map<std::string, PhzDataModel::DoubleGrid> prior_grids{};
+  // compute the weight and set them into the grid
+  std::map<std::set<XYDataset::QualifiedName>, std::map<XYDataset::QualifiedName, double>> seds_weights_collection{};
+  double current = 0;
+  for (auto region_iter = grid_info.region_axes_map.begin(); region_iter != grid_info.region_axes_map.end(); ++region_iter) {
+    auto& z_axis = std::get<0>((*region_iter).second);
+    auto& E_axis = std::get<1>((*region_iter).second);
+    auto& curve_axis = std::get<2>((*region_iter).second);
+    auto& sed_axis = std::get<3>((*region_iter).second);
+    PhzDataModel::DoubleGrid prior_grid{z_axis, E_axis, curve_axis, sed_axis};
+
+    for (size_t z_index = 0; z_index < z_axis.size(); ++z_index) {
+      for (size_t e_index = 0; e_index < E_axis.size(); ++e_index) {
+        for (size_t curve_index = 0; curve_index < curve_axis.size(); ++curve_index) {
+           double z_value = z_axis[z_index];
+           double e_value = E_axis[e_index];
+           XYDataset::QualifiedName curve_value = curve_axis[curve_index];
+           std::string key = getCellKey(z_value, e_value, curve_value);
+
+           if ( seds_weights_collection.find(cells_sed_collection[key]) == seds_weights_collection.end() ) {
+            // compute weights
+
+             // compute colors (filter N+1 - filter N)
+             std::vector<std::vector<double>> colors = computeSedColors(ordered_filters,
+                                                                        cells_sed_collection[key],
+                                                                        sed_provider,
+                                                                        filter_provider);
+
+             if (PhzUtils::getStopThreadsFlag()) {
+                 throw Elements::Exception() << "Stopped by the user";
+             }
+
+             // make group & compute minimal distance
+             std::vector<std::vector<double>> sed_distances = computeSedDistance(colors);
+             double max_gap = maxGap(sed_distances);
+             logger.info() << "Maximum gap :" << max_gap;
+             double radius = max_gap/2.0;
+
+             if (PhzUtils::getStopThreadsFlag()) {
+                 throw Elements::Exception() << "Stopped by the user";
+             }
+
+             // compute weights
+             auto weights = getWeights(colors, radius);
+
+             // fill the map
+             size_t index = 0;
+             std::map<XYDataset::QualifiedName, double> weight_map{};
+             for (auto sed_iter = cells_sed_collection[key].begin(); sed_iter != cells_sed_collection[key].end(); ++sed_iter) {
+               weight_map.insert(std::make_pair(*sed_iter, weights[index]));
+               ++index;
+             }
+
+             seds_weights_collection.insert(std::make_pair(cells_sed_collection[key], std::move(weight_map)));
+           }
+
+           // fill the grid
+           for (size_t sed_index = 0; sed_index < sed_axis.size(); ++sed_index) {
+             XYDataset::QualifiedName sed_value = sed_axis[sed_index];
+
+             prior_grid.at(z_index, e_index, curve_index, sed_index) =
+                 seds_weights_collection[cells_sed_collection[key]][sed_value];
+
+           }
+           ++current;
+           m_progress_listener(50+static_cast<int>((100*current)/total), 150);
+         }
+       }
+     }
+
+     prior_grids.insert(std::make_pair((*region_iter).first, std::move(prior_grid)));
   }
-  // 3) make group & compute minimal distance
-  std::vector<std::vector<double>> sed_distances = computeSedDistance(colors);
-  double max_gap = maxGap(sed_distances);
-  logger.info() << "Maximum gap :" << max_gap;
-  double radius = max_gap/2.0;
-  if (PhzUtils::getStopThreadsFlag()) {
-     throw Elements::Exception() << "Stopped by the user";
+
+  // export the grid
+  fs::path output_file{config_manager.getConfiguration<ComputeSedWeightConfig>().getOutputFile()};
+  fs::remove(output_file);
+  fs::create_directories(output_file.parent_path());
+
+  // Store the grids themselves
+  for (auto& pair : prior_grids) {
+    GridContainer::gridFitsExport(output_file, pair.first, pair.second);
+
   }
-  // 4) compute weights
-  auto weights = getWeights(colors, radius);
-
-  // 5) output weights
-  logger.info() << "Outputing the SEDs' weight in file " << output_file;
-  std::vector<Table::ColumnInfo::info_type> info_list {
-        Table::ColumnInfo::info_type("SED", typeid(std::string)),
-        Table::ColumnInfo::info_type("Weight", typeid(double))
-    };
-
-  std::shared_ptr<Table::ColumnInfo> column_info {new Table::ColumnInfo {info_list}};
-  std::vector<Table::Row> row_list{};
-  size_t sed_index = 0;
-  for (auto sed_iter = sed_list.begin(); sed_iter != sed_list.end(); ++sed_iter) {
-    std::vector<Table::Row::cell_type> values {(*sed_iter).qualifiedName(), weights[sed_index]};
-    Table::Row row {values, column_info};
-    row_list.push_back(row);
-    ++sed_index;
-  }
-
-  Table::Table table {row_list};
-  Table::AsciiWriter writer(output_file);
-  writer.addData(table);
-
+  logger.info() << "Created the prior grid in file " << output_file.string();
 
 }
 
