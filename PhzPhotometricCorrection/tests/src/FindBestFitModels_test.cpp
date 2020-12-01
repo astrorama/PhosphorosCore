@@ -54,9 +54,14 @@ struct FindBestFitModels_Fixture {
    PhzDataModel::PhotometryGrid photo_grid { axes };
    PhzDataModel::PhotometryGrid ref_photo_grid { axes };
 
-   PhzDataModel::PhotometricCorrectionMap correctionMap { {
-       XYDataset::QualifiedName { "Filter1" }, 1.0 }, {
-       XYDataset::QualifiedName { "Filter2" }, 2.0 }, };
+   PhzDataModel::PhotometricCorrectionMap correctionMap {
+     { XYDataset::QualifiedName { "Filter1" }, 1.0 },
+     { XYDataset::QualifiedName { "Filter2" }, 2.0 } };
+
+   PhzDataModel::AdjustErrorParamMap error_adjust_param_map = PhzDataModel::AdjustErrorParamMap{
+     { XYDataset::QualifiedName { "Filter1" }, std::make_tuple(1., 0., 0.)},
+     {XYDataset::QualifiedName { "Filter2" }, std::make_tuple(1., 0.,0.)}
+   };
 
    SourceCatalog::Photometry photometry_corrected { filters, ComputeCorrection(
        vector<SourceCatalog::FluxErrorPair> { { 0.1, 0. }, { 0.2, 0. } } , correctionMap) };
@@ -157,21 +162,21 @@ struct FindBestFitModels_Fixture {
 BOOST_AUTO_TEST_SUITE (FindBestFitModels_test)
 
 BOOST_FIXTURE_TEST_CASE(Functional_call_test, FindBestFitModels_Fixture) {
-  auto test_object = FindBestFitModels<PhzLikelihood::SourcePhzFunctor>(likelihood_func);
+  auto test_object = FindBestFitModels<PhzLikelihood::SourcePhzFunctor>(likelihood_func, error_adjust_param_map);
   std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
   model_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
   auto result_map = test_object(sources.begin(), sources.end(), model_grid_map,correctionMap);
 }
 
 BOOST_FIXTURE_TEST_CASE(Functional_call_mock_test, FindBestFitModels_Fixture) {
-  auto test_object = FindBestFitModels<SourcePhzCalculatorMock>(likelihood_func);
+  auto test_object = FindBestFitModels<SourcePhzCalculatorMock>(likelihood_func, error_adjust_param_map);
   std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
   model_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
   auto result_map = test_object(sources.begin(), sources.end(), model_grid_map, correctionMap);
 }
 
 BOOST_FIXTURE_TEST_CASE(Functional_call_throw_test, FindBestFitModels_Fixture) {
-  auto test_object = FindBestFitModels<SourcePhzCalculatorMock>(likelihood_func);
+  auto test_object = FindBestFitModels<SourcePhzCalculatorMock>(likelihood_func, error_adjust_param_map);
   std::map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map {};
   model_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
 

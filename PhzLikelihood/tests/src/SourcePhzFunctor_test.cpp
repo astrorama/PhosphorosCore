@@ -64,6 +64,11 @@ struct SourcePhzFunctor_Fixture {
       XYDataset::QualifiedName { "filter_2" }, 2.0 }, {
       XYDataset::QualifiedName { "filter_3" }, 3.0 } };
 
+  PhzDataModel::AdjustErrorParamMap error_param_map = PhzDataModel::AdjustErrorParamMap{
+    {XYDataset::QualifiedName { "filter_1" }, std::make_tuple(2.0, 0.0, 0.0)},
+    {XYDataset::QualifiedName { "filter_2" }, std::make_tuple(1.0, 1.0, 0.0)},
+    {XYDataset::QualifiedName { "filter_3" }, std::make_tuple(1.0, 0.0, 1.0)}};
+
   SourceCatalog::Photometry photometry_corrected { filters, ComputeCorrection(
       values_source, correctionMap) };
 
@@ -113,7 +118,7 @@ BOOST_FIXTURE_TEST_CASE(SourcePhzFunctor_test, SourcePhzFunctor_Fixture) {
   photo_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
 
   // When
-  PhzLikelihood::SourcePhzFunctor functor(correctionMap, photo_grid_map,
+  PhzLikelihood::SourcePhzFunctor functor(correctionMap, error_param_map, photo_grid_map,
       likelihood_function.getFunctorObject(), {},
       {PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}});
   auto best_model = functor(source);

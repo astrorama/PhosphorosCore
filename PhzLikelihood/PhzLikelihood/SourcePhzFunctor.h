@@ -13,6 +13,7 @@
 #include <memory>
 #include "SourceCatalog/Source.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
+#include "PhzDataModel/AdjustErrorParamMap.h"
 #include "PhzDataModel/SourceResults.h"
 #include "PhzLikelihood/SingleGridPhzFunctor.h"
 
@@ -48,8 +49,9 @@ public:
 
   /**
    * Constructs a new SourcePhzFunctor instance. It gets as parameters a map
-   * containing the photometric corrections,a map with the grids with the model
-   * photometries for each parameter space region, the algorithm to use for
+   * containing the photometric corrections,a map with the param for recomputing
+   * the errors,a map with the grids with the model photometries for each
+   * parameter space region, the algorithm to use for
    * calculating the likelihood grid, the algorithm for finding the best fitted
    * model and the algorithm for performing the PDF marginalization. Note that
    * the algorithms can be omitted which will result to the default chi^2 for
@@ -58,6 +60,8 @@ public:
    *
    * @param phot_corr_map
    *    The map with the photometric corrections
+   * @param adjust_error_param_map
+   *    The map with the parameter for recomputing the errors
    * @param phot_grid_map
    *    The const reference to the map containing the grids with the model
    *    photometries for all the parameter space regions
@@ -69,6 +73,7 @@ public:
    *    The functors to use for performing the PDF marginalizations
    */
   SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
+                   PhzDataModel::AdjustErrorParamMap adjust_error_param_map,
                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                    LikelihoodGridFunction likelihood_grid_func,
                    std::vector<PriorFunction> priors = {},
@@ -93,6 +98,7 @@ public:
 
 private:
   PhzDataModel::PhotometricCorrectionMap m_phot_corr_map;
+  PhzDataModel::AdjustErrorParamMap m_adjust_error_param_map;
   const std::map<std::string, PhzDataModel::PhotometryGrid>& m_phot_grid_map;
   std::map<std::string, SingleGridPhzFunctor> m_single_grid_functor_map {};
   std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> m_model_funct_list;

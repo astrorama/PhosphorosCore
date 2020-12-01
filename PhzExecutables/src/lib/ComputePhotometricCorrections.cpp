@@ -34,6 +34,7 @@
 #include "PhzPhotometricCorrection/PhotometricCorrectionAlgorithm.h"
 #include "PhzPhotometricCorrection/PhotometricCorrectionCalculator.h"
 #include "PhzPhotometricCorrection/ParallelSourcesHandler.h"
+#include "PhzConfiguration/ErrorAdjustmentConfig.h"
 
 #include "PhzExecutables/ComputePhotometricCorrections.h"
 #include "PhzConfiguration/ModelGridModificationConfig.h"
@@ -75,6 +76,7 @@ void ComputePhotometricCorrections::run(ConfigManager& config_manager) {
   auto& likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
   auto scale_factor_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getScaleFactorFunction();
   auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();
+  auto& adjust_error_param_map = config_manager.getConfiguration<ErrorAdjustmentConfig>().getAdjustErrorParamMap();
   auto& marginalization_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
   auto& model_func_list = config_manager.getConfiguration<ModelGridModificationConfig>().getProcessModelGridFunctors();
   auto& output_func = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getOutputFunction();
@@ -88,6 +90,7 @@ void ComputePhotometricCorrections::run(ConfigManager& config_manager) {
 
   ParallelIteratorHandler<FindBestFitModels<PhzLikelihood::SourcePhzFunctor>> find_best_fit_models{threads, thread_pool,
                                                                                                    likelihood_grid_func,
+                                                                                                   adjust_error_param_map,
                                                                                                    priors,
                                                                                                    marginalization_func_list,
                                                                                                    model_func_list};

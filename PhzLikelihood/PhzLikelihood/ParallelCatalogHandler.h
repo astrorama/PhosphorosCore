@@ -38,6 +38,8 @@ public:
    *
    * @param phot_corr_map
    *    A map with the photometric corrections to be applied for each filter
+   * @param adjust_error_param_map
+   *    The map with the parameter for recomputing the errors
    * @param phot_grid_map
    *    The const reference to the map containing the grids with the model
    *    photometries for all the parameter space regions
@@ -53,6 +55,7 @@ public:
    *    the filters of the model photometries
    */
   ParallelCatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
+                         PhzDataModel::AdjustErrorParamMap adjust_error_param_map,
                          const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                          LikelihoodGridFunction likelihood_grid_func,
                          std::vector<StaticPriorFunction> static_priors,

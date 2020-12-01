@@ -39,6 +39,7 @@
 #include "PhzConfiguration/LuminositySedGroupConfig.h"
 #include "PhzConfiguration/LuminosityFunctionConfig.h"
 #include "PhzConfiguration/PhotometricCorrectionConfig.h"
+#include "PhzConfiguration/ErrorAdjustmentConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzConfiguration/NzPriorConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
@@ -125,6 +126,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<PdfOutputConfig>();
   declareDependency<OutputStatisticsConfig>();
   declareDependency<CopyColumnsConfig>();
+  declareDependency<ErrorAdjustmentConfig>();
 
   declareDependency<DustColumnDensityColumnConfig>();
   declareDependency<CorrectionCoefficientGridConfig>();

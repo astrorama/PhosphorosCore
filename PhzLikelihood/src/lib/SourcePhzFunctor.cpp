@@ -36,15 +36,17 @@ using ResType = PhzDataModel::SourceResultType;
 using RegResType = PhzDataModel::RegionResultType;
 
 SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
+                                   PhzDataModel::AdjustErrorParamMap adjust_error_param_map,
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                                    LikelihoodGridFunction likelihood_func,
                                    std::vector<PriorFunction> priors,
                                    std::vector<MarginalizationFunction> marginalization_func_list,
                                    std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list,
                                    bool doNormalizePdf)
-        : m_phot_corr_map{std::move(phot_corr_map)}, m_phot_grid_map(phot_grid_map), m_model_funct_list{model_funct_list},m_do_normalize_pdf{doNormalizePdf} {
+        : m_phot_corr_map{std::move(phot_corr_map)}, m_adjust_error_param_map{std::move(adjust_error_param_map)}, m_phot_grid_map(phot_grid_map), m_model_funct_list{model_funct_list},m_do_normalize_pdf{doNormalizePdf} {
   for (auto& pair : phot_grid_map) {
     m_single_grid_functor_map.emplace(std::piecewise_construct,
+
             std::forward_as_tuple(pair.first),
             std::forward_as_tuple(priors, marginalization_func_list, likelihood_func));
   }
@@ -70,6 +72,28 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
     filter_names_ptr->push_back(std::move(filter_name));
     fluxes.emplace_back(new_flux_error);
   }
+  return SourceCatalog::Photometry{filter_names_ptr, std::move(fluxes)};
+}
+
+SourceCatalog::Photometry adjustErrors(const PhzDataModel::AdjustErrorParamMap& pc_map,
+                                        const SourceCatalog::Photometry& source_phot) {
+  std::shared_ptr<std::vector<std::string>> filter_names_ptr {new std::vector<std::string>{}};
+  std::vector<SourceCatalog::FluxErrorPair> fluxes {};
+  /*for (auto iter = source_phot.begin(); iter != source_phot.end(); ++iter) {
+    SourceCatalog::FluxErrorPair new_flux_error {*iter};
+    auto filter_name = iter.filterName();
+    if (!new_flux_error.missing_photometry_flag) {
+      auto pc = pc_map.find(filter_name);
+      if (pc == pc_map.end()) {
+        throw Elements::Exception() << "Source does not contain photometry for " << filter_name;
+      }
+      new_flux_error.flux *= (*pc).second;
+    }
+    filter_names_ptr->push_back(std::move(filter_name));
+    fluxes.emplace_back(new_flux_error);
+  }*/
+
+  // TODO error recomputation algo
   return SourceCatalog::Photometry{filter_names_ptr, std::move(fluxes)};
 }
 
@@ -306,6 +330,9 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
 
   // Apply the photometric correction to the given source photometry
   auto cor_source_phot = applyPhotCorr(m_phot_corr_map, *source_phot_ptr);
+
+  // Apply the photometric error recomputation
+  cor_source_phot = adjustErrors(m_adjust_error_param_map, cor_source_phot);
 
   // Create a new results object
   PhzDataModel::SourceResults results {};
