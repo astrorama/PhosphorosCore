@@ -75,25 +75,32 @@ SourceCatalog::Photometry applyPhotCorr(const PhzDataModel::PhotometricCorrectio
   return SourceCatalog::Photometry{filter_names_ptr, std::move(fluxes)};
 }
 
-SourceCatalog::Photometry adjustErrors(const PhzDataModel::AdjustErrorParamMap& pc_map,
+SourceCatalog::Photometry adjustErrors(const PhzDataModel::AdjustErrorParamMap& aep_map,
                                         const SourceCatalog::Photometry& source_phot) {
   std::shared_ptr<std::vector<std::string>> filter_names_ptr {new std::vector<std::string>{}};
   std::vector<SourceCatalog::FluxErrorPair> fluxes {};
-  /*for (auto iter = source_phot.begin(); iter != source_phot.end(); ++iter) {
+  for (auto iter = source_phot.begin(); iter != source_phot.end(); ++iter) {
     SourceCatalog::FluxErrorPair new_flux_error {*iter};
     auto filter_name = iter.filterName();
     if (!new_flux_error.missing_photometry_flag) {
-      auto pc = pc_map.find(filter_name);
-      if (pc == pc_map.end()) {
-        throw Elements::Exception() << "Source does not contain photometry for " << filter_name;
+      auto aep = aep_map.find(filter_name);
+      double alpha = std::get<0>((*aep).second);
+      double beta = std::get<1>((*aep).second);
+      double gamma = std::get<2>((*aep).second);
+      double flux = new_flux_error.flux;
+      double error = new_flux_error.error;
+
+      if (new_flux_error.upper_limit_flag || flux <= 0) {
+          new_flux_error.error = alpha*error;
+      } else {
+          new_flux_error.error = std::sqrt(alpha*alpha*error*error + (beta*beta*flux + gamma)*flux);
       }
-      new_flux_error.flux *= (*pc).second;
     }
+
     filter_names_ptr->push_back(std::move(filter_name));
     fluxes.emplace_back(new_flux_error);
-  }*/
+  }
 
-  // TODO error recomputation algo
   return SourceCatalog::Photometry{filter_names_ptr, std::move(fluxes)};
 }
 
