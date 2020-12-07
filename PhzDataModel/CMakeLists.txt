@@ -22,6 +22,9 @@ elements_add_unit_test(FilterInfo_test tests/src/FilterInfo_test.cpp
 elements_add_unit_test(PhotometricCorrectionMap_test tests/src/PhotometricCorrectionMap_test.cpp 
                      LINK_LIBRARIES PhzDataModel
                      TYPE Boost)
+elements_add_unit_test(AdjustErrorParamMap_test tests/src/AdjustErrorParamMap_test.cpp 
+                     LINK_LIBRARIES PhzDataModel
+                     TYPE Boost)
 elements_add_unit_test(PhotometryCellManagerTraits_test tests/src/PhotometryGrid_test.cpp 
                      LINK_LIBRARIES PhzDataModel
                      TYPE Boost)

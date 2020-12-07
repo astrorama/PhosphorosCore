@@ -38,6 +38,8 @@
 #include "PhzPhotometricCorrection/FindWeightedMeanPhotometricCorrectionsFunctor.h"
 #include "PhzPhotometricCorrection/FindWeightedMedianPhotometricCorrectionsFunctor.h"
 
+
+#include "PhzConfiguration/ErrorAdjustmentConfig.h"
 #include "PhzConfiguration/DustColumnDensityColumnConfig.h"
 #include "PhzConfiguration/CorrectionCoefficientGridConfig.h"
 #include "PhzConfiguration/ModelGridModificationConfig.h"
@@ -90,6 +92,7 @@ ComputePhotometricCorrectionsConfig::ComputePhotometricCorrectionsConfig(long ma
   declareDependency<AxisFunctionPriorConfig>();
   declareDependency<AxisWeightPriorConfig>();
   declareDependency<GenericGridPriorConfig>();
+  declareDependency<ErrorAdjustmentConfig>();
 
 
   declareDependency<DustColumnDensityColumnConfig>();

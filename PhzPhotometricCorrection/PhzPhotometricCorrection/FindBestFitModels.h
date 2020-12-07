@@ -13,6 +13,7 @@
 #include "SourceCatalog/Catalog.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
+#include "PhzDataModel/AdjustErrorParamMap.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
 #include "PhzLikelihood/ProcessModelGridFunctor.h"
 
@@ -40,6 +41,7 @@ public:
   using PriorFunction = PhzLikelihood::SourcePhzFunctor::PriorFunction;
   
   FindBestFitModels(LikelihoodGridFunction likelihood_func,
+                    const PhzDataModel::AdjustErrorParamMap& adjust_error_param_map,
                     std::vector<PriorFunction> priors = {},
                     std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> marginalization_func_list = {PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}},
                     std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list ={});
@@ -78,6 +80,7 @@ public:
   
 private:
   
+  const PhzDataModel::AdjustErrorParamMap& m_adjust_error_param_map;
   LikelihoodGridFunction m_likelihood_func;
   std::vector<PriorFunction> m_priors;
   std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> m_marginalization_func_list;

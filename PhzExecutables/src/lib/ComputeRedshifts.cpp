@@ -32,6 +32,7 @@
 #include "PhzConfiguration/MarginalizationConfig.h"
 #include "PhzConfiguration/LikelihoodGridFuncConfig.h"
 #include "PhzConfiguration/PhotometricCorrectionConfig.h"
+#include "PhzConfiguration/ErrorAdjustmentConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzConfiguration/PdfOutputConfig.h"
 #include "PhzConfiguration/ModelGridModificationConfig.h"
@@ -103,11 +104,12 @@ void ComputeRedshifts::doRun(ConfigManager& config_manager) {
     auto& marginalization_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
     auto& likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
     auto& phot_corr_map = config_manager.getConfiguration<PhotometricCorrectionConfig>().getPhotometricCorrectionMap();
+    auto& adjust_error_param_map = config_manager.getConfiguration<ErrorAdjustmentConfig>().getAdjustErrorParamMap();
     auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();
     auto& model_func_list = config_manager.getConfiguration<ModelGridModificationConfig>().getProcessModelGridFunctors();
     bool do_normalize_pdf = config_manager.getConfiguration<PdfOutputConfig>().doNormalizePDFs();
 
-    CatalogHandler handler {phot_corr_map, model_phot_grid, likelihood_grid_func,
+    CatalogHandler handler {phot_corr_map, adjust_error_param_map, model_phot_grid, likelihood_grid_func,
                             priors, marginalization_func_list, model_func_list, do_normalize_pdf};
                                 
     auto table_reader = config_manager.getConfiguration<CatalogConfig>().getTableReader();

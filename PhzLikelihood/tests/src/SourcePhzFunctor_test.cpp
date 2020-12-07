@@ -23,6 +23,11 @@ using std::vector;
 using namespace Euclid;
 using namespace std::placeholders;
 
+using ResType = PhzDataModel::SourceResultType;
+using RegResType = PhzDataModel::RegionResultType;
+
+
+
 struct SourcePhzFunctor_Fixture {
 
   vector<double> zs { 0.0, 0.1 };
@@ -50,9 +55,22 @@ struct SourcePhzFunctor_Fixture {
   SourceCatalog::Photometry photometry_4 { filters, values_4 };
   SourceCatalog::Photometry photometry_source { filters, values_source };
 
+  vector<SourceCatalog::FluxErrorPair> pair_corr_err_phot { { 0.1, 0.2 }, { 0.2, 0.4 }, { 0.3, 2. }};
+  SourceCatalog::Photometry corr_err_phot { filters, pair_corr_err_phot };
+
+  vector<SourceCatalog::FluxErrorPair> value_phot_neg { { -0.1, 0.1 }, { -0.2, 0.1 }, { -0.3, 0.1 }};
+  vector<SourceCatalog::FluxErrorPair> value_corr_err_phot_neg { { -0.1, 0.2 }, { -0.2, 0.2 }, { -0.3, 0.1 }};
+  SourceCatalog::Photometry corr_neg_phot { filters, value_corr_err_phot_neg };
+
+
   std::vector<std::shared_ptr<SourceCatalog::Attribute>>
       attibuteVector{std::shared_ptr<SourceCatalog::Photometry>(new SourceCatalog::Photometry{ filters, values_source })};
   SourceCatalog::Source source = SourceCatalog::Source(1, attibuteVector);
+
+  std::vector<std::shared_ptr<SourceCatalog::Attribute>>
+      attibuteVectorNeg{std::shared_ptr<SourceCatalog::Photometry>(new SourceCatalog::Photometry{ filters, value_phot_neg })};
+  SourceCatalog::Source sourceNeg = SourceCatalog::Source(1, attibuteVectorNeg);
+
 
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs,
       reddeing_curves, seds);
@@ -64,6 +82,21 @@ struct SourcePhzFunctor_Fixture {
       XYDataset::QualifiedName { "filter_2" }, 2.0 }, {
       XYDataset::QualifiedName { "filter_3" }, 3.0 } };
 
+  PhzDataModel::PhotometricCorrectionMap correction_null_Map { {
+       XYDataset::QualifiedName { "filter_1" }, 1.0 }, {
+       XYDataset::QualifiedName { "filter_2" }, 1.0 }, {
+       XYDataset::QualifiedName { "filter_3" }, 1.0 } };
+
+  PhzDataModel::AdjustErrorParamMap error_param_map = PhzDataModel::AdjustErrorParamMap{
+    {XYDataset::QualifiedName { "filter_1" }, std::make_tuple(2.0, 0.0, 0.0)},
+    {XYDataset::QualifiedName { "filter_2" }, std::make_tuple(0.0, 2.0, 0.0)},
+    {XYDataset::QualifiedName { "filter_3" }, std::make_tuple(0.0, 0.0, 40/3.0)}};
+
+  PhzDataModel::AdjustErrorParamMap error_param_null_map = PhzDataModel::AdjustErrorParamMap{
+    {XYDataset::QualifiedName { "filter_1" }, std::make_tuple(1.0, 0.0, 0.0)},
+    {XYDataset::QualifiedName { "filter_2" }, std::make_tuple(1.0, 0.0, 0.0)},
+    {XYDataset::QualifiedName { "filter_3" }, std::make_tuple(1.0, 0.0, 0.0)}};
+
   SourceCatalog::Photometry photometry_corrected { filters, ComputeCorrection(
       values_source, correctionMap) };
 
@@ -71,7 +104,6 @@ struct SourcePhzFunctor_Fixture {
       const vector<SourceCatalog::FluxErrorPair>& values,
       const PhzDataModel::PhotometricCorrectionMap& corrMap) {
     vector<SourceCatalog::FluxErrorPair> result { };
-
 
     auto filter_iter = filters->begin();
     for (auto& flux_value : values) {
@@ -113,11 +145,53 @@ BOOST_FIXTURE_TEST_CASE(SourcePhzFunctor_test, SourcePhzFunctor_Fixture) {
   photo_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
 
   // When
-  PhzLikelihood::SourcePhzFunctor functor(correctionMap, photo_grid_map,
+  PhzLikelihood::SourcePhzFunctor functor(correctionMap, error_param_null_map, photo_grid_map,
       likelihood_function.getFunctorObject(), {},
       {PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}});
   auto best_model = functor(source);
-
 }
+
+BOOST_FIXTURE_TEST_CASE(NoErrorRecompute_test, SourcePhzFunctor_Fixture) {
+ // no re-computation
+  LikelihoodFunctionMock likelihood_function;
+  likelihood_function.expectFunctorCall(photometry_source, ref_photo_grid);
+  std::map<std::string, PhzDataModel::PhotometryGrid> photo_grid_map {};
+  photo_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
+
+  // When
+  PhzLikelihood::SourcePhzFunctor functor(correction_null_Map, error_param_map, photo_grid_map,
+      likelihood_function.getFunctorObject(), {},
+      {PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}});
+  auto best_model = functor(source);
+}
+
+BOOST_FIXTURE_TEST_CASE(ErrorRecompute_test, SourcePhzFunctor_Fixture) {
+ // no re-computation
+  LikelihoodFunctionMock likelihood_function;
+  likelihood_function.expectFunctorCall(corr_err_phot, ref_photo_grid);
+  std::map<std::string, PhzDataModel::PhotometryGrid> photo_grid_map {};
+  photo_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
+
+  // When
+  PhzLikelihood::SourcePhzFunctor functor(correction_null_Map, error_param_map, photo_grid_map,
+      likelihood_function.getFunctorObject(), {},
+      {PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}});
+  auto best_model = functor(source);
+}
+
+BOOST_FIXTURE_TEST_CASE(ErrorRecomputeNegatifFlux_test, SourcePhzFunctor_Fixture) {
+ // no re-computation
+  LikelihoodFunctionMock likelihood_function;
+  likelihood_function.expectFunctorCall(corr_neg_phot, ref_photo_grid);
+  std::map<std::string, PhzDataModel::PhotometryGrid> photo_grid_map {};
+  photo_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
+
+  // When
+  PhzLikelihood::SourcePhzFunctor functor(correction_null_Map, error_param_map, photo_grid_map,
+      likelihood_function.getFunctorObject(), {},
+      {PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}});
+  auto best_model = functor(sourceNeg);
+}
+
 
 BOOST_AUTO_TEST_SUITE_END ()

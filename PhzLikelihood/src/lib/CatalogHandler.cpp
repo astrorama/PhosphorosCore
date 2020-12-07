@@ -12,6 +12,7 @@ namespace Euclid {
 namespace PhzLikelihood {
 
 CatalogHandler::CatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
+                               PhzDataModel::AdjustErrorParamMap adjust_error_param_map,
                                const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                                LikelihoodGridFunction likelihood_grid_func,
                                std::vector<PriorFunction> priors,
@@ -19,6 +20,7 @@ CatalogHandler::CatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_
                                std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list,
                                bool doNormalizePdf)
             : m_source_phz_func{std::move(phot_corr_map),
+                                std::move(adjust_error_param_map),
                                 phot_grid_map,
                                 std::move(likelihood_grid_func),
                                 std::move(priors),
