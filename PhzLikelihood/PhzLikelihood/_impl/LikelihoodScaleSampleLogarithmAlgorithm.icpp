@@ -1,0 +1,60 @@
+/** 
+ * @file LikelihoodScaleSampleLogarithmAlgorithm.icpp
+ * @date 24/02/2021
+ * @author dubathf
+ */
+
+#include "ElementsKernel/Exception.h"
+
+namespace Euclid {
+namespace PhzLikelihood {
+
+template<typename ModelIter, typename LikelihoodLogIter,
+typename ScaleFactorIter, typename SigmaScaleFactorIter,
+typename LikelihoodSampleIter>
+void LikelihoodScaleSampleLogarithmAlgorithm::operator()(const SourceCatalog::Photometry& source_photometry,
+                ModelIter model, ModelIter model_end,
+                LikelihoodLogIter likelihood_log,
+                ScaleFactorIter scale_factor,
+                SigmaScaleFactorIter sigma_scale_factor,
+                LikelihoodSampleIter likelihood_log_sample) const {
+  // Create a new source photometry, with the correct filter order. If a filter
+  // is missing from the source photometry, set it to MISSING_DATA
+  std::shared_ptr<std::vector<std::string>> ordered_filter_list_ptr {new std::vector<std::string>};
+  for (auto model_iter=model->begin(); model_iter!=model->end(); ++model_iter) {
+    ordered_filter_list_ptr->push_back(model_iter.filterName());
+  }
+  std::vector<SourceCatalog::FluxErrorPair> ordered_flux_list;
+  for (auto& filter : *ordered_filter_list_ptr) {
+    auto flux_ptr = source_photometry.find(filter);
+    if (flux_ptr == nullptr) {
+      ordered_flux_list.emplace_back(0., 0., true);
+    } else {
+      ordered_flux_list.emplace_back(*flux_ptr);
+    }
+  }
+  SourceCatalog::Photometry ordered_source_phot {ordered_filter_list_ptr, std::move(ordered_flux_list)};
+  
+  // Calculate the natural logarithm of the likelihood for each model and populate the output
+  for (; model != model_end; ++model, ++likelihood_log, ++scale_factor, ++sigma_scale_factor, ++likelihood_log_sample) {
+    double alpha =  m_scale_factor_calc(ordered_source_phot.begin(), ordered_source_phot.end(), model->begin());
+    *scale_factor = alpha;
+    double sigma = m_sigma_scale_factor_calc(ordered_source_phot.begin(), ordered_source_phot.end(), model->begin());
+    *sigma_scale_factor = sigma;
+    *likelihood_log = m_likelihood_log_calc(ordered_source_phot.begin(), ordered_source_phot.end(), model->begin(), alpha);
+
+    // Computing the sampling
+    double base = alpha - sigma * m_scale_sample_range;
+    double step =  2.0 * (sigma * m_scale_sample_range)/(m_scale_sample_number - 1);
+    for (int sample_index = 0; sample_index < m_scale_sample_number; ++sample_index) {
+      double current_alpha =  base +  step * sample_index;
+      (*likelihood_log_sample).push_back(m_likelihood_log_calc(ordered_source_phot.begin(),
+                                                               ordered_source_phot.end(),
+                                                               model->begin(),
+                                                               current_alpha));
+    }
+  }
+}
+
+} // end of namespace PhzLikelihood
+} // end of namespace Euclid

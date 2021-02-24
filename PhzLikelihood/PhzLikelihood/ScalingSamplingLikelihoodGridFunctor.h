@@ -41,7 +41,7 @@ public:
                              PhzDataModel::DoubleGrid::iterator likelihood_log_begin,
                              PhzDataModel::DoubleGrid::iterator scale_factor_begin,
                              PhzDataModel::DoubleGrid::iterator sigma_scale_factor_begin,
-                             PhzDataModel::DoubleListGrid::iterator likelihood_sample_begin
+                             PhzDataModel::DoubleListGrid::iterator likelihood_log_sample_begin
                              )
                        > LikelihoodScaleSampleLogarithmFunction;
 
@@ -55,7 +55,7 @@ public:
    * photometry grid. The given results object must already contain the
    * MODEL_GRID_REFERENCE and SOURCE_PHOTOMETRY_REFERENCE objects. After the
    * call, the results will contain the LIKELIHOOD_GRID and SCALE_FACTOR_GRID,
-   * SIGMA_SCALE_FACTOR_GRID and LIKELIHOOD_SCALING_GRID.
+   * SIGMA_SCALE_FACTOR_GRID and LIKELIHOOD_LOG_SCALING_GRID.
    *
    * @param results
    *    The results object to get the input and set the output
