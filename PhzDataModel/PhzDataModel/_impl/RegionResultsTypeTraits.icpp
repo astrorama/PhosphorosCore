@@ -29,6 +29,7 @@
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/DoubleListGrid.h"
 #include "PhzDataModel/Pdf1D.h"
 
 namespace Euclid {
@@ -86,12 +87,21 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
                               T == RegionResultType::SCALE_FACTOR_GRID ||
+                              T == RegionResultType::SIGMA_SCALE_FACTOR_GRID ||
                               T == RegionResultType::LIKELIHOOD_LOG_GRID ||
                               T == RegionResultType::POSTERIOR_LOG_GRID ||
                               T == RegionResultType::LIKELIHOOD_GRID ||
                               T == RegionResultType::POSTERIOR_GRID
                        >::type> {
   using type = DoubleGrid;
+};
+
+template <RegionResultType T>
+struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
+                              T == RegionResultType::LIKELIHOOD_SCALING_LOG_GRID ||
+                              T == RegionResultType::POSTERIOR_SCALING_LOG_GRID
+                       >::type> {
+  using type = DoubleListGrid;
 };
 
 

@@ -46,10 +46,16 @@ enum class RegionResultType {
   BEST_MODEL_ITERATOR,
   /// The grid containing the scale factor for all models
   SCALE_FACTOR_GRID,
+  /// The grid containing the sigma of the scale factor for all models
+  SIGMA_SCALE_FACTOR_GRID,
   /// The grid containing the logarithm of the likelihood for all models
   LIKELIHOOD_LOG_GRID,
   /// The grid containing the logarithm of the posterior for all models
   POSTERIOR_LOG_GRID,
+  /// The grid containing the logarithm of the likelihood for all models x all the scaling
+  LIKELIHOOD_SCALING_LOG_GRID,
+  /// The grid containing the logarithm of the posterior for all models x all the scaling
+  POSTERIOR_SCALING_LOG_GRID,
   /// The grid containing the normalized likelihood for all models
   LIKELIHOOD_GRID,
   /// The grid containing the normalized posterior for all models
