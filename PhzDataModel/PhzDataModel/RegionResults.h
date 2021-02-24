@@ -60,6 +60,11 @@ enum class RegionResultType {
   LIKELIHOOD_GRID,
   /// The grid containing the normalized posterior for all models
   POSTERIOR_GRID,
+  /// The grid containing the normalized of the likelihood for all models x all the scaling
+  LIKELIHOOD_SCALING_GRID,
+  /// The grid containing the normalized of the posterior for all models x all the scaling
+  POSTERIOR_SCALING_GRID,
+  /// The grid containing the normalized likelihood for all models
   /// The 1D PDF over the SED
   SED_1D_PDF,
   /// The 1D PDF over the reddening curve
