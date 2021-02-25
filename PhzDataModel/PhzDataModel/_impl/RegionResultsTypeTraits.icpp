@@ -144,10 +144,16 @@ struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
 
 template <RegionResultType T>
 struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
-                                    T == RegionResultType::FLAGS ||
-                                    T == RegionResultType::SAMPLE_SCALE_FACTOR
+                                    T == RegionResultType::FLAGS
                              >::type> {
   using type = std::map<std::string, bool>;
+};
+
+template <RegionResultType T>
+struct TypedEnumTraits<RegionResultType, T, typename std::enable_if<
+                                    T == RegionResultType::SAMPLE_SCALE_FACTOR
+                             >::type> {
+  using type = bool;
 };
 
 
