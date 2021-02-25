@@ -50,7 +50,8 @@ public:
    * Computes the log likelihood of the given source photometry over the given
    * photometry grid. The given results object must already contain the
    * MODEL_GRID_REFERENCE and SOURCE_PHOTOMETRY_REFERENCE objects. After the
-   * call, the results will contain the LIKELIHOOD_GRID and SCALE_FACTOR_GRID.
+   * call, the results will contain the LIKELIHOOD_GRID, SCALE_FACTOR_GRID
+   * and SAMPLE_SCALE_FACTOR (set to false)
    *
    * @param results
    *    The results object to get the input and set the output

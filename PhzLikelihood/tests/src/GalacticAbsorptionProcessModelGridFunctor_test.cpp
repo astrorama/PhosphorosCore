@@ -26,7 +26,6 @@
 #include <string>
 #include <set>
 #include <map>
-#include <boost/test/unit_test.hpp>
 #include <vector>
 
 #include "ElementsKernel/Exception.h"

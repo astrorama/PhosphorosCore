@@ -55,7 +55,8 @@ public:
    * photometry grid. The given results object must already contain the
    * MODEL_GRID_REFERENCE and SOURCE_PHOTOMETRY_REFERENCE objects. After the
    * call, the results will contain the LIKELIHOOD_GRID and SCALE_FACTOR_GRID,
-   * SIGMA_SCALE_FACTOR_GRID and LIKELIHOOD_LOG_SCALING_GRID.
+   * SIGMA_SCALE_FACTOR_GRID,  LIKELIHOOD_LOG_SCALING_GRID
+   * and SAMPLE_SCALE_FACTOR (set to true) .
    *
    * @param results
    *    The results object to get the input and set the output
