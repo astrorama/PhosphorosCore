@@ -56,7 +56,7 @@ public:
   double operator()(SourceIter source, SourceIter source_end, ModelIter model) {
     double denominator {0.0};
     for (; source != source_end; ++source, ++model) {
-      if (!source.missing_photometry_flag) {
+      if (!(*source).missing_photometry_flag) {
         denominator += (*model).flux * (*model).flux /((*source).error * (*source).error);
       }
     }

@@ -27,6 +27,7 @@ void ScalingSamplingLikelihoodGridFunctor::operator()(PhzDataModel::RegionResult
   auto& likelihood_scale_sampling_grid = results.set<ResType::LIKELIHOOD_SCALING_GRID>(model_grid.getAxesTuple());
   auto& scale_factor_grid = results.set<ResType::SCALE_FACTOR_GRID>(model_grid.getAxesTuple());
   auto& sigma_scale_factor_grid = results.set<ResType::SIGMA_SCALE_FACTOR_GRID>(model_grid.getAxesTuple());
+  results.set<ResType::SAMPLE_SCALE_FACTOR>(true);
 
   // Calculate the natural logarithm of the likelihood over the grid
   m_likelihood_scale_sample_log_func(source_phot, model_grid.begin(), model_grid.end(),

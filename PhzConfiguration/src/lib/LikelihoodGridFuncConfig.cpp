@@ -31,11 +31,17 @@
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzLikelihood/LikelihoodGridFunctor.h"
 #include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
+#include "PhzLikelihood/ScalingSamplingLikelihoodGridFunctor.h"
+#include "PhzLikelihood/LikelihoodScaleSampleLogarithmAlgorithm.h"
 #include "PhzLikelihood/ScaleFactorFunctor.h"
+#include "PhzLikelihood/SigmaScaleFactorFunctor.h"
 #include "PhzLikelihood/ChiSquareLikelihoodLogarithm.h"
 #include "PhzConfiguration/ProgramOptionsHelper.h"
+#include "PhzConfiguration/ScaleFactorMarginalizationConfig.h"
+
 
 #include "PhzConfiguration/LikelihoodGridFuncConfig.h"
+
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -50,6 +56,7 @@ static Elements::Logging logger = Elements::Logging::getLogger("LikelihoodGridFu
 LikelihoodGridFuncConfig::LikelihoodGridFuncConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<Euclid::Configuration::PhotometryCatalogConfig>();
   declareDependency<Euclid::Configuration::CatalogConfig>();
+  declareDependency<ScaleFactorMarginalizationConfig>();
 }
 
 
@@ -80,9 +87,19 @@ const PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction & LikelihoodGridFu
       }
     }
 
-    m_grid_function = PhzLikelihood::LikelihoodGridFunctor {
-        PhzLikelihood::LikelihoodLogarithmAlgorithm { std::move(scale_factor),
-            std::move(likelihood_logarithm) } };
+    if (getDependency<ScaleFactorMarginalizationConfig>().getIsEnabled()) {
+      m_grid_function = PhzLikelihood::ScalingSamplingLikelihoodGridFunctor {
+                   PhzLikelihood::LikelihoodScaleSampleLogarithmAlgorithm { std::move(scale_factor),
+                       PhzLikelihood::SigmaScaleFactorFunctor{},
+                       std::move(likelihood_logarithm),
+                       getDependency<ScaleFactorMarginalizationConfig>().getSampleNumber(),
+                       getDependency<ScaleFactorMarginalizationConfig>().getRangeInSigma()
+                   } };
+    } else {
+      m_grid_function = PhzLikelihood::LikelihoodGridFunctor {
+             PhzLikelihood::LikelihoodLogarithmAlgorithm { std::move(scale_factor),
+                 std::move(likelihood_logarithm) } };
+    }
   }
 
   return m_grid_function;

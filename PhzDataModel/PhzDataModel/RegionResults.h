@@ -85,6 +85,8 @@ enum class RegionResultType {
   LIKELIHOOD_NORMALIZATION_LOG,
   /// The logarithm of the normalization of the posterior grid and the 1D PDFs
   NORMALIZATION_LOG,
+  /// Do use sampling of the scale factor
+  SAMPLE_SCALE_FACTOR,
   /// Computation Flags
   FLAGS
 };
