@@ -146,6 +146,27 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
       }
   }
 
+
+  if (results.get<PhzDataModel::RegionResultType::SAMPLE_SCALE_FACTOR>()) {
+       auto& posterior_sampled_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID>();
+       auto p_it = prior_grid.begin();
+       for (auto l_s_it = posterior_sampled_grid.begin();
+           l_s_it != posterior_sampled_grid.end();
+                   ++l_s_it, ++p_it) {
+             double prior = std::log(*p_it);
+             if (*p_it == 0) {
+               for (auto sample_iter = (*l_s_it).begin(); sample_iter != (*l_s_it).end(); ++sample_iter) {
+                 *sample_iter = min_value;
+               }
+
+             } else  if (std::isfinite(prior)) {
+                 for (auto sample_iter = (*l_s_it).begin(); sample_iter != (*l_s_it).end(); ++sample_iter) {
+                   *sample_iter += prior;
+                 }
+             }
+       }
+  }
+
 }
 
 }
