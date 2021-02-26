@@ -41,6 +41,7 @@ struct VolumePrior_Fixture {
   ModelAxesTuple axes = createAxesTuple(zs, ebvs, reddeing_curves, seds);
   
   PhzDataModel::DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(axes);
+  bool do_sample = results.set<RegionResultType::SAMPLE_SCALE_FACTOR>(false);
   
   PhysicsUtils::CosmologicalParameters cosmology {0.286, 0.714, 69.6};
   
@@ -74,6 +75,46 @@ BOOST_FIXTURE_TEST_CASE(priorValues, VolumePrior_Fixture) {
     }
   }
   
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(priorSamplingValues, VolumePrior_Fixture) {
+
+  // Given
+  results.get<RegionResultType::SAMPLE_SCALE_FACTOR>() = true;
+
+  auto& posterior_sampled_grid = results.set<RegionResultType::POSTERIOR_SCALING_LOG_GRID>(axes);
+  for (auto& l : posterior_grid) {
+    l = 1.;
+  }
+  for (auto& v : posterior_sampled_grid) {
+    for (size_t index=0; index < 4; ++index) {
+      v.push_back(1.0);
+    }
+  }
+  VolumePrior prior {cosmology, zs};
+
+  // When
+  prior(results);
+
+  // Then
+  for (std::size_t i = 0; i < zs.size(); ++i) {
+    auto z = zs.at(i);
+    auto expected = expectedPriorValues.at(i);
+    for (auto it = posterior_grid.begin().fixAxisByValue<ModelParameter::Z>(z); it != posterior_grid.end(); ++it) {
+      BOOST_CHECK_CLOSE_FRACTION(*it, expected, 1E-4);
+    }
+
+    for (auto sample_it = posterior_sampled_grid.begin().fixAxisByValue<ModelParameter::Z>(z);
+               sample_it != posterior_sampled_grid.end(); ++sample_it) {
+      BOOST_CHECK((*sample_it).size() == 4);
+      for (size_t index=0; index < (*sample_it).size(); ++index) {
+        BOOST_CHECK_CLOSE_FRACTION((*sample_it)[index], expected, 1E-4);
+      }
+    }
+  }
+
 }
 
 //-----------------------------------------------------------------------------
