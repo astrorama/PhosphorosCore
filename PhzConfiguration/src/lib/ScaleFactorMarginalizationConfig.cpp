@@ -46,8 +46,8 @@ auto ScaleFactorMarginalizationConfig::getProgramOptions() -> std::map<std::stri
   return {{"Scale factor marginalization options", {
     {SCALE_FACTOR_MARGINALIZATION_ENABLED.c_str(), po::value<std::string>()->default_value("NO"),
         "If added, turn scale factor marginalization on  (YES/NO, default: NO)"},
-    {SCALE_FACTOR_SAMPLE_NUMBER.c_str(), po::value<int>()->default_value(11),
-        "Number of sample for the scale factor marginalization (must be bigger than 2, default: 11)"},
+    {SCALE_FACTOR_SAMPLE_NUMBER.c_str(), po::value<int>()->default_value(101),
+        "Number of sample for the scale factor marginalization (must be bigger than 2, default: 101)"},
     {SCALE_FACTOR_RANGE.c_str(),po::value<double>()->default_value(5.),
         "Range (express in multiple of sigma) for the sampling of the scale factor (default:5 ie: [-5 sigma; 5 sigma])"}
   }}};
