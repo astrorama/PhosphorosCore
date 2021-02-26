@@ -42,6 +42,7 @@ struct AxisWeightPrior_Fixture {
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
   
   PhzDataModel::DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(axes);
+  bool do_sample = results.set<RegionResultType::SAMPLE_SCALE_FACTOR>(false);
   
   std::map<XYDataset::QualifiedName, double> sed_weights {
     {{"sed1"}, 1.1}, {{"sed2"}, 0.8}
@@ -73,6 +74,43 @@ BOOST_FIXTURE_TEST_CASE(sed_axis_prior, AxisWeightPrior_Fixture) {
   // Then
   for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
     BOOST_CHECK_CLOSE(*it, 0.01 + std::log(sed_weights[it.axisValue<ModelParameter::SED>()]), 0.001);
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(sampled_scale_sed_axis_prior, AxisWeightPrior_Fixture) {
+
+  // Given
+   results.get<RegionResultType::SAMPLE_SCALE_FACTOR>() = true;
+
+   auto& posterior_sampled_grid = results.set<RegionResultType::POSTERIOR_SCALING_LOG_GRID>(axes);
+   for (auto& l : posterior_grid) {
+     l = 0.01;
+   }
+   for (auto& v : posterior_sampled_grid) {
+     for (size_t index=0; index < 4; ++index) {
+       v.push_back(0.01);
+     }
+   }
+
+  AxisWeightPrior<ModelParameter::SED> prior {sed_weights};
+
+  // When
+  prior(results);
+
+  // Then
+  for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
+    BOOST_CHECK_CLOSE(*it, 0.01 + std::log(sed_weights[it.axisValue<ModelParameter::SED>()]), 0.001);
+  }
+
+  for (auto sample_it = posterior_sampled_grid.begin(); sample_it != posterior_sampled_grid.end(); ++sample_it) {
+          BOOST_CHECK((*sample_it).size() == 4);
+          double expected_value = 0.01 + std::log(sed_weights[sample_it.axisValue<ModelParameter::SED>()]);
+          for (size_t index=0; index < (*sample_it).size(); ++index) {
+            BOOST_CHECK_CLOSE((*sample_it)[index], expected_value, 0.001);
+          }
   }
 
 }

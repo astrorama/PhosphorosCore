@@ -47,6 +47,27 @@ void AxisWeightPrior<AxisIndex>::operator()(PhzDataModel::RegionResults& results
       }
     }
   }
+
+  if (results.get<PhzDataModel::RegionResultType::SAMPLE_SCALE_FACTOR>()) {
+        auto& posterior_sampled_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID>();
+        for (std::size_t i = 0; i < axis.size(); ++i) {
+          auto prior = m_weight_map.at(axis[i]);
+            if (prior <= min_value) {
+              for (auto& cell : posterior_sampled_grid.fixAxisByIndex<AxisIndex>(i)) {
+                for (auto sample_iter = cell.begin(); sample_iter != cell.end(); ++sample_iter) {
+                  *sample_iter = std::numeric_limits<double>::min();
+                }
+              }
+            } else {
+              auto log_prior = std::log(prior);
+              for (auto& cell : posterior_sampled_grid.fixAxisByIndex<AxisIndex>(i)) {
+                for (auto sample_iter = cell.begin(); sample_iter != cell.end(); ++sample_iter) {
+                  *sample_iter += log_prior;
+                }
+              }
+            }
+        }
+   }
 }
 
 } /* namespace PhzLikelihood */
