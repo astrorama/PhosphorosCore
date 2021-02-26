@@ -42,7 +42,7 @@ void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) cons
   // Find the likelihood best fitted model
   auto best_likelihood_fit = std::max_element(likelihood_grid.begin(), likelihood_grid.end());
   results.set<ResType::BEST_LIKELIHOOD_MODEL_ITERATOR>(best_likelihood_fit);
-
+////----> Current progress TODO
   // Apply all the priors to the posterior
   for (auto& prior : m_priors) {
     prior(results);

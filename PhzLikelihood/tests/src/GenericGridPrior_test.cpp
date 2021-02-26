@@ -41,6 +41,7 @@ struct AxisFunctionPrior_Fixture {
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
   
   PhzDataModel::DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(axes);
+  bool do_sample = results.set<RegionResultType::SAMPLE_SCALE_FACTOR>(false);
   
   DoubleGrid prior_grid {axes};
   
@@ -101,6 +102,79 @@ BOOST_FIXTURE_TEST_CASE(prior_application, AxisFunctionPrior_Fixture) {
 
   }
 
+}
+
+//-----------------------------------------------------------------------------
+BOOST_FIXTURE_TEST_CASE(sampled_prior_application, AxisFunctionPrior_Fixture) {
+
+  // Given
+  results.get<RegionResultType::SAMPLE_SCALE_FACTOR>() = true;
+
+   auto& posterior_sampled_grid = results.set<RegionResultType::POSTERIOR_SCALING_LOG_GRID>(axes);
+   for (auto& l : posterior_grid) {
+     l = 1.;
+   }
+   for (auto& v : posterior_sampled_grid) {
+     for (size_t index=0; index < 4; ++index) {
+       v.push_back(1.0);
+     }
+   }
+
+  for (auto it = prior_grid.begin(); it != prior_grid.end(); ++it) {
+    *it = it.axisIndex<ModelParameter::SED>() +
+          it.axisIndex<ModelParameter::REDDENING_CURVE>() +
+          it.axisIndex<ModelParameter::EBV>() +
+          it.axisIndex<ModelParameter::Z>();
+  }
+  std::vector<DoubleGrid> prior_grid_list {};
+  prior_grid_list.emplace_back(std::move(dummy_prior_grid_1));
+  prior_grid_list.emplace_back(std::move(prior_grid));
+  prior_grid_list.emplace_back(std::move(dummy_prior_grid_2));
+
+  // When
+  GenericGridPrior prior {std::move(prior_grid_list)};
+  prior(results);
+
+  // Then
+  for (auto it = posterior_grid.begin(); it != posterior_grid.end(); ++it) {
+
+
+    double prior_value = it.axisIndex<ModelParameter::SED>() +
+    it.axisIndex<ModelParameter::REDDENING_CURVE>() +
+    it.axisIndex<ModelParameter::EBV>() +
+    it.axisIndex<ModelParameter::Z>();
+
+    double min_value = std::exp(std::numeric_limits<double>::lowest());
+
+    double log_value = std::numeric_limits<double>::lowest();
+    if (prior_value > min_value) {
+      log_value = std::log(prior_value) + 1.;
+    }
+
+    BOOST_CHECK_CLOSE(*it, log_value, 0.0001);
+
+  }
+
+  for (auto sample_it = posterior_sampled_grid.begin();
+                 sample_it != posterior_sampled_grid.end(); ++sample_it) {
+        BOOST_CHECK((*sample_it).size() == 4);
+
+        double prior_value = sample_it.axisIndex<ModelParameter::SED>() +
+            sample_it.axisIndex<ModelParameter::REDDENING_CURVE>() +
+            sample_it.axisIndex<ModelParameter::EBV>() +
+            sample_it.axisIndex<ModelParameter::Z>();
+
+        double min_value = std::exp(std::numeric_limits<double>::lowest());
+
+        double log_value = std::numeric_limits<double>::lowest();
+        if (prior_value > min_value) {
+          log_value = std::log(prior_value) + 1.;
+        }
+
+        for (size_t index=0; index < (*sample_it).size(); ++index) {
+          BOOST_CHECK_CLOSE_FRACTION((*sample_it)[index], log_value, 1E-4);
+        }
+      }
 }
 
 //-----------------------------------------------------------------------------

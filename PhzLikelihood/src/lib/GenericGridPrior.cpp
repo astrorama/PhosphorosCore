@@ -35,7 +35,7 @@ GenericGridPrior::GenericGridPrior(std::vector<PhzDataModel::DoubleGrid> prior_g
 void GenericGridPrior::operator()(PhzDataModel::RegionResults& results) const {
   auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
   double min_value = std::exp(std::numeric_limits<double>::lowest());
-
+  bool sub_grid_found = false;
   for (auto& prior_grid : m_prior_grid_list) {
     if (prior_grid.getAxesTuple() == posterior_grid.getAxesTuple()) {
       auto prior_it = prior_grid.begin();
@@ -47,11 +47,37 @@ void GenericGridPrior::operator()(PhzDataModel::RegionResults& results) const {
           *post_it += std::log(*prior_it);
         }
       }
-      return;
+      sub_grid_found = true;
+      break;
     }
   }
-  throw Elements::Exception() << "GenericGridPrior does not contain a prior grid "
+
+  if (sub_grid_found) {
+    if (results.get<PhzDataModel::RegionResultType::SAMPLE_SCALE_FACTOR>()) {
+      auto& posterior_sampled_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID>();
+      for (auto& prior_grid : m_prior_grid_list) {
+         if (prior_grid.getAxesTuple() == posterior_sampled_grid.getAxesTuple()) {
+           auto prior_it = prior_grid.begin();
+           auto post_it = posterior_sampled_grid.begin();
+           for (; post_it != posterior_sampled_grid.end(); ++prior_it, ++post_it) {
+             if (*prior_it <= min_value) {
+               for (auto sample_iter = (*post_it).begin(); sample_iter != (*post_it).end(); ++sample_iter) {
+                 *sample_iter = std::numeric_limits<double>::lowest();
+               }
+             } else {
+               for (auto sample_iter = (*post_it).begin(); sample_iter != (*post_it).end(); ++sample_iter) {
+                 *sample_iter += std::log(*prior_it);
+               }
+             }
+           }
+           return;
+         }
+       }
+    }
+  } else {
+    throw Elements::Exception() << "GenericGridPrior does not contain a prior grid "
           << "for handling the given likelihood grid";
+  }
 }
 
 } // PhzLikelihood namespace
