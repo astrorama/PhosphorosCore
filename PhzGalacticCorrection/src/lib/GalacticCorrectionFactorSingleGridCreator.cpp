@@ -230,6 +230,7 @@ private:
 PhzDataModel::PhotometryGrid GalacticCorrectionSingleGridCreator::createGrid(
             const PhzDataModel::ModelAxesTuple& parameter_space,
             const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+            const PhysicsUtils::CosmologicalParameters& cosmology,
             ProgressListener progress_listener) {
   // Create the maps
   auto filter_map = buildMap(*m_filter_provider, filter_name_list.begin(), filter_name_list.end());
@@ -247,7 +248,7 @@ PhzDataModel::PhotometryGrid GalacticCorrectionSingleGridCreator::createGrid(
 
   // Define the functions and the algorithms based on the Functors
   PhzModeling::ModelDatasetGrid::ReddeningFunction reddening_function {PhzModeling::ExtinctionFunctor{}};
-  PhzModeling::ModelDatasetGrid::RedshiftFunction redshift_function {PhzModeling::RedshiftFunctor{}};
+  PhzModeling::ModelDatasetGrid::RedshiftFunction redshift_function {PhzModeling::RedshiftFunctor{cosmology}};
 
 
   // Create the model grid

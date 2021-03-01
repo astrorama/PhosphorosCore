@@ -20,6 +20,7 @@
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
 
 
 using std::map;
@@ -104,6 +105,7 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
     auto& igm_abs_func = config_manager.template getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
     auto miky_way_reddening_curve = config_manager.template getConfiguration<MilkyWayReddeningConfig>().getMilkyWayReddeningCurve();
     auto output_function = config_manager.template getConfiguration<CorrectionCoefficientGridOutputConfig>().getOutputFunction();
+    auto cosmology =  config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
 
     std::map<std::string, PhzDataModel::PhotometryGrid> result_map{};
 
@@ -126,7 +128,7 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
     for(auto& grid_pair : model_phot_grid.region_axes_map){
       logger.info() << "Correction computation for region '"<<grid_pair.first<<"'";
       SparseProgressReporter reporter {progress_listener, already_done, total};
-      result_map.emplace(std::make_pair(grid_pair.first, grid_creator.createGrid(grid_pair.second, model_phot_grid.filter_names, reporter)));
+      result_map.emplace(std::make_pair(grid_pair.first, grid_creator.createGrid(grid_pair.second, model_phot_grid.filter_names, cosmology, reporter)));
     }
     progress_listener(already_done,total);
 

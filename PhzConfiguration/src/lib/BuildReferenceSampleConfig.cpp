@@ -28,6 +28,7 @@
 #include "PhzConfiguration/SedProviderConfig.h"
 #include "PhzConfiguration/BuildReferenceSampleConfig.h"
 #include "PhzReferenceSample/ReferenceSample.h"
+#include "PhzConfiguration/RedshiftFunctorConfig.h"
 
 
 namespace po = boost::program_options;
@@ -50,6 +51,7 @@ BuildReferenceSampleConfig::BuildReferenceSampleConfig(long manager_id): Configu
   declareDependency<SedProviderConfig>();
   declareDependency<ReddeningProviderConfig>();
   declareDependency<IgmConfig>();
+  declareDependency<RedshiftFunctorConfig>();
 }
 
 auto BuildReferenceSampleConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {

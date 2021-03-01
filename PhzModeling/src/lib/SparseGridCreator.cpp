@@ -48,6 +48,7 @@ SparseGridCreator::SparseGridCreator(
 std::map<std::string, PhzDataModel::PhotometryGrid> SparseGridCreator::createGrid(
     const std::map<std::string, PhzDataModel::ModelAxesTuple>& parameter_space_map,
     const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+    const PhysicsUtils::CosmologicalParameters& cosmology,
     ProgressListener progress_listener) {
 
   std::map<std::string, PhzDataModel::PhotometryGrid> results { };
@@ -68,7 +69,7 @@ std::map<std::string, PhzDataModel::PhotometryGrid> SparseGridCreator::createGri
         << pair.first << '\"';
     SparseProgressReporter reporter {progress_listener, already_done, total};
     results.emplace(make_pair(pair.first,
-                creator.createGrid(pair.second, filter_name_list, reporter)));
+                creator.createGrid(pair.second, filter_name_list, cosmology, reporter)));
     already_done += results.at(pair.first).size();
 
   }

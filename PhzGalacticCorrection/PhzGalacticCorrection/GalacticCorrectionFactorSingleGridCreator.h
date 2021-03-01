@@ -34,6 +34,7 @@
 #include "XYDataset/QualifiedName.h"
 #include "XYDataset/XYDatasetProvider.h"
 #include "PhzModeling/ModelDatasetGrid.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
 
 namespace Euclid {
 namespace PhzGalacticCorrection {
@@ -57,6 +58,7 @@ public:
   PhzDataModel::PhotometryGrid createGrid(
                const PhzDataModel::ModelAxesTuple& parameter_space,
                const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+               const PhysicsUtils::CosmologicalParameters& cosmology,
                ProgressListener progress_listener=ProgressListener{});
 
 private:

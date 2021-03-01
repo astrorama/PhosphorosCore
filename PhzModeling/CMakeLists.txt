@@ -4,6 +4,7 @@ elements_depends_on_subdirs(XYDataset)
 elements_depends_on_subdirs(GridContainer)
 elements_depends_on_subdirs(SourceCatalog)
 elements_depends_on_subdirs(MathUtils)
+elements_depends_on_subdirs(PhysicsUtils)
 elements_depends_on_subdirs(PhzDataModel)
 elements_depends_on_subdirs(PhzUtils)
 
@@ -11,8 +12,8 @@ find_package(Boost REQUIRED COMPONENTS serialization)
 
 #===== Libraries ===============================================================
 elements_add_library(PhzModeling src/lib/*.cpp
-                  LINK_LIBRARIES ${CMAKE_DL_LIBS} Boost SourceCatalog XYDataset MathUtils PhzDataModel PhzUtils
-                  INCLUDE_DIRS Boost SourceCatalog XYDataset MathUtils PhzDataModel GridContainer
+                  LINK_LIBRARIES ${CMAKE_DL_LIBS} Boost SourceCatalog XYDataset MathUtils PhzDataModel PhzUtils GridContainer PhysicsUtils
+                  INCLUDE_DIRS Boost SourceCatalog XYDataset MathUtils PhzDataModel PhzUtils GridContainer PhysicsUtils
                   PUBLIC_HEADERS PhzModeling )
 
 #===== Boost tests =============================================================

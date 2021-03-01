@@ -13,6 +13,7 @@
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzModeling/ModelDatasetGrid.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
 
 namespace Euclid {
 
@@ -91,6 +92,7 @@ public:
   std::map<std::string, PhzDataModel::PhotometryGrid> createGrid(
               const  std::map<std::string, PhzDataModel::ModelAxesTuple>& parameter_space_map,
               const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+              const PhysicsUtils::CosmologicalParameters& cosmology,
               ProgressListener progress_listener=ProgressListener{});
 
 private:

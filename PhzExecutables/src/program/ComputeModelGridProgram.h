@@ -37,6 +37,7 @@
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/ModelGridOutputConfig.h"
 #include "Configuration/Utils.h"
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
 
 class ProgressReporter {
   
@@ -87,12 +88,13 @@ public:
     auto& reddening_provider = config_manager.template getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider();
     const auto& filter_provider = config_manager.template getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
     auto& igm_abs_func = config_manager.template getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
+    auto cosmology =  config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
     
     Euclid::PhzModeling::SparseGridCreator creator {
                 sed_provider, reddening_provider, filter_provider, igm_abs_func};
                                                 
     auto param_space_map = ComputeModelGridTraits::getParameterSpaceRegions(config_manager);
-    auto results = creator.createGrid(param_space_map, filter_list, ProgressReporter{logger});
+    auto results = creator.createGrid(param_space_map, filter_list, cosmology, ProgressReporter{logger});
 
     logger.info() << "Creating the output";
     auto output = config_manager.template getConfiguration<ModelGridOutputConfig>().getOutputFunction();

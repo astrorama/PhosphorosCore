@@ -28,6 +28,7 @@
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/ComputeModelSedConfig.h"
+#include "PhzConfiguration/RedshiftFunctorConfig.h"
 
 namespace po = boost::program_options;
 using namespace Euclid::PhzConfiguration;
@@ -44,6 +45,7 @@ ComputeModelSedConfig::ComputeModelSedConfig(long manager_id) : Configuration(ma
   declareDependency<SedProviderConfig>();
   declareDependency<ReddeningProviderConfig>();
   declareDependency<IgmConfig>();
+  declareDependency<RedshiftFunctorConfig>();
 }
 
 auto ComputeModelSedConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {

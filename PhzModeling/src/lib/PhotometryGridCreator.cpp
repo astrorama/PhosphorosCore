@@ -18,6 +18,7 @@
 
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/PhotometryGrid.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
 
 #include "PhzModeling/ExtinctionFunctor.h"
 #include "PhzModeling/RedshiftFunctor.h"
@@ -151,6 +152,7 @@ private:
 PhzDataModel::PhotometryGrid PhotometryGridCreator::createGrid(
             const PhzDataModel::ModelAxesTuple& parameter_space,
             const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+            const PhysicsUtils::CosmologicalParameters& cosmology,
             ProgressListener progress_listener) {
 
   // Create the maps
@@ -163,7 +165,7 @@ PhzDataModel::PhotometryGrid PhotometryGridCreator::createGrid(
 
   // Define the functions and the algorithms based on the Functors
   ModelDatasetGrid::ReddeningFunction reddening_function {ExtinctionFunctor{}};
-  ModelDatasetGrid::RedshiftFunction redshift_function {RedshiftFunctor{}};
+  ModelDatasetGrid::RedshiftFunction redshift_function {RedshiftFunctor{cosmology}};
   ModelFluxAlgorithm::ApplyFilterFunction apply_filter_function {ApplyFilterFunctor{}};
   ModelFluxAlgorithm flux_model_algo {std::move(apply_filter_function)};
 

@@ -31,6 +31,7 @@
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
 #include "PhzReferenceSample/ReferenceSample.h"
+#include "PhzConfiguration/RedshiftFunctorConfig.h"
 
 #include "PhzModeling/ExtinctionFunctor.h"
 #include "PhzModeling/RedshiftFunctor.h"
@@ -111,6 +112,8 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
     config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider()
   };
 
+  auto redshiftFunctor = config_manager.getConfiguration<RedshiftFunctorConfig>().getRedshiftFunctor();
+
   auto ref_sample_config = config_manager.getConfiguration<BuildReferenceSampleConfig>();
   auto ref_sample_path = ref_sample_config.getReferenceSamplePath();
 
@@ -165,7 +168,7 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
 
       ModelAxesTuple grid_axes {createAxesTuple({z}, {ebv}, {red_curve_name}, {sed_name})};
       ModelDatasetGrid grid {grid_axes, std::move(sed_map), std::move(reddening_curve_map),
-                             ExtinctionFunctor{}, RedshiftFunctor{}, igm_function};
+                             ExtinctionFunctor{}, redshiftFunctor, igm_function};
 
       for (auto &cell : grid) {
         std::vector<std::pair<double, double>> scaled_data {};
