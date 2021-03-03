@@ -18,8 +18,6 @@
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/RegionResults.h"
 
-#include "PhzLuminosity/LuminosityFunctionSet.h"
-#include "PhzLuminosity/LuminosityCalculator.h"
 #include "PhzDataModel/QualifiedNameGroupManager.h"
 
 namespace Euclid {
@@ -30,22 +28,23 @@ class LuminosityPrior{
 public:
 
 LuminosityPrior(
-    std::unique_ptr<const LuminosityCalculator> luminosityCalculator,
     PhzDataModel::QualifiedNameGroupManager sedGroupManager,
     LuminosityFunctionSet luminosityFunctionSet,
-    const PhysicsUtils::CosmologicalParameters& cosmology,
-    double effectiveness=1.);
+    bool in_mag = true,
+    double scaling_sigma_range = 5.,
+    double effectiveness = 1.);
 
 void operator()(PhzDataModel::RegionResults& results) const;
 
+double getMagFromFlux(double flux) const;
+
 private:
 
-  std::unique_ptr<const LuminosityCalculator> m_luminosity_calculator;
   PhzDataModel::QualifiedNameGroupManager m_sed_group_manager;
   LuminosityFunctionSet m_luminosity_function_set;
-  double m_mag_shift;
+  bool m_in_mag;
+  double m_scaling_sigma_range;
   double m_effectiveness;
-  
 };
 
 }

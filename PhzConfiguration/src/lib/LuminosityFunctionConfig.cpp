@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (C) 2012-2020 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -44,7 +44,6 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 static const std::string LUMINOSITY_FUNCTION_EXPRESSED_IN_MAGNITUDE {"luminosity-function-expressed-in-magnitude"};
-static const std::string LUMINOSITY_FUNCTION_CORRECTED_FOR_EXTINCTION{"luminosity-function-corrected-for-extinction"};
 
 static const std::string LUMINOSITY_FUNCTION_SED_GROUP {"luminosity-function-sed-group"};
 static const std::string LUMINOSITY_FUNCTION_MIN_Z {"luminosity-function-min-z"};
@@ -69,8 +68,6 @@ auto LuminosityFunctionConfig::getProgramOptions() -> std::map<std::string, Opti
   return {{"Luminosity function options", {
     {LUMINOSITY_FUNCTION_EXPRESSED_IN_MAGNITUDE.c_str(), po::value<std::string>(),
         "Determine if the luminosity function is defined for absolute luminosity computed in Magnitude ('YES') or in Flux ('NO'), default: YES"},
-    {LUMINOSITY_FUNCTION_CORRECTED_FOR_EXTINCTION.c_str(), po::value<std::string>(),
-        "Determine if the luminosity function is defined for absolute luminosity corrected for the intrinsic extinction (YES/NO, default: NO)"},
     {(LUMINOSITY_FUNCTION_SED_GROUP+"-*").c_str(), po::value<std::string>(),
         "The SED group the function is valid for (Mandatory for each Luminosity Function)"},
     {(LUMINOSITY_FUNCTION_MIN_Z+"-*").c_str(), po::value<double>(),
@@ -103,18 +100,6 @@ void LuminosityFunctionConfig::preInitialize(const UserValues& args){
           << input_type << "\"";
     }
   }
-
-  if (args.count(LUMINOSITY_FUNCTION_CORRECTED_FOR_EXTINCTION) > 0) {
-    auto input_type =
-        args.find(LUMINOSITY_FUNCTION_CORRECTED_FOR_EXTINCTION)->second.as<
-            std::string>();
-
-    if (types.find(input_type) == types.end()) {
-      throw Elements::Exception() << "Unknown "
-          << LUMINOSITY_FUNCTION_CORRECTED_FOR_EXTINCTION << " option \""
-          << input_type << "\"";
-    }
-  }
 }
 
 
@@ -138,15 +123,6 @@ void LuminosityFunctionConfig::initialize(const UserValues& args){
                std::string>();
     m_is_expressed_in_magnitude = in_magnitude=="YES";
   }
-
-  if (args.count(LUMINOSITY_FUNCTION_CORRECTED_FOR_EXTINCTION)== 0) {
-    m_is_corrected_for_extinction = false;
-   } else {
-     auto corrected =
-            args.find(LUMINOSITY_FUNCTION_CORRECTED_FOR_EXTINCTION)->second.as<
-                std::string>();
-     m_is_corrected_for_extinction = corrected=="YES";
-   }
 
   auto function_id_list = findWildcardOptions( { LUMINOSITY_FUNCTION_SED_GROUP }, args);
 
@@ -226,14 +202,6 @@ bool LuminosityFunctionConfig::isExpressedInMagnitude(){
   return m_is_expressed_in_magnitude;
 }
 
-bool LuminosityFunctionConfig::isCorrectedForExtinction(){
-  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
-    throw Elements::Exception()
-        << "Call to isCorrectedForExtinction() on a not initialized instance.";
-  }
-
-  return m_is_corrected_for_extinction;
-}
 
 } // PhzConfiguration namespace
 } // Euclid namespace

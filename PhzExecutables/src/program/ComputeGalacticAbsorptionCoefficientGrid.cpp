@@ -125,12 +125,15 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
     };
     ProgressReporter progress_listener{logger};
     size_t already_done = 0;
-    for(auto& grid_pair : model_phot_grid.region_axes_map){
-      logger.info() << "Correction computation for region '"<<grid_pair.first<<"'";
+    for (auto& grid_pair : model_phot_grid.region_axes_map) {
+      logger.info() << "Correction computation for region '" << grid_pair.first << "'";
       SparseProgressReporter reporter {progress_listener, already_done, total};
-      result_map.emplace(std::make_pair(grid_pair.first, grid_creator.createGrid(grid_pair.second, model_phot_grid.filter_names, cosmology, reporter)));
+      result_map.emplace(std::make_pair(grid_pair.first,
+                                        grid_creator.createGrid(grid_pair.second,
+                                                                model_phot_grid.filter_names,
+                                                                cosmology, reporter)));
     }
-    progress_listener(already_done,total);
+    progress_listener(already_done, total);
 
     output_function(result_map);
 

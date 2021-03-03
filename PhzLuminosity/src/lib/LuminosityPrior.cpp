@@ -20,17 +20,22 @@ namespace PhzLuminosity {
 static Elements::Logging logger = Elements::Logging::getLogger("LuminosityPrior");
 
 LuminosityPrior::LuminosityPrior(
-    std::unique_ptr<const LuminosityCalculator> luminosityCalculator,
     PhzDataModel::QualifiedNameGroupManager sedGroupManager,
     LuminosityFunctionSet luminosityFunctionSet,
-    const PhysicsUtils::CosmologicalParameters& cosmology,
+    bool in_mag,
+    double scaling_sigma_range,
     double effectiveness):
-m_luminosity_calculator{std::move(luminosityCalculator)},
 m_sed_group_manager(std::move(sedGroupManager)),
 m_luminosity_function_set{std::move(luminosityFunctionSet)},
-m_mag_shift{-5. * std::log10(cosmology.getHubbleConstant() / 100.)},
+m_in_mag{in_mag},
+m_scaling_sigma_range{scaling_sigma_range},
 m_effectiveness{effectiveness} {
 
+}
+
+
+double LuminosityPrior::getMagFromFlux(double flux) const {
+  return -2.5 * std::log10(flux / 3631E6);
 }
 
 void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
@@ -38,6 +43,14 @@ void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
   // Get from the results the input
   auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
   const auto& scale_factor_grid = results.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
+
+  bool has_sampling = results.get<PhzDataModel::RegionResultType::SAMPLE_SCALE_FACTOR>();
+  if (has_sampling) {
+    auto& sampled_posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID>();
+    const auto& sigma_scale_factor_grid = results.get<PhzDataModel::RegionResultType::SIGMA_SCALE_FACTOR_GRID>();
+
+    // TODO
+  }
 
   // We first create a grid that contains only the prior, so we can normalize
   // it and apply the efficiency
@@ -86,13 +99,16 @@ void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
 
 
       while (prior_iter != prior_grid.end()) {
-        double luminosity = (*m_luminosity_calculator)(scal_iter);
+        double luminosity = *scal_iter;
+        if (m_in_mag) {
+          luminosity = getMagFromFlux(luminosity);
+        }
 
         if (!std::isfinite(luminosity)) {
           *prior_iter = 0;
           logger.warn() << "Undefined luminosity in the prior computation.";
         } else {
-           *prior_iter = luminosity_function(luminosity);  //+ m_mag_shift
+           *prior_iter = luminosity_function(luminosity);
            if (*prior_iter > max) {
              max = *prior_iter;
            }

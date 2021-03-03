@@ -247,15 +247,7 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
           << "Incompatibility between the SED groups and the Model Grid.";
     }
 
-    if (!check_liuminosity.checkLuminosityModelGrid(
-        getDependency<PhotometryGridConfig>().getPhotometryGridInfo(),
-        getDependency<LuminosityPriorConfig>().getLuminosityModelGrid(),
-        !getDependency<LuminosityFunctionConfig>().isCorrectedForExtinction())) {
-      logger.error()
-          << "Incompatibility between the Model Grid and the Luminosity Model Grid.";
-      throw Elements::Exception()
-          << "Incompatibility between the Model Grid and the Luminosity Model Grid.";
-    }
+
   }
 
   m_do_sample_full_grids = (args.at(FULL_GRID_SAMPLING_FLAG).as<std::string>() == "YES");

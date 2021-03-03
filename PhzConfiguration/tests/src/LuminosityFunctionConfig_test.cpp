@@ -112,7 +112,6 @@ BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
 
   // Then
   BOOST_CHECK_NO_THROW(options.find("luminosity-function-expressed-in-magnitude", false));
-  BOOST_CHECK_NO_THROW(options.find("luminosity-function-corrected-for-extinction", false));
   BOOST_CHECK_NO_THROW(options.find("luminosity-function-sed-group-*", false));
   BOOST_CHECK_NO_THROW(options.find("luminosity-function-min-z-*", false));
   BOOST_CHECK_NO_THROW(options.find("luminosity-function-max-z-*", false));
@@ -133,7 +132,6 @@ BOOST_FIXTURE_TEST_CASE( nominal_case_mag_test, LuminosityFunctionConfig_fixture
     std::string yes="YES";
     std::string no="NO";
     options_map["luminosity-function-expressed-in-magnitude"].value() = boost::any(no);
-    options_map["luminosity-function-corrected-for-extinction"].value() = boost::any(yes);
 
     addGroup(0.,6.,"SED_Group", "1");
     addSchechter(false,1.,1.,1.,1.,"1");
@@ -142,9 +140,7 @@ BOOST_FIXTURE_TEST_CASE( nominal_case_mag_test, LuminosityFunctionConfig_fixture
 
     // Then
     auto mag = config_manager.getConfiguration<LuminosityFunctionConfig>().isExpressedInMagnitude();
-    auto red = config_manager.getConfiguration<LuminosityFunctionConfig>().isCorrectedForExtinction();
     BOOST_CHECK_EQUAL(mag,false);
-    BOOST_CHECK_EQUAL(red,true);
 }
 
 
@@ -179,9 +175,7 @@ BOOST_FIXTURE_TEST_CASE( default_case_mag_test, LuminosityFunctionConfig_fixture
 
     // Then
     auto mag = config_manager.getConfiguration<LuminosityFunctionConfig>().isExpressedInMagnitude();
-    auto red = config_manager.getConfiguration<LuminosityFunctionConfig>().isCorrectedForExtinction();
     BOOST_CHECK_EQUAL(mag,true);
-    BOOST_CHECK_EQUAL(red,false);
 }
 
 BOOST_FIXTURE_TEST_CASE(swapped_z_test, LuminosityFunctionConfig_fixture ) {
