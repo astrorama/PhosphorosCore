@@ -77,6 +77,16 @@ LuminosityPrior(
 
 void operator()(PhzDataModel::RegionResults& results) const;
 
+PhzDataModel::DoubleListGrid createListPriorGrid(const PhzDataModel::DoubleListGrid& posterior_grid) const;
+PhzDataModel::DoubleGrid createPriorGrid(const PhzDataModel::DoubleGrid& posterior_grid) const;
+
+void applyEffectiveness(PhzDataModel::DoubleGrid& prior_grid, double max) const;
+void applySampleEffectiveness(PhzDataModel::DoubleListGrid& prior_grid, double max) const;
+
+void applyPrior(PhzDataModel::DoubleGrid& prior_grid, PhzDataModel::DoubleGrid& posterior_grid) const;
+void applySamplePrior(PhzDataModel::DoubleListGrid& prior_grid, PhzDataModel::DoubleListGrid& posterior_grid) const;
+
+
 static double getMagFromFlux(double flux);
 
 static double getLuminosityInSample(double alpha, double n_sigma, size_t sample_number, size_t sample_index);

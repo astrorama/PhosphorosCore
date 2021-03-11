@@ -175,6 +175,75 @@ double LuminosityPrior::getLuminosityInSample(double alpha, double n_sigma, size
   return alpha + n_sigma*((2.0*sample_index)/(sample_number-1) -1);
 }
 
+PhzDataModel::DoubleListGrid LuminosityPrior::createListPriorGrid(const PhzDataModel::DoubleListGrid& posterior_grid) const {
+    PhzDataModel::DoubleListGrid prior_scal_grid {posterior_grid.getAxesTuple()};
+    size_t sample_number  =  (*(posterior_grid.begin())).size();
+    for (auto& cell_list : prior_scal_grid) {
+      for (size_t index = 0; index < sample_number; ++index) {
+         cell_list.push_back(0.0);
+      }
+    }
+
+    return prior_scal_grid;
+}
+
+PhzDataModel::DoubleGrid LuminosityPrior::createPriorGrid(const PhzDataModel::DoubleGrid& posterior_grid) const {
+   PhzDataModel::DoubleGrid prior_grid {posterior_grid.getAxesTuple()};
+   for (auto& cell : prior_grid) {
+     cell = 0.0;
+   }
+
+   return prior_grid;
+}
+
+
+void LuminosityPrior::applyEffectiveness(PhzDataModel::DoubleGrid& prior_grid, double max) const {
+   for (auto& v : prior_grid) {
+     v = max * (1 - m_effectiveness) + m_effectiveness * v;
+   }
+}
+
+void LuminosityPrior::applySampleEffectiveness(PhzDataModel::DoubleListGrid& prior_grid, double max) const {
+  size_t sample_number  =  (*(prior_grid.begin())).size();
+  for (auto& v : prior_grid) {
+       for (size_t cell_iter = 0; cell_iter < sample_number; ++cell_iter) {
+          v[cell_iter] = max * (1 - m_effectiveness) + m_effectiveness * v[cell_iter];
+       }
+     }
+}
+
+
+void LuminosityPrior::applyPrior(PhzDataModel::DoubleGrid& prior_grid, PhzDataModel::DoubleGrid& posterior_grid) const {
+  double min_value = std::numeric_limits<double>::lowest();
+  for (auto l_it = posterior_grid.begin(),  p_it = prior_grid.begin();
+             l_it != posterior_grid.end();
+             ++l_it, ++p_it) {
+       double prior = std::log(*p_it);
+       if (*p_it == 0) {
+         *l_it = min_value;
+       } else  if (std::isfinite(prior)) {
+           *l_it += prior;
+       }
+   }
+}
+
+void LuminosityPrior::applySamplePrior(PhzDataModel::DoubleListGrid& prior_grid, PhzDataModel::DoubleListGrid& posterior_grid) const {
+  size_t sample_number  =  (*(prior_grid.begin())).size();
+  double min_value = std::numeric_limits<double>::lowest();
+  for (auto l_it = posterior_grid.begin(),  p_it = prior_grid.begin();
+                l_it != posterior_grid.end();
+                ++l_it, ++p_it) {
+          for (size_t cell_iter = 0; cell_iter < sample_number; ++cell_iter) {
+            double prior = std::log((*p_it)[cell_iter]);
+            if ((*p_it)[cell_iter] == 0) {
+              (*l_it)[cell_iter] = min_value;
+            } else  if (std::isfinite(prior)) {
+              (*l_it)[cell_iter] += prior;
+            }
+          }
+      }
+}
+
 void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
 
   // Get from the results the input
@@ -186,15 +255,10 @@ void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
     auto& sampled_posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID>();
     const auto& sigma_scale_factor_grid = results.get<PhzDataModel::RegionResultType::SIGMA_SCALE_FACTOR_GRID>();
 
-    // Create the prior grid
-    PhzDataModel::DoubleListGrid prior_scal_grid {sampled_posterior_grid.getAxesTuple()};
     size_t sample_number  =  (*(sampled_posterior_grid.begin())).size();
-    for (auto& cell_list : prior_scal_grid) {
-      for (size_t index = 0; index < sample_number; ++index) {
-         cell_list.push_back(0.0);
-      }
-    }
 
+    // Create & fill the prior grid
+    auto prior_scal_grid = createListPriorGrid(sampled_posterior_grid);
     auto sample_proc = LuminosityGroupSampledProcessor(prior_scal_grid, scale_factor_grid,
         sigma_scale_factor_grid, m_in_mag, m_scaling_sigma_range, sample_number);
     auto& z_axis = sampled_posterior_grid.getAxis<PhzDataModel::ModelParameter::Z>();
@@ -204,36 +268,15 @@ void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
     // Apply the effectiveness to the prior. WARNING: At the moment we do not
     // normalize the prior yet, as the max value might be different between the
     // parameter space regions.
-    for (auto& v : prior_scal_grid) {
-      for (size_t cell_iter = 0; cell_iter < sample_number; ++cell_iter) {
-         v[cell_iter] = max * (1 - m_effectiveness) + m_effectiveness * v[cell_iter];
-      }
-    }
+    applySampleEffectiveness(prior_scal_grid, max);
 
-    double min_value = std::numeric_limits<double>::lowest();
+    applySamplePrior(prior_scal_grid, sampled_posterior_grid);
 
-    // Apply the prior
-    for (auto l_it = sampled_posterior_grid.begin(), p_it = prior_scal_grid.begin();
-              l_it != sampled_posterior_grid.end();
-              ++l_it, ++p_it) {
-        for (size_t cell_iter = 0; cell_iter < sample_number; ++cell_iter) {
-          double prior = std::log((*p_it)[cell_iter]);
-          if ((*p_it)[cell_iter] == 0) {
-            (*l_it)[cell_iter] = min_value;
-          } else  if (std::isfinite(prior)) {
-            (*l_it)[cell_iter] += prior;
-          }
-        }
-    }
   }
 
   // We first create a grid that contains only the prior, so we can normalize
   // it and apply the efficiency
-  PhzDataModel::DoubleGrid prior_grid {posterior_grid.getAxesTuple()};
-  for (auto& cell : prior_grid) {
-    cell = 0.0;
-  }
-  
+  auto prior_grid  = createPriorGrid(posterior_grid);
   auto simple_proc = LuminosityGroupdProcessor(prior_grid, scale_factor_grid, m_in_mag);
   auto& z_axis = prior_grid.getAxis<PhzDataModel::ModelParameter::Z>();
   auto& sed_axis = prior_grid.getAxis<PhzDataModel::ModelParameter::SED>();
@@ -242,23 +285,9 @@ void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
   // Apply the effectiveness to the prior. WARNING: At the moment we do not
   // normalize the prior yet, as the max value might be different between the
   // parameter space regions.
-  for (auto& v : prior_grid) {
-    v = max * (1 - m_effectiveness) + m_effectiveness * v;
-  }
-
-  double min_value = std::numeric_limits<double>::lowest();
+  applyEffectiveness(prior_grid, max);
   
-  // Apply the prior to the likelihood
-  for (auto l_it = posterior_grid.begin(), p_it = prior_grid.begin();
-            l_it != posterior_grid.end();
-            ++l_it, ++p_it) {
-      double prior = std::log(*p_it);
-      if (*p_it == 0) {
-        *l_it = min_value;
-      } else  if (std::isfinite(prior)) {
-          *l_it += prior;
-      }
-  }
+  applyPrior(prior_grid, posterior_grid);
 }
 
 }
