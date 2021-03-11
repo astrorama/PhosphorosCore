@@ -27,6 +27,47 @@ namespace PhzLuminosity {
 class LuminosityPrior{
 public:
 
+  class LuminosityGroupSampledProcessor {
+  public:
+    LuminosityGroupSampledProcessor(PhzDataModel::DoubleListGrid& prior_scal_grid,
+                             const PhzDataModel::DoubleGrid& scale_factor_grid,
+                             const PhzDataModel::DoubleGrid& sigma_scale_factor_grid,
+                             bool in_mag,
+                             double caling_sigma_range,
+                             const size_t sample_number);
+
+    void operator()(const std::function<double(double)>& luminosity_funct, size_t sed_index, size_t z_index);
+
+    double getMaxPrior();
+  private:
+    PhzDataModel::DoubleListGrid& m_prior_scal_grid;
+    const PhzDataModel::DoubleGrid& m_scale_factor_grid;
+    const PhzDataModel::DoubleGrid& m_sigma_scale_factor_grid;
+    const bool m_in_mag;
+    const double m_scaling_sigma_range;
+    const size_t m_sample_number;
+    double m_max = 0.0;
+
+  };
+
+  class LuminosityGroupdProcessor {
+  public:
+    LuminosityGroupdProcessor(PhzDataModel::DoubleGrid& prior_grid,
+                              const PhzDataModel::DoubleGrid& scale_factor_grid,
+                              bool in_mag);
+
+     void operator()(const std::function<double(double)>& luminosity_funct, size_t sed_index, size_t z_index);
+
+     double getMaxPrior();
+   private:
+     PhzDataModel::DoubleGrid& m_prior_grid;
+     const PhzDataModel::DoubleGrid& m_scale_factor_grid;
+     const bool m_in_mag;
+     double m_max = 0.0;
+  };
+
+
+
 LuminosityPrior(
     PhzDataModel::QualifiedNameGroupManager sedGroupManager,
     LuminosityFunctionSet luminosityFunctionSet,
@@ -36,15 +77,20 @@ LuminosityPrior(
 
 void operator()(PhzDataModel::RegionResults& results) const;
 
-double getMagFromFlux(double flux) const;
+static double getMagFromFlux(double flux);
+
+static double getLuminosityInSample(double alpha, double n_sigma, size_t sample_number, size_t sample_index);
+
+template <typename Processor, typename Axis_SED, typename Axis_Z>
+double fillTheGrid(Processor processor, Axis_SED& sed_axis, Axis_Z& z_axis) const;
 
 private:
 
   PhzDataModel::QualifiedNameGroupManager m_sed_group_manager;
   LuminosityFunctionSet m_luminosity_function_set;
-  bool m_in_mag;
-  double m_scaling_sigma_range;
-  double m_effectiveness;
+  const bool m_in_mag;
+  const double m_scaling_sigma_range;
+  const double m_effectiveness;
 };
 
 }
