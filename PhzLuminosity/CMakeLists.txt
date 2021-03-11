@@ -23,6 +23,7 @@ elements_add_unit_test(LuminosityFunctionSet_test tests/src/LuminosityFunctionSe
 elements_add_unit_test(SchechterLuminosityFunction_test tests/src/SchechterLuminosityFunction_test.cpp
                        LINK_LIBRARIES XYDataset PhzLuminosity TYPE Boost)
 
-
+elements_add_unit_test(LuminosityPrior_test tests/src/LuminosityPrior_test.cpp
+                       LINK_LIBRARIES XYDataset PhzLuminosity TYPE Boost)
 
 
