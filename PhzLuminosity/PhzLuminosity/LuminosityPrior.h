@@ -92,7 +92,7 @@ static double getMagFromFlux(double flux);
 static double getLuminosityInSample(double alpha, double n_sigma, size_t sample_number, size_t sample_index);
 
 template <typename Processor, typename Axis_SED, typename Axis_Z>
-double fillTheGrid(Processor processor, Axis_SED& sed_axis, Axis_Z& z_axis) const;
+double fillTheGrid(Processor& processor, Axis_SED& sed_axis, Axis_Z& z_axis) const;
 
 private:
 

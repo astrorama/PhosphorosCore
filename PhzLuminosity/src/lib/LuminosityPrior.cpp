@@ -132,7 +132,7 @@ void LuminosityPrior::LuminosityGroupdProcessor::operator()(const std::function<
 }
 
 template <typename Processor, typename Axis_SED, typename Axis_Z>
-double LuminosityPrior::fillTheGrid(Processor processor, Axis_SED& sed_axis, Axis_Z& z_axis) const {
+double LuminosityPrior::fillTheGrid(Processor& processor, Axis_SED& sed_axis, Axis_Z& z_axis) const {
       std::function<double(double)> luminosity_function {};
       std::string current_sed_group {};
       double current_min_z {};

@@ -65,7 +65,7 @@ XYDataset::XYDataset SedDataProvider::readSed(int64_t position) const {
   if (!m_array) {
     throw Elements::Exception() << "Need to create the PDZ file first";
   }
-  if (position > m_array->shape()[0]) {
+  if (uint64_t(position) > m_array->shape()[0]) {
     throw Elements::Exception() << "Position out of bounds";
   }
 
