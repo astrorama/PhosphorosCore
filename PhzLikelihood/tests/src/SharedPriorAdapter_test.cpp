@@ -64,9 +64,9 @@ struct SharedPriorAdaptor_Fixture {
 
     double value = 1.7;
     for (auto& photometry : photometry_grid){
-      std::vector<SourceCatalog::FluxErrorPair> photometry_vector { SourceCatalog::FluxErrorPair(value,
+      std::vector<SourceCatalog::FluxErrorPair> local_photometry_vector { SourceCatalog::FluxErrorPair(value,
            0.1), SourceCatalog::FluxErrorPair(0.1, 0.3) };
-      photometry = SourceCatalog::Photometry{filter_name_vector_ptr,photometry_vector};
+      photometry = SourceCatalog::Photometry{filter_name_vector_ptr,local_photometry_vector};
       value+=1.;
     }
 

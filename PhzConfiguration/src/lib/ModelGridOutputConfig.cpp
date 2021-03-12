@@ -85,7 +85,7 @@ static std::string getFilenameFromOptions(const std::map<std::string, po::variab
 template <typename OArchive>
 static void outputFunction(const std::string &filename, IgmConfig &igm_config,
                            const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
-  auto logger = Elements::Logging::getLogger("PhzOutput");
+  auto local_logger = Elements::Logging::getLogger("PhzOutput");
   std::ofstream out {filename};
   std::vector<XYDataset::QualifiedName> filter_list {};
   auto& first_phot = *(grid_map.begin()->second.begin());
@@ -103,7 +103,7 @@ static void outputFunction(const std::string &filename, IgmConfig &igm_config,
   for (auto& pair : grid_map) {
     GridContainer::gridExport<OArchive>(out, pair.second);
   }
-  logger.info() << "Created the model grid in file " << filename;
+  local_logger.info() << "Created the model grid in file " << filename;
 }
 
 

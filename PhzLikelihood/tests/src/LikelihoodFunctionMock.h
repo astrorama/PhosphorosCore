@@ -53,10 +53,10 @@ public:
               // Check the model grid
               auto& received_grid = results.get<ResType::MODEL_GRID_REFERENCE>().get();
               BOOST_CHECK_EQUAL(phot_grid.size(),received_grid.size());
-              for (auto phot_iter=phot_grid.begin(), received_iter=received_grid.begin();
-                   phot_iter!=phot_grid.end(); ++phot_iter, ++received_iter) {
-                for (auto flux_iter=(*phot_iter).begin(), rec_flux_iter=(*received_iter).begin();
-                        flux_iter!=(*phot_iter).end(); ++flux_iter, ++rec_flux_iter) {
+              for (auto local_phot_iter=phot_grid.begin(), received_iter=received_grid.begin();
+                   local_phot_iter!=phot_grid.end(); ++local_phot_iter, ++received_iter) {
+                for (auto flux_iter=(*local_phot_iter).begin(), rec_flux_iter=(*received_iter).begin();
+                        flux_iter!=(*local_phot_iter).end(); ++flux_iter, ++rec_flux_iter) {
                   BOOST_CHECK(Elements::isEqual((*flux_iter).flux, (*rec_flux_iter).flux));
                 }
               }
