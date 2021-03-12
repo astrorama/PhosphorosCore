@@ -276,7 +276,7 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing dereference operation");
   BOOST_TEST_MESSAGE(" ");
 
-  std::vector<std::vector<std::pair<double, double>>> seds {sed1,sed2,sed3};
+  std::vector<std::vector<std::pair<double, double>>> arg_seds {sed1,sed2,sed3};
   std::vector<DummyExtinctionFunction> extinction_functions {red1,red2,red3};
 
   // check the loop with functions not modifying the seds
@@ -289,7 +289,7 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
     m_no_redshift_function,
     m_igm_function
   };
-  for (auto& sed : seds) {
+  for (auto& sed : arg_seds) {
     for (size_t i=0; i<extinction_functions.size()*ebvs.size()*zs.size(); ++i) {
       auto& dataset_0 =*model_generator;
 
@@ -315,7 +315,7 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
       m_redshift_function,
     m_igm_function
   };
-  for (auto& sed : seds) {
+  for (auto& sed : arg_seds) {
     for (size_t i=0; i<extinction_functions.size()*ebvs.size(); ++i) {
       for (auto& redshift : zs) {
 
@@ -344,7 +344,7 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
       m_no_redshift_function,
     m_igm_function
   };
-  for (auto& sed : seds) {
+  for (auto& sed : arg_seds) {
     for (auto& reddening : extinction_functions) {
       for (auto& ebv : ebvs) {
         for (size_t i=0; i< zs.size(); ++i) {

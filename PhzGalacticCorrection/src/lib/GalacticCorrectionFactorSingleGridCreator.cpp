@@ -133,7 +133,7 @@ public:
               PhzModeling::ModelDatasetGrid::iterator model_begin,
               PhzModeling::ModelDatasetGrid::iterator model_end,
               typename PhzDataModel::PhotometryGrid::iterator correction_begin,
-              std::atomic<size_t>& m_progress,
+              std::atomic<size_t>& arg_progress,
               std::atomic<size_t>& done_counter)
         : m_filter_name_shared_ptr(filter_name_shared_ptr),
           m_filter_info_vector(filter_info_vector),
@@ -145,7 +145,7 @@ public:
           m_model_begin(model_begin),
           m_model_end(model_end),
           m_correction_begin(correction_begin),
-          m_progress(m_progress),
+          m_progress(arg_progress),
           m_done_counter(done_counter) { }
 
   void operator()() {
@@ -205,7 +205,7 @@ private:
 
   class DoneUpdater {
   public:
-    DoneUpdater(std::atomic<size_t>& m_done_counter) : m_done_counter(m_done_counter) { }
+    DoneUpdater(std::atomic<size_t>& done_counter) : m_done_counter(done_counter) { }
     virtual ~DoneUpdater() {++m_done_counter;}
   private:
     std::atomic<size_t>& m_done_counter;

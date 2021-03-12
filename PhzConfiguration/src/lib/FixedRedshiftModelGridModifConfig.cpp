@@ -21,8 +21,9 @@
  * @date 2018/11/28
  * @author Florian Dubath
  */
-#include <memory>
 #include "PhzConfiguration/FixedRedshiftModelGridModifConfig.h"
+
+#include <memory>
 
 #include "PhzConfiguration/FixedRedshiftConfig.h"
 #include "PhzConfiguration/ModelGridModificationConfig.h"
@@ -33,20 +34,21 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
-FixedRedshiftModelGridModifConfig::FixedRedshiftModelGridModifConfig(long manager_id) : Configuration(manager_id) {
+FixedRedshiftModelGridModifConfig::FixedRedshiftModelGridModifConfig(
+    long manager_id)
+    : Configuration(manager_id) {
   declareDependency<FixedRedshiftConfig>();
   declareDependency<ModelGridModificationConfig>();
 }
 
-void FixedRedshiftModelGridModifConfig::postInitialize(const UserValues& args) {
+void FixedRedshiftModelGridModifConfig::postInitialize(
+    const UserValues& /* args */) {
   if (getDependency<FixedRedshiftConfig>().isRedshiftFixed()) {
-    std::shared_ptr<PhzLikelihood::FixRedshiftProcessModelGridFunctor> ptr{new PhzLikelihood::FixRedshiftProcessModelGridFunctor{}};
+    std::shared_ptr<PhzLikelihood::FixRedshiftProcessModelGridFunctor> ptr{
+        new PhzLikelihood::FixRedshiftProcessModelGridFunctor{}};
     getDependency<ModelGridModificationConfig>().addFunctor(ptr);
   }
 }
 
-
 }  // namespace PhzConfiguration
 }  // namespace Euclid
-
-

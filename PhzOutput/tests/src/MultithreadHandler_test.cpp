@@ -42,7 +42,7 @@ public:
   std::vector<SourceCatalog::Source::id_type> groups;
   std::atomic<size_t>& progress;
   
-  CheckOrderOutputHandler(std::atomic<size_t>& progress) : progress(progress) {}
+  CheckOrderOutputHandler(std::atomic<size_t>& arg_progress) : progress(arg_progress) {}
           
   void handleSourceOutput(const SourceCatalog::Source& source,
                           const PhzDataModel::SourceResults& results) override {
