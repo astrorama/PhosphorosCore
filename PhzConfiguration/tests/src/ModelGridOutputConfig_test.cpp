@@ -140,8 +140,8 @@ BOOST_FIXTURE_TEST_CASE(permission_exception_test, ModelGridOutputConfig_fixture
   fs::permissions(test_file, fs::perms::remove_perms|fs::perms::owner_write|
                             fs::perms::others_write|fs::perms::group_write);
 
-  fs::path  path_filename = test_file / "no_write_permission.dat";
-  options_map["output-model-grid"].value() = boost::any(path_filename.string());
+  fs::path  local_path_filename = test_file / "no_write_permission.dat";
+  options_map["output-model-grid"].value() = boost::any(local_path_filename.string());
 
   // Then
   BOOST_CHECK_THROW(config_manager.initialize(options_map), Elements::Exception);

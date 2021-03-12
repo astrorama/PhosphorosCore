@@ -46,7 +46,7 @@ void LikelihoodScaleSampleLogarithmAlgorithm::operator()(const SourceCatalog::Ph
     // Computing the sampling
     double base = alpha - sigma * m_scale_sample_range;
     double step =  2.0 * (sigma * m_scale_sample_range)/(m_scale_sample_number - 1);
-    for (int sample_index = 0; sample_index < m_scale_sample_number; ++sample_index) {
+    for (size_t sample_index = 0; sample_index < m_scale_sample_number; ++sample_index) {
       double current_alpha =  base +  step * sample_index;
       (*likelihood_log_sample).push_back(m_likelihood_log_calc(ordered_source_phot.begin(),
                                                                ordered_source_phot.end(),

@@ -43,7 +43,7 @@ class ProgressReporter {
   
 public:
   
-  ProgressReporter(const Elements::Logging& logger) : logger{logger} {
+  ProgressReporter(const Elements::Logging& arg_logger) : m_logger{arg_logger} {
   }
   
   void operator()(size_t step, size_t total) {
@@ -53,7 +53,7 @@ public:
     if (percentage_done > m_last_progress || std::chrono::duration_cast<std::chrono::seconds>(time_diff).count() >= 5) {
       m_last_progress = percentage_done;
       m_last_time = now_time;
-      logger.info() << "Parameter space progress: " << percentage_done << " % ";
+      m_logger.info() << "Parameter space progress: " << percentage_done << " % ";
     }
   }
   
@@ -61,7 +61,7 @@ private:
   
   int m_last_progress = -1;
   std::chrono::time_point<std::chrono::system_clock> m_last_time = std::chrono::system_clock::now();
-  Elements::Logging logger;
+  Elements::Logging m_logger;
   
 };
 

@@ -118,12 +118,12 @@ class ParallelJob {
   
 public:
 
-  ParallelJob(PhotometryAlgorithm<ModelFluxAlgorithm>& m_photometry_algo,
+  ParallelJob(PhotometryAlgorithm<ModelFluxAlgorithm>& photometry_algo,
               ModelDatasetGrid::iterator model_begin, ModelDatasetGrid::iterator model_end, 
-              PhzDataModel::PhotometryGrid::iterator photometry_begin, std::atomic<size_t>& m_progress,
+              PhzDataModel::PhotometryGrid::iterator photometry_begin, std::atomic<size_t>& progress,
               std::atomic<uint>& done_counter)
-        : m_photometry_algo(m_photometry_algo), m_model_begin(model_begin), m_model_end(model_end),
-          m_photometry_begin(photometry_begin), m_progress(m_progress), m_done_counter(done_counter) { }
+        : m_photometry_algo(photometry_algo), m_model_begin(model_begin), m_model_end(model_end),
+          m_photometry_begin(photometry_begin), m_progress(progress), m_done_counter(done_counter) { }
         
   void operator()() {
     DoneUpdater done_updater {m_done_counter};
@@ -134,7 +134,7 @@ private:
   
   class DoneUpdater {
   public:
-    DoneUpdater(std::atomic<uint>& m_done_counter) : m_done_counter(m_done_counter) { }
+    DoneUpdater(std::atomic<uint>& done_counter) : m_done_counter(done_counter) { }
     virtual ~DoneUpdater() {++m_done_counter;}
   private:
     std::atomic<uint>& m_done_counter;

@@ -21,28 +21,30 @@
  *
  */
 
-#include <boost/test/unit_test.hpp>
+#include "PhzReferenceSample/PdzDataProvider.h"
+
 #include <ElementsKernel/Exception.h>
 #include <ElementsKernel/Temporary.h>
 
-#include "PhzReferenceSample/PdzDataProvider.h"
+#include <boost/test/unit_test.hpp>
+
 #include "AllClose.h"
 
+using Elements::TempDir;
 using Euclid::ReferenceSample::PdzDataProvider;
 using Euclid::XYDataset::XYDataset;
-using Elements::TempDir;
-
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (PdzDataProvider_test)
+BOOST_AUTO_TEST_SUITE(PdzDataProvider_test)
 
 struct PdzDataProvider_Fixture {
   TempDir m_top_dir;
   boost::filesystem::path m_pdz_bin;
   XYDataset pdz{{{0, 0}, {1, 4}, {2, 3}, {3, 1}}};
 
-  PdzDataProvider_Fixture(): m_pdz_bin{m_top_dir.path() / "pdz_data_1.bin"} {;
+  PdzDataProvider_Fixture() : m_pdz_bin{m_top_dir.path() / "pdz_data_1.bin"} {
+    ;
   }
 
   virtual ~PdzDataProvider_Fixture() {
@@ -52,20 +54,19 @@ struct PdzDataProvider_Fixture {
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( open_non_existing ) {
+BOOST_AUTO_TEST_CASE(open_non_existing) {
   try {
     PdzDataProvider pdz_provider{"/invalid/path"};
     BOOST_FAIL("Should have failed!");
-  }
-  catch (...) {
+  } catch (...) {
     // Pass
   }
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( add_one, PdzDataProvider_Fixture ) {
-  PdzDataProvider pdz_provider {m_pdz_bin};
+BOOST_FIXTURE_TEST_CASE(add_one, PdzDataProvider_Fixture) {
+  PdzDataProvider pdz_provider{m_pdz_bin};
   BOOST_CHECK_EQUAL(pdz_provider.size(), 0);
 
   auto offset = pdz_provider.addPdz(pdz);
@@ -76,28 +77,27 @@ BOOST_FIXTURE_TEST_CASE( add_one, PdzDataProvider_Fixture ) {
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( bad_read_offset, PdzDataProvider_Fixture ) {
-  PdzDataProvider pdz_provider {m_pdz_bin};
+BOOST_FIXTURE_TEST_CASE(bad_read_offset, PdzDataProvider_Fixture) {
+  PdzDataProvider pdz_provider{m_pdz_bin};
   BOOST_CHECK_THROW(pdz_provider.readPdz(100), Elements::Exception);
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( add_two, PdzDataProvider_Fixture ) {
-  PdzDataProvider pdz_provider {m_pdz_bin};
+BOOST_FIXTURE_TEST_CASE(add_two, PdzDataProvider_Fixture) {
+  PdzDataProvider pdz_provider{m_pdz_bin};
 
   auto off10 = pdz_provider.addPdz(pdz);
   pdz_provider.addPdz(pdz);
 
-  int64_t id;
   auto recovered = pdz_provider.readPdz(off10);
   BOOST_CHECK(checkAllClose(recovered, pdz));
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( add_wrong_bins, PdzDataProvider_Fixture ) {
-  PdzDataProvider pdz_provider {m_pdz_bin};
+BOOST_FIXTURE_TEST_CASE(add_wrong_bins, PdzDataProvider_Fixture) {
+  PdzDataProvider pdz_provider{m_pdz_bin};
 
   XYDataset pdz_wrong_size{{{0, 0}, {1, 0}}};
   XYDataset pdz_different{{{2, 0}, {4, 4}, {8, 3}, {10, 1}}};
@@ -105,23 +105,21 @@ BOOST_FIXTURE_TEST_CASE( add_wrong_bins, PdzDataProvider_Fixture ) {
   pdz_provider.addPdz(pdz);
   BOOST_CHECK_THROW(pdz_provider.addPdz(pdz_wrong_size), Elements::Exception);
   BOOST_CHECK_THROW(pdz_provider.addPdz(pdz_different), Elements::Exception);
-
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( decreasing_bins, PdzDataProvider_Fixture ) {
-  PdzDataProvider pdz_provider {m_pdz_bin};
+BOOST_FIXTURE_TEST_CASE(decreasing_bins, PdzDataProvider_Fixture) {
+  PdzDataProvider pdz_provider{m_pdz_bin};
 
   XYDataset pdz_decreasing{{{10, 0}, {9, 4}, {8, 3}, {7, 1}}};
 
   BOOST_CHECK_THROW(pdz_provider.addPdz(pdz_decreasing), Elements::Exception);
-
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( open_and_close, PdzDataProvider_Fixture ) {
+BOOST_FIXTURE_TEST_CASE(open_and_close, PdzDataProvider_Fixture) {
   int64_t offset;
 
   {
@@ -138,6 +136,4 @@ BOOST_FIXTURE_TEST_CASE( open_and_close, PdzDataProvider_Fixture ) {
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

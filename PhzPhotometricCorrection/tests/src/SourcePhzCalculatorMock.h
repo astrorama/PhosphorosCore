@@ -28,7 +28,7 @@ public:
   virtual ~SourcePhzCalculatorMock() = default;
 
   SourcePhzCalculatorMock(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
-      PhzDataModel::AdjustErrorParamMap adjust_error_param_map,
+      PhzDataModel::AdjustErrorParamMap,
      const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
      PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction,
      std::vector<PhzLikelihood::SourcePhzFunctor::PriorFunction>,

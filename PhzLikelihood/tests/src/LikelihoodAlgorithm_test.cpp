@@ -33,15 +33,15 @@ public:
   
 private:
   
-  std::vector<SourceCatalog::Photometry> makeModelPhotList(int model_no,
-                                std::shared_ptr<std::vector<std::string>> model_filters) {
+  std::vector<SourceCatalog::Photometry> makeModelPhotList(int arg_model_no,
+                                std::shared_ptr<std::vector<std::string>> arg_model_filters) {
     std::vector<SourceCatalog::Photometry> result {};
-    for (int i=0; i<model_no; ++i) {
+    for (int i=0; i<arg_model_no; ++i) {
       std::vector<SourceCatalog::FluxErrorPair> model_fluxes;
       model_fluxes.emplace_back(i*3,i*3);
       model_fluxes.emplace_back(i*3+1,i*3+1);
       model_fluxes.emplace_back(i*3+2,i*3+2);
-      result.emplace_back(model_filters, model_fluxes);
+      result.emplace_back(arg_model_filters, model_fluxes);
     }
     return result;
   }
@@ -143,10 +143,10 @@ BOOST_FIXTURE_TEST_CASE(MissingSourcePhotometry, LikelihoodAlgorithmFixture) {
   std::shared_ptr<std::vector<std::string>> source_filtersmissing {new std::vector<std::string>};
   source_filtersmissing->push_back("Filter1");
   source_filtersmissing->push_back("Filter3");
-  std::vector<SourceCatalog::FluxErrorPair> source_fluxes;
-  source_fluxes.push_back({1.,1.});
-  source_fluxes.push_back({3.,3.});
-  SourceCatalog::Photometry source_phot_missing {source_filtersmissing, source_fluxes};
+  std::vector<SourceCatalog::FluxErrorPair> local_source_fluxes;
+  local_source_fluxes.push_back({1.,1.});
+  local_source_fluxes.push_back({3.,3.});
+  SourceCatalog::Photometry source_phot_missing {source_filtersmissing, local_source_fluxes};
   
   std::shared_ptr<std::vector<std::string>> source_no_data_filled {new std::vector<std::string>};
   source_no_data_filled->push_back("Filter1");

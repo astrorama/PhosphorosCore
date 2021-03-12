@@ -444,7 +444,7 @@ BOOST_AUTO_TEST_CASE(createPriorGrid) {
   // Then
   auto z_axis = result_grid.getAxis<PhzDataModel::ModelParameter::Z>();
   BOOST_CHECK(z_axis.size() == zs.size());
-  for (size_t index; index < z_axis.size(); ++index) {
+  for (size_t index = 0; index < z_axis.size(); ++index) {
     BOOST_CHECK(z_axis[index] == zs[index]);
   }
 
@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE(createListPriorGrid) {
   // Then
   auto z_axis = result_grid.getAxis<PhzDataModel::ModelParameter::Z>();
   BOOST_CHECK(z_axis.size() == zs.size());
-  for (size_t index; index < z_axis.size(); ++index) {
+  for (size_t index = 0; index < z_axis.size(); ++index) {
     BOOST_CHECK(z_axis[index] == zs[index]);
   }
 

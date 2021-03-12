@@ -25,9 +25,9 @@ class SingleSourceTask {
 
 public:
 
-  SingleSourceTask(const CatalogHandler& handler, SourceIter iter,
+  SingleSourceTask(const CatalogHandler& arg_handler, SourceIter arg_iter,
           PhzOutput::OutputHandler& output_handler, std::atomic<uint>& done_counter)
-        : handler(handler), iter(iter),m_output_handler(output_handler), m_done_counter(done_counter) { }
+        : handler(arg_handler), iter(arg_iter),m_output_handler(output_handler), m_done_counter(done_counter) { }
 
   void operator()() {
     DoneUpdater done_updater {m_done_counter};
@@ -41,7 +41,7 @@ private:
   
   class DoneUpdater {
   public:
-    DoneUpdater(std::atomic<uint>& m_done_counter) : m_done_counter(m_done_counter) { }
+    DoneUpdater(std::atomic<uint>& done_counter) : m_done_counter(done_counter) { }
     virtual ~DoneUpdater() {++m_done_counter;}
   private:
     std::atomic<uint>& m_done_counter;

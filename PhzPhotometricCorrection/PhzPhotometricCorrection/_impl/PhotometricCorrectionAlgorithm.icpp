@@ -5,69 +5,79 @@
  */
 
 #ifndef PHOTOMETRICCORRECTIONALGORITHM_ICPP
-#define	PHOTOMETRICCORRECTIONALGORITHM_ICPP
+#define PHOTOMETRICCORRECTIONALGORITHM_ICPP
 
 #include <map>
 #include <set>
+
 #include "ElementsKernel/Exception.h"
-#include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzPhotometricCorrection/FindMedianPhotometricCorrectionsFunctor.h"
 #include "PhzUtils/Multithreading.h"
+#include "SourceCatalog/SourceAttributes/Photometry.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
 
 template <typename SourceIter, typename ModelPhot>
-static std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap> createSourcePhotCorrMap(
-                                  SourceIter source, SourceIter source_end,
-                                  const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, double>& scale_factor_map,
-                                  const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhot>& model_phot_map) {
-
-  // Iterate through the sources and calcualte their optimal photometric corerctions
-  std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap> result {};
+static std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type,
+                PhzDataModel::PhotometricCorrectionMap>
+createSourcePhotCorrMap(
+    SourceIter source, SourceIter source_end,
+    const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type,
+                   double>& scale_factor_map,
+    const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type,
+                   ModelPhot>& model_phot_map) {
+  // Iterate through the sources and calcualte their optimal photometric
+  // corerctions
+  std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type,
+           PhzDataModel::PhotometricCorrectionMap>
+      result{};
   for (; source != source_end; ++source) {
+    if (PhzUtils::getStopThreadsFlag()) {
+      throw Elements::Exception() << "Stopped by the user";
+    }
 
-      if (PhzUtils::getStopThreadsFlag()) {
-          throw Elements::Exception() << "Stopped by the user";
-      }
-
-
-      auto source_id = source->getId();
-      // Check that the source is one of the sources we have the best fit models and
-      // the scale factor
-      if (model_phot_map.count(source_id) == 0 || scale_factor_map.count(source_id) == 0) {
-        continue;
-      }
+    auto source_id = source->getId();
+    // Check that the source is one of the sources we have the best fit models
+    // and the scale factor
+    if (model_phot_map.count(source_id) == 0 ||
+        scale_factor_map.count(source_id) == 0) {
+      continue;
+    }
 
     // Get the source photometry
-    auto source_phot_ptr = source->template getAttribute<SourceCatalog::Photometry>();
+    auto source_phot_ptr =
+        source->template getAttribute<SourceCatalog::Photometry>();
     if (source_phot_ptr == nullptr) {
-      throw Elements::Exception() << "Source with ID " << source->getId()
+      throw Elements::Exception()
+          << "Source with ID " << source->getId()
           << " does not contain photometric information";
     }
 
     // Get the scale factor
     auto scale = scale_factor_map.find(source->getId());
     if (scale == scale_factor_map.end()) {
-      throw Elements::Exception() << "Scale factor for source " << source->getId()
-          << " is not available";
+      throw Elements::Exception() << "Scale factor for source "
+                                  << source->getId() << " is not available";
     }
 
     // Get the model photometry
     auto model_phot = model_phot_map.find(source->getId());
     if (model_phot == model_phot_map.end()) {
-      throw Elements::Exception() << "Model photometry for source " << source->getId()
-          << " is not available";
+      throw Elements::Exception() << "Model photometry for source "
+                                  << source->getId() << " is not available";
     }
 
     const SourceCatalog::Photometry& model_photometry = model_phot->second;
 
-    PhzDataModel::PhotometricCorrectionMap source_phot_corr {};
-    for (auto source_iter=source_phot_ptr->begin(); source_iter!=source_phot_ptr->end(); ++source_iter) {
+    PhzDataModel::PhotometricCorrectionMap source_phot_corr{};
+    for (auto source_iter = source_phot_ptr->begin();
+         source_iter != source_phot_ptr->end(); ++source_iter) {
       auto model_ptr = model_photometry.find(source_iter.filterName());
       // Skip photometries which are upper limit or missing
       if (!model_ptr->missing_photometry_flag && !model_ptr->upper_limit_flag) {
-        source_phot_corr[source_iter.filterName()] = scale->second * model_ptr->flux / (*source_iter).flux;
+        source_phot_corr[source_iter.filterName()] =
+            scale->second * model_ptr->flux / (*source_iter).flux;
       } else {
         source_phot_corr[source_iter.filterName()] = NAN;
       }
@@ -77,15 +87,17 @@ static std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDat
   return result;
 }
 
-static PhzDataModel::PhotometricCorrectionMap normalizePhotCorr(const PhzDataModel::PhotometricCorrectionMap& phot_corr) {
-  std::multiset<double> values {};
+PhzDataModel::PhotometricCorrectionMap normalizePhotCorr(
+    const PhzDataModel::PhotometricCorrectionMap& phot_corr) {
+  std::multiset<double> values{};
   for (auto& pair : phot_corr) {
     values.insert(pair.second);
   }
   size_t size = values.size();
-  double factor = (size % 2 == 0)
-                  ? (*std::next(values.begin(), size/2 - 1) + *std::next(values.begin(), size/2)) / 2.
-                  : *std::next(values.begin(), size/2);
+  double factor = (size % 2 == 0) ? (*std::next(values.begin(), size / 2 - 1) +
+                                     *std::next(values.begin(), size / 2)) /
+                                        2.
+                                  : *std::next(values.begin(), size / 2);
   auto result = phot_corr;
   for (auto& pair : result) {
     pair.second = pair.second / factor;
@@ -94,27 +106,28 @@ static PhzDataModel::PhotometricCorrectionMap normalizePhotCorr(const PhzDataMod
 }
 
 template <typename SourceIter, typename ModelPhot>
-PhzDataModel::PhotometricCorrectionMap PhotometricCorrectionAlgorithm::operator ()(
-                                  SourceIter source_begin, SourceIter source_end,
-                                  const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, double>& scale_factor_map,
-                                  const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhot>& model_phot_map,
-                                  PhotometricCorrectionSelector<SourceIter> selector) const {
-
+PhzDataModel::PhotometricCorrectionMap
+PhotometricCorrectionAlgorithm::operator()(
+    SourceIter source_begin, SourceIter source_end,
+    const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type,
+                   double>& scale_factor_map,
+    const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type,
+                   ModelPhot>& model_phot_map,
+    PhotometricCorrectionSelector<SourceIter> selector) const {
   // Check that we have some sources
   if (source_begin == source_end) {
     throw Elements::Exception() << "No sources given as input";
   }
 
-  auto source_phot_corr_map = createSourcePhotCorrMap(source_begin, source_end,
-                                                      scale_factor_map, model_phot_map);
+  auto source_phot_corr_map = createSourcePhotCorrMap(
+      source_begin, source_end, scale_factor_map, model_phot_map);
 
   auto phot_corr = selector(source_phot_corr_map, source_begin, source_end);
-  
+
   return normalizePhotCorr(phot_corr);
 }
 
-} // end of namespace PhzPhotometricCorrection
-} // end of namespace Euclid
+}  // end of namespace PhzPhotometricCorrection
+}  // end of namespace Euclid
 
-#endif	/* PHOTOMETRICCORRECTIONALGORITHM_ICPP */
-
+#endif /* PHOTOMETRICCORRECTIONALGORITHM_ICPP */

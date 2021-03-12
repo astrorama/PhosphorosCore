@@ -1,20 +1,20 @@
-/*  
- * Copyright (C) 2012-2020 Euclid Science Ground Segment    
- *  
+/*
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ *
  * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 3.0 of the License, or (at your option)  
- * any later version.  
- *  
- * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
- * details.  
- *  
- * You should have received a copy of the GNU Lesser General Public License 
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
- */  
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 /**
  * @file PhzOutput/MultithreadHandler.h
@@ -25,12 +25,13 @@
 #ifndef _PHZOUTPUT_MULTITHREADHANDLER_H
 #define _PHZOUTPUT_MULTITHREADHANDLER_H
 
-#include <memory>
-#include <vector>
-#include <map>
-#include <utility>
-#include <mutex>
 #include <atomic>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <utility>
+#include <vector>
+
 #include "PhzOutput/OutputHandler.h"
 
 namespace Euclid {
@@ -38,18 +39,17 @@ namespace PhzOutput {
 
 /**
  * @class MultithreadHandler
- * @brief OutputHandler instance handling results generated from multiple threads
+ * @brief OutputHandler instance handling results generated from multiple
+ * threads
  * @details
  * This class allows for multithreaded calls of the handleSourceOutput() method
  * and it delegates the handling of the results to a wrapped handler. The
  * wrapped handler does not need to be thread safe. This class is handling the
- * synchronization of the calls on it. The order in which the results are handled
- * is guaranteed to respect a given list of source IDs.
+ * synchronization of the calls on it. The order in which the results are
+ * handled is guaranteed to respect a given list of source IDs.
  */
 class MultithreadHandler : public OutputHandler {
-
-public:
-  
+ public:
   /**
    * @brief creates a new MultithreadHandler instance
    * @details
@@ -61,8 +61,9 @@ public:
    * @param progress The variable to increase after a result is handled
    * @param order The order in which the results will be handled
    */
-  MultithreadHandler(PhzOutput::OutputHandler& handler, std::atomic<size_t>& progress,
-                     const std::vector<typename SourceCatalog::Source::id_type>& order);
+  MultithreadHandler(
+      PhzOutput::OutputHandler& handler, std::atomic<size_t>& progress,
+      const std::vector<typename SourceCatalog::Source::id_type>& order);
 
   /**
    * @brief Destructor
@@ -83,31 +84,30 @@ public:
    * @throws Elements::Exception
    *    if the PhzUtils::getStopThreadsFlag() is set
    */
-  void handleSourceOutput(const SourceCatalog::Source& source, 
+  void handleSourceOutput(const SourceCatalog::Source& source,
                           const PhzDataModel::SourceResults& results) override;
 
-private:
-  
+ private:
   // This is a helper class which is keeping the results for a single source
   struct ResultType {
-    ResultType(const SourceCatalog::Source& source, PhzDataModel::SourceResults results)
-          : source(source), results(std::move(results)) { }
+    ResultType(const SourceCatalog::Source& arg_source,
+               PhzDataModel::SourceResults arg_results)
+        : source(arg_source), results(std::move(arg_results)) {}
     ResultType(ResultType&&) = default;
     const SourceCatalog::Source& source;
     PhzDataModel::SourceResults results;
   };
-  
+
   PhzOutput::OutputHandler& m_handler;
   std::atomic<size_t>& m_progress;
-  std::vector<std::unique_ptr<ResultType>> m_result_list {};
-  std::map<typename SourceCatalog::Source::id_type, std::size_t> m_index_map {};
-  std::mutex m_mutex {};
-  std::size_t m_next_to_output_index {0};
+  std::vector<std::unique_ptr<ResultType>> m_result_list{};
+  std::map<typename SourceCatalog::Source::id_type, std::size_t> m_index_map{};
+  std::mutex m_mutex{};
+  std::size_t m_next_to_output_index{0};
 
 }; /* End of MultithreadHandler class */
 
 } /* namespace PhzOutput */
 } /* namespace Euclid */
 
-
-#endif
+#endif /* _PHZOUTPUT_MULTITHREADHANDLER_H */
