@@ -28,6 +28,7 @@
 #include "PhzConfiguration/LikelihoodGridFuncConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzConfiguration/MarginalizationConfig.h"
+#include "PhzConfiguration/ScaleFactorMarginalizationConfig.h"
 
 #include "PhzPhotometricCorrection/FindBestFitModels.h"
 #include "PhzPhotometricCorrection/CalculateScaleFactorMap.h"
@@ -81,6 +82,7 @@ void ComputePhotometricCorrections::run(ConfigManager& config_manager) {
   auto& model_func_list = config_manager.getConfiguration<ModelGridModificationConfig>().getProcessModelGridFunctors();
   auto& output_func = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getOutputFunction();
   auto& stop_criteria = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getStopCriteria();
+  double sampling_sigma_range = config_manager.getConfiguration<ScaleFactorMarginalizationConfig>().getSampleNumber();
 
   auto& threads = PhzUtils::getThreadNumber();
 
@@ -91,6 +93,7 @@ void ComputePhotometricCorrections::run(ConfigManager& config_manager) {
   ParallelIteratorHandler<FindBestFitModels<PhzLikelihood::SourcePhzFunctor>> find_best_fit_models{threads, thread_pool,
                                                                                                    likelihood_grid_func,
                                                                                                    adjust_error_param_map,
+                                                                                                   sampling_sigma_range,
                                                                                                    priors,
                                                                                                    marginalization_func_list,
                                                                                                    model_func_list};

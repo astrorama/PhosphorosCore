@@ -1,6 +1,6 @@
 elements_subdir(PhzLikelihood)
 
-elements_depends_on_subdirs(PhzDataModel PhzOutput PhzLuminosity PhzUtils)
+elements_depends_on_subdirs(MathUtils PhzDataModel PhzModeling PhzOutput PhzLuminosity PhzUtils)
 elements_depends_on_subdirs(ElementsKernel)
 
 find_package(GMock)
@@ -14,7 +14,7 @@ endif()
 
 #===== Libraries ===============================================================
 elements_add_library(PhzLikelihood src/lib/*.cpp
-                     LINK_LIBRARIES PhzDataModel PhzOutput PhzLuminosity ElementsKernel PhzUtils
+                     LINK_LIBRARIES PhzDataModel MathUtils PhzModeling PhzOutput PhzLuminosity ElementsKernel PhzUtils
                      PUBLIC_HEADERS PhzLikelihood)
 
 #===== Tests using GMock =======================================================

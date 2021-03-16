@@ -42,6 +42,7 @@ public:
   
   FindBestFitModels(LikelihoodGridFunction likelihood_func,
                     const PhzDataModel::AdjustErrorParamMap& adjust_error_param_map,
+                    double sampling_sigma_range,
                     std::vector<PriorFunction> priors = {},
                     std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> marginalization_func_list = {PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}},
                     std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list ={});
@@ -82,6 +83,7 @@ private:
   
   const PhzDataModel::AdjustErrorParamMap& m_adjust_error_param_map;
   LikelihoodGridFunction m_likelihood_func;
+  double m_sampling_sigma_range;
   std::vector<PriorFunction> m_priors;
   std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> m_marginalization_func_list;
   std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> m_model_funct_list;
