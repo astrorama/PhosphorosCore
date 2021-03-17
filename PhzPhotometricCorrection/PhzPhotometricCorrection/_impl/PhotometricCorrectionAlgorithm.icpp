@@ -87,7 +87,7 @@ createSourcePhotCorrMap(
   return result;
 }
 
-PhzDataModel::PhotometricCorrectionMap normalizePhotCorr(
+inline PhzDataModel::PhotometricCorrectionMap normalizePhotCorr(
     const PhzDataModel::PhotometricCorrectionMap& phot_corr) {
   std::multiset<double> values{};
   for (auto& pair : phot_corr) {
