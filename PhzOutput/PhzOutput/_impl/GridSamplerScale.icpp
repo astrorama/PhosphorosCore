@@ -1,0 +1,258 @@
+/** 
+ * @file GridSamplerScale.icpp
+ * @date 18/08/2020
+ * @author DubathF
+ **/
+
+#include <vector>
+#include <random>
+#include <CCfits/CCfits>
+#include <algorithm>    // std::max
+#include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Logging.h"
+#include "GridContainer/serialize.h"
+#include "PhzUtils/FileUtils.h"
+#include "PhzDataModel/PhzModel.h"
+#include "boost/lexical_cast.hpp"
+#include "PhzOutput/GridSampler.h"
+
+
+namespace Euclid {
+namespace PhzOutput {
+
+//static Elements::Logging loggerPhzGridSampler = Elements::Logging::getLogger("GridSampler");
+
+template<PhzDataModel::RegionResultType GridType>
+GridSamplerScale<GridType>::GridSamplerScale() {}
+
+
+
+template<PhzDataModel::RegionResultType GridType>
+std::stringstream  GridSamplerScale<GridType>::createComment(const PhzDataModel::SourceResults& results) {
+  return GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>::createComment(results);
+}
+
+
+template<PhzDataModel::RegionResultType GridType>
+std::pair<double, std::vector<posterior_cell>> GridSamplerScale<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const{
+ auto& grid = results.get<GridType>();
+ auto& axis = grid.getAxesTuple();
+ std::vector<posterior_cell> cells_list {};
+ double total_cell_vol = 0.;
+ size_t index_1 = 1;
+
+
+ size_t delta_z_ind = std::get<0>(axis).size() > 1 ? 1 : 0;
+ size_t delta_ebv_ind = std::get<1>(axis).size() > 1 ? 1 : 0;
+
+ for (size_t sed_index = 0; sed_index<std::get<3>(axis).size(); ++sed_index) {
+   for (size_t red_index = 0; red_index<std::get<2>(axis).size(); ++red_index) {
+     for (size_t ebv_index = 0; ebv_index < std::max(index_1, std::get<1>(axis).size()-1); ++ebv_index){
+       for (size_t z_index = 0; z_index < std::max(index_1, std::get<0>(axis).size()-1); ++z_index){
+         auto alpha_sampling_00 = grid.at(z_index, ebv_index, red_index, sed_index);
+         auto alpha_sampling_01 = grid.at(z_index, ebv_index + delta_ebv_ind, red_index, sed_index);
+         auto alpha_sampling_10 = grid.at(z_index + delta_z_ind, ebv_index, red_index, sed_index);
+         auto alpha_sampling_11 = grid.at(z_index + delta_z_ind, ebv_index + delta_ebv_ind, red_index, sed_index);
+         for (size_t alpha_index = 0; alpha_index <  alpha_sampling_00.size() - 1; ++alpha_index){
+
+           double v_000 = exp(alpha_sampling_00[alpha_index]);
+           double v_001 = exp(alpha_sampling_00[alpha_index + 1]);
+           double v_max = std::max(v_000, v_001);
+           double v_100 = exp(alpha_sampling_10[alpha_index]);
+           double v_101 = exp(alpha_sampling_10[alpha_index + 1]);
+           v_max = std::max(v_max, std::max(v_100, v_101));
+           double v_010 = exp(alpha_sampling_01[alpha_index]);
+           double v_011 = exp(alpha_sampling_01[alpha_index + 1]);
+           v_max = std::max(v_max, std::max(v_010, v_011));
+           double v_110 = exp(alpha_sampling_11[alpha_index]);
+           double v_111 = exp(alpha_sampling_11[alpha_index + 1]);
+           v_max = std::max(v_max, std::max(v_110, v_111));
+
+           double delta_z = 1.0;
+           double delta_e = 1.0;
+           if (std::get<0>(axis).size() > 1) {
+             delta_z = std::get<0>(axis)[z_index+1] - std::get<0>(axis)[z_index];
+           }
+           if (std::get<1>(axis).size() > 1) {
+
+             delta_e = std::get<1>(axis)[ebv_index+1] - std::get<1>(axis)[ebv_index];
+           }
+
+
+           double value = 0.125 * (v_000 + v_001 + v_100 + v_101 + v_010 + v_011 + v_110 + v_111) * delta_z * delta_e;
+
+           auto cell = posterior_cell{sed_index, red_index, ebv_index, z_index, alpha_index ,v_max, value};
+           total_cell_vol += value;
+           cells_list.push_back(cell);
+         }
+       }
+     }
+    }
+  }
+
+  return std::make_pair(total_cell_vol, cells_list);
+}
+
+
+template<PhzDataModel::RegionResultType GridType>
+size_t GridSamplerScale<GridType>::getRegionForDraw(const std::map<size_t, double>& region_volume, double region_draw) const {
+  size_t region_idx = 0;
+  double already_counted = region_volume.at(region_idx);
+  while (already_counted < region_draw) {
+    ++region_idx;
+    if(region_idx>=region_volume.size()) {
+      region_idx = region_volume.size() -1;
+      break;
+    } else {
+      already_counted += region_volume.at(region_idx);
+    }
+  }
+
+  return region_idx;
+
+}
+
+
+template<PhzDataModel::RegionResultType GridType>
+size_t GridSamplerScale<GridType>::getCellForDraw(const std::vector<posterior_cell>& cells, double cell_draw) const {
+  double current_vol = 0.;
+  size_t cell_index = cells.size()-1;
+  for (size_t cell_idx = 0; cell_idx < cells.size(); ++cell_idx) {
+     current_vol+=cells[cell_idx].enclosing_volume;
+     if (current_vol >= cell_draw) {
+         cell_index = cell_idx;
+         break;
+     }
+  }
+
+  return cell_index;
+
+}
+
+template<PhzDataModel::RegionResultType GridType>
+double GridSamplerScale<GridType>::interpolate(double z_0,
+                                               double z_1,
+                                               double ebv_0,
+                                               double ebv_1,
+                                               double alpha_0,
+                                               double alpha_1,
+                                               std::vector<double> values,
+                                               double z_p,
+                                               double ebv_p,
+                                               double alpha_p) const {
+       //   z, ebv, alpha
+       double p_000 = values[0];
+       double p_100 = values[1];
+       double p_010 = values[2];
+       double p_110 = values[3];
+       double p_001 = values[4];
+       double p_101 = values[5];
+       double p_011 = values[6];
+       double p_111 = values[7];
+       // interpolation in z (if needed)
+       double p_ebv10 = z_0!=z_1 ? p_000 + (z_p - z_0)*(p_100 - p_000)/(z_1 - z_0) : p_000;
+       double p_ebv20 = z_0!=z_1 ? p_010 + (z_p - z_0)*(p_110 - p_010)/(z_1 - z_0) : p_010;
+       double p_ebv11 = z_0!=z_1 ? p_001 + (z_p - z_0)*(p_101 - p_001)/(z_1 - z_0) : p_001;
+       double p_ebv21 = z_0!=z_1 ? p_011 + (z_p - z_0)*(p_111 - p_011)/(z_1 - z_0) : p_011;
+
+       // interpolation in ebv (if needed)
+       double p_0 = ebv_0!=ebv_1 ? p_ebv10 + (ebv_p - ebv_0)*(p_ebv20 - p_ebv10)/(ebv_1 - ebv_0) : p_ebv10;
+       double p_1 = ebv_0!=ebv_1 ? p_ebv11 + (ebv_p - ebv_0)*(p_ebv21 - p_ebv11)/(ebv_1 - ebv_0) : p_ebv11;
+
+       // interpolation in alpha (if needed)
+       return p_0 + (alpha_p - alpha_0)*(p_1 - p_0)/(alpha_1 - alpha_0);
+}
+
+template<PhzDataModel::RegionResultType GridType>
+double GridSamplerScale<GridType>::getLuminosity(double alpha, double n_sigma, size_t sample_number, double index) const {
+  return alpha + n_sigma*((2.0*index)/(sample_number-1) -1);
+}
+
+
+template<PhzDataModel::RegionResultType GridType>
+std::pair<std::tuple<double, double, double>, double> GridSamplerScale<GridType>::drawPointInCell(const posterior_cell& cell,
+                                                              const PhzDataModel::RegionResults& results,
+                                                              std::mt19937& gen) const {
+  auto& scaling_grid = results.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
+  auto& sigma_scaling_grid = results.get<PhzDataModel::RegionResultType::SIGMA_SCALE_FACTOR_GRID>();
+  auto& grid = results.get<GridType>();
+  auto& axis = grid.getAxesTuple();
+
+  size_t delta_z = std::get<0>(axis).size() > 1 ? 1 : 0;
+  size_t delta_ebv = std::get<1>(axis).size() > 1 ? 1 : 0;
+
+  double z_0 = std::get<0>(axis)[cell.z_index];
+  double z_1 = std::get<0>(axis)[cell.z_index + delta_z];
+
+  double ebv_0 = std::get<1>(axis)[cell.ebv_index];
+  double ebv_1 = std::get<1>(axis)[cell.ebv_index + delta_ebv];
+
+  double alpha_0 = double(cell.alpha_index);
+  double alpha_1 = alpha_0 + 1.0;
+
+  std::uniform_real_distribution<> distrib_z(z_0, z_1);
+  std::uniform_real_distribution<> distrib_ebv(ebv_0, ebv_1);
+  std::uniform_real_distribution<> distrib_alpha(alpha_0, alpha_1);
+  std::uniform_real_distribution<> distrib_reject(0, cell.max_value);
+
+  size_t n_sample_alpha = grid.at(0, 0, 0, 0).size();
+
+  std::vector<double> prob_border_values{
+        grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index],
+        grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index],
+        grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index],
+        grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index],
+        grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1],
+        grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1],
+        grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1],
+        grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1]
+  };
+
+  while (true) {
+    // draw in the cell
+    double z_val = distrib_z(gen);
+    double ebv_val = distrib_ebv(gen);
+    double alpha_ind_val = distrib_alpha(gen);
+
+    // get the prob
+    double prob = interpolate(z_0, z_1, ebv_0, ebv_1, alpha_0, alpha_1, prob_border_values, z_val, ebv_val, alpha_ind_val);
+    double accept_prob = distrib_reject(gen);
+    // reject if needed
+    if (prob>= accept_prob) {
+        // compute luminosity/scaling
+        std::vector<double> lum_border_values{
+          getLuminosity(scaling_grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index),
+                                      sigma_scaling_grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index),
+                                      n_sample_alpha, cell.alpha_index),
+                        getLuminosity(scaling_grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index),
+                                      sigma_scaling_grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index),
+                                      n_sample_alpha, cell.alpha_index),
+                        getLuminosity(scaling_grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
+                                      sigma_scaling_grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
+                                      n_sample_alpha, cell.alpha_index),
+                        getLuminosity(scaling_grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
+                                      sigma_scaling_grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
+                                      n_sample_alpha, cell.alpha_index),
+                        getLuminosity(scaling_grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index),
+                                      sigma_scaling_grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index),
+                                      n_sample_alpha, cell.alpha_index + 1),
+                        getLuminosity(scaling_grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index),
+                                      sigma_scaling_grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index),
+                                      n_sample_alpha, cell.alpha_index + 1),
+                        getLuminosity(scaling_grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
+                                      sigma_scaling_grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
+                                      n_sample_alpha, cell.alpha_index + 1),
+                        getLuminosity(scaling_grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
+                                      sigma_scaling_grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
+                                      n_sample_alpha, cell.alpha_index + 1)
+        };
+
+        double lum = interpolate(z_0, z_1, ebv_0, ebv_1, alpha_0, alpha_1, prob_border_values, z_val, ebv_val, alpha_ind_val);
+
+        return std::make_pair(std::make_tuple(z_val, ebv_val, lum), prob);
+    }
+  }
+}
+
+} // end of namespace PhzOutput
+} // end of namespace Euclid

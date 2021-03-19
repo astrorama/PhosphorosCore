@@ -22,12 +22,11 @@ namespace PhzOutput {
 //static Elements::Logging loggerPhzGridSampler = Elements::Logging::getLogger("GridSampler");
 
 template<PhzDataModel::RegionResultType GridType>
-GridSampler<GridType>::GridSampler(size_t sample_number)
-  : m_sample_number{sample_number} {}
+GridSampler<GridType>::GridSampler() {}
 
 
 template<PhzDataModel::RegionResultType GridType>
-std::stringstream GridSampler<GridType>::createComment(const PhzDataModel::SourceResults& results) const{
+std::stringstream GridSampler<GridType>::createComment(const PhzDataModel::SourceResults& results) {
      std::stringstream comment {};
      comment << "MODEL-GRID : {";
      size_t region_index = 0;
@@ -90,19 +89,6 @@ double GridSampler<GridType>::interpolateProbability(double z_0,
 
 
 template<PhzDataModel::RegionResultType GridType>
-std::pair<size_t, size_t> GridSampler<GridType>::gteIndex(const Euclid::GridContainer::GridAxis<double>& axis_values, double value) const{
-       size_t index_up = 0;
-       while (axis_values[index_up] < value) {
-         ++index_up;
-       }
-       size_t index_down = index_up!=0 ? index_up -1 : 0;
-
-       return std::make_pair(index_down, index_up);
-}
-
-
-
-template<PhzDataModel::RegionResultType GridType>
 size_t GridSampler<GridType>::getRegionForDraw(const std::map<size_t, double>& region_volume, double region_draw) const {
   size_t region_idx = 0;
   double already_counted = region_volume.at(region_idx);
@@ -137,61 +123,9 @@ size_t GridSampler<GridType>::getCellForDraw(const std::vector<posterior_cell>& 
 }
 
 
-template<PhzDataModel::RegionResultType GridType>
-std::vector<double>  GridSampler<GridType>::computeNumericalAxisWeight(const Euclid::GridContainer::GridAxis<double>& axis_values) const{
-  std::vector<double> weight {};
-
-  if (axis_values.size() == 1) {
-    weight.push_back(1.0);
-  } else {
-
-    std::vector<double> knots {};
-    knots.push_back((*axis_values.begin())/2.0);
-    for (auto& knot_value : axis_values) {
-      knots.push_back(knot_value/2.0);
-    }
-    knots.push_back(*(--axis_values.end())/2.0);
-
-    auto iter_p = knots.begin();
-    ++iter_p;
-    ++iter_p;
-    auto iter_m =knots.begin();
-    while (iter_p!=knots.end()){
-      weight.push_back(*iter_p - *iter_m);
-      ++iter_p;
-      ++iter_m;
-    }
-  }
-
-  return weight;
-}
 
 
-template<PhzDataModel::RegionResultType GridType>
-double GridSampler<GridType>::computeRegionOverallProbability(const PhzDataModel::RegionResults& results) const{
-    auto& grid = results.get<GridType>();
-    auto& axis = grid.getAxesTuple();
 
-    auto& z_axis = std::get<0>(axis);
-    std::vector<double> z_weight = computeNumericalAxisWeight(z_axis);
-
-    auto& ebv_axis = std::get<1>(axis);
-    std::vector<double> ebv_weight = computeNumericalAxisWeight(ebv_axis);
-
-    double region_prob = 0;
-    for (size_t sed_index = 0; sed_index<std::get<3>(axis).size(); ++sed_index){
-      for (size_t red_index = 0; red_index<std::get<2>(axis).size(); ++red_index){
-        for (size_t ebv_index = 0; ebv_index<ebv_weight.size(); ++ebv_index){
-          for (size_t z_index = 0; z_index<z_weight.size(); ++z_index){
-             region_prob += exp(grid.at(z_index,ebv_index,red_index,sed_index))*z_weight[z_index]*ebv_weight[ebv_index];
-
-           }
-         }
-       }
-    }
-
-    return region_prob;
-}
 
 
 template<PhzDataModel::RegionResultType GridType>
@@ -208,25 +142,29 @@ std::pair<double, std::vector<posterior_cell>> GridSampler<GridType>::computeEnc
          double delta_z = 1.0;
          double delta_e = 1.0;
          double v_00 = exp(grid.at(z_index, ebv_index, red_index, sed_index));
-         double v_10 = 0.0;
+         double v_10 = v_00;
+         double v_01 = v_00;
+         double v_11 = v_00;
          if (std::get<0>(axis).size() > 1) {
            v_10 = exp(grid.at(z_index+1, ebv_index, red_index, sed_index));
+           v_11 = v_10;
            delta_z = std::get<0>(axis)[z_index+1] - std::get<0>(axis)[z_index];
          }
-         double v_01 = 0.0;
+
          if (std::get<1>(axis).size() > 1) {
            v_01 = exp(grid.at(z_index, ebv_index + 1, red_index, sed_index));
+           v_11 = v_01;
            delta_e = std::get<1>(axis)[ebv_index+1] - std::get<1>(axis)[ebv_index];
          }
-         double v_11 = 0.0;
-         if (std::get<0>(axis).size() > 1 && std::get<1>(axis).size() > 1) {
-           v_11 = exp(grid.at(z_index + 1, ebv_index + 1, red_index, sed_index));
+
+         if (std::get<0>(axis).size() > 1  && std::get<1>(axis).size() > 1) {
+             v_11 = exp(grid.at(z_index + 1, ebv_index + 1, red_index, sed_index));
          }
 
          double v_max = std::max(std::max(v_00, v_10), std::max(v_01, v_11));
-         double value = v_max*delta_z * delta_e;
+         double value = 0.25 * (v_00 + v_10 + v_01 + v_11) * delta_z * delta_e;
 
-         auto cell = posterior_cell{sed_index, red_index, ebv_index, z_index, v_max, value};
+         auto cell = posterior_cell{sed_index, red_index, ebv_index, 0, z_index, v_max, value};
          total_cell_vol += value;
          cells_list.push_back(cell);
        }
@@ -240,46 +178,51 @@ std::pair<double, std::vector<posterior_cell>> GridSampler<GridType>::computeEnc
 
 
 template<PhzDataModel::RegionResultType GridType>
-std::pair<std::pair<double,double>, double> GridSampler<GridType>::drawPointInCell(const posterior_cell& cell, const PhzDataModel::RegionResults& results,  std::mt19937& gen) const{
+std::pair<std::tuple<double, double, double>, double> GridSampler<GridType>::drawPointInCell(const posterior_cell& cell, const PhzDataModel::RegionResults& results,  std::mt19937& gen) const{
     auto& grid = results.get<GridType>();
+    auto& scaling_grid = results.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
     auto& axis = grid.getAxesTuple();
     auto& z_axis = std::get<0>(axis);
     auto& ebv_axis = std::get<1>(axis);
     size_t sed_idx = cell.sed_index;
     size_t red_idx = cell.red_curve_index;
 
-    float z_0 = z_axis[cell.z_index];
-    float z_1 = z_0;
-    float z_val = z_0;
-    size_t index_z_1 = cell.z_index;
+    size_t delta_z = z_axis.size() > 1 ? 1 : 0;
+    size_t delta_ebv = ebv_axis.size() > 1 ? 1 : 0;
 
-    if (z_axis.size() > 1) {
-      z_1 = z_axis[cell.z_index+1];
-      std::uniform_real_distribution<> distrib_z(z_axis[cell.z_index], z_axis[cell.z_index + 1]);
-      z_val = distrib_z(gen);
-      ++index_z_1;
-    }
+    double z_0 = z_axis[cell.z_index];
+    double z_1 = z_axis[cell.z_index + delta_z];
 
-    float ebv_0 = ebv_axis[cell.ebv_index];
-    float ebv_1 = ebv_0;
-    float ebv_val = ebv_0;
-    size_t index_ebv_1 = cell.ebv_index;
-    if (ebv_axis.size() > 1) {
-      ebv_1 = ebv_axis[cell.ebv_index+1];
-      std::uniform_real_distribution<> distrib_ebv(ebv_axis[cell.ebv_index], ebv_axis[cell.ebv_index + 1]);
-      ebv_val = distrib_ebv(gen);
-      ++index_ebv_1;
-    }
+    double ebv_0 = ebv_axis[cell.ebv_index];
+    double ebv_1 = ebv_axis[cell.ebv_index + delta_ebv];
+
+    std::uniform_real_distribution<> distrib_z(z_0, z_1);
+    std::uniform_real_distribution<> distrib_ebv(ebv_0, ebv_1);
+    std::uniform_real_distribution<> distrib_reject(0, cell.max_value);
 
     double p_00 = exp(grid.at(cell.z_index, cell.ebv_index, red_idx, sed_idx));
-    double p_10 = exp(grid.at(index_z_1, cell.ebv_index, red_idx, sed_idx));
-    double p_01 = exp(grid.at(cell.z_index, index_ebv_1, red_idx, sed_idx));
-    double p_11 = exp(grid.at(index_z_1, index_ebv_1, red_idx, sed_idx));
-    double prob = interpolateProbability(z_0, z_1, ebv_0, ebv_1,
-                                   p_00, p_01, p_10, p_11,
-                                   z_val, ebv_val);
+    double p_10 = exp(grid.at(cell.z_index + delta_z, cell.ebv_index, red_idx, sed_idx));
+    double p_01 = exp(grid.at(cell.z_index, cell.ebv_index + delta_ebv, red_idx, sed_idx));
+    double p_11 = exp(grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, red_idx, sed_idx));
+    while (true) {
+      // draw in the cell
+         double z_val = distrib_z(gen);
+         double ebv_val = distrib_ebv(gen);
 
-    return std::make_pair(std::make_pair(z_val, ebv_val),prob);
+         // get the prob
+         double prob = interpolateProbability(z_0, z_1, ebv_0, ebv_1, p_00, p_01, p_10, p_11, z_val, ebv_val);
+         double accept_prob = distrib_reject(gen);
+         // reject if needed
+         if (prob>= accept_prob) {
+           double alpha_00 = scaling_grid.at(cell.z_index, cell.ebv_index, red_idx, sed_idx);
+           double alpha_10 = scaling_grid.at(cell.z_index + delta_z, cell.ebv_index, red_idx, sed_idx);
+           double alpha_01 = scaling_grid.at(cell.z_index, cell.ebv_index + delta_ebv, red_idx, sed_idx);
+           double alpha_11 = scaling_grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, red_idx, sed_idx);
+           double lum = interpolateProbability(z_0, z_1, ebv_0, ebv_1, alpha_00, alpha_01, alpha_10, alpha_11, z_val, ebv_val);
+
+           return std::make_pair(std::make_tuple(z_val, ebv_val, lum), prob);
+         }
+    }
 }
 
 } // end of namespace PhzOutput

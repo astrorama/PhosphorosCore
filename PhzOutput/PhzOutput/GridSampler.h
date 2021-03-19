@@ -38,6 +38,7 @@ struct posterior_cell {
       size_t red_curve_index;
       size_t ebv_index;
       size_t z_index;
+      size_t alpha_index;
       double max_value;
       double enclosing_volume;
     };
@@ -58,7 +59,7 @@ public:
 
 
 
-  GridSampler(size_t sample_number = 1000);
+  GridSampler();
 
   virtual ~GridSampler()=default;
 
@@ -75,7 +76,7 @@ public:
    *    A string stream containing the description of the non-numerical axis for
    *    each region of the template space
    */
-  std::stringstream createComment(const PhzDataModel::SourceResults& results) const;
+  static std::stringstream createComment(const PhzDataModel::SourceResults& results);
 
 
   /**
@@ -127,20 +128,6 @@ public:
                                 double ebv_p) const;
 
 
- /**
-  * @brief
-  * get the index of the axis knots just below and above a given value
-  *
-  * @param axis_values
-  * the numerical axis
-  *
-  * @param value
-  * the value to search the inex for
-  *
-  * @return
-  * the pair, index_bellow, index_above
-  **/
- std::pair<size_t, size_t> gteIndex(const Euclid::GridContainer::GridAxis<double>&  axis_values, double value) const;
 
 
 /**
@@ -174,24 +161,6 @@ public:
  **/
  size_t  getCellForDraw(const std::vector<posterior_cell>& cells, double cell_draw) const;
 
- /**
-  * @brief
-  * Compute the weight of each axis knots (needed to integrate the probability)
-  **/
- std::vector<double> computeNumericalAxisWeight(const Euclid::GridContainer::GridAxis<double>& axis_values) const;
-
- /**
-  * @brief
-  * compute the integrated probability of a given region of the parameter space
-  *
-  * @param results
-  * A SourceResults object containing the REGION_RESULTS_MAP from which
-  * the "GridType" will be extracted
-  *
-  * @return
-  * the overall probability for the region
-  **/
- double computeRegionOverallProbability(const PhzDataModel::RegionResults& results) const;
 
  /**
   * @brief
@@ -222,10 +191,10 @@ public:
   * a random number generator
   *
   * @return
-  * <<z_p, ebv_p>, probability>
+  * <<z_p, ebv_p, alpha_p >, probability>
   *
   **/
- std::pair<std::pair<double,double>, double> drawPointInCell(const posterior_cell& cell,
+ std::pair<std::tuple<double, double, double>, double> drawPointInCell(const posterior_cell& cell,
                                                              const PhzDataModel::RegionResults& results,
                                                              std::mt19937& gen) const;
 
@@ -233,7 +202,6 @@ public:
 private:
 
 
-  size_t m_sample_number;
 
 
 };

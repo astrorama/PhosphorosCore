@@ -8,7 +8,9 @@
 #define	PHZOUTPUT_LIKELIHOODHANDLER_H
 
 #include <map>
+#include <string>
 #include <utility>
+#include <vector>
 #include <boost/filesystem.hpp>
 #include "PhzDataModel/RegionResults.h"
 #include "PhzOutput/OutputHandler.h"
@@ -17,7 +19,7 @@
 namespace Euclid {
 namespace PhzOutput {
 
-template<PhzDataModel::RegionResultType GridType>
+template<PhzDataModel::RegionResultType GridType, typename Sampler>
 class LikelihoodHandler : public OutputHandler {
 
 public:
@@ -41,7 +43,7 @@ private:
   bool                          m_current_file_has_comment = false;
   boost::filesystem::path       m_current_out_file;  // Filename of the output fits file
   std::shared_ptr<CCfits::FITS> m_current_fits_file;  // Pointer to the FITS file object
-  std::shared_ptr<Table::FitsWriter>             m_sample_fits_writer; // table writer around the fits file objects
+  std::shared_ptr<Table::FitsWriter> m_sample_fits_writer;  // table writer around the fits file objects
   std::shared_ptr<Euclid::Table::ColumnInfo> m_sampling_column_info;
   size_t m_counter;   // Counting the number of sources
 
@@ -49,7 +51,7 @@ private:
   std::shared_ptr<CCfits::FITS> m_index_fits_file;  // Pointer to the FITS file object
   std::shared_ptr<Euclid::Table::ColumnInfo> m_index_column_info;
   std::vector<Table::Row> m_index_row_list {};
-  GridSampler<GridType> m_grid_sampler;
+  Sampler m_grid_sampler;
 
   std::string getFileName(int file_id);
   void createAndOpenSampleFile();
@@ -63,8 +65,7 @@ private:
       double total_volume,
       const std::map<size_t, double>& region_volume,
       const std::map<std::string, PhzDataModel::RegionResults>& result_map,
-      const std::map<size_t, double>& region_cell_volume,
-      const std::map<size_t,  std::vector<posterior_cell>>& region_cells,
+      const std::map<size_t, std::vector<posterior_cell>>& region_cells,
       const std::map<size_t, std::string>& region_index_map);
 
 };

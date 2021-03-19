@@ -63,9 +63,12 @@
 #include "PhzConfiguration/ModelGridModificationConfig.h"
 #include "PhzConfiguration/FixedRedshiftModelGridModifConfig.h"
 #include "PhzConfiguration/GalactiAbsorptionModelGridModifConfig.h"
+#include "PhzConfiguration/ScaleFactorMarginalizationConfig.h"
 
 #include "PhzOutput/PdfOutput.h"
 #include "PhzOutput/LikelihoodHandler.h"
+#include "PhzOutput/GridSampler.h"
+#include "PhzOutput/GridSamplerScale.h"
 #include "PhzOutput/PhzCatalog.h"
 #include "PhzOutput/PhzColumnHandlers/Id.h"
 #include "PhzOutput/PhzColumnHandlers/Pdf.h"
@@ -133,6 +136,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<ModelGridModificationConfig>();
   declareDependency<FixedRedshiftModelGridModifConfig>();
   declareDependency<GalactiAbsorptionModelGridModifConfig>();
+  declareDependency<ScaleFactorMarginalizationConfig>();
 
 
 }
@@ -283,18 +287,39 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
     result.addHandler(std::move(handler));
   }
 
+
+  bool has_scale_sampling = getDependency<ScaleFactorMarginalizationConfig>().getIsEnabled();
+
   if (m_likelihood_flag) {
-    result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
+    if (has_scale_sampling) {
+      result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
+              new PhzOutput::LikelihoodHandler<
+                      PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID,
+                      PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>
+              > {m_out_likelihood_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+    } else {
+      result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
         new PhzOutput::LikelihoodHandler<
-                PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID
+                PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID,
+                PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>
         > {m_out_likelihood_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+    }
   }
 
   if (m_posterior_flag) {
-    result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::LikelihoodHandler<
-                PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID
-        > {m_out_posterior_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+    if(has_scale_sampling) {
+      result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
+              new PhzOutput::LikelihoodHandler<
+                      PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID,
+                      PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID>
+              > {m_out_likelihood_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+    } else {
+      result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
+          new PhzOutput::LikelihoodHandler<
+                  PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID,
+                  PhzOutput::GridSampler<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>
+          > {m_out_posterior_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+    }
   }
 
   return output_handler;
