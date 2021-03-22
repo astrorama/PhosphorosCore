@@ -300,11 +300,11 @@ BOOST_FIXTURE_TEST_CASE(test_computeEnclosingVolumeOfCells, GridSamplerScale_fix
 
 }
 
-/* TODO
+
 //-----------------------------------------------------------------------------
 BOOST_FIXTURE_TEST_CASE(test_drawPointInCell, GridSamplerScale_fixture) {
   // Given
-  auto handler = PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>{};
+  auto handler = PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>{};
 
   std::random_device rd;    // Will be used to obtain a seed for the random number engine
   std::mt19937 gen(rd());   // Standard mersenne_twister_engine seeded with rd()
@@ -316,21 +316,28 @@ BOOST_FIXTURE_TEST_CASE(test_drawPointInCell, GridSamplerScale_fixture) {
    GridContainer::GridAxis<double> ebv_axis_1{"E(B-V)", {0.1}};
    GridContainer::GridAxis<XYDataset::QualifiedName> red_axis_1{"Reddening Curve", {{"Curve1"}}};
    GridContainer::GridAxis<XYDataset::QualifiedName> sed_axis_1 {"SED", {{"SED_1"}, {"SED_2"}}};
-   PhzDataModel::DoubleGrid grid_likelihood_1{z_axis_1, ebv_axis_1, red_axis_1, sed_axis_1};
+   PhzDataModel::DoubleListGrid grid_likelihood_1{z_axis_1, ebv_axis_1, red_axis_1, sed_axis_1};
    auto iter_grid_1 = grid_likelihood_1.begin();
-   *iter_grid_1 = 0.5;
+   *iter_grid_1 = std::vector<double>{0.5, 0.7, 0.9};
    ++iter_grid_1;
-   *iter_grid_1 = 0.1;
+   *iter_grid_1 = std::vector<double>{0.1, 0.3, 0.2};
 
    PhzDataModel::DoubleGrid grid_scaling{z_axis_1, ebv_axis_1, red_axis_1, sed_axis_1};
    auto iter_grid_sc = grid_scaling.begin();
-      *iter_grid_sc = 0.7;
+      *iter_grid_sc = 100;
       ++iter_grid_sc;
-      *iter_grid_sc = 0.3;
+      *iter_grid_sc = 50;
+
+    PhzDataModel::DoubleGrid grid_sigma_scaling{z_axis_1, ebv_axis_1, red_axis_1, sed_axis_1};
+    auto iter_sigma_grid_sc = grid_sigma_scaling.begin();
+       *iter_sigma_grid_sc = 10;
+       ++iter_sigma_grid_sc;
+       *iter_sigma_grid_sc = 8;
 
    PhzDataModel::RegionResults results_1{};
    results_1.set<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>(std::move(grid_likelihood_1));
    results_1.set<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>(std::move(grid_scaling));
+   results_1.set<PhzDataModel::RegionResultType::SIGMA_SCALE_FACTOR_GRID>(std::move(grid_sigma_scaling));
 
    auto computed = handler.computeEnclosingVolumeOfCells(results_1);
    auto cell = computed.second[0];
@@ -340,136 +347,117 @@ BOOST_FIXTURE_TEST_CASE(test_drawPointInCell, GridSamplerScale_fixture) {
    // Then
    BOOST_CHECK_CLOSE(std::get<0>(point.first), 0.0, 0.001);
    BOOST_CHECK_CLOSE(std::get<1>(point.first), 0.1, 0.001);
-   BOOST_CHECK_CLOSE(std::get<2>(point.first), 0.7, 0.001);
-   BOOST_CHECK_CLOSE(point.second, 1.6487213, 0.001);   // exp(0.5)
+   BOOST_CHECK(std::get<2>(point.first) >= 90);
+   BOOST_CHECK(std::get<2>(point.first) <= 100);
+   BOOST_CHECK(point.second >=1.6487213);   // exp(0.5)
+   BOOST_CHECK(point.second <=2.01375270747);   // exp(0.7)
 
+   point = handler.drawPointInCell(computed.second[1], results_1, gen);
 
-   // CASE 2: multiple point in Z & 1 point in E(B-V)
+    // Then
+    BOOST_CHECK_CLOSE(std::get<0>(point.first), 0.0, 0.001);
+    BOOST_CHECK_CLOSE(std::get<1>(point.first), 0.1, 0.001);
+    BOOST_CHECK(std::get<2>(point.first) >= 100);
+    BOOST_CHECK(std::get<2>(point.first) <= 110);
+    BOOST_CHECK(point.second <=2.45960311116);   // exp(0.9)
+    BOOST_CHECK(point.second >=2.01375270747);   // exp(0.7)
+
+    point = handler.drawPointInCell(computed.second[2], results_1, gen);
+
+    // Then
+    BOOST_CHECK_CLOSE(std::get<0>(point.first), 0.0, 0.001);
+    BOOST_CHECK_CLOSE(std::get<1>(point.first), 0.1, 0.001);
+    BOOST_CHECK(std::get<2>(point.first) >= 42);
+    BOOST_CHECK(std::get<2>(point.first) <= 50);
+    BOOST_CHECK(point.second >=1.10517091808);   // exp(0.1)
+    BOOST_CHECK(point.second <=1.34985880758);   // exp(0.3)
+
+    // CASE 2: multiple point in E(B-V) &  Z
     // when
     GridContainer::GridAxis<double> z_axis_2{"Z", {0.0, 1.5, 2.0}};
-    GridContainer::GridAxis<double> ebv_axis_2{"E(B-V)", {0.3}};
+    GridContainer::GridAxis<double> ebv_axis_2{"E(B-V)", {0.0, 0.7, 1.0}};
     GridContainer::GridAxis<XYDataset::QualifiedName> red_axis_2{"Reddening Curve", {{"Curve1"}}};
     GridContainer::GridAxis<XYDataset::QualifiedName> sed_axis_2 {"SED", {{"SED_1"}}};
-    PhzDataModel::DoubleGrid grid_likelihood_2{z_axis_2, ebv_axis_2, red_axis_2, sed_axis_2};
-    auto iter_grid_2 = grid_likelihood_2.begin();
-    *iter_grid_2 = 0.1;
-    ++iter_grid_2;
-    *iter_grid_2 = 0.2;
-    ++iter_grid_2;
-    *iter_grid_2 = 0.15;
-
+    PhzDataModel::DoubleListGrid grid_likelihood_2{z_axis_2, ebv_axis_2, red_axis_2, sed_axis_2};
     PhzDataModel::DoubleGrid grid_scaling_2{z_axis_2, ebv_axis_2, red_axis_2, sed_axis_2};
-      auto iter_grid_sc_2 = grid_scaling_2.begin();
-         *iter_grid_sc_2 = 0.7;
-         ++iter_grid_sc_2;
-         *iter_grid_sc_2 = 0.5;
-         ++iter_grid_sc_2;
-         *iter_grid_sc_2 = 0.3;
+    PhzDataModel::DoubleGrid grid_sigma_scaling_2{z_axis_2, ebv_axis_2, red_axis_2, sed_axis_2};
+
+    auto iter_grid_likelihood_2 = grid_likelihood_2.begin();
+    *iter_grid_likelihood_2 = std::vector<double>{0.3, 0.3, 0.2};
+    ++iter_grid_likelihood_2;
+    *iter_grid_likelihood_2 = std::vector<double>{0.3, 0.3, 0.4};
+    ++iter_grid_likelihood_2;
+
+    *iter_grid_likelihood_2 = std::vector<double>{0.5, 0.6, 0.7};
+    ++iter_grid_likelihood_2;
+
+    *iter_grid_likelihood_2 = std::vector<double>{0.3, 0.3, 0.02};
+    ++iter_grid_likelihood_2;
+    *iter_grid_likelihood_2 = std::vector<double>{0.3, 0.3, 0.04};
+    ++iter_grid_likelihood_2;
+
+    *iter_grid_likelihood_2 = std::vector<double>{0.05, 0.06, 0.07};
+    ++iter_grid_likelihood_2;
+    *iter_grid_likelihood_2 = std::vector<double>{0.1, 0.2, 0.2};
+    ++iter_grid_likelihood_2;
+    *iter_grid_likelihood_2 = std::vector<double>{0.2, 0.3, 0.4};
+    ++iter_grid_likelihood_2;
+    *iter_grid_likelihood_2 = std::vector<double>{0.5, 0.6, 0.7};
+
+    auto iter_grid_scaling_2 = grid_scaling_2.begin();
+    *iter_grid_scaling_2 = 100;
+    ++iter_grid_scaling_2;
+    *iter_grid_scaling_2 = 110;
+    ++iter_grid_scaling_2;
+
+    *iter_grid_scaling_2 = 120;
+    ++iter_grid_scaling_2;
+
+    *iter_grid_scaling_2 = 130;
+    ++iter_grid_scaling_2;
+    *iter_grid_scaling_2 = 140;
+    ++iter_grid_scaling_2;
+
+    *iter_grid_scaling_2 = 150;
+    ++iter_grid_scaling_2;
+    *iter_grid_scaling_2 = 160;
+    ++iter_grid_scaling_2;
+    *iter_grid_scaling_2 = 170;
+    ++iter_grid_scaling_2;
+    *iter_grid_scaling_2 = 180;
+
+    auto iter_grid_sigma_scaling_2 = grid_sigma_scaling_2.begin();
+    *iter_grid_sigma_scaling_2 = 10;
+    ++iter_grid_sigma_scaling_2;
+    *iter_grid_sigma_scaling_2 = 10;
+    ++iter_grid_sigma_scaling_2;
+    *iter_grid_sigma_scaling_2 = 10;
+    ++iter_grid_sigma_scaling_2;
+    *iter_grid_sigma_scaling_2 = 10;
+    ++iter_grid_sigma_scaling_2;
+    *iter_grid_sigma_scaling_2 = 10;
+    ++iter_grid_sigma_scaling_2;
+    *iter_grid_sigma_scaling_2 = 10;
+    ++iter_grid_sigma_scaling_2;
+    *iter_grid_sigma_scaling_2 = 10;
+    ++iter_grid_sigma_scaling_2;
+    *iter_grid_sigma_scaling_2 = 10;
+    ++iter_grid_sigma_scaling_2;
+    *iter_grid_sigma_scaling_2 = 10;
 
 
     PhzDataModel::RegionResults results_2{};
     results_2.set<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>(std::move(grid_likelihood_2));
     results_2.set<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>(std::move(grid_scaling_2));
+    results_2.set<PhzDataModel::RegionResultType::SIGMA_SCALE_FACTOR_GRID>(std::move(grid_sigma_scaling_2));
 
     computed = handler.computeEnclosingVolumeOfCells(results_2);
     cell = computed.second[0];
-
-
-    BOOST_CHECK(cell.z_index == 0);
-
     point = handler.drawPointInCell(cell, results_2, gen);
 
     // Then
-    BOOST_CHECK(std::get<0>(point.first) >= 0);
-    BOOST_CHECK(std::get<0>(point.first) <= 1.5);
-    BOOST_CHECK_CLOSE(std::get<1>(point.first), 0.3, 0.001);
-    BOOST_CHECK(std::get<2>(point.first) >= 0.5);
-    BOOST_CHECK(std::get<2>(point.first) <= 0.7);
-    BOOST_CHECK(point.second >= 1.1051709);   // exp(0.1)
-    BOOST_CHECK(point.second <= 1.2214028);   // exp(0.2)
+    BOOST_CHECK_CLOSE(point.second, 1.34985880758, 0.001);  // exp(0.3) this cell has this prob value at each corner
 
-    double value =  1.1051709 + (1.2214028-1.1051709)*(std::get<0>(point.first) - 0)/(1.5 - 0);
-
-    BOOST_CHECK_CLOSE(point.second, value, 0.001);
-
-    // CASE 3: multiple point in E(B-V) & 1 point in Z
-    // when
-    GridContainer::GridAxis<double> z_axis_3{"Z", {0.4}};
-    GridContainer::GridAxis<double> ebv_axis_3{"E(B-V)", {0.0, 0.7, 1.0}};
-    GridContainer::GridAxis<XYDataset::QualifiedName> red_axis_3{"Reddening Curve", {{"Curve1"}}};
-    GridContainer::GridAxis<XYDataset::QualifiedName> sed_axis_3 {"SED", {{"SED_1"}}};
-    PhzDataModel::DoubleGrid grid_likelihood_3{z_axis_3, ebv_axis_3, red_axis_3, sed_axis_3};
-    auto iter_grid_3 = grid_likelihood_3.begin();
-    *iter_grid_3 = 0.2;
-    ++iter_grid_3;
-    *iter_grid_3 = 0.1;
-    ++iter_grid_3;
-    *iter_grid_3 = 0.15;
-
-
-    PhzDataModel::DoubleGrid grid_scaling_3{z_axis_3, ebv_axis_3, red_axis_3, sed_axis_3};
-      auto iter_grid_sc_3 = grid_scaling_3.begin();
-         *iter_grid_sc_3 = 0.9;
-         ++iter_grid_sc_3;
-         *iter_grid_sc_3 = 0.5;
-         ++iter_grid_sc_3;
-         *iter_grid_sc_3 = 0.3;
-    PhzDataModel::RegionResults results_3{};
-    results_3.set<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>(std::move(grid_likelihood_3));
-    results_3.set<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>(std::move(grid_scaling_3));
-
-    computed = handler.computeEnclosingVolumeOfCells(results_3);
-
-    cell = computed.second[0];
-
-    point = handler.drawPointInCell(cell, results_3, gen);
-
-    // Then
-    BOOST_CHECK_CLOSE(std::get<0>(point.first), 0.4, 0.001);
-    BOOST_CHECK(std::get<1>(point.first) >= 0);
-    BOOST_CHECK(std::get<1>(point.first) <= 0.7);
-    BOOST_CHECK(std::get<2>(point.first) >= 0.5);
-    BOOST_CHECK(std::get<2>(point.first) <= 0.9);
-    BOOST_CHECK(point.second >= 1.1051709);  // exp(0.1)
-    BOOST_CHECK(point.second <= 1.2214028);  // exp(0.2)
-
-    value =  1.2214028 + (1.1051709 - 1.2214028)*(std::get<1>(point.first) - 0)/(0.7- 0);
-
-    BOOST_CHECK_CLOSE(point.second, value, 0.001);
-
-
-    // CASE 4: multiple point in E(B-V) &  Z
-    // when
-    GridContainer::GridAxis<double> z_axis_4{"Z", {0.0, 1.5, 2.0}};
-    GridContainer::GridAxis<double> ebv_axis_4{"E(B-V)", {0.0, 0.7, 1.0}};
-    GridContainer::GridAxis<XYDataset::QualifiedName> red_axis_4{"Reddening Curve", {{"Curve1"}}};
-    GridContainer::GridAxis<XYDataset::QualifiedName> sed_axis_4 {"SED", {{"SED_1"}}};
-    PhzDataModel::DoubleGrid grid_likelihood_4{z_axis_4, ebv_axis_4, red_axis_4, sed_axis_4};
-    PhzDataModel::DoubleGrid grid_scaling_4{z_axis_4, ebv_axis_4, red_axis_4, sed_axis_4};
-    std::vector<double> values{0.3, 0.1, 0.1,
-                               0.2, 0.4, 0.1,
-                               0.1, 0.1, 0.4};
-    auto iter_values = values.begin();
-    auto iter_grid = grid_likelihood_4.begin();
-    auto iter_scale = grid_scaling_4.begin();
-
-    while (iter_grid != grid_likelihood_4.end()) {
-       *iter_grid = *iter_values;
-       *iter_scale = *iter_values;
-       ++iter_values;
-       ++iter_grid;
-       ++iter_scale;
-    }
-
-    PhzDataModel::RegionResults results_4{};
-    results_4.set<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>(std::move(grid_likelihood_4));
-    results_4.set<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>(std::move(grid_scaling_4));
-
-    computed = handler.computeEnclosingVolumeOfCells(results_4);
-    cell = computed.second[0];
-    point = handler.drawPointInCell(cell, results_4, gen);
-
-    // Then
     BOOST_CHECK(std::get<0>(point.first) >= 0);
     BOOST_CHECK(std::get<0>(point.first) <= 1.5);
 
@@ -477,14 +465,11 @@ BOOST_FIXTURE_TEST_CASE(test_drawPointInCell, GridSamplerScale_fixture) {
     BOOST_CHECK(std::get<1>(point.first) <= 0.7);
 
 
-    BOOST_CHECK(std::get<2>(point.first) >= 0.1);
-    BOOST_CHECK(std::get<2>(point.first) <= 0.4);
+    BOOST_CHECK(std::get<2>(point.first) >= 90);
+    BOOST_CHECK(std::get<2>(point.first) <= 130);
 
-    value = handler.interpolateProbability(0, 1.5, 0, 0.7, 1.3498588, 1.2214028,
-                                         1.1051709, 1.4918247, std::get<0>(point.first), std::get<1>(point.first));
-    BOOST_CHECK_CLOSE(point.second, value, 0.001);
 
-}*/
+}
 
 BOOST_AUTO_TEST_SUITE_END ()
 

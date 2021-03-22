@@ -198,14 +198,14 @@ std::pair<std::tuple<double, double, double>, double> GridSamplerScale<GridType>
   size_t n_sample_alpha = grid.at(0, 0, 0, 0).size();
 
   std::vector<double> prob_border_values{
-        grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index],
-        grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index],
-        grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index],
-        grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index],
-        grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1],
-        grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1],
-        grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1],
-        grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1]
+        exp(grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index]),
+        exp(grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index]),
+        exp(grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index]),
+        exp(grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index]),
+        exp(grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1]),
+        exp(grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1]),
+        exp(grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1]),
+        exp(grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1])
   };
 
   while (true) {
@@ -247,7 +247,7 @@ std::pair<std::tuple<double, double, double>, double> GridSamplerScale<GridType>
                                       n_sample_alpha, cell.alpha_index + 1)
         };
 
-        double lum = interpolate(z_0, z_1, ebv_0, ebv_1, alpha_0, alpha_1, prob_border_values, z_val, ebv_val, alpha_ind_val);
+        double lum = interpolate(z_0, z_1, ebv_0, ebv_1, alpha_0, alpha_1, lum_border_values, z_val, ebv_val, alpha_ind_val);
 
         return std::make_pair(std::make_tuple(z_val, ebv_val, lum), prob);
     }
