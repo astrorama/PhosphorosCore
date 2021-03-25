@@ -74,6 +74,20 @@ struct ModelDatasetGrid_Fixture {
   };
 
 
+  class DummyNormalizing{
+     public:
+
+       virtual ~DummyNormalizing() = default;
+       Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed) const{
+         std::vector<std::pair<double, double>> normalized_values {};
+         for (auto& sed_pair : sed) {
+           normalized_values.push_back(std::make_pair(sed_pair.first,sed_pair.second));
+         }
+          return  Euclid::XYDataset::XYDataset {std::move(normalized_values)};
+       }
+
+     };
+
 
   std::vector<double> zs{0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
   std::vector<double> ebvs{0.0,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,0.01};
@@ -88,6 +102,8 @@ struct ModelDatasetGrid_Fixture {
   std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset& ,const Euclid::MathUtils::Function&, double)> m_reddening_function =  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset& ,const Euclid::MathUtils::Function&, double)>(DummyReddening{});
   std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset& , double)> m_redshift_function=std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset& , double)>(DummyRedshift{});
   std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)>  m_igm_function {Euclid::PhzModeling::NoIgmFunctor{}};
+  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>  m_norm_function = std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>(DummyNormalizing{});
+
 
   std::vector<std::pair<double, double>> sed1 {std::make_pair(10000.,0.004),std::make_pair(12000.,0.002),std::make_pair(14000.,0.001)};
   std::vector<std::pair<double, double>> sed2 {std::make_pair(10000.,0.005),std::make_pair(12000.,0.003),std::make_pair(14000.,0.002)};
@@ -118,7 +134,7 @@ BOOST_FIXTURE_TEST_CASE(constructor_test, ModelDatasetGrid_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing constructor");
   BOOST_TEST_MESSAGE(" ");
 
-  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space,std::move(m_sed_map),std::move(m_reddening_curve_map),m_reddening_function,m_redshift_function,m_igm_function);
+  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space,std::move(m_sed_map),std::move(m_reddening_curve_map),m_reddening_function,m_redshift_function,m_igm_function,m_norm_function);
 
   BOOST_CHECK_EQUAL(4,model_grid.axisNumber());
   BOOST_CHECK_EQUAL(990,model_grid.size()); //3*3*11*10
@@ -129,7 +145,7 @@ BOOST_FIXTURE_TEST_CASE(iterator_test, ModelDatasetGrid_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing iterator");
   BOOST_TEST_MESSAGE(" ");
 
-  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space,std::move(m_sed_map),std::move(m_reddening_curve_map),m_reddening_function,m_redshift_function,m_igm_function);
+  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space,std::move(m_sed_map),std::move(m_reddening_curve_map),m_reddening_function,m_redshift_function,m_igm_function,m_norm_function);
 
   auto iterator = model_grid.begin();
 

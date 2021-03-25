@@ -21,6 +21,8 @@
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/CosmologicalParameterConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
+#include "PhzModeling/NormalizationFunctorFactory.h"
 
 
 using std::map;
@@ -107,6 +109,13 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
     auto output_function = config_manager.template getConfiguration<CorrectionCoefficientGridOutputConfig>().getOutputFunction();
     auto cosmology =  config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
 
+    auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
+    double integrated_flux = config_manager.getConfiguration<ModelNormalizationConfig>().getIntegratedFlux();
+
+    auto normalizer_functor =
+          Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, integrated_flux);
+
+
     std::map<std::string, PhzDataModel::PhotometryGrid> result_map{};
 
     // Compute the total number of models
@@ -121,6 +130,7 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
       reddening_provider,
       filter_provider,
       igm_abs_func,
+      normalizer_functor,
       miky_way_reddening_curve
     };
     ProgressReporter progress_listener{logger};

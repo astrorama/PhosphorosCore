@@ -104,9 +104,11 @@ PhotometryGridCreator::PhotometryGridCreator(
               std::shared_ptr<XYDataset::XYDatasetProvider> sed_provider,
               std::shared_ptr<XYDataset::XYDatasetProvider> reddening_curve_provider,
               std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider,
-              IgmAbsorptionFunction igm_absorption_function)
+              IgmAbsorptionFunction igm_absorption_function,
+              NormalizationFunction normalization_function)
       : m_sed_provider {sed_provider}, m_reddening_curve_provider {reddening_curve_provider},
-        m_filter_provider(filter_provider), m_igm_absorption_function {igm_absorption_function} {
+        m_filter_provider(filter_provider), m_igm_absorption_function {igm_absorption_function},
+        m_normalization_function{normalization_function} {
 }
 
 PhotometryGridCreator::~PhotometryGridCreator() {
@@ -171,7 +173,7 @@ PhzDataModel::PhotometryGrid PhotometryGridCreator::createGrid(
 
   // Create the model grid
   auto model_grid= ModelDatasetGrid(parameter_space, std::move(sed_map),std::move(reddening_curve_map),
-                                    reddening_function, redshift_function, m_igm_absorption_function);
+                                    reddening_function, redshift_function, m_igm_absorption_function, m_normalization_function);
 
   // Create the photometry Grid
   auto photometry_grid = PhzDataModel::PhotometryGrid(parameter_space);

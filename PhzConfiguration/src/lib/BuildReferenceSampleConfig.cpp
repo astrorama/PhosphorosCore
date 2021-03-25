@@ -26,9 +26,11 @@
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
+#include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/BuildReferenceSampleConfig.h"
 #include "PhzReferenceSample/ReferenceSample.h"
 #include "PhzConfiguration/RedshiftFunctorConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
 
 
 namespace po = boost::program_options;
@@ -50,8 +52,11 @@ static const std::string PHOSPHOROS_CATALOG_FORMAT{"phosphoros-catalog-format"};
 BuildReferenceSampleConfig::BuildReferenceSampleConfig(long manager_id): Configuration(manager_id) {
   declareDependency<SedProviderConfig>();
   declareDependency<ReddeningProviderConfig>();
+  declareDependency<FilterProviderConfig>();
   declareDependency<IgmConfig>();
   declareDependency<RedshiftFunctorConfig>();
+  declareDependency<ModelNormalizationConfig>();
+
 }
 
 auto BuildReferenceSampleConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {

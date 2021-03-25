@@ -14,9 +14,12 @@
 #include "PhzModeling/ExtinctionFunctor.h"
 #include "PhzModeling/RedshiftFunctor.h"
 #include "PhzConfiguration/IgmConfig.h"
+#include "PhzConfiguration/FilterProviderConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/ComputeModelSedConfig.h"
 #include "Configuration/Utils.h"
 #include "PhzConfiguration/RedshiftFunctorConfig.h"
+#include "PhzModeling/NormalizationFunctorFactory.h"
 
 using std::cout;
 using std::map;
@@ -57,9 +60,19 @@ class ComputeModelSed : public Elements::Program {
     }
     auto& igm_function = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
 
+
+    auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
+    double integrated_flux = config_manager.getConfiguration<ModelNormalizationConfig>().getIntegratedFlux();
+
+
+    auto filter_provider = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
+    auto normalizer_functor =
+        Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, integrated_flux);
+
+
     auto redshiftFunctor = config_manager.getConfiguration<RedshiftFunctorConfig>().getRedshiftFunctor();
     ModelDatasetGrid grid {grid_axes, std::move(sed_map), std::move(red_curve_map),
-                               ExtinctionFunctor{}, redshiftFunctor, igm_function};
+                               ExtinctionFunctor{}, redshiftFunctor, igm_function, normalizer_functor};
 
     for (auto iter=grid.begin(); iter!=grid.end(); ++iter) {
       cout << "\nDataset for model with:\n";

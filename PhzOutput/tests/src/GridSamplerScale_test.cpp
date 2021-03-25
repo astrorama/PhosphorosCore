@@ -466,7 +466,7 @@ BOOST_FIXTURE_TEST_CASE(test_drawPointInCell, GridSamplerScale_fixture) {
 
 
     BOOST_CHECK(std::get<2>(point.first) >= 90);
-    BOOST_CHECK(std::get<2>(point.first) <= 130);
+    BOOST_CHECK(std::get<2>(point.first) <= 140);
 
 
 }

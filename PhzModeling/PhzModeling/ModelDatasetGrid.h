@@ -63,6 +63,8 @@ public:
   
   typedef ModelDatasetGenerator::IgmAbsorptionFunction IgmAbsorptionFunction;
   
+  typedef ModelDatasetGenerator::NormalizationFunction NormalizationFunction;
+
   /**
    * @brief Constructor
    * @details
@@ -96,7 +98,8 @@ public:
                      std::unique_ptr<MathUtils::Function> > reddening_curve_map,
                    ReddeningFunction reddening_function,
                    RedshiftFunction redshift_function,
-                   IgmAbsorptionFunction igm_function);
+                   IgmAbsorptionFunction igm_function,
+                   NormalizationFunction normalization_function);
 
   /**
   * @brief begin function for the iteration.
@@ -116,6 +119,7 @@ private:
   ReddeningFunction m_reddening_function;
   RedshiftFunction m_redshift_function;
   IgmAbsorptionFunction m_igm_function;
+  NormalizationFunction m_normalization_function;
 };
 
 }

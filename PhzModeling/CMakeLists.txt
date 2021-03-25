@@ -40,3 +40,9 @@ elements_add_unit_test(IntegrateDatasetFunctor_test tests/src/IntegrateDatasetFu
                        LINK_LIBRARIES PhzModeling TYPE Boost)
 elements_add_unit_test(IntegrateLambdaTimeDatasetFunctor_test tests/src/IntegrateLambdaTimeDatasetFunctor_test.cpp
                        LINK_LIBRARIES PhzModeling TYPE Boost)
+elements_add_unit_test(NormalizationFunctor_test tests/src/NormalizationFunctor_test.cpp
+                       LINK_LIBRARIES PhzModeling TYPE Boost)
+elements_add_unit_test(NormalizationFunctorFactory_test tests/src/NormalizationFunctorFactory_test.cpp
+                       LINK_LIBRARIES PhzModeling TYPE Boost)
+                       
+                       

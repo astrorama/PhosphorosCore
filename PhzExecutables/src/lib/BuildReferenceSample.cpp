@@ -30,11 +30,14 @@
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
+#include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzReferenceSample/ReferenceSample.h"
 #include "PhzConfiguration/RedshiftFunctorConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
 
 #include "PhzModeling/ExtinctionFunctor.h"
 #include "PhzModeling/RedshiftFunctor.h"
+#include "PhzModeling/NormalizationFunctorFactory.h"
 
 #include "MathUtils/interpolation/interpolation.h"
 #include "XYDataset/CachedProvider.h"
@@ -105,6 +108,16 @@ BuildReferenceSample::BuildReferenceSample(ProgressListener progress_listener)
 void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_manager) {
   auto& igm_function = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
 
+  auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
+  double integrated_flux = config_manager.getConfiguration<ModelNormalizationConfig>().getIntegratedFlux();
+
+
+  auto filter_provider = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
+  auto normalizer_functor =
+      PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, integrated_flux);
+
+
+
   XYDataset::CachedProvider reddening_provider {
     config_manager.getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider()
   };
@@ -168,7 +181,7 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager &config_mana
 
       ModelAxesTuple grid_axes {createAxesTuple({z}, {ebv}, {red_curve_name}, {sed_name})};
       ModelDatasetGrid grid {grid_axes, std::move(sed_map), std::move(reddening_curve_map),
-                             ExtinctionFunctor{}, redshiftFunctor, igm_function};
+                             ExtinctionFunctor{}, redshiftFunctor, igm_function, normalizer_functor};
 
       for (auto &cell : grid) {
         std::vector<std::pair<double, double>> scaled_data {};

@@ -108,6 +108,8 @@ BOOST_FIXTURE_TEST_CASE( checkDependency_test, ConfigManager_fixture ) {
       "filter1");
   options_map["filter-name"].as<std::vector<std::string>>().push_back(
       "filter2");
+
+  options_map["Normalization-filter"].value() = std::string {"filtre1"};
   fs::create_directories(base_directory);
   fs::create_directories(cal_directory);
   fs::create_directories(mer_directory);

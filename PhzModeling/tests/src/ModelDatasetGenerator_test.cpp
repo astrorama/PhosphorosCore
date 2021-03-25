@@ -44,6 +44,8 @@ struct ModelDatasetGenerator_Fixture {
 
   class DummyReddening{
    public:
+
+
      virtual ~DummyReddening() = default;
      Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed,const Euclid::MathUtils::Function& reddening_curve, double ebv) const{
        std::vector<std::pair<double, double>> redshifted_values {};
@@ -53,7 +55,27 @@ struct ModelDatasetGenerator_Fixture {
         return  Euclid::XYDataset::XYDataset {std::move(redshifted_values)};
      }
 
+
    };
+
+  class DummyNormalizing{
+      public:
+        DummyNormalizing(double factor):m_factor{factor} {}
+
+        virtual ~DummyNormalizing() = default;
+        Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed) const{
+          std::vector<std::pair<double, double>> normalized_values {};
+          for (auto& sed_pair : sed) {
+            normalized_values.push_back(std::make_pair(sed_pair.first,sed_pair.second*m_factor));
+          }
+           return  Euclid::XYDataset::XYDataset {std::move(normalized_values)};
+        }
+
+      private:
+
+        double m_factor = 1.0;
+
+      };
 
   class NoReddening{
      public:
@@ -129,6 +151,8 @@ struct ModelDatasetGenerator_Fixture {
           double)>(DummyRedshift{});
   
   std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)>  m_igm_function {Euclid::PhzModeling::NoIgmFunctor{}};
+  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>  m_norm_function_1 = std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>(DummyNormalizing{1.0});
+  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>  m_norm_function_11 = std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>(DummyNormalizing{11.0});
 
   std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&
       ,const Euclid::MathUtils::Function&,
@@ -200,7 +224,8 @@ BOOST_FIXTURE_TEST_CASE(constructor_test, ModelDatasetGenerator_Fixture) {
     0,
     m_reddening_function,
     m_redshift_function,
-    m_igm_function
+    m_igm_function,
+    m_norm_function_1
   };
 
   BOOST_CHECK(model_generator==0);
@@ -223,7 +248,8 @@ BOOST_FIXTURE_TEST_CASE(operator_int_test, ModelDatasetGenerator_Fixture) {
     0,
     m_reddening_function,
     m_redshift_function,
-    m_igm_function
+    m_igm_function,
+    m_norm_function_1
   };
 
   BOOST_CHECK(model_generator==0);
@@ -251,7 +277,8 @@ BOOST_FIXTURE_TEST_CASE(operator_generator_test, ModelDatasetGenerator_Fixture) 
     0,
     m_reddening_function,
     m_redshift_function,
-    m_igm_function
+    m_igm_function,
+    m_norm_function_1
   };
   Euclid::PhzModeling::ModelDatasetGenerator other_model_generator{model_generator};
 
@@ -287,7 +314,8 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
     0,
     m_no_reddening_function,
     m_no_redshift_function,
-    m_igm_function
+    m_igm_function,
+    m_norm_function_1
   };
   for (auto& sed : arg_seds) {
     for (size_t i=0; i<extinction_functions.size()*ebvs.size()*zs.size(); ++i) {
@@ -313,7 +341,8 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
       0,
       m_no_reddening_function,
       m_redshift_function,
-    m_igm_function
+      m_igm_function,
+      m_norm_function_1
   };
   for (auto& sed : arg_seds) {
     for (size_t i=0; i<extinction_functions.size()*ebvs.size(); ++i) {
@@ -342,7 +371,8 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
       0,
       m_reddening_function,
       m_no_redshift_function,
-    m_igm_function
+      m_igm_function,
+      m_norm_function_1
   };
   for (auto& sed : arg_seds) {
     for (auto& reddening : extinction_functions) {
@@ -366,6 +396,41 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
       }
     }
   }
+
+  // check the loop with only the (dummy) normalizing function
+   Euclid::PhzModeling::ModelDatasetGenerator normalized_model_generator = {
+       parameter_space,
+       m_sed_map,
+       m_reddening_curve_map,
+       0,
+       m_reddening_function,
+       m_no_redshift_function,
+       m_igm_function,
+       m_norm_function_11
+   };
+   for (auto& sed : arg_seds) {
+     for (auto& reddening : extinction_functions) {
+       for (auto& ebv : ebvs) {
+         for (size_t i=0; i< zs.size(); ++i) {
+
+           auto& dataset_0 = *normalized_model_generator;
+
+           BOOST_CHECK_EQUAL(3, dataset_0.size());
+
+
+
+           auto expected_iterator = sed.begin();
+           for (auto& pair : dataset_0) {
+             BOOST_CHECK(Elements::isEqual(expected_iterator->first, pair.first));
+             BOOST_CHECK_CLOSE((1 + ebv * reddening(pair.first))*(expected_iterator->second) * 11.0, pair.second, 0.001);
+             ++expected_iterator;
+           }
+           ++normalized_model_generator;
+         }
+       }
+     }
+   }
+
 
 }
 

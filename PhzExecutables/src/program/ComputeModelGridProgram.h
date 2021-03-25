@@ -34,10 +34,12 @@
 #include "PhzConfiguration/SedProviderConfig.h"
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/ModelGridOutputConfig.h"
 #include "Configuration/Utils.h"
 #include "PhzConfiguration/CosmologicalParameterConfig.h"
+#include "PhzModeling/NormalizationFunctorFactory.h"
 
 class ProgressReporter {
   
@@ -90,8 +92,15 @@ public:
     auto& igm_abs_func = config_manager.template getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
     auto cosmology =  config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
     
+    auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
+    double integrated_flux = config_manager.getConfiguration<ModelNormalizationConfig>().getIntegratedFlux();
+
+    auto normalizer_functor =
+           Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, integrated_flux);
+
+
     Euclid::PhzModeling::SparseGridCreator creator {
-                sed_provider, reddening_provider, filter_provider, igm_abs_func};
+                sed_provider, reddening_provider, filter_provider, igm_abs_func, normalizer_functor};
                                                 
     auto param_space_map = ComputeModelGridTraits::getParameterSpaceRegions(config_manager);
     auto results = creator.createGrid(param_space_map, filter_list, cosmology, ProgressReporter{logger});
