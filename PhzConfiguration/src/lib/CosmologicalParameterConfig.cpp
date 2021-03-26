@@ -52,10 +52,11 @@ auto CosmologicalParameterConfig::getProgramOptions() -> std::map<std::string, O
 }
 
 void CosmologicalParameterConfig::initialize(const UserValues& args) {
-  double omega_m = args.find(OMEGA_M)->second.as<double>();
-  double omega_lambda = args.find(OMEGA_LAMBDA)->second.as<double>();
-  double h_0 = args.find(HUBBLE_CONSTANT)->second.as<double>();
-  m_cosmological_param = PhysicsUtils::CosmologicalParameters(omega_m,omega_lambda,h_0);
+
+  double omega_m = args.count(OMEGA_M) > 0 ? args.find(OMEGA_M)->second.as<double>() : 0.3089;
+  double omega_lambda = args.count(OMEGA_LAMBDA) > 0 ? args.find(OMEGA_LAMBDA)->second.as<double>() : 0.6911;
+  double h_0 = args.count(HUBBLE_CONSTANT) > 0 ? args.find(HUBBLE_CONSTANT)->second.as<double>() : 67.74;
+  m_cosmological_param = PhysicsUtils::CosmologicalParameters(omega_m, omega_lambda, h_0);
 }
 
 const PhysicsUtils::CosmologicalParameters& CosmologicalParameterConfig::getCosmologicalParam() {

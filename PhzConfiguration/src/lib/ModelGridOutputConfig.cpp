@@ -37,6 +37,7 @@
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/ArchiveFormat.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
 
 
 namespace po = boost::program_options;
@@ -54,6 +55,7 @@ ModelGridOutputConfig::ModelGridOutputConfig(long manager_id) : Configuration(ma
   declareDependency<CatalogTypeConfig>();
   declareDependency<IntermediateDirConfig>();
   declareDependency<IgmConfig>();
+  declareDependency<ModelNormalizationConfig>();
 }
 
 auto ModelGridOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -83,7 +85,7 @@ static std::string getFilenameFromOptions(const std::map<std::string, po::variab
 }
 
 template <typename OArchive>
-static void outputFunction(const std::string &filename, IgmConfig &igm_config,
+static void outputFunction(const std::string &filename, IgmConfig &igm_config, XYDataset::QualifiedName& luminosity_filter,
                            const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
   auto local_logger = Elements::Logging::getLogger("PhzOutput");
   std::ofstream out {filename};
@@ -97,6 +99,7 @@ static void outputFunction(const std::string &filename, IgmConfig &igm_config,
   PhzDataModel::PhotometryGridInfo info {
     grid_map,
     igm_config.getIgmAbsorptionType(),
+    luminosity_filter,
     filter_list};
   boa << info;
   // Store the grids themselves
@@ -117,7 +120,7 @@ void ModelGridOutputConfig::initialize(const UserValues& args) {
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
-  typedef std::function<void(const std::string&, IgmConfig&,
+  typedef std::function<void(const std::string&, IgmConfig&, XYDataset::QualifiedName&,
                              const std::map<std::string, PhzDataModel::PhotometryGrid>&)> InnerOutputFunction;
 
   InnerOutputFunction inner_output_function;
@@ -141,7 +144,8 @@ void ModelGridOutputConfig::initialize(const UserValues& args) {
 
   m_output_function = [this, filename, inner_output_function](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
     auto igm_config = getDependency<IgmConfig>();
-    inner_output_function(filename, igm_config, grid_map);
+    auto lum_filter = getDependency<ModelNormalizationConfig>().getNormalizationFilter();
+    inner_output_function(filename, igm_config, lum_filter, grid_map);
   };
 }
 
