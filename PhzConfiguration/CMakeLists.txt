@@ -95,9 +95,6 @@ elements_add_unit_test(PriorConfig_test tests/src/PriorConfig_test.cpp
 elements_add_unit_test(LikelihoodGridFuncConfig_test tests/src/LikelihoodGridFuncConfig_test.cpp 
                      LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration
                      TYPE Boost)
-elements_add_unit_test(LuminosityBandConfig_test tests/src/LuminosityBandConfig_test.cpp 
-                     LINK_LIBRARIES PhzConfiguration
-                     TYPE Boost)
 elements_add_unit_test(LuminosityFunctionConfig_test tests/src/LuminosityFunctionConfig_test.cpp 
                      LINK_LIBRARIES XYDataset MathUtils PhzDataModel PhzLuminosity PhzConfiguration
                      TYPE Boost)

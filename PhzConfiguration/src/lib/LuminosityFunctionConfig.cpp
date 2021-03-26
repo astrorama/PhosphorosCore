@@ -27,7 +27,6 @@
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/ProgramOptionsHelper.h"
 #include "PhzConfiguration/LuminosityFunctionConfig.h"
-#include "PhzConfiguration/LuminosityBandConfig.h"
 #include "PhzConfiguration/AuxDataDirConfig.h"
 #include "XYDataset/AsciiParser.h"
 #include "XYDataset/FileSystemProvider.h"
@@ -60,7 +59,6 @@ static const std::string LUMINOSITY_FUNCTION_SCHECHTER_PHI {"luminosity-function
 static Elements::Logging logger = Elements::Logging::getLogger("LuminosityFunctionConfig");
 
 LuminosityFunctionConfig::LuminosityFunctionConfig(long manager_id) : Configuration(manager_id) {
-  declareDependency<LuminosityBandConfig>();
   declareDependency<AuxDataDirConfig>();
 }
 

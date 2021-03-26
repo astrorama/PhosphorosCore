@@ -26,6 +26,8 @@
 #include "ElementsKernel/Exception.h"
 #include "Configuration/ConfigManager.h"
 #include "PhzConfiguration/ModelNormalizationConfig.h"
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
+#include "PhzConfiguration/FilterProviderConfig.h"
 #include "XYDataset/QualifiedName.h"
 
 using namespace Euclid::Configuration;
@@ -37,10 +39,13 @@ namespace PhzConfiguration {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
-static const std::string NORMALIZATION_FILTER {"Normalization-filter"};
-static const std::string NORMALIZED_INTEGRATED_FLUX {"Model-normalized-integrated-flux"};
+static const std::string NORMALIZATION_FILTER {"normalization-filter"};
+static const std::string NORMALIZED_INTEGRATED_FLUX {"model-normalized-integrated-flux"};
 
-ModelNormalizationConfig::ModelNormalizationConfig(long manager_id) : Configuration(manager_id) {}
+ModelNormalizationConfig::ModelNormalizationConfig(long manager_id) : Configuration(manager_id) {
+  declareDependency<CosmologicalParameterConfig>();
+  declareDependency<FilterProviderConfig>();
+}
 
 auto ModelNormalizationConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Model normalization options", {

@@ -109,7 +109,7 @@ BOOST_FIXTURE_TEST_CASE( checkDependency_test, ConfigManager_fixture ) {
   options_map["filter-name"].as<std::vector<std::string>>().push_back(
       "filter2");
 
-  options_map["Normalization-filter"].value() = std::string {"filtre1"};
+  options_map["normalization-filter"].value() = std::string {"MER/filtre1"};
   fs::create_directories(base_directory);
   fs::create_directories(cal_directory);
   fs::create_directories(mer_directory);
@@ -129,6 +129,12 @@ BOOST_FIXTURE_TEST_CASE( checkDependency_test, ConfigManager_fixture ) {
   file2_mer << "111.1 111.1\n";
   file2_mer << "222.2 222.2\n";
   file2_mer.close();
+
+  std::ofstream filter1_mer((filter_mer_directory / "filtre1.txt").string());
+  // Fill up file
+  filter1_mer << "\n";
+  filter1_mer << "1234. 569.6\n";
+  filter1_mer.close();
 
   // Create files
   std::ofstream calzetti_file1((cal_directory / "calzetti_1.dat").string());
@@ -155,6 +161,14 @@ BOOST_FIXTURE_TEST_CASE( checkDependency_test, ConfigManager_fixture ) {
       cal_group_vector);
   options_map["ebv-range-r1"].value() = boost::any(ebv_range_vector);
   options_map["z-range-r1"].value() = boost::any(z_range_vector);
+
+  double omega_m= 0.4;
+   double omega_lambda=0.6;
+   double h_0=70.;
+
+   options_map["cosmology-omega-m"].value() = boost::any(omega_m);
+   options_map["cosmology-omega-lambda"].value() = boost::any(omega_lambda);
+   options_map["cosmology-hubble-constant"].value() = boost::any(h_0);
 
   // When
   config_manager.initialize(options_map);

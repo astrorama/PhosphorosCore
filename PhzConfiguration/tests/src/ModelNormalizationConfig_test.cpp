@@ -36,8 +36,8 @@ namespace po = boost::program_options;
 
 namespace {
 
-static const std::string NORMALIZATION_FILTER {"Normalization-filter"};
-static const std::string NORMALIZED_INTEGRATED_FLUX {"Model-normalized-integrated-flux"};
+static const std::string NORMALIZATION_FILTER {"normalization-filter"};
+static const std::string NORMALIZED_INTEGRATED_FLUX {"model-normalized-integrated-flux"};
 
 }
 
@@ -76,7 +76,7 @@ BOOST_FIXTURE_TEST_CASE(default_value, ModelNormalizationConfig_fixture) {
   
   // When
   std::string filter = "toto";
-  options_map["Normalization-filter"].value() = boost::any(filter);
+  options_map["normalization-filter"].value() = boost::any(filter);
   config_manager.initialize(options_map);
   
   // Then
@@ -96,9 +96,9 @@ BOOST_FIXTURE_TEST_CASE(values_value, ModelNormalizationConfig_fixture) {
   
   // When
   std::string filter = "toto";
-  options_map["Normalization-filter"].value() = boost::any(filter);
+  options_map["normalization-filter"].value() = boost::any(filter);
   double value = 111.0;
-  options_map["Model-normalized-integrated-flux"].value() = boost::any(value);
+  options_map["model-normalized-integrated-flux"].value() = boost::any(value);
   config_manager.initialize(options_map);
   
   // Then

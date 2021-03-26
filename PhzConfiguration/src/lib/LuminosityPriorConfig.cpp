@@ -34,7 +34,6 @@
 #include "PhzConfiguration/LuminosityPriorConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzConfiguration/LuminosityFunctionConfig.h"
-#include "PhzConfiguration/LuminosityBandConfig.h"
 #include "PhzConfiguration/LuminositySedGroupConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
@@ -71,7 +70,6 @@ LuminosityPriorConfig::LuminosityPriorConfig(long manager_id) : Configuration(ma
   declareDependency<CatalogTypeConfig>();
   declareDependency<PriorConfig>();
   declareDependency<LuminosityFunctionConfig>();
-  declareDependency<LuminosityBandConfig>();
   declareDependency<LuminositySedGroupConfig>();
   declareDependency<PhotometryGridConfig>();
   declareDependency<CosmologicalParameterConfig>();
@@ -100,10 +98,8 @@ void LuminosityPriorConfig::preInitialize(const UserValues& args) {
         << eff << " (must be in range [0,1])";
   }
   if (args.at(LUMINOSITY_PRIOR).as<std::string>() == "YES") {
-    getDependency<LuminosityBandConfig>().setEnabled(true);
     getDependency<LuminositySedGroupConfig>().setEnabled(true);
   } else {
-    getDependency<LuminosityBandConfig>().setEnabled(false);
     getDependency<LuminositySedGroupConfig>().setEnabled(false);
   }
 }
