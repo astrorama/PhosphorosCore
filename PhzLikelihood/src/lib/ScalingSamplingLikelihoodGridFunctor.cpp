@@ -11,6 +11,7 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
+
 ScalingSamplingLikelihoodGridFunctor::ScalingSamplingLikelihoodGridFunctor(LikelihoodScaleSampleLogarithmFunction likelihood_scale_sample_log_func)
           : m_likelihood_scale_sample_log_func {std::move(likelihood_scale_sample_log_func)} { }
 
@@ -24,7 +25,7 @@ void ScalingSamplingLikelihoodGridFunctor::operator()(PhzDataModel::RegionResult
   
   // Create new likelihood and scale factor grids, with all cells set to 0
   auto& likelihood_grid = results.set<ResType::LIKELIHOOD_LOG_GRID>(model_grid.getAxesTuple());
-  auto& likelihood_scale_sampling_grid = results.set<ResType::LIKELIHOOD_SCALING_GRID>(model_grid.getAxesTuple());
+  auto& likelihood_scale_sampling_grid = results.set<ResType::LIKELIHOOD_SCALING_LOG_GRID>(model_grid.getAxesTuple());
   auto& scale_factor_grid = results.set<ResType::SCALE_FACTOR_GRID>(model_grid.getAxesTuple());
   auto& sigma_scale_factor_grid = results.set<ResType::SIGMA_SCALE_FACTOR_GRID>(model_grid.getAxesTuple());
   results.set<ResType::SAMPLE_SCALE_FACTOR>(true);

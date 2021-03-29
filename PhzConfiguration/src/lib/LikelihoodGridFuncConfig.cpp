@@ -88,6 +88,7 @@ const PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction & LikelihoodGridFu
     }
 
     if (getDependency<ScaleFactorMarginalizationConfig>().getIsEnabled()) {
+
       m_grid_function = PhzLikelihood::ScalingSamplingLikelihoodGridFunctor {
                    PhzLikelihood::LikelihoodScaleSampleLogarithmAlgorithm { std::move(scale_factor),
                        PhzLikelihood::SigmaScaleFactorFunctor{},
