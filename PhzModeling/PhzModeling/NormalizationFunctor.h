@@ -36,7 +36,7 @@ public:
    * @details
    * Store the specific filter and normalization value into the functor
    */
-  NormalizationFunctor(PhzDataModel::FilterInfo filter_info, double integrated_flux = 3.199e22);
+  NormalizationFunctor(PhzDataModel::FilterInfo filter_info, double integrated_flux);
 
   /**
   * @brief Function Call Operator

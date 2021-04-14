@@ -69,13 +69,13 @@ public:
   // Returns the band of the luminosity normalization
   const XYDataset::QualifiedName& getNormalizationFilter() const;
 
-  // return the normalised integrated flux
-  double getIntegratedFlux() const;
+  // Returns the solar SED at 10 pc use as reference for luminosity normalization
+  const XYDataset::QualifiedName& getReferenceSolarSed() const;
 
 private:
 
   XYDataset::QualifiedName m_band {"uninitialized"};
-  double m_integrated_flux = 3.199e22;
+  XYDataset::QualifiedName m_solar_sed {"uninitialized"};
 
 
 

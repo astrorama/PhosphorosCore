@@ -30,7 +30,8 @@ public:
   static NormalizationFunction GetFunction(
       std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
       XYDataset::QualifiedName filter_name,
-      double integrated_flux);
+      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
+      XYDataset::QualifiedName solar_sed_name);
 
 
 

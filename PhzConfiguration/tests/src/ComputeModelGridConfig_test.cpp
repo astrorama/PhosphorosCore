@@ -110,6 +110,8 @@ BOOST_FIXTURE_TEST_CASE( checkDependency_test, ConfigManager_fixture ) {
       "filter2");
 
   options_map["normalization-filter"].value() = std::string {"MER/filtre1"};
+  options_map["normalization-solar-sed"].value() = std::string {"solar_sed"};
+
   fs::create_directories(base_directory);
   fs::create_directories(cal_directory);
   fs::create_directories(mer_directory);

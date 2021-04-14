@@ -312,7 +312,7 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
               new PhzOutput::LikelihoodHandler<
                       PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID,
                       PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID>
-              > {m_out_likelihood_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+              > {m_out_posterior_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
     } else {
       result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
           new PhzOutput::LikelihoodHandler<

@@ -166,6 +166,8 @@ BOOST_FIXTURE_TEST_CASE(directory_test, ModelGridOutputConfig_fixture) {
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
   std::string filter_lum = "filter_1";
   options_map["normalization-filter"].value() = boost::any(filter_lum);
+  std::string solar_sed = "solar_sed";
+  options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
   config_manager.initialize(options_map);
 
@@ -194,6 +196,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunction_test, T, archive_types, Model
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
   std::string filter_lum = "filter_1";
   options_map["normalization-filter"].value() = boost::any(filter_lum);
+  std::string solar_sed = "solar_sed";
+  options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
   // When
   config_manager.initialize(options_map);
@@ -246,6 +250,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionRelative_test, T, archive_type
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
   std::string filter_lum = "filter_1";
   options_map["normalization-filter"].value() = boost::any(filter_lum);
+  std::string solar_sed = "solar_sed";
+  options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
   // When
   config_manager.initialize(options_map);
@@ -296,6 +302,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionDefault_test, T, archive_types
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
   std::string filter_lum = "filter_1";
   options_map["normalization-filter"].value() = boost::any(filter_lum);
+  std::string solar_sed = "solar_sed";
+  options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
   // When
   config_manager.initialize(options_map);

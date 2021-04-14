@@ -37,7 +37,7 @@ namespace po = boost::program_options;
 namespace {
 
 static const std::string NORMALIZATION_FILTER {"normalization-filter"};
-static const std::string NORMALIZED_INTEGRATED_FLUX {"model-normalized-integrated-flux"};
+static const std::string NORMALIZATION_SED{"normalization-solar-sed"};
 
 }
 
@@ -66,26 +66,23 @@ BOOST_FIXTURE_TEST_CASE(check_options, ModelNormalizationConfig_fixture) {
   
   // Then
   BOOST_CHECK_NO_THROW(options.find(NORMALIZATION_FILTER, false));
-  BOOST_CHECK_NO_THROW(options.find(NORMALIZED_INTEGRATED_FLUX, false));
+  BOOST_CHECK_NO_THROW(options.find(NORMALIZATION_SED, false));
 
 }
 
 //-----------------------------------------------------------------------------
-
-BOOST_FIXTURE_TEST_CASE(default_value, ModelNormalizationConfig_fixture) {
-  
-  // When
-  std::string filter = "toto";
-  options_map["normalization-filter"].value() = boost::any(filter);
-  config_manager.initialize(options_map);
-  
+BOOST_FIXTURE_TEST_CASE(missing_value_filter, ModelNormalizationConfig_fixture) {
+  std::string sed = "titi";
+  options_map["normalization-solar-sed"].value() = boost::any(sed);
   // Then
-  BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getIntegratedFlux(), 3.199e22);
+  BOOST_CHECK_THROW(config_manager.initialize(options_map), Elements::Exception);
 
 }
 
-BOOST_FIXTURE_TEST_CASE(missing_value, ModelNormalizationConfig_fixture) {
 
+BOOST_FIXTURE_TEST_CASE(missing_value_sed, ModelNormalizationConfig_fixture) {
+  std::string filter = "toto";
+  options_map["normalization-filter"].value() = boost::any(filter);
   // Then
   BOOST_CHECK_THROW(config_manager.initialize(options_map), Elements::Exception);
 
@@ -97,12 +94,13 @@ BOOST_FIXTURE_TEST_CASE(values_value, ModelNormalizationConfig_fixture) {
   // When
   std::string filter = "toto";
   options_map["normalization-filter"].value() = boost::any(filter);
-  double value = 111.0;
-  options_map["model-normalized-integrated-flux"].value() = boost::any(value);
+  std::string sed = "titi";
+  options_map["normalization-solar-sed"].value() = boost::any(sed);
+
   config_manager.initialize(options_map);
   
   // Then
-  BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getIntegratedFlux(), value);
+  BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed().qualifiedName(), sed);
   BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter().qualifiedName(), filter);
 
 }

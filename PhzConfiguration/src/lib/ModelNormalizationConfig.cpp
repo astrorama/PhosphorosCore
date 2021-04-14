@@ -28,6 +28,7 @@
 #include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
+#include "PhzConfiguration/SedProviderConfig.h"
 #include "XYDataset/QualifiedName.h"
 
 using namespace Euclid::Configuration;
@@ -40,19 +41,20 @@ namespace PhzConfiguration {
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
 static const std::string NORMALIZATION_FILTER {"normalization-filter"};
-static const std::string NORMALIZED_INTEGRATED_FLUX {"model-normalized-integrated-flux"};
+static const std::string NORMALIZATION_SED{"normalization-solar-sed"};
 
 ModelNormalizationConfig::ModelNormalizationConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<CosmologicalParameterConfig>();
   declareDependency<FilterProviderConfig>();
+  declareDependency<SedProviderConfig>();
 }
 
 auto ModelNormalizationConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Model normalization options", {
     {NORMALIZATION_FILTER.c_str(), po::value<std::string>(),
         "The Filter for which the normalization is done"}
-    ,{NORMALIZED_INTEGRATED_FLUX.c_str(), po::value<double>()->default_value(3.199e22),
-      "Normalized integrated flux (default = 3.199e22)"}
+    ,{NORMALIZATION_SED.c_str(), po::value<std::string>(),
+      "Solar SED @10pc used as a reference for Models normalization"}
     }
   }};
 }
@@ -65,9 +67,12 @@ void ModelNormalizationConfig::initialize(const UserValues& args) {
     throw Elements::Exception() << "Missing " << NORMALIZATION_FILTER << " option ";
   }
 
-  if (args.count(NORMALIZED_INTEGRATED_FLUX) > 0) {
-    m_integrated_flux =  args.find(NORMALIZED_INTEGRATED_FLUX)->second.as<double>();
-  }
+  if (args.count(NORMALIZATION_SED) > 0) {
+      m_solar_sed =  XYDataset::QualifiedName(args.find(NORMALIZATION_SED)->second.as<std::string>());
+    } else {
+      throw Elements::Exception() << "Missing " << NORMALIZATION_SED << " option ";
+    }
+
 }
 
 // Returns the band of the luminosity normalization
@@ -79,14 +84,14 @@ void ModelNormalizationConfig::initialize(const UserValues& args) {
     return m_band;
  }
 
- // return the normalised integrated flux
- double ModelNormalizationConfig::getIntegratedFlux() const {
-   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
-      throw Elements::Exception()
-          << "Call to getIntegratedFlux() on a not initialized instance.";
-    }
-    return m_integrated_flux;
- }
+ // Returns the band of the luminosity normalization
+  const XYDataset::QualifiedName& ModelNormalizationConfig::getReferenceSolarSed() const {
+    if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+       throw Elements::Exception()
+           << "Call to getReferenceSolarSed() on a not initialized instance.";
+     }
+     return m_solar_sed;
+  }
 
 } // PhzConfiguration namespace
 } // Euclid namespace

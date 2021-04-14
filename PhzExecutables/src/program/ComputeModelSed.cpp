@@ -14,6 +14,7 @@
 #include "PhzModeling/ExtinctionFunctor.h"
 #include "PhzModeling/RedshiftFunctor.h"
 #include "PhzConfiguration/IgmConfig.h"
+#include "PhzConfiguration/SedProviderConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/ComputeModelSedConfig.h"
@@ -62,12 +63,13 @@ class ComputeModelSed : public Elements::Program {
 
 
     auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
-    double integrated_flux = config_manager.getConfiguration<ModelNormalizationConfig>().getIntegratedFlux();
+    auto sun_sed_name = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
 
 
     auto filter_provider = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
+    auto sun_sed_provider = config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider();
     auto normalizer_functor =
-        Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, integrated_flux);
+        Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, sun_sed_provider, sun_sed_name);
 
 
     auto redshiftFunctor = config_manager.getConfiguration<RedshiftFunctorConfig>().getRedshiftFunctor();

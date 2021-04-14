@@ -118,7 +118,7 @@ void LikelihoodHandler<GridType, Sampler>::createAndOpenSampleFile() {
     m_current_out_file = m_out_dir / samp_file_name;
     m_current_fits_file = std::make_shared<CCfits::FITS>("!"+m_current_out_file.string(), CCfits::RWmode::Write);
     m_sample_fits_writer = std::make_shared<Table::FitsWriter>(m_current_fits_file);
-    loggerPhz.info() << "Creating new sample files ";
+    loggerPhz.info() << "Creating new sample files " << samp_file_name;
 }
 
 template<PhzDataModel::RegionResultType GridType, typename Sampler>

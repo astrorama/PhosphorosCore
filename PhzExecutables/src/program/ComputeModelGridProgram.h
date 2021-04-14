@@ -93,10 +93,10 @@ public:
     auto cosmology =  config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
     
     auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
-    double integrated_flux = config_manager.getConfiguration<ModelNormalizationConfig>().getIntegratedFlux();
+    auto sun_sed_name = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
 
     auto normalizer_functor =
-           Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, integrated_flux);
+           Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, sed_provider, sun_sed_name);
 
 
     Euclid::PhzModeling::SparseGridCreator creator {
