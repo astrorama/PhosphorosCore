@@ -68,6 +68,8 @@ public:
    */
   void operator()(PhzDataModel::RegionResults& results) const;
 
+  std::pair<bool,int> checkCompatibility(const PhzDataModel::DoubleGrid& prior, const PhzDataModel::DoubleGrid& posterior) const;
+
 private:
   
   std::vector<PhzDataModel::DoubleGrid> m_prior_grid_list;

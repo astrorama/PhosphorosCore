@@ -24,9 +24,35 @@
 
 #include "ElementsKernel/Exception.h"
 #include "PhzLikelihood/GenericGridPrior.h"
+#include "PhzDataModel/PhzModel.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
+
+
+std::pair<bool,int> GenericGridPrior::checkCompatibility(const PhzDataModel::DoubleGrid& prior, const PhzDataModel::DoubleGrid& posterior) const {
+  if (prior.getAxesTuple() == posterior.getAxesTuple()) {
+     return std::make_pair(true, -1);
+  } else if (posterior.getAxis<PhzDataModel::ModelParameter::Z>().size() == 1
+              && prior.getAxis<PhzDataModel::ModelParameter::EBV>()==posterior.getAxis<PhzDataModel::ModelParameter::EBV>()
+              && prior.getAxis<PhzDataModel::ModelParameter::REDDENING_CURVE>()==posterior.getAxis<PhzDataModel::ModelParameter::REDDENING_CURVE>()
+              && prior.getAxis<PhzDataModel::ModelParameter::SED>()==posterior.getAxis<PhzDataModel::ModelParameter::SED>()) {
+      // same axis but Z search for the value
+    int index = 0;
+    for (auto node : prior.getAxis<PhzDataModel::ModelParameter::Z>()){
+      if (node == posterior.getAxis<PhzDataModel::ModelParameter::Z>()[0]){
+        return std::make_pair(true, index);
+      }
+      ++index;
+    }
+
+  }
+
+  return std::make_pair(false, -1);
+
+}
+
+
 
 GenericGridPrior::GenericGridPrior(std::vector<PhzDataModel::DoubleGrid> prior_grid_list)
         : m_prior_grid_list{std::move(prior_grid_list)} {
@@ -37,8 +63,15 @@ void GenericGridPrior::operator()(PhzDataModel::RegionResults& results) const {
   double min_value = std::exp(std::numeric_limits<double>::lowest());
   bool sub_grid_found = false;
   for (auto& prior_grid : m_prior_grid_list) {
-    if (prior_grid.getAxesTuple() == posterior_grid.getAxesTuple()) {
+    auto check_result = checkCompatibility(prior_grid, posterior_grid);
+    if (check_result.first) {
+
       auto prior_it = prior_grid.begin();
+      if (check_result.second>=0) {
+        // fix the redshift
+        prior_it = prior_grid.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(check_result.second).begin();
+      }
+
       auto post_it = posterior_grid.begin();
       for (; post_it != posterior_grid.end(); ++prior_it, ++post_it) {
         if (*prior_it <= min_value) {
@@ -56,8 +89,16 @@ void GenericGridPrior::operator()(PhzDataModel::RegionResults& results) const {
     if (results.get<PhzDataModel::RegionResultType::SAMPLE_SCALE_FACTOR>()) {
       auto& posterior_sampled_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID>();
       for (auto& prior_grid : m_prior_grid_list) {
-         if (prior_grid.getAxesTuple() == posterior_sampled_grid.getAxesTuple()) {
-           auto prior_it = prior_grid.begin();
+        auto check_result = checkCompatibility(prior_grid, posterior_grid);
+        if (check_result.first) {
+            auto prior_it = prior_grid.begin();
+            if (check_result.second >= 0) {
+              // fix the redshift
+              prior_it = prior_grid.fixAxisByIndex<PhzDataModel::ModelParameter::Z>(check_result.second).begin();
+            }
+
+
+
            auto post_it = posterior_sampled_grid.begin();
            for (; post_it != posterior_sampled_grid.end(); ++prior_it, ++post_it) {
              if (*prior_it <= min_value) {
