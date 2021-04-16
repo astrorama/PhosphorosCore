@@ -19,7 +19,7 @@
 namespace Euclid {
 namespace PhzOutput {
 
-//static Elements::Logging loggerPhzGridSampler = Elements::Logging::getLogger("GridSampler");
+static Elements::Logging loggerPhzGridSampler = Elements::Logging::getLogger("GridSampler");
 
 template<PhzDataModel::RegionResultType GridType>
 GridSampler<GridType>::GridSampler() {}
@@ -117,7 +117,6 @@ size_t GridSampler<GridType>::getCellForDraw(const std::vector<posterior_cell>& 
          break;
      }
   }
-
   return cell_index;
 
 }
@@ -164,9 +163,10 @@ std::pair<double, std::vector<posterior_cell>> GridSampler<GridType>::computeEnc
          double v_max = std::max(std::max(v_00, v_10), std::max(v_01, v_11));
          double value = 0.25 * (v_00 + v_10 + v_01 + v_11) * delta_z * delta_e;
 
-         auto cell = posterior_cell{sed_index, red_index, ebv_index, 0, z_index, v_max, value};
+         auto cell = posterior_cell{sed_index, red_index, ebv_index, z_index, 0, v_max, value};
          total_cell_vol += value;
          cells_list.push_back(cell);
+
        }
      }
     }
@@ -204,6 +204,7 @@ std::pair<std::tuple<double, double, double>, double> GridSampler<GridType>::dra
     double p_10 = exp(grid.at(cell.z_index + delta_z, cell.ebv_index, red_idx, sed_idx));
     double p_01 = exp(grid.at(cell.z_index, cell.ebv_index + delta_ebv, red_idx, sed_idx));
     double p_11 = exp(grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, red_idx, sed_idx));
+    size_t out=0;
     while (true) {
       // draw in the cell
          double z_val = distrib_z(gen);
@@ -213,7 +214,7 @@ std::pair<std::tuple<double, double, double>, double> GridSampler<GridType>::dra
          double prob = interpolateProbability(z_0, z_1, ebv_0, ebv_1, p_00, p_01, p_10, p_11, z_val, ebv_val);
          double accept_prob = distrib_reject(gen);
          // reject if needed
-         if (prob>= accept_prob) {
+         if (prob>= accept_prob || out >1000) {
            double alpha_00 = scaling_grid.at(cell.z_index, cell.ebv_index, red_idx, sed_idx);
            double alpha_10 = scaling_grid.at(cell.z_index + delta_z, cell.ebv_index, red_idx, sed_idx);
            double alpha_01 = scaling_grid.at(cell.z_index, cell.ebv_index + delta_ebv, red_idx, sed_idx);
@@ -222,6 +223,7 @@ std::pair<std::tuple<double, double, double>, double> GridSampler<GridType>::dra
 
            return std::make_pair(std::make_tuple(z_val, ebv_val, lum), prob);
          }
+         ++out;
     }
 }
 
