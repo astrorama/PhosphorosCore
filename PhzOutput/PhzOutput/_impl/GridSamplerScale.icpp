@@ -218,7 +218,7 @@ std::pair<std::tuple<double, double, double>, double> GridSamplerScale<GridType>
     double prob = interpolate(z_0, z_1, ebv_0, ebv_1, alpha_0, alpha_1, prob_border_values, z_val, ebv_val, alpha_ind_val);
     double accept_prob = distrib_reject(gen);
     // reject if needed
-    if (prob>= accept_prob | out >1000) {
+    if (prob>= accept_prob || out >1000) {
         // compute luminosity/scaling
         std::vector<double> lum_border_values{
           getLuminosity(scaling_grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index),

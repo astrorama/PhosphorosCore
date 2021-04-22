@@ -24,7 +24,11 @@ class LikelihoodHandler : public OutputHandler {
 
 public:
 
-  LikelihoodHandler(boost::filesystem::path out_dir, bool do_sample, size_t sample_number = 1000, size_t chunk_size = 10000);
+  LikelihoodHandler(boost::filesystem::path out_dir,
+                    const std::map<std::string, std::map<std::string, std::pair<double, double>>>& param_config,
+                    bool do_sample,
+                    size_t sample_number = 1000,
+                    size_t chunk_size = 10000);
 
   virtual ~LikelihoodHandler();
 
@@ -33,8 +37,9 @@ public:
 
 
 private:
-
   boost::filesystem::path m_out_dir;
+  const std::map<std::string, std::map<std::string, std::pair<double, double>>>& m_param_config;
+
   bool m_do_sample;
   size_t m_sample_number;
   size_t m_chunk_size;
@@ -66,7 +71,8 @@ private:
       const std::map<size_t, double>& region_volume,
       const std::map<std::string, PhzDataModel::RegionResults>& result_map,
       const std::map<size_t, std::vector<posterior_cell>>& region_cells,
-      const std::map<size_t, std::string>& region_index_map);
+      const std::map<size_t, std::string>& region_index_map,
+      const std::map<size_t,  std::map<size_t, XYDataset::QualifiedName>>& sed_map);
 
 };
 

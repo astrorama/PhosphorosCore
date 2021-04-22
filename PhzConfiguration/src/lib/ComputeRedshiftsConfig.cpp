@@ -64,6 +64,7 @@
 #include "PhzConfiguration/FixedRedshiftModelGridModifConfig.h"
 #include "PhzConfiguration/GalactiAbsorptionModelGridModifConfig.h"
 #include "PhzConfiguration/ScaleFactorMarginalizationConfig.h"
+#include "PhzConfiguration/PhysicalParametersConfig.h"
 
 #include "PhzOutput/PdfOutput.h"
 #include "PhzOutput/LikelihoodHandler.h"
@@ -137,6 +138,8 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<FixedRedshiftModelGridModifConfig>();
   declareDependency<GalactiAbsorptionModelGridModifConfig>();
   declareDependency<ScaleFactorMarginalizationConfig>();
+  declareDependency<PhysicalParametersConfig>();
+
 
 
 }
@@ -290,35 +293,40 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
 
   bool has_scale_sampling = getDependency<ScaleFactorMarginalizationConfig>().getIsEnabled();
 
+
+  const auto& pp_config = getDependency<PhysicalParametersConfig>().getParamConfig();
+
   if (m_likelihood_flag) {
+
     if (has_scale_sampling) {
       result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
               new PhzOutput::LikelihoodHandler<
                       PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID,
                       PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>
-              > {m_out_likelihood_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+              > {m_out_likelihood_dir, pp_config, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
     } else {
       result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
         new PhzOutput::LikelihoodHandler<
                 PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID,
                 PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>
-        > {m_out_likelihood_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+        > {m_out_likelihood_dir, pp_config, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
     }
   }
 
   if (m_posterior_flag) {
+
     if(has_scale_sampling) {
       result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
               new PhzOutput::LikelihoodHandler<
                       PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID,
                       PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID>
-              > {m_out_posterior_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+              > {m_out_posterior_dir, pp_config, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
     } else {
       result.addHandler(std::unique_ptr<PhzOutput::OutputHandler> {
           new PhzOutput::LikelihoodHandler<
                   PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID,
                   PhzOutput::GridSampler<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>
-          > {m_out_posterior_dir, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+          > {m_out_posterior_dir, pp_config, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
     }
   }
 

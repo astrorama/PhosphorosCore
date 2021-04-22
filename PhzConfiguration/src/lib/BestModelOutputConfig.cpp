@@ -27,6 +27,7 @@
 #include "PhzConfiguration/BestModelOutputConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
 #include "PhzOutput/PhzColumnHandlers/BestModelOnlyZ.h"
+#include "PhzConfiguration/PhysicalParametersConfig.h"
 
 namespace po = boost::program_options;
 
@@ -36,6 +37,7 @@ namespace PhzConfiguration {
 static const std::string CREATE_OUTPUT_BEST_MODEL_FLAG {"create-output-best-model"};
 
 BestModelOutputConfig::BestModelOutputConfig(long manager_id) : Configuration(manager_id) {
+  declareDependency<PhysicalParametersConfig>();
   declareDependency<OutputCatalogConfig>();
 }
 
@@ -56,11 +58,18 @@ void BestModelOutputConfig::preInitialize(const UserValues& args) {
 }
 
 void BestModelOutputConfig::initialize(const UserValues& args) {
-  
+
   if (args.at(CREATE_OUTPUT_BEST_MODEL_FLAG).as<std::string>() == "YES") {
     getDependency<OutputCatalogConfig>().addColumnHandler(
         Euclid::make_unique<PhzOutput::ColumnHandlers::BestModel>(PhzDataModel::GridType::POSTERIOR)
     );
+
+    if (getDependency<PhysicalParametersConfig>().getParamConfig().size()>0) {
+      getDependency<OutputCatalogConfig>().addColumnHandler(
+          std::move(getDependency<PhysicalParametersConfig>().getPosteriorOutputHandler())
+      );
+    }
+
   } else {
     // If the user does not want the full best model information we still give
     // the redshift as output
