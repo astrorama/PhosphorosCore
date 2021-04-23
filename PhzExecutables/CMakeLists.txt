@@ -34,11 +34,14 @@ elements_add_executable(PhzModelGrid2Fits src/program/PhzModelGrid2Fits.cpp
                      LINK_LIBRARIES ElementsKernel PhzExecutables)
 elements_add_executable(PhosphorosComputeSedWeight src/program/ComputeSedWeight.cpp
                      LINK_LIBRARIES ElementsKernel PhzExecutables)
-                     
+elements_add_executable(PhosphorosBuildPPConfig src/program/BuildPPConfig.cpp
+                     LINK_LIBRARIES ElementsKernel PhzExecutables)                     
                      
                      
 elements_add_unit_test(ComputeSedWeight_test tests/src/ComputeSedWeight_test.cpp 
                      LINK_LIBRARIES PhzExecutables
                      TYPE Boost)
+                     
+
 
 elements_install_conf_files()
