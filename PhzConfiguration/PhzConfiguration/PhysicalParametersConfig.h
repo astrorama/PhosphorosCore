@@ -76,6 +76,8 @@ public:
   std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter> getLikelihoodOutputHandler() const;
   std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter> getPosteriorOutputHandler() const;
 
+  std::map<std::string, std::map<std::string, std::pair<double, double>>> readConfig(boost::filesystem::path path) const;
+
 private:
 
   std::map<std::string, std::map<std::string, std::pair<double, double>>> m_param_config = {};

@@ -29,6 +29,8 @@
 
 #include "PhzOutput/PhzColumnHandlers/PhysicalParameter.h"
 #include "PhzDataModel/GridType.h"
+#include <CCfits/CCfits>
+#include "Table/FitsReader.h"
 
 
 namespace po = boost::program_options;
@@ -52,17 +54,47 @@ auto PhysicalParametersConfig::getProgramOptions() -> std::map<std::string, Opti
 }
 
 
+std::map<std::string, std::map<std::string, std::pair<double, double>>> PhysicalParametersConfig::readConfig(fs::path path) const {
+  std::map<std::string, std::map<std::string, std::pair<double, double>>> results {};
+
+  std::ifstream  sfile(path.generic_string());
+  CCfits::FITS::setVerboseMode(true);
+
+  // Check file exists
+  if (sfile) {
+    std::unique_ptr<CCfits::FITS> fits{new CCfits::FITS(path.generic_string(), CCfits::RWmode::Read)};
+    try {
+      const CCfits::ExtHDU& table_hdu = fits->extension(1);
+      // Read first HDU
+      auto table = Table::FitsReader{table_hdu}.read();
+
+      for (auto row : table) {
+            std::string param_name = boost::get<std::string>(row[0]);
+            std::string sed_name = boost::get<std::string>(row[1]);
+            double param_A = boost::get<double>(row[2]);
+            double param_B = boost::get<double>(row[3]);
+
+            if (results.find(param_name) == results.end()) {
+              results.insert(std::make_pair(param_name, std::map<std::string, std::pair<double, double>>()));
+            }
+
+            results.at(param_name).insert(std::make_pair(sed_name, std::make_pair(param_A, param_B)));
+
+       }
+    } catch (CCfits::FitsException& fits_except) {
+      throw Elements::Exception() << "FitsException catched! File: " << path.generic_string();
+    }
+  }
+  return results;
+}
+
 
 void PhysicalParametersConfig::initialize(const UserValues& args) {
   if (args.count(PP_CONFIG_FILE) > 0) {
       logger.debug() << "Configuring Physical parameters ";
       fs::path conf_file_path {args.find(PP_CONFIG_FILE)->second.as<std::string>()};
 
-      // todo open and read the file
-
-
-
-
+      m_param_config = readConfig(conf_file_path);
   }
 }
 
