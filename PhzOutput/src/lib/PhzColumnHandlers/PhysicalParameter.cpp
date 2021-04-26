@@ -35,8 +35,8 @@ namespace ColumnHandlers {
 std::vector<Table::ColumnInfo::info_type> PhysicalParameter::getColumnInfoList() const {
 
   std::vector<Table::ColumnInfo::info_type> column_list {};
-  for(auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
-    column_list.push_back(Table::ColumnInfo::info_type(m_column_prefix+iter->first, typeid(int64_t)));
+  for (auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
+    column_list.push_back(Table::ColumnInfo::info_type(m_column_prefix+iter->first, typeid(double)));
   }
 
   return column_list;
