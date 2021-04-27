@@ -96,7 +96,8 @@ LikelihoodHandler<GridType, Sampler>::LikelihoodHandler(
         };
 
         for(auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
-          info_list.push_back(Table::ColumnInfo::info_type(iter->first, typeid(int64_t)));
+          loggerPhz.info()<<"Creating sampler columns adding "<< iter->first;
+          info_list.push_back(Table::ColumnInfo::info_type(iter->first, typeid(float)));
         }
 
         m_sampling_column_info  = std::shared_ptr<Euclid::Table::ColumnInfo>{new Euclid::Table::ColumnInfo{info_list}};
@@ -250,7 +251,8 @@ std::vector<Table::Row> LikelihoodHandler<GridType, Sampler>::drawSample(
     std::string sed = sed_map.at(grid_region_index[sample_idx]).at(sed_index[sample_idx]).qualifiedName();
 
     for(auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
-      values.push_back(iter->second.at(sed).first*alpha_value[sample_idx] + iter->second.at(sed).second);
+      float param_value = float(iter->second.at(sed).first*alpha_value[sample_idx] + iter->second.at(sed).second);
+      values.push_back(param_value);
     }
 
     sampling_row_list.push_back(Table::Row{values, m_sampling_column_info});
@@ -265,7 +267,7 @@ void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(
                                           const SourceCatalog::Source& source,
                                           const PhzDataModel::SourceResults& results) {
   std::string id = boost::lexical_cast<std::string>(source.getId());
-  loggerPhz.debug() << "Outputing the "<< FullGridOutputTraits<GridType>::filename() << " for souce with id "<< id;
+  loggerPhz.info() << "Outputing the "<< FullGridOutputTraits<GridType>::filename() << " for souce with id "<< id;
 
   if (m_do_sample) {
     std::vector<Table::Row> samples_row_list {};
@@ -309,6 +311,8 @@ void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(
                                                           region_cells,
                                                           region_index_map,
                                                           sed_mapping);
+
+
     if (m_counter >= m_chunk_size) {
       closeSampleFile();
       createAndOpenSampleFile();
@@ -320,8 +324,7 @@ void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(
       m_sample_fits_writer->addComment(comment.str());
       loggerPhz.info() << "Add comment to the sample file ";
     }
-
-    m_sample_fits_writer->addData(Table::Table{sampling_row_list});
+     m_sample_fits_writer->addData(Table::Table{sampling_row_list});
 
      //loggerPhz.info() << "Add info to index file ";
      std::string samp_file_name = getFileName(m_current_file_id);
