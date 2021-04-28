@@ -41,6 +41,9 @@ elements_add_executable(PhosphorosBuildPPConfig src/program/BuildPPConfig.cpp
 elements_add_unit_test(ComputeSedWeight_test tests/src/ComputeSedWeight_test.cpp 
                      LINK_LIBRARIES PhzExecutables
                      TYPE Boost)
+elements_add_unit_test(BuildPPConfig_test tests/src/BuildPPConfig_test.cpp 
+                     LINK_LIBRARIES PhzExecutables
+                     TYPE Boost)
                      
 
 

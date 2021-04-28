@@ -55,25 +55,40 @@ auto ScaleFactorMarginalizationConfig::getProgramOptions() -> std::map<std::stri
 
 void ScaleFactorMarginalizationConfig::preInitialize(const UserValues& args) {
 
-  if (args.count(SCALE_FACTOR_MARGINALIZATION_ENABLED)==1 && args.at(SCALE_FACTOR_MARGINALIZATION_ENABLED).as<std::string>() == "YES") {
-
-    auto number = args.at(SCALE_FACTOR_SAMPLE_NUMBER).as<int>();
-    if (number < 3) {
-       throw Elements::Exception() << SCALE_FACTOR_SAMPLE_NUMBER << " value must be bigger than 2" ;
+  if (args.count(SCALE_FACTOR_MARGINALIZATION_ENABLED) == 1 &&
+      args.at(SCALE_FACTOR_MARGINALIZATION_ENABLED).as<std::string>() == "YES") {
+    if (args.count(SCALE_FACTOR_SAMPLE_NUMBER) == 1) {
+        auto number = args.at(SCALE_FACTOR_SAMPLE_NUMBER).as<int>();
+        if (number < 3) {
+           throw Elements::Exception() << SCALE_FACTOR_SAMPLE_NUMBER << " value must be bigger than 2";
+        }
     }
 
-    auto range = args.at(SCALE_FACTOR_RANGE).as<double>();
-    if (range <= 0) {
-      throw Elements::Exception() << SCALE_FACTOR_RANGE << " value must be bigger than 0" ;
+    if (args.count(SCALE_FACTOR_RANGE) == 1) {
+        auto range = args.at(SCALE_FACTOR_RANGE).as<double>();
+        if (range <= 0) {
+          throw Elements::Exception() << SCALE_FACTOR_RANGE << " value must be bigger than 0";
+        }
     }
   }
 }
 
 void ScaleFactorMarginalizationConfig::initialize(const UserValues& args) {
-  if (args.count(SCALE_FACTOR_MARGINALIZATION_ENABLED)==1 && args.at(SCALE_FACTOR_MARGINALIZATION_ENABLED).as<std::string>() == "YES"){
+  if (args.count(SCALE_FACTOR_MARGINALIZATION_ENABLED) == 1 &&
+      args.at(SCALE_FACTOR_MARGINALIZATION_ENABLED).as<std::string>() == "YES") {
     m_enable_scale_factor_normalization = true;
-    m_sample_number = (size_t)args.at(SCALE_FACTOR_SAMPLE_NUMBER).as<int>();
-    m_range_in_sigma = args.at(SCALE_FACTOR_RANGE).as<double>();
+    if (args.count(SCALE_FACTOR_SAMPLE_NUMBER) == 1) {
+      auto number = args.at(SCALE_FACTOR_SAMPLE_NUMBER).as<int>();
+      m_sample_number = (size_t)number;
+    } else {
+      m_sample_number = 101;
+    }
+    if (args.count(SCALE_FACTOR_RANGE) == 1) {
+      auto range = args.at(SCALE_FACTOR_RANGE).as<double>();
+      m_range_in_sigma = range;
+    } else {
+      m_range_in_sigma = 5.0;
+    }
   }
 }
 

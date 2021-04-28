@@ -46,25 +46,27 @@ BuildPPConfig::BuildPPConfig() {}
 
 std::map<std::string, std::pair<double, double>> BuildPPConfig::getParamMap(std::string string_params) const {
   std::vector<std::string> raw_params;
-  boost::algorithm::split(raw_params, string_params, boost::is_any_of(";"));
   std::map<std::string, std::pair<double, double>> param_map {};
+  boost::algorithm::split(raw_params, string_params, boost::is_any_of(";"));
   for (std::string& param_st : raw_params) {
-     std::vector<std::string> param_pieces;
-     boost::algorithm::split(param_pieces, param_st, boost::is_any_of("="));
-     std::string param_name = param_pieces[0];
-     std::vector<std::string> funct_piece;
-     boost::algorithm::split(funct_piece, param_pieces[1], boost::is_any_of("+"));
-     double a = 0.0;
-     double b = 0.0;
-     for (auto& piece : funct_piece) {
-       if (piece.find("*L") != std::string::npos) {
-           piece.replace(piece.find("*L"), piece.find("*L") + 2, "");
-           a = std::stod(piece);
-       } else {
-           b = std::stod(piece);
+    if (param_st.find("=") != std::string::npos) {
+       std::vector<std::string> param_pieces;
+       boost::algorithm::split(param_pieces, param_st, boost::is_any_of("="));
+       std::string param_name = param_pieces[0];
+       std::vector<std::string> funct_piece;
+       boost::algorithm::split(funct_piece, param_pieces[1], boost::is_any_of("+"));
+       double a = 0.0;
+       double b = 0.0;
+       for (auto& piece : funct_piece) {
+         if (piece.find("*L") != std::string::npos) {
+             piece.replace(piece.find("*L"), piece.find("*L") + 2, "");
+             a = std::stod(piece);
+         } else {
+             b = std::stod(piece);
+         }
        }
-     }
-     param_map.insert(std::make_pair(param_name, std::make_pair(a, b)));
+       param_map.insert(std::make_pair(param_name, std::make_pair(a, b)));
+    }
   }
 
   return param_map;
