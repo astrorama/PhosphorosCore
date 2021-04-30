@@ -32,7 +32,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/filesystem.hpp>
 
-
+#include "ElementsKernel/Auxiliary.h"
 #include "ElementsKernel/Temporary.h"
 #include "GridContainer/serialize.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
@@ -76,7 +76,7 @@ struct ModelGridOutputConfig_fixture : public ConfigManager_fixture {
     options_map["intermediate-products-dir"].value() = boost::any(temp_dir.path().string());
     std::string filter_lum = "filter_1";
     options_map["normalization-filter"].value() = boost::any(filter_lum);
-
+    options_map["aux-data-dir"].value() = boost::any(Elements::getAuxiliaryPath("Phosphoros/AuxiliaryData").native());
   }
 };
 

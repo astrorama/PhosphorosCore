@@ -151,4 +151,6 @@ elements_add_unit_test(PhysicalParametersConfig_test tests/src/PhysicalParameter
                      EXECUTABLE PhzConfiguration_PhysicalParametersConfig_test
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)                                  
-                     
+
+# Install auxiliary files
+elements_install_aux_files()

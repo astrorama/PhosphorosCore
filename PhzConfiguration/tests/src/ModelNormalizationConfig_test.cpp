@@ -24,8 +24,9 @@
  */
 
 #include <boost/test/unit_test.hpp>
-#include "ElementsKernel/Exception.h"
 #include <thread>
+#include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Auxiliary.h"
 #include "PhzUtils/Multithreading.h"
 #include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "ConfigManager_fixture.h"
@@ -46,9 +47,8 @@ struct ModelNormalizationConfig_fixture : public ConfigManager_fixture {
   std::map<std::string, po::variable_value> options_map {};
   
   ModelNormalizationConfig_fixture() {
-    
     options_map = registerConfigAndGetDefaultOptionsMap<ModelNormalizationConfig>();
-    
+    options_map["aux-data-dir"].value() = boost::any(Elements::getAuxiliaryPath("Phosphoros/AuxiliaryData").native());
   }
   
 };

@@ -25,6 +25,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Auxiliary.h"
 #include <thread>
 #include "PhzUtils/Multithreading.h"
 #include "PhzConfiguration/BuildPPConfigConfig.h"
@@ -77,6 +78,7 @@ BOOST_AUTO_TEST_CASE(getOutputFilePath_test) {
   std::map<std::string, po::variable_value> options_map {};
   std::string param = "output_file.fits";
   options_map["output-file"].value() = boost::any(param);
+  options_map["aux-data-dir"].value() = boost::any(Elements::getAuxiliaryPath("Phosphoros/AuxiliaryData").native());
 
   config_manager.initialize(options_map);
 
@@ -95,6 +97,7 @@ BOOST_AUTO_TEST_CASE(getParamList_test) {
   std::map<std::string, po::variable_value> options_map {};
   std::string param = "output_file.fits";
   options_map["output-file"].value() = boost::any(param);
+  options_map["aux-data-dir"].value() = boost::any(Elements::getAuxiliaryPath("Phosphoros/AuxiliaryData").native());
 
   std::vector<std::string> pps = {"PARAM1", "PARAM2", "PARAM3"};
 
