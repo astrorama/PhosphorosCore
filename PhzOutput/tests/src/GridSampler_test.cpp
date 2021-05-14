@@ -263,10 +263,9 @@ BOOST_FIXTURE_TEST_CASE(test_drawPointInCell, GridSampler_fixture) {
    auto point = handler.drawPointInCell(cell, results_1, gen);
 
    // Then
-   BOOST_CHECK_CLOSE(std::get<0>(point.first), 0.0, 0.001);
-   BOOST_CHECK_CLOSE(std::get<1>(point.first), 0.1, 0.001);
-   BOOST_CHECK_CLOSE(std::get<2>(point.first), 0.7, 0.001);
-   BOOST_CHECK_CLOSE(point.second, 1.6487213, 0.001);   // exp(0.5)
+   BOOST_CHECK_CLOSE(std::get<0>(point), 0.0, 0.001);
+   BOOST_CHECK_CLOSE(std::get<1>(point), 0.1, 0.001);
+   BOOST_CHECK_CLOSE(std::get<2>(point), 0.7, 0.001);
 
 
    // CASE 2: multiple point in Z & 1 point in E(B-V)
@@ -305,17 +304,12 @@ BOOST_FIXTURE_TEST_CASE(test_drawPointInCell, GridSampler_fixture) {
     point = handler.drawPointInCell(cell, results_2, gen);
 
     // Then
-    BOOST_CHECK(std::get<0>(point.first) >= 0);
-    BOOST_CHECK(std::get<0>(point.first) <= 1.5);
-    BOOST_CHECK_CLOSE(std::get<1>(point.first), 0.3, 0.001);
-    BOOST_CHECK(std::get<2>(point.first) >= 0.5);
-    BOOST_CHECK(std::get<2>(point.first) <= 0.7);
-    BOOST_CHECK(point.second >= 1.1051709);   // exp(0.1)
-    BOOST_CHECK(point.second <= 1.2214028);   // exp(0.2)
+    BOOST_CHECK(std::get<0>(point) >= 0);
+    BOOST_CHECK(std::get<0>(point) <= 1.5);
+    BOOST_CHECK_CLOSE(std::get<1>(point), 0.3, 0.001);
+    BOOST_CHECK(std::get<2>(point) >= 0.5);
+    BOOST_CHECK(std::get<2>(point) <= 0.7);
 
-    double value =  1.1051709 + (1.2214028-1.1051709)*(std::get<0>(point.first) - 0)/(1.5 - 0);
-
-    BOOST_CHECK_CLOSE(point.second, value, 0.001);
 
     // CASE 3: multiple point in E(B-V) & 1 point in Z
     // when
@@ -350,17 +344,13 @@ BOOST_FIXTURE_TEST_CASE(test_drawPointInCell, GridSampler_fixture) {
     point = handler.drawPointInCell(cell, results_3, gen);
 
     // Then
-    BOOST_CHECK_CLOSE(std::get<0>(point.first), 0.4, 0.001);
-    BOOST_CHECK(std::get<1>(point.first) >= 0);
-    BOOST_CHECK(std::get<1>(point.first) <= 0.7);
-    BOOST_CHECK(std::get<2>(point.first) >= 0.5);
-    BOOST_CHECK(std::get<2>(point.first) <= 0.9);
-    BOOST_CHECK(point.second >= 1.1051709);  // exp(0.1)
-    BOOST_CHECK(point.second <= 1.2214028);  // exp(0.2)
+    BOOST_CHECK_CLOSE(std::get<0>(point), 0.4, 0.001);
+    BOOST_CHECK(std::get<1>(point) >= 0);
+    BOOST_CHECK(std::get<1>(point) <= 0.7);
+    BOOST_CHECK(std::get<2>(point) >= 0.5);
+    BOOST_CHECK(std::get<2>(point) <= 0.9);
 
-    value =  1.2214028 + (1.1051709 - 1.2214028)*(std::get<1>(point.first) - 0)/(0.7- 0);
 
-    BOOST_CHECK_CLOSE(point.second, value, 0.001);
 
 
     // CASE 4: multiple point in E(B-V) &  Z
@@ -395,19 +385,17 @@ BOOST_FIXTURE_TEST_CASE(test_drawPointInCell, GridSampler_fixture) {
     point = handler.drawPointInCell(cell, results_4, gen);
 
     // Then
-    BOOST_CHECK(std::get<0>(point.first) >= 0);
-    BOOST_CHECK(std::get<0>(point.first) <= 1.5);
+    BOOST_CHECK(std::get<0>(point) > 0);
+    BOOST_CHECK(std::get<0>(point) < 1.5);
 
-    BOOST_CHECK(std::get<1>(point.first) >= 0);
-    BOOST_CHECK(std::get<1>(point.first) <= 0.7);
+    BOOST_CHECK(std::get<1>(point) > 0);
+    BOOST_CHECK(std::get<1>(point) < 0.7);
 
 
-    BOOST_CHECK(std::get<2>(point.first) >= 0.1);
-    BOOST_CHECK(std::get<2>(point.first) <= 0.4);
+    BOOST_CHECK(std::get<2>(point) > 0.1);
+    BOOST_CHECK(std::get<2>(point) < 0.4);
 
-    value = handler.interpolateProbability(0, 1.5, 0, 0.7, 1.3498588, 1.2214028,
-                                         1.1051709, 1.4918247, std::get<0>(point.first), std::get<1>(point.first));
-    BOOST_CHECK_CLOSE(point.second, value, 0.001);
+
 
 }
 

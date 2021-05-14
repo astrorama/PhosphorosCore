@@ -14,6 +14,9 @@
 #include "PhzUtils/FileUtils.h"
 #include "PhzDataModel/PhzModel.h"
 #include "boost/lexical_cast.hpp"
+#include "PhzOutput/GridSampler.h"
+#include "MathUtils/PDF/NdSampler.h"
+#include "NdArray/NdArray.h"
 
 
 namespace Euclid {
@@ -178,7 +181,7 @@ std::pair<double, std::vector<posterior_cell>> GridSampler<GridType>::computeEnc
 
 
 template<PhzDataModel::RegionResultType GridType>
-std::pair<std::tuple<double, double, double>, double> GridSampler<GridType>::drawPointInCell(const posterior_cell& cell, const PhzDataModel::RegionResults& results,  std::mt19937& gen) const{
+std::tuple<double, double, double> GridSampler<GridType>::drawPointInCell(const posterior_cell& cell, const PhzDataModel::RegionResults& results,  std::mt19937& gen) const{
     auto& grid = results.get<GridType>();
     auto& scaling_grid = results.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
     auto& axis = grid.getAxesTuple();
@@ -196,35 +199,46 @@ std::pair<std::tuple<double, double, double>, double> GridSampler<GridType>::dra
     double ebv_0 = ebv_axis[cell.ebv_index];
     double ebv_1 = ebv_axis[cell.ebv_index + delta_ebv];
 
-    std::uniform_real_distribution<> distrib_z(z_0, z_1);
-    std::uniform_real_distribution<> distrib_ebv(ebv_0, ebv_1);
-    std::uniform_real_distribution<> distrib_reject(0, cell.max_value);
-
     double p_00 = exp(grid.at(cell.z_index, cell.ebv_index, red_idx, sed_idx));
     double p_10 = exp(grid.at(cell.z_index + delta_z, cell.ebv_index, red_idx, sed_idx));
     double p_01 = exp(grid.at(cell.z_index, cell.ebv_index + delta_ebv, red_idx, sed_idx));
     double p_11 = exp(grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, red_idx, sed_idx));
-    size_t out=0;
-    while (true) {
-      // draw in the cell
-         double z_val = distrib_z(gen);
-         double ebv_val = distrib_ebv(gen);
 
-         // get the prob
-         double prob = interpolateProbability(z_0, z_1, ebv_0, ebv_1, p_00, p_01, p_10, p_11, z_val, ebv_val);
-         double accept_prob = distrib_reject(gen);
-         // reject if needed
-         if (prob>= accept_prob || out >1000) {
-           double alpha_00 = scaling_grid.at(cell.z_index, cell.ebv_index, red_idx, sed_idx);
-           double alpha_10 = scaling_grid.at(cell.z_index + delta_z, cell.ebv_index, red_idx, sed_idx);
-           double alpha_01 = scaling_grid.at(cell.z_index, cell.ebv_index + delta_ebv, red_idx, sed_idx);
-           double alpha_11 = scaling_grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, red_idx, sed_idx);
-           double lum = interpolateProbability(z_0, z_1, ebv_0, ebv_1, alpha_00, alpha_01, alpha_10, alpha_11, z_val, ebv_val);
+    double alpha_00 = scaling_grid.at(cell.z_index, cell.ebv_index, red_idx, sed_idx);
+    double alpha_10 = scaling_grid.at(cell.z_index + delta_z, cell.ebv_index, red_idx, sed_idx);
+    double alpha_01 = scaling_grid.at(cell.z_index, cell.ebv_index + delta_ebv, red_idx, sed_idx);
+    double alpha_11 = scaling_grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, red_idx, sed_idx);
 
-           return std::make_pair(std::make_tuple(z_val, ebv_val, lum), prob);
-         }
-         ++out;
+    std::vector<double> axis_z = {z_0, z_1};
+    std::vector<double> axis_ebv = {ebv_0, ebv_1};
+    double z_val = z_0;
+    double ebv_val = ebv_0;
+    if (delta_z == 0) {
+        if (delta_ebv == 0) {
+          return std::make_tuple(z_val, ebv_val, alpha_00);
+        } else{
+          NdArray::NdArray<double> pdf{{2}, {p_00, p_11}};
+          MathUtils::NdSampler<1> dist{{axis_ebv}, pdf};
+          auto sample = dist.draw(1, gen);
+          ebv_val = sample.at(0, 0);
+        }
+    } else{
+        if (delta_ebv == 0) {
+            NdArray::NdArray<double> pdf{{2}, {p_00, p_11}};
+            MathUtils::NdSampler<1> dist{{axis_z}, pdf};
+            auto sample = dist.draw(1, gen);
+            z_val = sample.at(0, 0);
+         } else{
+            NdArray::NdArray<double> pdf{{2, 2}, {p_00, p_01, p_10, p_11}};
+            MathUtils::NdSampler<2> dist{{axis_z, axis_ebv}, pdf};
+            auto sample = dist.draw(1, gen);
+            z_val = sample.at(0, 0);
+            ebv_val = sample.at(0, 1);
+        }
     }
+
+    double lum = interpolateProbability(z_0, z_1, ebv_0, ebv_1, alpha_00, alpha_01, alpha_10, alpha_11, z_val, ebv_val);
+    return std::make_tuple(z_val, ebv_val, lum);
 }
 
 } // end of namespace PhzOutput

@@ -270,19 +270,19 @@ BOOST_FIXTURE_TEST_CASE(test_computeEnclosingVolumeOfCells, GridSamplerScale_fix
   ++iter_grid_4;
   *iter_grid_4 = std::vector<double>{0.2, 0.3};
   ++iter_grid_4;
-  *iter_grid_4 = std::vector<double>{0.1,0.2};
+  *iter_grid_4 = std::vector<double>{0.1, 0.2};
   ++iter_grid_4;
-  *iter_grid_4 = std::vector<double>{0.6,0.7};
+  *iter_grid_4 = std::vector<double>{0.6, 0.7};
   ++iter_grid_4;
   *iter_grid_4 = std::vector<double>{0.5, 0.6};
   ++iter_grid_4;
-  *iter_grid_4 = std::vector<double>{0.4,0.5};
+  *iter_grid_4 = std::vector<double>{0.4, 0.5};
   ++iter_grid_4;
-  *iter_grid_4 = std::vector<double>{0.9,1.0};
+  *iter_grid_4 = std::vector<double>{0.9, 1.0};
   ++iter_grid_4;
-  *iter_grid_4 = std::vector<double>{0.8,0.9};
+  *iter_grid_4 = std::vector<double>{0.8, 0.9};
   ++iter_grid_4;
-  *iter_grid_4 = std::vector<double>{0.7,0.8};
+  *iter_grid_4 = std::vector<double>{0.7, 0.8};
 
 
   PhzDataModel::RegionResults results_4{};
@@ -345,37 +345,31 @@ BOOST_FIXTURE_TEST_CASE(test_drawPointInCell, GridSamplerScale_fixture) {
    auto point = handler.drawPointInCell(cell, results_1, gen);
 
    // Then
-   BOOST_CHECK_CLOSE(std::get<0>(point.first), 0.0, 0.001);
-   BOOST_CHECK_CLOSE(std::get<1>(point.first), 0.1, 0.001);
-   BOOST_CHECK(std::get<2>(point.first) >= 90);
-   BOOST_CHECK(std::get<2>(point.first) <= 100);
-   BOOST_CHECK(point.second >=1.6487213);   // exp(0.5)
-   BOOST_CHECK(point.second <=2.01375270747);   // exp(0.7)
+   BOOST_CHECK_CLOSE(std::get<0>(point), 0.0, 0.001);
+   BOOST_CHECK_CLOSE(std::get<1>(point), 0.1, 0.001);
+   BOOST_CHECK(std::get<2>(point) >= 90);
+   BOOST_CHECK(std::get<2>(point) <= 100);
 
    point = handler.drawPointInCell(computed.second[1], results_1, gen);
 
     // Then
-    BOOST_CHECK_CLOSE(std::get<0>(point.first), 0.0, 0.001);
-    BOOST_CHECK_CLOSE(std::get<1>(point.first), 0.1, 0.001);
-    BOOST_CHECK(std::get<2>(point.first) >= 100);
-    BOOST_CHECK(std::get<2>(point.first) <= 110);
-    BOOST_CHECK(point.second <=2.45960311116);   // exp(0.9)
-    BOOST_CHECK(point.second >=2.01375270747);   // exp(0.7)
+    BOOST_CHECK_CLOSE(std::get<0>(point), 0.0, 0.001);
+    BOOST_CHECK_CLOSE(std::get<1>(point), 0.1, 0.001);
+    BOOST_CHECK(std::get<2>(point) >= 100);
+    BOOST_CHECK(std::get<2>(point) <= 110);
 
     point = handler.drawPointInCell(computed.second[2], results_1, gen);
 
     // Then
-    BOOST_CHECK_CLOSE(std::get<0>(point.first), 0.0, 0.001);
-    BOOST_CHECK_CLOSE(std::get<1>(point.first), 0.1, 0.001);
-    BOOST_CHECK(std::get<2>(point.first) >= 42);
-    BOOST_CHECK(std::get<2>(point.first) <= 50);
-    BOOST_CHECK(point.second >=1.10517091808);   // exp(0.1)
-    BOOST_CHECK(point.second <=1.34985880758);   // exp(0.3)
+    BOOST_CHECK_CLOSE(std::get<0>(point), 0.0, 0.001);
+    BOOST_CHECK_CLOSE(std::get<1>(point), 0.1, 0.001);
+    BOOST_CHECK(std::get<2>(point) >= 42);
+    BOOST_CHECK(std::get<2>(point) <= 50);
 
     // CASE 2: multiple point in E(B-V) &  Z
     // when
     GridContainer::GridAxis<double> z_axis_2{"Z", {0.0, 1.5, 2.0}};
-    GridContainer::GridAxis<double> ebv_axis_2{"E(B-V)", {0.0, 0.7, 1.0}};
+    GridContainer::GridAxis<double> ebv_axis_2{"E(B-V)", {0.5, 0.7, 1.0}};
     GridContainer::GridAxis<XYDataset::QualifiedName> red_axis_2{"Reddening Curve", {{"Curve1"}}};
     GridContainer::GridAxis<XYDataset::QualifiedName> sed_axis_2 {"SED", {{"SED_1"}}};
     PhzDataModel::DoubleListGrid grid_likelihood_2{z_axis_2, ebv_axis_2, red_axis_2, sed_axis_2};
@@ -456,17 +450,16 @@ BOOST_FIXTURE_TEST_CASE(test_drawPointInCell, GridSamplerScale_fixture) {
     point = handler.drawPointInCell(cell, results_2, gen);
 
     // Then
-    BOOST_CHECK_CLOSE(point.second, 1.34985880758, 0.001);  // exp(0.3) this cell has this prob value at each corner
 
-    BOOST_CHECK(std::get<0>(point.first) >= 0);
-    BOOST_CHECK(std::get<0>(point.first) <= 1.5);
+    BOOST_CHECK(std::get<0>(point) >= 0);
+    BOOST_CHECK(std::get<0>(point) <= 1.5);
 
-    BOOST_CHECK(std::get<1>(point.first) >= 0);
-    BOOST_CHECK(std::get<1>(point.first) <= 0.7);
+    BOOST_CHECK(std::get<1>(point) >= 0.5);
+    BOOST_CHECK(std::get<1>(point) <= 0.7);
 
 
-    BOOST_CHECK(std::get<2>(point.first) >= 90);
-    BOOST_CHECK(std::get<2>(point.first) <= 140);
+    BOOST_CHECK(std::get<2>(point) >= 90);
+    BOOST_CHECK(std::get<2>(point) <= 140);
 
 
 }

@@ -222,9 +222,9 @@ std::vector<Table::Row> LikelihoodHandler<GridType, Sampler>::drawSample(
     size_t sed_idx = cell.sed_index;
     size_t red_idx = cell.red_curve_index;
     auto point_in_cell = m_grid_sampler.drawPointInCell(cell, result_map.at(region_index_map.at(region_idx)), gen);
-    float z_val = std::get<0>(point_in_cell.first);
-    float ebv_val = std::get<1>(point_in_cell.first);
-    float alpha_val = std::get<2>(point_in_cell.first);
+    float z_val = std::get<0>(point_in_cell);
+    float ebv_val = std::get<1>(point_in_cell);
+    float alpha_val = std::get<2>(point_in_cell);
    // double prob = point_in_cell.second;
 
     grid_region_index.push_back(region_idx);

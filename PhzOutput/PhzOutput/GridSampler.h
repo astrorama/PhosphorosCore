@@ -194,7 +194,7 @@ public:
   * <<z_p, ebv_p, alpha_p >, probability>
   *
   **/
- std::pair<std::tuple<double, double, double>, double> drawPointInCell(const posterior_cell& cell,
+std::tuple<double, double, double> drawPointInCell(const posterior_cell& cell,
                                                              const PhzDataModel::RegionResults& results,
                                                              std::mt19937& gen) const;
 
