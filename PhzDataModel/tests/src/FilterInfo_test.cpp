@@ -25,8 +25,8 @@ struct FilterInfo_Fixture {
         return x*x;
       }
 
-      std::unique_ptr<Function> clone() const override {
-         return std::unique_ptr<Function>{new squareFunction()};
+      std::unique_ptr<Euclid::MathUtils::Function> clone() const override {
+         return std::unique_ptr<Euclid::MathUtils::Function>{new squareFunction()};
       }
     };
 
