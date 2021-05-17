@@ -8,12 +8,10 @@
 #define PHZMODELING_MODELFLUXALGORITHM_H
 
 #include <functional>
+#include "MathUtils/function/Function.h"
 #include "PhzModeling/IntegrateLambdaTimeDatasetFunctor.h"
 
 namespace Euclid {
-namespace MathUtils {
-  class Function;
-}
 
 namespace XYDataset {
   class XYDataset;

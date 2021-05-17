@@ -26,8 +26,8 @@ struct ModelFluxAlgorithm_Fixture {
       return 1.;
     }
 
-    std::unique_ptr<Function> clone() const override{
-       return std::unique_ptr<Function>{new DummyFilterFunction()};
+    std::unique_ptr<Euclid::MathUtils::Function> clone() const override{
+       return std::unique_ptr<Euclid::MathUtils::Function>{new DummyFilterFunction()};
     }
   };
 
