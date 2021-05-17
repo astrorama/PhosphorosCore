@@ -219,7 +219,7 @@ std::tuple<double, double, double> GridSamplerScale<GridType>::drawPointInCell(c
         auto sample = dist.draw(1, gen);
         alpha_ind_val = sample.at(0, 0);
       } else{
-        NdArray::NdArray<double> pdf{{2,2}, {p_000, p_010, p_001, p_011}};
+        NdArray::NdArray<double> pdf{{2,2}, {p_000, p_001, p_010, p_011}};
         MathUtils::NdSampler<2> dist{{axis_ebv, axis_alpha}, pdf};
         auto sample = dist.draw(1, gen);
         ebv_val = sample.at(0, 0);
@@ -227,13 +227,13 @@ std::tuple<double, double, double> GridSamplerScale<GridType>::drawPointInCell(c
       }
   } else{
       if (delta_ebv == 0) {
-        NdArray::NdArray<double> pdf{{2,2}, {p_000, p_100, p_001, p_101}};
+        NdArray::NdArray<double> pdf{{2,2}, {p_000, p_001, p_100, p_101}};
         MathUtils::NdSampler<2> dist{{axis_z, axis_alpha}, pdf};
         auto sample = dist.draw(1, gen);
         z_val = sample.at(0, 0);
         alpha_ind_val = sample.at(0, 1);
        } else{
-        NdArray::NdArray<double> pdf{{2, 2, 2}, {p_000, p_100, p_001, p_101, p_000, p_100, p_001, p_101}};
+        NdArray::NdArray<double> pdf{{2, 2, 2}, {p_000, p_001, p_010, p_011 , p_100, p_101, p_110, p_111}};
         MathUtils::NdSampler<3> dist{{axis_z, axis_ebv, axis_alpha}, pdf};
         auto sample = dist.draw(1, gen);
         z_val = sample.at(0, 0);
