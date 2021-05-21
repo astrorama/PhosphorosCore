@@ -204,43 +204,16 @@ std::tuple<double, double, double> GridSamplerScale<GridType>::drawPointInCell(c
   double p_011 = exp(grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1]);
   double p_111 = exp(grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1]);
 
-
   std::vector<double> axis_z = {z_0, z_1};
   std::vector<double> axis_ebv = {ebv_0, ebv_1};
   std::vector<double> axis_alpha = {alpha_0, alpha_1};
-  double z_val = z_0;
-  double ebv_val = ebv_0;
-  double alpha_ind_val = alpha_0;
 
-  if (delta_z == 0) {
-      if (delta_ebv == 0) {
-        NdArray::NdArray<double> pdf{{2}, {p_000, p_001}};
-        MathUtils::NdSampler<double> dist{{ axis_alpha}, pdf};
-        auto sample = dist.draw(1, gen);
-        alpha_ind_val = std::get<0>(sample[0]);
-      } else{
-        NdArray::NdArray<double> pdf{{2,2}, {p_000, p_001, p_010, p_011}};
-        MathUtils::NdSampler<double, double> dist{{axis_ebv, axis_alpha}, pdf};
-        auto sample = dist.draw(1, gen);
-        ebv_val = std::get<0>(sample[0]);
-        alpha_ind_val = std::get<1>(sample[0]);
-      }
-  } else{
-      if (delta_ebv == 0) {
-        NdArray::NdArray<double> pdf{{2,2}, {p_000, p_001, p_100, p_101}};
-        MathUtils::NdSampler<double, double> dist{{axis_z, axis_alpha}, pdf};
-        auto sample = dist.draw(1, gen);
-        z_val = std::get<0>(sample[0]);
-        alpha_ind_val = std::get<1>(sample[0]);
-       } else{
-        NdArray::NdArray<double> pdf{{2, 2, 2}, {p_000, p_001, p_010, p_011 , p_100, p_101, p_110, p_111}};
-        MathUtils::NdSampler<double, double, double> dist{{axis_z, axis_ebv, axis_alpha}, pdf};
-        auto sample = dist.draw(1, gen);
-        z_val = std::get<0>(sample[0]);
-        ebv_val = std::get<1>(sample[0]);
-        alpha_ind_val = std::get<2>(sample[0]);
-      }
-  }
+  NdArray::NdArray<double> pdf{{2, 2, 2}, {p_000, p_001, p_010, p_011 , p_100, p_101, p_110, p_111}};
+  MathUtils::NdSampler<double, double, double> dist{{axis_z, axis_ebv, axis_alpha}, pdf};
+  auto sample = dist.draw(1, gen);
+  double z_val = std::get<0>(sample[0]);
+  double ebv_val = std::get<1>(sample[0]);
+  double alpha_ind_val = std::get<2>(sample[0]);
 
 
 
