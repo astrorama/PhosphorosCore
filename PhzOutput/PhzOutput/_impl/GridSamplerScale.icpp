@@ -228,5 +228,13 @@ std::tuple<double, double, double> GridSamplerScale<GridType>::drawPointInCell(c
   return std::make_tuple(z_val, ebv_val, lum);
 }
 
+template <PhzDataModel::RegionResultType GridType>
+std::vector<GridSample>
+GridSamplerScale<GridType>::drawSample(std::size_t sample_number, const std::map<std::string, double>& region_volume,
+                                       const std::map<std::string, PhzDataModel::RegionResults>& results, std::mt19937& gen) {
+  assert(false);
+  return {};
+}
+
 }  // end of namespace PhzOutput
 }  // end of namespace Euclid

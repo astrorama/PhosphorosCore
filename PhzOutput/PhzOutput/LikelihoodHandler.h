@@ -59,11 +59,8 @@ private:
 
   void exportFullGrid(const SourceCatalog::Source& source, const PhzDataModel::SourceResults& results);
 
-  std::vector<Table::Row> drawSample(std::string source_id, double total_volume, const std::map<size_t, double>& region_volume,
-                                     const std::map<std::string, PhzDataModel::RegionResults>&           result_map,
-                                     const std::map<size_t, std::vector<posterior_cell>>&                region_cells,
-                                     const std::map<size_t, std::string>&                                region_index_map,
-                                     const std::map<size_t, std::map<size_t, XYDataset::QualifiedName>>& sed_map);
+  std::vector<Table::Row> drawSample(std::string source_id, const std::map<std::string, double>& region_volume,
+                                     const std::map<std::string, PhzDataModel::RegionResults>& result_map);
 };
 
 }  // end of namespace PhzOutput

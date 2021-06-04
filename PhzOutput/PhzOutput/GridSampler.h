@@ -42,6 +42,20 @@ struct posterior_cell {
   double enclosing_volume;
 };
 
+// Region index, sed, reddening curve, ebv, z, alpha
+static const XYDataset::QualifiedName DefaultQualifiedName({}, "default");
+
+struct GridSample {
+  int                      region_index;
+  XYDataset::QualifiedName sed;
+  XYDataset::QualifiedName red_curve;
+  float                    ebv;
+  float                    z;
+  float                    alpha;
+
+  GridSample() : region_index(0), sed(DefaultQualifiedName), red_curve(DefaultQualifiedName), ebv(-1.), z(-1.), alpha(-1.) {}
+};
+
 /**
  * @class GridSampler
  *
@@ -115,37 +129,6 @@ public:
 
   /**
    * @brief
-   * Get the region corresponding to a given draw (where the draw is in [0, total probability])
-   *
-   * @param region_volume
-   * the map containing the <index, volume> of each region
-   *
-   * @param region_draw
-   * the draw
-   *
-   * @return
-   * the index of the selected region
-   **/
-  size_t getRegionForDraw(const std::map<size_t, double>& region_volume, double region_draw) const;
-
-  /**
-   * @brief
-   * Get the index of the cell corresponding to a draw (where the draw is in [0, total enclosing volume]
-   * and the enclosing volume of each cell is used as its probability)
-   *
-   * @param cells
-   * The vector of cells
-   *
-   * @param cell_draw
-   * the cell draw
-   *
-   * @return
-   * The index of the selected cell
-   **/
-  size_t getCellForDraw(const std::vector<posterior_cell>& cells, double cell_draw) const;
-
-  /**
-   * @brief
    * List the cells of the parameter space of a region and compute the enclosing volume for each ones
    *
    * @param results
@@ -157,26 +140,8 @@ public:
    **/
   std::pair<double, std::vector<posterior_cell>> computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const;
 
-  /**
-   * @brief
-   * draw a point in a given cell and return it along with the interpolated probability
-   *
-   * @param cell
-   * the cell to draw the point in
-   *
-   * @param results
-   * A SourceResults object containing the REGION_RESULTS_MAP from which
-   * the "GridType" will be extracted: this contains the probabilities
-   *
-   * @param gen
-   * a random number generator
-   *
-   * @return
-   * <<z_p, ebv_p, alpha_p >, probability>
-   *
-   **/
-  std::tuple<double, double, double> drawPointInCell(const posterior_cell& cell, const PhzDataModel::RegionResults& results,
-                                                     std::mt19937& gen) const;
+  std::vector<GridSample> drawSample(std::size_t sample_number, const std::map<std::string, double>& region_volume,
+                                     const std::map<std::string, PhzDataModel::RegionResults>& results, std::mt19937& gen);
 
 private:
 };

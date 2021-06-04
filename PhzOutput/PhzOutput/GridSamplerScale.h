@@ -122,6 +122,9 @@ public:
    **/
   std::tuple<double, double, double> drawPointInCell(const posterior_cell& cell, const PhzDataModel::RegionResults& results,
                                                      std::mt19937& gen) const;
+
+  std::vector<GridSample> drawSample(std::size_t sample_number, const std::map<std::string, double>& region_volume,
+                                     const std::map<std::string, PhzDataModel::RegionResults>& results, std::mt19937& gen);
 };
 
 }  // end of namespace PhzOutput

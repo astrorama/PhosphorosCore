@@ -95,9 +95,9 @@ LikelihoodHandler<GridType, Sampler>::LikelihoodHandler(
     std::vector<Euclid::Table::ColumnInfo::info_type> info_list{
         Euclid::Table::ColumnInfo::info_type("OBJECT_ID", typeid(std::string)),
         Euclid::Table::ColumnInfo::info_type("GRID_REGION_INDEX", typeid(int)),
-        Euclid::Table::ColumnInfo::info_type("SED_INDEX", typeid(int)),
+        Euclid::Table::ColumnInfo::info_type("SED_NAME", typeid(std::string)),
         Euclid::Table::ColumnInfo::info_type("REDSHIFT", typeid(float)),
-        Euclid::Table::ColumnInfo::info_type("RED_CURVE_INDEX", typeid(int)),
+        Euclid::Table::ColumnInfo::info_type("RED_CURVE", typeid(std::string)),
         Euclid::Table::ColumnInfo::info_type("EB_V", typeid(float)),
         Euclid::Table::ColumnInfo::info_type("LUMINOSITY", typeid(float))};
 
@@ -181,73 +181,26 @@ void LikelihoodHandler<GridType, Sampler>::exportFullGrid(const SourceCatalog::S
 }
 
 template <PhzDataModel::RegionResultType GridType, typename Sampler>
-std::vector<Table::Row> LikelihoodHandler<GridType, Sampler>::drawSample(
-    std::string source_id, double total_volume, const std::map<size_t, double>& region_volume,
-    const std::map<std::string, PhzDataModel::RegionResults>& result_map,
-    const std::map<size_t, std::vector<posterior_cell>>& region_cells, const std::map<size_t, std::string>& region_index_map,
-    const std::map<size_t, std::map<size_t, XYDataset::QualifiedName>>& sed_map) {
-
-  std::vector<int>   grid_region_index{};
-  std::vector<int>   sed_index{};
-  std::vector<int>   red_index{};
-  std::vector<float> z_value{};
-  std::vector<float> ebv_value{};
-  std::vector<float> alpha_value{};
-
-  std::random_device               rd;         // Will be used to obtain a seed for the random number engine
-  std::mt19937                     gen(rd());  // Standard mersenne_twister_engine seeded with rd()
-  std::uniform_real_distribution<> distrib_region(0, total_volume);
-
-  while (grid_region_index.size() < m_sample_number) {
-    // Select a region
-    double region_draw = distrib_region(gen);
-    size_t region_idx  = m_grid_sampler.getRegionForDraw(region_volume, region_draw);
-
-    // select a cell in the region
-    std::uniform_real_distribution<> distrib_cell(0, region_volume.at(region_idx));
-    double                           cell_draw  = distrib_cell(gen);
-    size_t                           cell_index = m_grid_sampler.getCellForDraw(region_cells.at(region_idx), cell_draw);
-
-    // draw a point in the cell
-    auto&  cell          = region_cells.at(region_idx)[cell_index];
-    size_t sed_idx       = cell.sed_index;
-    size_t red_idx       = cell.red_curve_index;
-    auto   point_in_cell = m_grid_sampler.drawPointInCell(cell, result_map.at(region_index_map.at(region_idx)), gen);
-    float  z_val         = std::get<0>(point_in_cell);
-    float  ebv_val       = std::get<1>(point_in_cell);
-    float  alpha_val     = std::get<2>(point_in_cell);
-    // double prob = point_in_cell.second;
-
-    grid_region_index.push_back(region_idx);
-    sed_index.push_back(sed_idx);
-    z_value.push_back(z_val);
-    alpha_value.push_back(alpha_val);
-    red_index.push_back(red_idx);
-    ebv_value.push_back(ebv_val);
-  }
+std::vector<Table::Row>
+LikelihoodHandler<GridType, Sampler>::drawSample(std::string source_id, const std::map<std::string, double>& region_volume,
+                                                 const std::map<std::string, PhzDataModel::RegionResults>& result_map) {
+  std::random_device rd;         // Will be used to obtain a seed for the random number engine
+  std::mt19937       gen(rd());  // Standard mersenne_twister_engine seeded with rd()
+  auto               sample = m_grid_sampler.drawSample(m_sample_number, region_volume, result_map, gen);
 
   loggerPhz.debug() << "Add data to the sampling file ";
   std::vector<Table::Row> sampling_row_list{};
-  for (size_t sample_idx = 0; sample_idx < grid_region_index.size(); ++sample_idx) {
-
-    std::vector<Table::Row::cell_type> values{source_id,
-                                              grid_region_index[sample_idx],
-                                              sed_index[sample_idx],
-                                              z_value[sample_idx],
-                                              red_index[sample_idx],
-                                              ebv_value[sample_idx],
-                                              alpha_value[sample_idx]};
-
-    std::string sed = sed_map.at(grid_region_index[sample_idx]).at(sed_index[sample_idx]).qualifiedName();
-
-    for (auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
-      float param_value = float(iter->second.at(sed).first * alpha_value[sample_idx] + iter->second.at(sed).second);
+  for (auto& s : sample) {
+    auto                               sed_qualified = s.sed.qualifiedName();
+    std::vector<Table::Row::cell_type> values{source_id, s.region_index, sed_qualified, s.z, s.red_curve.qualifiedName(),
+                                              s.ebv,     s.alpha};
+    for (auto& param : m_param_config) {
+      float param_value = float(param.second.at(sed_qualified).first * s.alpha + param.second.at(sed_qualified).second);
       values.push_back(param_value);
     }
 
     sampling_row_list.push_back(Table::Row{values, m_sampling_column_info});
   }
-
   return sampling_row_list;
 }
 
@@ -255,50 +208,27 @@ template <PhzDataModel::RegionResultType GridType, typename Sampler>
 void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(const SourceCatalog::Source&       source,
                                                               const PhzDataModel::SourceResults& results) {
   std::string id = boost::lexical_cast<std::string>(source.getId());
-  loggerPhz.info() << "Outputing the " << FullGridOutputTraits<GridType>::filename() << " for souce with id " << id;
+  loggerPhz.debug() << "Outputting the " << FullGridOutputTraits<GridType>::filename() << " for source with id " << id;
 
   if (m_do_sample) {
-    std::vector<Table::Row> samples_row_list{};
-
     // 1) "Volume" of the different regions
-    std::map<size_t, std::string>                                region_index_map{};
-    std::map<size_t, double>                                     region_volume{};
-    std::map<size_t, std::vector<posterior_cell>>                region_cells{};
-    std::map<size_t, std::map<size_t, XYDataset::QualifiedName>> sed_mapping{};
-    double                                                       total_volume = 0;
-    size_t                                                       region_index = 0;
+    std::map<std::string, double> region_volume{};
 
     for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
-      // get the sub-grid
-      auto region_cell_pair          = m_grid_sampler.computeEnclosingVolumeOfCells(pair.second);
-      region_index_map[region_index] = pair.first;
-      region_volume[region_index]    = region_cell_pair.first;
-      total_volume += region_cell_pair.first;
-      region_cells[region_index] = region_cell_pair.second;
-
-      auto&                                      grid     = pair.second.get<GridType>();
-      auto&                                      axis     = grid.getAxesTuple();
-      size_t                                     index    = 0;
-      auto&                                      sed_axis = std::get<3>(axis);
-      std::map<size_t, XYDataset::QualifiedName> region_sed{};
-      for (auto& knot_value : sed_axis) {
-        region_sed.insert(std::make_pair(index, knot_value));
-        ++index;
-      }
-      sed_mapping[region_index] = region_sed;
-
-      ++region_index;
+      // FIXME
+      region_volume[pair.first] = m_grid_sampler.computeEnclosingVolumeOfCells(pair.second).first;
     }
 
-    std::vector<Table::Row> sampling_row_list =
-        drawSample(id, total_volume, region_volume, results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>(), region_cells,
-                   region_index_map, sed_mapping);
+    // Draw the samples
+    auto sampling_row_list = drawSample(id, region_volume, results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>());
 
+    // Flush output file
     if (m_counter >= m_chunk_size) {
       closeSampleFile();
       createAndOpenSampleFile();
     }
 
+    // Add comment if the current output file does not have it
     if (!m_current_file_has_comment) {
       m_current_file_has_comment = true;
       auto comment               = Sampler::createComment(results);
@@ -309,7 +239,6 @@ void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(const SourceCatalo
 
     // loggerPhz.info() << "Add info to index file ";
     std::string samp_file_name = getFileName(m_current_file_id);
-
     m_index_row_list.push_back({{id, samp_file_name}, m_index_column_info});
 
     ++m_counter;
