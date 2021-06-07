@@ -89,46 +89,6 @@ public:
 
   /**
    * @brief
-   * Compute the bilinear interpolation of the probability
-   *
-   * @param z_0
-   * low value of the z axis
-   *
-   * @param z_1
-   * high value of the z axis
-   *
-   * @param ebv_0
-   * low value of the E(B-V) axis
-   *
-   * @param ebv_1
-   * high value of the E(B-V) axis
-   *
-   * @param p_00
-   * value of the probability evaluated at z_0, ebv_0
-   *
-   * @param p_01
-   * value of the probability evaluated at z_0, ebv_1
-   *
-   * @param p_10
-   * value of the probability evaluated at z_1, ebv_0
-   *
-   * @param p_11
-   * value of the probability evaluated at z_1, ebv_1
-   *
-   * @param z_p
-   * value of z at which the prob has to be interpolated
-   *
-   * @param ebv_p
-   * value of E(B-V) at which the prob has to be interpolated
-   *
-   * @return
-   * the probability interpolated at z_p, ebv_p
-   **/
-  double interpolateProbability(double z_0, double z_1, double ebv_0, double ebv_1, double p_00, double p_01, double p_10,
-                                double p_11, double z_p, double ebv_p) const;
-
-  /**
-   * @brief
    * List the cells of the parameter space of a region and compute the enclosing volume for each ones
    *
    * @param results

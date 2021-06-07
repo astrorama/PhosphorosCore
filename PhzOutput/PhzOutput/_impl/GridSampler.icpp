@@ -70,18 +70,6 @@ std::stringstream GridSampler<GridType>::createComment(const PhzDataModel::Sourc
 }
 
 template <PhzDataModel::RegionResultType GridType>
-double GridSampler<GridType>::interpolateProbability(double z_0, double z_1, double ebv_0, double ebv_1, double p_00, double p_01,
-                                                     double p_10, double p_11, double z_p, double ebv_p) const {
-  // interpolation in z (if needed)
-  double prob_ebv1 = z_0 != z_1 ? p_00 + (z_p - z_0) * (p_10 - p_00) / (z_1 - z_0) : p_00;
-  double prob_ebv2 = z_0 != z_1 ? p_01 + (z_p - z_0) * (p_11 - p_01) / (z_1 - z_0) : p_01;
-
-  // interpolation in ebv (if needed)
-  double prob = ebv_0 != ebv_1 ? prob_ebv1 + (ebv_p - ebv_0) * (prob_ebv2 - prob_ebv1) / (ebv_1 - ebv_0) : prob_ebv1;
-  return prob;
-}
-
-template <PhzDataModel::RegionResultType GridType>
 std::pair<double, std::vector<posterior_cell>>
 GridSampler<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const {
   auto&                       grid = results.get<GridType>();
@@ -129,23 +117,24 @@ GridSampler<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::RegionR
   return std::make_pair(total_cell_vol, cells_list);
 }
 
-template <typename... Axes>
-static std::unique_ptr<MathUtils::InterpN<Axes...>>
-createInterpolatorFromGrid(const GridContainer::GridContainer<std::vector<double>, Axes...>& grid) {
-  auto knots        = MathUtils::ExtractKnots<Euclid::_make_index_sequence<sizeof...(Axes)>>::extract(grid.getAxesTuple());
-  auto values_shape = MathUtils::ExtractKnots<Euclid::_make_index_sequence<sizeof...(Axes)>>::extractShape(grid.getAxesTuple());
+static std::unique_ptr<MathUtils::InterpN<double, double, int, int>>
+createInterpolatorFromGrid(const PhzDataModel::DoubleGrid& grid, const std::vector<double>& z_axis,
+                           const std::vector<double>& ebv_axis, const std::vector<int>& red_axis,
+                           const std::vector<int>& sed_axis) {
+  auto                     knots = std::make_tuple(z_axis, ebv_axis, red_axis, sed_axis);
+  std::vector<size_t>      values_shape{sed_axis.size(), red_axis.size(), ebv_axis.size(), z_axis.size()};
   NdArray::NdArray<double> values(values_shape, grid.begin(), grid.end());
-  return Euclid::make_unique<MathUtils::InterpN<Axes...>>(std::move(knots), std::move(values), true);
+  return Euclid::make_unique<MathUtils::InterpN<double, double, int, int>>(std::move(knots), std::move(values), true);
 }
 
-template <typename... Axes>
-std::unique_ptr<MathUtils::NdSampler<Axes...>>
-createSamplerFromGrid(const GridContainer::GridContainer<std::vector<double>, Axes...>& grid) {
-  auto knots     = MathUtils::ExtractKnots<Euclid::_make_index_sequence<sizeof...(Axes)>>::extract(grid.getAxesTuple());
-  auto pdf_shape = MathUtils::ExtractKnots<Euclid::_make_index_sequence<sizeof...(Axes)>>::extractShape(grid.getAxesTuple());
+std::unique_ptr<MathUtils::NdSampler<double, double, int, int>>
+createSamplerFromGrid(const PhzDataModel::DoubleGrid& grid, const std::vector<double>& z_axis, const std::vector<double>& ebv_axis,
+                      const std::vector<int>& red_axis, const std::vector<int>& sed_axis) {
+  auto                     knots = std::make_tuple(z_axis, ebv_axis, red_axis, sed_axis);
+  std::vector<size_t>      pdf_shape{sed_axis.size(), red_axis.size(), ebv_axis.size(), z_axis.size()};
   NdArray::NdArray<double> pdf(pdf_shape, grid.begin(), grid.end());
   std::transform(pdf.begin(), pdf.end(), pdf.begin(), [](double v) { return std::exp(v); });
-  return Euclid::make_unique<MathUtils::NdSampler<Axes...>>(std::move(knots), std::move(pdf));
+  return Euclid::make_unique<MathUtils::NdSampler<double, double, int, int>>(std::move(knots), std::move(pdf));
 }
 
 template <PhzDataModel::RegionResultType GridType>
@@ -153,14 +142,14 @@ std::vector<GridSample>
 GridSampler<GridType>::drawSample(std::size_t sample_number, const std::map<std::string, double>& region_volume_map,
                                   const std::map<std::string, PhzDataModel::RegionResults>& results, std::mt19937& gen) {
   // Prepare a sampler per region
-  using SamplerPtrType = std::unique_ptr<MathUtils::NdSampler<double, double, XYDataset::QualifiedName, XYDataset::QualifiedName>>;
-  using InterpolationPtrType =
-      std::unique_ptr<MathUtils::InterpN<double, double, XYDataset::QualifiedName, XYDataset::QualifiedName>>;
+  using SamplerPtrType       = std::unique_ptr<MathUtils::NdSampler<double, double, int, int>>;
+  using InterpolationPtrType = std::unique_ptr<MathUtils::InterpN<double, double, int, int>>;
 
-  std::vector<SamplerPtrType>       samplers;
-  std::vector<InterpolationPtrType> scaling_grid;
-  std::vector<std::string>          region_names;
-  std::vector<double>               r_cumulative;
+  std::vector<SamplerPtrType>                        samplers;
+  std::vector<InterpolationPtrType>                  scaling_grid;
+  std::vector<std::string>                           region_names;
+  std::vector<double>                                r_cumulative;
+  std::vector<std::vector<XYDataset::QualifiedName>> sed_names, red_names;
   samplers.reserve(results.size());
   scaling_grid.reserve(results.size());
   region_names.reserve(results.size());
@@ -170,8 +159,29 @@ GridSampler<GridType>::drawSample(std::size_t sample_number, const std::map<std:
   for (auto& pair : results) {
     auto& grid       = pair.second.get<GridType>();
     auto& scale_grid = pair.second.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
-    samplers.emplace_back(std::move(createSamplerFromGrid(grid)));
-    scaling_grid.emplace_back(std::move(createInterpolatorFromGrid(scale_grid)));
+
+    // Get the axes of the grid
+    // Note that the qualified name is handled as an integer (its index) instead
+    auto&               red_axis = grid.template getAxis<2>();
+    auto&               sed_axis = grid.template getAxis<3>();
+    std::vector<double> z_axis(grid.template getAxis<0>().begin(), grid.template getAxis<0>().end());
+    std::vector<double> ebv_axis(grid.template getAxis<1>().begin(), grid.template getAxis<1>().end());
+    std::vector<int>    red_idxs(red_axis.size());
+    std::vector<int>    sed_idxs(sed_axis.size());
+
+    std::iota(red_idxs.begin(), red_idxs.end(), 0);
+    std::iota(sed_idxs.begin(), sed_idxs.end(), 0);
+
+    sed_names.emplace_back(sed_axis.begin(), sed_axis.end());
+    red_names.emplace_back(red_axis.begin(), red_axis.end());
+
+    // Build sampler
+    samplers.emplace_back(std::move(createSamplerFromGrid(grid, z_axis, ebv_axis, red_idxs, sed_idxs)));
+
+    // Build scale interpolator
+    scaling_grid.emplace_back(std::move(createInterpolatorFromGrid(scale_grid, z_axis, ebv_axis, red_idxs, sed_idxs)));
+
+    // Information about the grid
     region_names.emplace_back(pair.first);
     total_volume += region_volume_map.at(pair.first);
     r_cumulative.emplace_back(total_volume);
@@ -196,20 +206,20 @@ GridSampler<GridType>::drawSample(std::size_t sample_number, const std::map<std:
     if (ndraws == 0)
       continue;
 
-    std::vector<std::tuple<double, double, XYDataset::QualifiedName, XYDataset::QualifiedName>> output(
-        ndraws, std::make_tuple(0, 0, DefaultQualifiedName, DefaultQualifiedName));
-
     // Use the sampler for that region for all except alpha
-    samplers[region_index]->draw(ndraws, gen, output);
+    auto output = samplers[region_index]->draw(ndraws, gen);
 
     for (auto& d : output) {
-      auto& s        = sample[i++];
+      auto& s = sample[i++];
+      int   red_idx, sed_idx;
       s.region_index = region_index;
 
-      std::tie(s.z, s.ebv, s.red_curve, s.sed) = output[0];
+      std::tie(s.z, s.ebv, red_idx, sed_idx) = d;
+      s.red_curve                            = red_names[region_index][red_idx];
+      s.sed                                  = sed_names[region_index][sed_idx];
 
       // Compute alpha from its grid
-      s.alpha = (*scaling_grid[s.region_index])(s.z, s.ebv, s.red_curve, s.sed);
+      s.alpha = (*scaling_grid[s.region_index])(s.z, s.ebv, red_idx, sed_idx);
     }
   }
 
