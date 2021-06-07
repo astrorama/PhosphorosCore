@@ -139,7 +139,8 @@ createInterpolatorFromGrid(const GridContainer::GridContainer<std::vector<double
 }
 
 template <typename... Axes>
-std::unique_ptr<MathUtils::NdSampler<Axes...>> createSamplerFromGrid(const GridContainer::GridContainer<std::vector<double>, Axes...>& grid) {
+std::unique_ptr<MathUtils::NdSampler<Axes...>>
+createSamplerFromGrid(const GridContainer::GridContainer<std::vector<double>, Axes...>& grid) {
   auto knots     = MathUtils::ExtractKnots<Euclid::_make_index_sequence<sizeof...(Axes)>>::extract(grid.getAxesTuple());
   auto pdf_shape = MathUtils::ExtractKnots<Euclid::_make_index_sequence<sizeof...(Axes)>>::extractShape(grid.getAxesTuple());
   NdArray::NdArray<double> pdf(pdf_shape, grid.begin(), grid.end());
@@ -180,20 +181,36 @@ GridSampler<GridType>::drawSample(std::size_t sample_number, const std::map<std:
   // Reserve output
   std::vector<GridSample> sample(sample_number);
 
-  // For each sample
-  for (auto& s : sample) {
+  // To make things faster, select regions first, then take all needed samples within region
+  std::vector<size_t> draws_per_region(region_names.size());
+  for (size_t i = 0; i < sample_number; ++i) {
+    double region_draw  = distrib_region(gen);
+    int    region_index = std::lower_bound(r_cumulative.begin(), r_cumulative.end(), region_draw) - r_cumulative.begin();
+    ++draws_per_region[region_index];
+  }
+
+  // Draws samples from regions
+  size_t i = 0;
+  for (size_t region_index = 0; region_index < draws_per_region.size(); ++region_index) {
+    int ndraws = draws_per_region[region_index];
+    if (ndraws == 0)
+      continue;
+
     std::vector<std::tuple<double, double, XYDataset::QualifiedName, XYDataset::QualifiedName>> output(
-        1, std::make_tuple(0, 0, DefaultQualifiedName, DefaultQualifiedName));
-    // Select a region based on its volume
-    double region_draw = distrib_region(gen);
-    s.region_index     = std::lower_bound(r_cumulative.begin(), r_cumulative.end(), region_draw) - r_cumulative.begin();
+        ndraws, std::make_tuple(0, 0, DefaultQualifiedName, DefaultQualifiedName));
 
     // Use the sampler for that region for all except alpha
-    samplers[s.region_index]->draw(1, gen, output);
-    std::tie(s.z, s.ebv, s.red_curve, s.sed) = output[0];
+    samplers[region_index]->draw(ndraws, gen, output);
 
-    // Compute alpha from its grid
-    s.alpha = (*scaling_grid[s.region_index])(s.z, s.ebv, s.red_curve, s.sed);
+    for (auto& d : output) {
+      auto& s        = sample[i++];
+      s.region_index = region_index;
+
+      std::tie(s.z, s.ebv, s.red_curve, s.sed) = output[0];
+
+      // Compute alpha from its grid
+      s.alpha = (*scaling_grid[s.region_index])(s.z, s.ebv, s.red_curve, s.sed);
+    }
   }
 
   // Done!
