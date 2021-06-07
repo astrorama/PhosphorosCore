@@ -95,9 +95,9 @@ LikelihoodHandler<GridType, Sampler>::LikelihoodHandler(
     std::vector<Euclid::Table::ColumnInfo::info_type> info_list{
         Euclid::Table::ColumnInfo::info_type("OBJECT_ID", typeid(std::string)),
         Euclid::Table::ColumnInfo::info_type("GRID_REGION_INDEX", typeid(int)),
-        Euclid::Table::ColumnInfo::info_type("SED_NAME", typeid(std::string)),
+        Euclid::Table::ColumnInfo::info_type("SED_INDEX", typeid(int)),
         Euclid::Table::ColumnInfo::info_type("REDSHIFT", typeid(float)),
-        Euclid::Table::ColumnInfo::info_type("RED_CURVE", typeid(std::string)),
+        Euclid::Table::ColumnInfo::info_type("RED_CURVE_INDEX", typeid(int)),
         Euclid::Table::ColumnInfo::info_type("EB_V", typeid(float)),
         Euclid::Table::ColumnInfo::info_type("LUMINOSITY", typeid(float))};
 
@@ -192,8 +192,7 @@ LikelihoodHandler<GridType, Sampler>::drawSample(std::string source_id, const st
   std::vector<Table::Row> sampling_row_list{};
   for (auto& s : sample) {
     auto                               sed_qualified = s.sed.qualifiedName();
-    std::vector<Table::Row::cell_type> values{source_id, s.region_index, sed_qualified, s.z, s.red_curve.qualifiedName(),
-                                              s.ebv,     s.alpha};
+    std::vector<Table::Row::cell_type> values{source_id, s.region_index, s.sed_index, s.z, s.red_index, s.ebv, s.alpha};
     for (auto& param : m_param_config) {
       float param_value = float(param.second.at(sed_qualified).first * s.alpha + param.second.at(sed_qualified).second);
       values.push_back(param_value);

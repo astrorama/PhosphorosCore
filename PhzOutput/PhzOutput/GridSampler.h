@@ -23,13 +23,14 @@ static const XYDataset::QualifiedName DefaultQualifiedName({}, "default");
 
 struct GridSample {
   int                      region_index;
+  int                      sed_index;
   XYDataset::QualifiedName sed;
-  XYDataset::QualifiedName red_curve;
+  int                      red_index;
   float                    ebv;
   float                    z;
   float                    alpha;
 
-  GridSample() : region_index(0), sed(DefaultQualifiedName), red_curve(DefaultQualifiedName), ebv(-1.), z(-1.), alpha(-1.) {}
+  GridSample() : region_index(0), sed(DefaultQualifiedName), ebv(-1.), z(-1.), alpha(-1.) {}
 };
 
 /**

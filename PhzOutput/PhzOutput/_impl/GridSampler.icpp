@@ -71,10 +71,10 @@ std::stringstream GridSampler<GridType>::createComment(const PhzDataModel::Sourc
 
 template <PhzDataModel::RegionResultType GridType>
 double GridSampler<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const {
-  auto&                       grid = results.get<GridType>();
-  auto&                       axis = grid.getAxesTuple();
-  double                      total_cell_vol = 0.;
-  size_t                      index_1        = 1;
+  auto&  grid           = results.get<GridType>();
+  auto&  axis           = grid.getAxesTuple();
+  double total_cell_vol = 0.;
+  size_t index_1        = 1;
   for (size_t sed_index = 0; sed_index < std::get<3>(axis).size(); ++sed_index) {
     for (size_t red_index = 0; red_index < std::get<2>(axis).size(); ++red_index) {
       for (size_t ebv_index = 0; ebv_index < std::max(index_1, std::get<1>(axis).size() - 1); ++ebv_index) {
@@ -101,7 +101,6 @@ double GridSampler<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::
             v_11 = exp(grid.at(z_index + 1, ebv_index + 1, red_index, sed_index));
           }
 
-          double v_max = std::max(std::max(v_00, v_10), std::max(v_01, v_11));
           double value = 0.25 * (v_00 + v_10 + v_01 + v_11) * delta_z * delta_e;
 
           total_cell_vol += value;
@@ -206,16 +205,14 @@ GridSampler<GridType>::drawSample(std::size_t sample_number, const std::map<std:
     auto output = samplers[region_index]->draw(ndraws, gen);
 
     for (auto& d : output) {
-      auto& s = sample[i++];
-      int   red_idx, sed_idx;
+      auto& s        = sample[i++];
       s.region_index = region_index;
 
-      std::tie(s.z, s.ebv, red_idx, sed_idx) = d;
-      s.red_curve                            = red_names[region_index][red_idx];
-      s.sed                                  = sed_names[region_index][sed_idx];
+      std::tie(s.z, s.ebv, s.red_index, s.sed_index) = d;
+      s.sed                                          = sed_names[region_index][s.sed_index];
 
       // Compute alpha from its grid
-      s.alpha = (*scaling_grid[s.region_index])(s.z, s.ebv, red_idx, sed_idx);
+      s.alpha = (*scaling_grid[s.region_index])(s.z, s.ebv, s.red_index, s.sed_index);
     }
   }
 
