@@ -215,8 +215,7 @@ void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(const SourceCatalo
     std::map<std::string, double> region_volume{};
 
     for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
-      // FIXME
-      region_volume[pair.first] = m_grid_sampler.computeEnclosingVolumeOfCells(pair.second).first;
+      region_volume[pair.first] = m_grid_sampler.computeEnclosingVolumeOfCells(pair.second);
     }
 
     // Draw the samples

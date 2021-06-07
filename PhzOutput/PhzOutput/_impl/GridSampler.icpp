@@ -70,11 +70,9 @@ std::stringstream GridSampler<GridType>::createComment(const PhzDataModel::Sourc
 }
 
 template <PhzDataModel::RegionResultType GridType>
-std::pair<double, std::vector<posterior_cell>>
-GridSampler<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const {
+double GridSampler<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const {
   auto&                       grid = results.get<GridType>();
   auto&                       axis = grid.getAxesTuple();
-  std::vector<posterior_cell> cells_list{};
   double                      total_cell_vol = 0.;
   size_t                      index_1        = 1;
   for (size_t sed_index = 0; sed_index < std::get<3>(axis).size(); ++sed_index) {
@@ -106,15 +104,13 @@ GridSampler<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::RegionR
           double v_max = std::max(std::max(v_00, v_10), std::max(v_01, v_11));
           double value = 0.25 * (v_00 + v_10 + v_01 + v_11) * delta_z * delta_e;
 
-          auto cell = posterior_cell{sed_index, red_index, ebv_index, z_index, 0, v_max, value};
           total_cell_vol += value;
-          cells_list.push_back(cell);
         }
       }
     }
   }
 
-  return std::make_pair(total_cell_vol, cells_list);
+  return total_cell_vol;
 }
 
 static std::unique_ptr<MathUtils::InterpN<double, double, int, int>>

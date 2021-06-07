@@ -18,30 +18,6 @@
 namespace Euclid {
 namespace PhzOutput {
 
-/**
- * @struct posterior_cell
- *
- * @brief
- * This struct is used to store information about a cell of the grid
- *
- * @details
- * The cell is defined by the 4 index in the 4 dimension of the template space.
- * When a numerical axis (Z or E(B-V)) has more than 1 knot, the cell is defined between 2
- * successive knots and labeled by the lowest index. The cell record also the maximum value
- * of its sampling and the enclosing volume which is the maximum value time the area in the
- * z-E(B-V) plane. When either Z or E(B_V) axis has only one knot the weight is this
- * dimension is set to 1
- **/
-struct posterior_cell {
-  size_t sed_index;
-  size_t red_curve_index;
-  size_t ebv_index;
-  size_t z_index;
-  size_t alpha_index;
-  double max_value;
-  double enclosing_volume;
-};
-
 // Region index, sed, reddening curve, ebv, z, alpha
 static const XYDataset::QualifiedName DefaultQualifiedName({}, "default");
 
@@ -89,16 +65,16 @@ public:
 
   /**
    * @brief
-   * List the cells of the parameter space of a region and compute the enclosing volume for each ones
+   * Compute the enclosing volume for the region result
    *
    * @param results
    * A SourceResults object containing the REGION_RESULTS_MAP from which
    * the "GridType" will be extracted
    *
    * @return
-   * a pair containing the sum of the enclosing volumes and the list of cells
+   * he sum of the enclosing volume
    **/
-  std::pair<double, std::vector<posterior_cell>> computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const;
+  double computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const;
 
   std::vector<GridSample> drawSample(std::size_t sample_number, const std::map<std::string, double>& region_volume,
                                      const std::map<std::string, PhzDataModel::RegionResults>& results, std::mt19937& gen);
