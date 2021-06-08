@@ -33,10 +33,10 @@ std::stringstream GridSamplerScale<GridType>::createComment(const PhzDataModel::
 
 template <PhzDataModel::RegionResultType GridType>
 double GridSamplerScale<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const {
-  auto&                       grid = results.get<GridType>();
-  auto&                       axis = grid.getAxesTuple();
-  double                      total_cell_vol = 0.;
-  size_t                      index_1        = 1;
+  auto&  grid           = results.get<GridType>();
+  auto&  axis           = grid.getAxesTuple();
+  double total_cell_vol = 0.;
+  size_t index_1        = 1;
 
   size_t delta_z_ind   = std::get<0>(axis).size() > 1 ? 1 : 0;
   size_t delta_ebv_ind = std::get<1>(axis).size() > 1 ? 1 : 0;
@@ -89,88 +89,125 @@ template <PhzDataModel::RegionResultType GridType>
 double GridSamplerScale<GridType>::getLuminosity(double alpha, double n_sigma, size_t sample_number, double index) const {
   return alpha + n_sigma * ((2.0 * index) / (sample_number - 1) - 1);
 }
-/*
-template <PhzDataModel::RegionResultType GridType>
-std::tuple<double, double, double> GridSamplerScale<GridType>::drawPointInCell(const posterior_cell&              cell,
-                                                                               const PhzDataModel::RegionResults& results,
-                                                                               std::mt19937&                      gen) const {
-  auto& scaling_grid       = results.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
-  auto& sigma_scaling_grid = results.get<PhzDataModel::RegionResultType::SIGMA_SCALE_FACTOR_GRID>();
-  auto& grid               = results.get<GridType>();
-  auto& axis               = grid.getAxesTuple();
 
-  size_t delta_z   = std::get<0>(axis).size() > 1 ? 1 : 0;
-  size_t delta_ebv = std::get<1>(axis).size() > 1 ? 1 : 0;
+std::unique_ptr<MathUtils::NdSampler<double, double, double, int, int>>
+createSamplerFromGrid(const PhzDataModel::DoubleListGrid& grid, const std::vector<double>& scale_axis,
+                      const std::vector<double>& z_axis, const std::vector<double>& ebv_axis, const std::vector<int>& red_axis,
+                      const std::vector<int>& sed_axis) {
+  auto                     knots = std::make_tuple(scale_axis, z_axis, ebv_axis, red_axis, sed_axis);
+  std::vector<size_t>      pdf_shape{sed_axis.size(), red_axis.size(), ebv_axis.size(), z_axis.size(), scale_axis.size()};
+  NdArray::NdArray<double> pdf(pdf_shape);
 
-  double z_0 = std::get<0>(axis)[cell.z_index];
-  double z_1 = std::get<0>(axis)[cell.z_index + delta_z];
+  std::size_t pdf_i = 0;
+  for (auto& cell : grid) {
+    assert(cell.size() == scale_axis.size());
+    for (auto& cv : cell) {
+      auto coords    = NdArray::unravel_index(pdf_i++, pdf_shape);
+      pdf.at(coords) = std::exp(cv);
+    }
+  }
 
-  double ebv_0 = std::get<1>(axis)[cell.ebv_index];
-  double ebv_1 = std::get<1>(axis)[cell.ebv_index + delta_ebv];
-
-  double alpha_0 = double(cell.alpha_index);
-  double alpha_1 = alpha_0 + 1.0;
-
-  size_t n_sample_alpha = grid.at(0, 0, 0, 0).size();
-
-  double p_000 = exp(grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index]);
-  double p_100 = exp(grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index]);
-  double p_010 = exp(grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index]);
-  double p_110 =
-      exp(grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index]);
-  double p_001 = exp(grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1]);
-  double p_101 = exp(grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1]);
-  double p_011 = exp(grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1]);
-  double p_111 =
-      exp(grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index)[cell.alpha_index + 1]);
-
-  std::vector<double> axis_z     = {z_0, z_1};
-  std::vector<double> axis_ebv   = {ebv_0, ebv_1};
-  std::vector<double> axis_alpha = {alpha_0, alpha_1};
-
-  NdArray::NdArray<double>                     pdf{{2, 2, 2}, {p_000, p_001, p_010, p_011, p_100, p_101, p_110, p_111}};
-  MathUtils::NdSampler<double, double, double> dist{{axis_z, axis_ebv, axis_alpha}, pdf};
-  auto                                         sample        = dist.draw(1, gen);
-  double                                       z_val         = std::get<0>(sample[0]);
-  double                                       ebv_val       = std::get<1>(sample[0]);
-  double                                       alpha_ind_val = std::get<2>(sample[0]);
-
-  std::vector<double> lum_border_values{
-      getLuminosity(scaling_grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index),
-                    sigma_scaling_grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index), n_sample_alpha,
-                    cell.alpha_index),
-      getLuminosity(scaling_grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index),
-                    sigma_scaling_grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index),
-                    n_sample_alpha, cell.alpha_index),
-      getLuminosity(scaling_grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
-                    sigma_scaling_grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
-                    n_sample_alpha, cell.alpha_index),
-      getLuminosity(scaling_grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
-                    sigma_scaling_grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
-                    n_sample_alpha, cell.alpha_index),
-      getLuminosity(scaling_grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index),
-                    sigma_scaling_grid.at(cell.z_index, cell.ebv_index, cell.red_curve_index, cell.sed_index), n_sample_alpha,
-                    cell.alpha_index + 1),
-      getLuminosity(scaling_grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index),
-                    sigma_scaling_grid.at(cell.z_index + delta_z, cell.ebv_index, cell.red_curve_index, cell.sed_index),
-                    n_sample_alpha, cell.alpha_index + 1),
-      getLuminosity(scaling_grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
-                    sigma_scaling_grid.at(cell.z_index, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
-                    n_sample_alpha, cell.alpha_index + 1),
-      getLuminosity(scaling_grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
-                    sigma_scaling_grid.at(cell.z_index + delta_z, cell.ebv_index + delta_ebv, cell.red_curve_index, cell.sed_index),
-                    n_sample_alpha, cell.alpha_index + 1)};
-
-  double lum = interpolate(z_0, z_1, ebv_0, ebv_1, alpha_0, alpha_1, lum_border_values, z_val, ebv_val, alpha_ind_val);
-  return std::make_tuple(z_val, ebv_val, lum);
+  return Euclid::make_unique<MathUtils::NdSampler<double, double, double, int, int>>(std::move(knots), std::move(pdf));
 }
-*/
+
 template <PhzDataModel::RegionResultType GridType>
 std::vector<GridSample>
-GridSamplerScale<GridType>::drawSample(std::size_t sample_number, const std::map<std::string, double>& region_volume,
+GridSamplerScale<GridType>::drawSample(std::size_t sample_number, const std::map<std::string, double>& region_volume_map,
                                        const std::map<std::string, PhzDataModel::RegionResults>& results, std::mt19937& gen) {
-  assert(false);
-  return {};
+  // Prepare a sampler per region
+  using SamplerPtrType       = std::unique_ptr<MathUtils::NdSampler<double, double, double, int, int>>;
+  using InterpolationPtrType = std::unique_ptr<MathUtils::InterpN<double, double, int, int>>;
+
+  std::vector<SamplerPtrType>                        samplers;
+  std::vector<InterpolationPtrType>                  scaling_grid, scaling_sigma_grid;
+  std::vector<std::string>                           region_names;
+  std::vector<double>                                r_cumulative;
+  std::vector<std::vector<XYDataset::QualifiedName>> sed_names, red_names;
+  std::vector<size_t>                                nsamples_scale;
+  samplers.reserve(results.size());
+  scaling_grid.reserve(results.size());
+  region_names.reserve(results.size());
+  r_cumulative.reserve(results.size());
+  nsamples_scale.reserve(results.size());
+
+  double total_volume = 0.;
+  for (auto& pair : results) {
+    auto& grid             = pair.second.get<GridType>();
+    auto& scale_grid       = pair.second.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
+    auto& sigma_scale_grid = pair.second.get<PhzDataModel::RegionResultType::SIGMA_SCALE_FACTOR_GRID>();
+
+    // Get the axes of the grid
+    // Note that the qualified name is handled as an integer (its index) instead
+    auto&               red_axis = grid.template getAxis<2>();
+    auto&               sed_axis = grid.template getAxis<3>();
+    std::vector<double> z_axis(grid.template getAxis<0>().begin(), grid.template getAxis<0>().end());
+    std::vector<double> ebv_axis(grid.template getAxis<1>().begin(), grid.template getAxis<1>().end());
+    std::vector<int>    red_idxs(red_axis.size());
+    std::vector<int>    sed_idxs(sed_axis.size());
+    std::vector<double> scale_axis(grid.begin()->size());
+
+    std::iota(red_idxs.begin(), red_idxs.end(), 0);
+    std::iota(sed_idxs.begin(), sed_idxs.end(), 0);
+    std::iota(scale_axis.begin(), scale_axis.end(), 0.);
+
+    sed_names.emplace_back(sed_axis.begin(), sed_axis.end());
+    red_names.emplace_back(red_axis.begin(), red_axis.end());
+    nsamples_scale.emplace_back(scale_axis.size());
+
+    // Build sampler
+    samplers.emplace_back(std::move(createSamplerFromGrid(grid, scale_axis, z_axis, ebv_axis, red_idxs, sed_idxs)));
+
+    // Build scale interpolator
+    scaling_grid.emplace_back(std::move(createInterpolatorFromGrid(scale_grid, z_axis, ebv_axis, red_idxs, sed_idxs)));
+    scaling_sigma_grid.emplace_back(std::move(createInterpolatorFromGrid(sigma_scale_grid, z_axis, ebv_axis, red_idxs, sed_idxs)));
+
+    // Information about the grid
+    region_names.emplace_back(pair.first);
+    total_volume += region_volume_map.at(pair.first);
+    r_cumulative.emplace_back(total_volume);
+  }
+  std::uniform_real_distribution<> distrib_region(0, total_volume);
+
+  // Reserve output
+  std::vector<GridSample> sample(sample_number);
+
+  // To make things faster, select regions first, then take all needed samples within region
+  std::vector<size_t> draws_per_region(region_names.size());
+  for (size_t i = 0; i < sample_number; ++i) {
+    double region_draw  = distrib_region(gen);
+    int    region_index = std::lower_bound(r_cumulative.begin(), r_cumulative.end(), region_draw) - r_cumulative.begin();
+    ++draws_per_region[region_index];
+  }
+
+  // Draws samples from regions
+  size_t i = 0;
+  for (size_t region_index = 0; region_index < draws_per_region.size(); ++region_index) {
+    int ndraws = draws_per_region[region_index];
+    if (ndraws == 0)
+      continue;
+
+    // Use the sampler for that region for all except alpha
+    auto output = samplers[region_index]->draw(ndraws, gen);
+
+    for (auto& d : output) {
+      auto& s        = sample[i++];
+      s.region_index = region_index;
+
+      std::tie(s.alpha, s.z, s.ebv, s.red_index, s.sed_index) = d;
+      s.sed                                                   = sed_names[region_index][s.sed_index];
+
+      // Alpha contains an interpolated, normalized, value
+      // The scale mean and sigma grids need to be used to get the actual value
+      double scale_mean  = (*scaling_grid[s.region_index])(s.z, s.ebv, s.red_index, s.sed_index);
+      double scale_sigma = (*scaling_sigma_grid[s.region_index])(s.z, s.ebv, s.red_index, s.sed_index);
+
+      // Transform the normalized sample to a "true" luminosity sample
+      s.alpha = getLuminosity(scale_mean, scale_sigma, nsamples_scale[s.region_index], s.alpha);
+    }
+  }
+
+  // Done!
+  return sample;
 }
 
 }  // end of namespace PhzOutput
