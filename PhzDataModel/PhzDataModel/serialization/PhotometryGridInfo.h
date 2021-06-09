@@ -9,12 +9,14 @@
 
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/string.hpp>
+#include "ElementsKernel/Exception.h"
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/split_free.hpp>
 #include "GridContainer/serialization/GridContainer.h"
 #include "GridContainer/serialization/tuple.h"
 #include "PhzDataModel/serialization/QualifiedName.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
+#include "XYDataset/QualifiedName.h"
 
 namespace boost {
 namespace serialization {
@@ -33,6 +35,10 @@ void save(Archive& ar, const Euclid::PhzDataModel::PhotometryGridInfo& t, const 
   }
   // Store the IGM type
   ar << t.igm_method;
+
+  // Store the Luminosity Filter
+  ar << t.luminosity_filter_name.qualifiedName();
+
   // Store the names of the filters as strings
   std::vector<std::string> filter_names_as_strings {};
   for (auto& name : t.filter_names) {
@@ -54,6 +60,11 @@ void load(Archive& ar, Euclid::PhzDataModel::PhotometryGridInfo& t, const unsign
   }
   // Read the IGM type
   ar >> t.igm_method;
+
+  // Read Luminosity filter
+  std::string lum_filter;
+  ar >> lum_filter;
+  t.luminosity_filter_name = Euclid::XYDataset::QualifiedName(lum_filter);
   // Read the photometry filters
   std::vector<std::string> names_as_strings;
   ar >> names_as_strings;

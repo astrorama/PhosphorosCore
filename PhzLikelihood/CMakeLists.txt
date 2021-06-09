@@ -1,6 +1,6 @@
 elements_subdir(PhzLikelihood)
 
-elements_depends_on_subdirs(PhzDataModel PhzOutput PhzLuminosity PhzUtils)
+elements_depends_on_subdirs(MathUtils PhzDataModel PhzModeling PhzOutput PhzLuminosity PhzUtils)
 elements_depends_on_subdirs(ElementsKernel)
 
 find_package(GMock)
@@ -14,7 +14,7 @@ endif()
 
 #===== Libraries ===============================================================
 elements_add_library(PhzLikelihood src/lib/*.cpp
-                     LINK_LIBRARIES PhzDataModel PhzOutput PhzLuminosity ElementsKernel PhzUtils
+                     LINK_LIBRARIES PhzDataModel MathUtils PhzModeling PhzOutput PhzLuminosity ElementsKernel PhzUtils
                      PUBLIC_HEADERS PhzLikelihood)
 
 #===== Tests using GMock =======================================================
@@ -23,6 +23,7 @@ elements_add_unit_test(ScaleFactorFunctor_test tests/src/ScaleFactorFunctor_test
                      LINK_LIBRARIES GMock PhzLikelihood
                      INCLUDE_DIRS GMock
                      TYPE Boost)
+
 elements_add_unit_test(ChiSquareLikelihoodLogarithm_test tests/src/ChiSquareLikelihoodLogarithm_test.cpp 
                      LINK_LIBRARIES GMock PhzLikelihood
                      INCLUDE_DIRS GMock
@@ -62,7 +63,11 @@ elements_add_unit_test(AxisWeightPrior_test tests/src/AxisWeightPrior_test.cpp
 elements_add_unit_test(GenericGridPrior_test tests/src/GenericGridPrior_test.cpp 
                      LINK_LIBRARIES PhzLikelihood
                      TYPE Boost)
-endif(GMOCK_FOUND)     
+endif(GMOCK_FOUND)  
+
+elements_add_unit_test(SigmaScaleFactorFunctor_test tests/src/SigmaScaleFactorFunctor_test.cpp 
+                     LINK_LIBRARIES PhzLikelihood
+                     TYPE Boost)   
                 
 elements_add_unit_test(FixRedshiftProcessModelGridFunctor_test tests/src/FixRedshiftProcessModelGridFunctor_test.cpp 
                      LINK_LIBRARIES PhzLikelihood

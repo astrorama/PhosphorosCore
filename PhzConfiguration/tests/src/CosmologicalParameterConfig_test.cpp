@@ -80,6 +80,26 @@ BOOST_FIXTURE_TEST_CASE(Values_test, ConfigManager_fixture) {
   BOOST_CHECK_EQUAL(result.getOmegaM(), omega_m);
 }
 
+BOOST_FIXTURE_TEST_CASE(Missing_test, ConfigManager_fixture) {
+  // Given
+  config_manager.registerConfiguration<CosmologicalParameterConfig>();
+  config_manager.closeRegistration();
+  std::map<std::string, po::variable_value> options_map {};
+
+  double omega_m = 0.3089;
+  double omega_lambda = 0.6911;
+  double h_0 = 67.74;
+
+  // When
+  config_manager.initialize(options_map);
+  auto& result = config_manager.getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
+
+  // Then
+  BOOST_CHECK_EQUAL(result.getHubbleConstant(), h_0);
+  BOOST_CHECK_EQUAL(result.getOmegaLambda(), omega_lambda);
+  BOOST_CHECK_EQUAL(result.getOmegaM(), omega_m);
+}
+
 
 
 //-----------------------------------------------------------------------------

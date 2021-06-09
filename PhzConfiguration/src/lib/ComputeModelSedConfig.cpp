@@ -28,6 +28,9 @@
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/ComputeModelSedConfig.h"
+#include "PhzConfiguration/RedshiftFunctorConfig.h"
+#include "PhzConfiguration/FilterProviderConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
 
 namespace po = boost::program_options;
 using namespace Euclid::PhzConfiguration;
@@ -43,7 +46,10 @@ static const std::string Z_VALUE {"z-value"};
 ComputeModelSedConfig::ComputeModelSedConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<SedProviderConfig>();
   declareDependency<ReddeningProviderConfig>();
+  declareDependency<FilterProviderConfig>();
   declareDependency<IgmConfig>();
+  declareDependency<RedshiftFunctorConfig>();
+  declareDependency<ModelNormalizationConfig>();
 }
 
 auto ComputeModelSedConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {

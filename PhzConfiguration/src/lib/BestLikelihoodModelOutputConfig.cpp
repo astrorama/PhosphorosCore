@@ -26,6 +26,7 @@
 #include <PhzOutput/PhzColumnHandlers/BestModel.h>
 #include "PhzConfiguration/BestLikelihoodModelOutputConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
+#include "PhzConfiguration/PhysicalParametersConfig.h"
 
 namespace po = boost::program_options;
 
@@ -35,6 +36,7 @@ namespace PhzConfiguration {
 static const std::string CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG {"create-output-best-likelihood-model"};
 
 BestLikelihoodModelOutputConfig::BestLikelihoodModelOutputConfig(long manager_id) : Configuration(manager_id) {
+  declareDependency<PhysicalParametersConfig>();
   declareDependency<OutputCatalogConfig>();
 }
 
@@ -59,6 +61,12 @@ void BestLikelihoodModelOutputConfig::initialize(const UserValues& args) {
     getDependency<OutputCatalogConfig>().addColumnHandler(
         Euclid::make_unique<PhzOutput::ColumnHandlers::BestModel>(PhzDataModel::GridType::LIKELIHOOD)
     );
+
+    if (getDependency<PhysicalParametersConfig>().getParamConfig().size()>0) {
+         getDependency<OutputCatalogConfig>().addColumnHandler(
+             std::move(getDependency<PhysicalParametersConfig>().getPosteriorOutputHandler())
+         );
+       }
   }
 }
 

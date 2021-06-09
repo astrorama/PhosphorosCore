@@ -65,6 +65,16 @@ void VolumePrior::operator()(PhzDataModel::RegionResults& results) const {
   for (auto iter = posterior_grid.begin(); iter != posterior_grid.end(); ++iter) {
     *iter += m_precomputed.at(iter.axisValue<PhzDataModel::ModelParameter::Z>());
   }
+
+  if (results.get<PhzDataModel::RegionResultType::SAMPLE_SCALE_FACTOR>()) {
+      auto& posterior_sampled_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID>();
+      for (auto iter = posterior_sampled_grid.begin(); iter != posterior_sampled_grid.end(); ++iter) {
+        double correction = m_precomputed.at(iter.axisValue<PhzDataModel::ModelParameter::Z>());
+        for (auto sample_iter = (*iter).begin(); sample_iter != (*iter).end(); ++sample_iter) {
+          *sample_iter += correction;
+        }
+      }
+  }
 }
 
 } // PhzLikelihood namespace

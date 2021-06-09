@@ -1,286 +1,224 @@
-/** 
+/**
  * @file GridSampler.icpp
  * @date 18/08/2020
  * @author DubathF
  **/
 
-#include <vector>
-#include <random>
-#include <CCfits/CCfits>
-#include <algorithm>    // std::max
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "GridContainer/serialize.h"
-#include "PhzUtils/FileUtils.h"
+#include "MathUtils/PDF/NdSampler.h"
+#include "MathUtils/PDF/NdSamplerFromGrid.h"
+#include "NdArray/NdArray.h"
+#include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhzModel.h"
+#include "PhzOutput/GridSampler.h"
+#include "PhzUtils/FileUtils.h"
 #include "boost/lexical_cast.hpp"
-
+#include <CCfits/CCfits>
+#include <algorithm>  // std::max
+#include <random>
+#include <vector>
 
 namespace Euclid {
 namespace PhzOutput {
 
-//static Elements::Logging loggerPhzGridSampler = Elements::Logging::getLogger("GridSampler");
+static Elements::Logging loggerPhzGridSampler = Elements::Logging::getLogger("GridSampler");
 
-template<PhzDataModel::RegionResultType GridType>
-GridSampler<GridType>::GridSampler(size_t sample_number)
-  : m_sample_number{sample_number} {}
+template <PhzDataModel::RegionResultType GridType>
+GridSampler<GridType>::GridSampler() {}
 
+template <PhzDataModel::RegionResultType GridType>
+std::stringstream GridSampler<GridType>::createComment(const PhzDataModel::SourceResults& results) {
+  std::stringstream comment{};
+  comment << "MODEL-GRID : {";
+  size_t region_index = 0;
+  for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
 
-template<PhzDataModel::RegionResultType GridType>
-std::stringstream GridSampler<GridType>::createComment(const PhzDataModel::SourceResults& results) const{
-     std::stringstream comment {};
-     comment << "MODEL-GRID : {";
-     size_t region_index = 0;
-     for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
+    // loggerPhzGridSampler.info() << "Build comment for region  "<<pair.first;
 
-        //loggerPhzGridSampler.info() << "Build comment for region  "<<pair.first;
+    comment << "\"" << pair.first << "\": {\"REGION_INDEX\":" << region_index << ",";
+    auto&  grid  = pair.second.get<GridType>();
+    auto&  axis  = grid.getAxesTuple();
+    size_t index = 0;
 
-        comment << "\"" << pair.first << "\": {\"REGION_INDEX\":" << region_index <<",";
-        auto& grid = pair.second.get<GridType>();
-        auto& axis = grid.getAxesTuple();
-        size_t index=0;
+    auto& red_axis = std::get<2>(axis);
+    comment << "\"REDDENING_CURVE\":{";
+    index = 0;
+    for (auto& knot_value : red_axis) {
+      comment << "\"" << index << "\":\"" << knot_value << "\",";
+      ++index;
+    }
+    comment.seekp(-1, comment.cur);
+    comment << "},";
 
-        auto& red_axis = std::get<2>(axis);
-        comment << "\"REDDENING_CURVE\":{";
-        index=0;
-        for ( auto& knot_value : red_axis) {
-          comment << "\""<< index <<"\":\""<< knot_value << "\",";
-          ++index;
+    auto& sed_axis = std::get<3>(axis);
+    comment << "\"SED\":{";
+    index = 0;
+    for (auto& knot_value : sed_axis) {
+      comment << "\"" << index << "\":\"" << knot_value << "\",";
+      ++index;
+    }
+    comment.seekp(-1, comment.cur);
+    comment << "}";
+    comment << "}";
+    ++region_index;
+  }
+  comment << "}";
+
+  return comment;
+}
+
+template <PhzDataModel::RegionResultType GridType>
+double GridSampler<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const {
+  auto&  grid           = results.get<GridType>();
+  auto&  axis           = grid.getAxesTuple();
+  double total_cell_vol = 0.;
+  size_t index_1        = 1;
+  for (size_t sed_index = 0; sed_index < std::get<3>(axis).size(); ++sed_index) {
+    for (size_t red_index = 0; red_index < std::get<2>(axis).size(); ++red_index) {
+      for (size_t ebv_index = 0; ebv_index < std::max(index_1, std::get<1>(axis).size() - 1); ++ebv_index) {
+        for (size_t z_index = 0; z_index < std::max(index_1, std::get<0>(axis).size() - 1); ++z_index) {
+          double delta_z = 1.0;
+          double delta_e = 1.0;
+          double v_00    = exp(grid.at(z_index, ebv_index, red_index, sed_index));
+          double v_10    = v_00;
+          double v_01    = v_00;
+          double v_11    = v_00;
+          if (std::get<0>(axis).size() > 1) {
+            v_10    = exp(grid.at(z_index + 1, ebv_index, red_index, sed_index));
+            v_11    = v_10;
+            delta_z = std::get<0>(axis)[z_index + 1] - std::get<0>(axis)[z_index];
+          }
+
+          if (std::get<1>(axis).size() > 1) {
+            v_01    = exp(grid.at(z_index, ebv_index + 1, red_index, sed_index));
+            v_11    = v_01;
+            delta_e = std::get<1>(axis)[ebv_index + 1] - std::get<1>(axis)[ebv_index];
+          }
+
+          if (std::get<0>(axis).size() > 1 && std::get<1>(axis).size() > 1) {
+            v_11 = exp(grid.at(z_index + 1, ebv_index + 1, red_index, sed_index));
+          }
+
+          double value = 0.25 * (v_00 + v_10 + v_01 + v_11) * delta_z * delta_e;
+
+          total_cell_vol += value;
         }
-        comment.seekp(-1, comment.cur);
-        comment << "},";
-
-        auto& sed_axis =  std::get<3>(axis);
-        comment << "\"SED\":{";
-        index=0;
-        for ( auto& knot_value : sed_axis) {
-          comment << "\""<< index <<"\":\""<< knot_value << "\",";
-          ++index;
-        }
-        comment.seekp(-1, comment.cur);
-        comment << "}";
-        comment << "}";
-        ++region_index;
-     }
-     comment << "}";
-
-     return comment;
-}
-
-
-template<PhzDataModel::RegionResultType GridType>
-double GridSampler<GridType>::interpolateProbability(double z_0,
-                                                           double z_1,
-                                                           double ebv_0,
-                                                           double ebv_1,
-                                                           double p_00,
-                                                           double p_01,
-                                                           double p_10,
-                                                           double p_11,
-                                                           double z_p,
-                                                           double ebv_p) const {
-       // interpolation in z (if needed)
-       double prob_ebv1 = z_0!=z_1 ? p_00 + (z_p - z_0)*(p_10 - p_00)/(z_1 - z_0) : p_00;
-       double prob_ebv2 = z_0!=z_1 ? p_01 + (z_p - z_0)*(p_11 - p_01)/(z_1 - z_0) : p_01;
-
-       // interpolation in ebv (if needed)
-       double prob = ebv_0!=ebv_1 ? prob_ebv1 + (ebv_p - ebv_0)*(prob_ebv2 - prob_ebv1)/(ebv_1 - ebv_0) : prob_ebv1;
-       return prob;
-}
-
-
-template<PhzDataModel::RegionResultType GridType>
-std::pair<size_t, size_t> GridSampler<GridType>::gteIndex(const Euclid::GridContainer::GridAxis<double>& axis_values, double value) const{
-       size_t index_up = 0;
-       while (axis_values[index_up] < value) {
-         ++index_up;
-       }
-       size_t index_down = index_up!=0 ? index_up -1 : 0;
-
-       return std::make_pair(index_down, index_up);
-}
-
-
-
-template<PhzDataModel::RegionResultType GridType>
-size_t GridSampler<GridType>::getRegionForDraw(const std::map<size_t, double>& region_volume, double region_draw) const {
-  size_t region_idx = 0;
-  double already_counted = region_volume.at(region_idx);
-  while (already_counted < region_draw) {
-    ++region_idx;
-    if(region_idx>=region_volume.size()) {
-      region_idx = region_volume.size() -1;
-      break;
-    } else {
-      already_counted += region_volume.at(region_idx);
+      }
     }
   }
 
-  return region_idx;
-
+  return total_cell_vol;
 }
 
-template<PhzDataModel::RegionResultType GridType>
-size_t GridSampler<GridType>::getCellForDraw(const std::vector<posterior_cell>& cells, double cell_draw) const {
-  double current_vol = 0.;
-  size_t cell_index = cells.size()-1;
-  for (size_t cell_idx = 0; cell_idx < cells.size(); ++cell_idx) {
-     current_vol+=cells[cell_idx].enclosing_volume;
-     if (current_vol >= cell_draw) {
-         cell_index = cell_idx;
-         break;
-     }
+static std::unique_ptr<MathUtils::InterpN<double, double, int, int>>
+createInterpolatorFromGrid(const PhzDataModel::DoubleGrid& grid, const std::vector<double>& z_axis,
+                           const std::vector<double>& ebv_axis, const std::vector<int>& red_axis,
+                           const std::vector<int>& sed_axis) {
+  auto                     knots = std::make_tuple(z_axis, ebv_axis, red_axis, sed_axis);
+  std::vector<size_t>      values_shape{sed_axis.size(), red_axis.size(), ebv_axis.size(), z_axis.size()};
+  NdArray::NdArray<double> values(values_shape, grid.begin(), grid.end());
+  return Euclid::make_unique<MathUtils::InterpN<double, double, int, int>>(std::move(knots), std::move(values), true);
+}
+
+std::unique_ptr<MathUtils::NdSampler<double, double, int, int>>
+createSamplerFromGrid(const PhzDataModel::DoubleGrid& grid, const std::vector<double>& z_axis, const std::vector<double>& ebv_axis,
+                      const std::vector<int>& red_axis, const std::vector<int>& sed_axis) {
+  auto                     knots = std::make_tuple(z_axis, ebv_axis, red_axis, sed_axis);
+  std::vector<size_t>      pdf_shape{sed_axis.size(), red_axis.size(), ebv_axis.size(), z_axis.size()};
+  NdArray::NdArray<double> pdf(pdf_shape, grid.begin(), grid.end());
+  std::transform(pdf.begin(), pdf.end(), pdf.begin(), [](double v) { return std::exp(v); });
+  return Euclid::make_unique<MathUtils::NdSampler<double, double, int, int>>(std::move(knots), std::move(pdf));
+}
+
+template <PhzDataModel::RegionResultType GridType>
+std::vector<GridSample>
+GridSampler<GridType>::drawSample(std::size_t sample_number, const std::map<std::string, double>& region_volume_map,
+                                  const std::map<std::string, PhzDataModel::RegionResults>& results, std::mt19937& gen) {
+  // Prepare a sampler per region
+  using SamplerPtrType       = std::unique_ptr<MathUtils::NdSampler<double, double, int, int>>;
+  using InterpolationPtrType = std::unique_ptr<MathUtils::InterpN<double, double, int, int>>;
+
+  std::vector<SamplerPtrType>                        samplers;
+  std::vector<InterpolationPtrType>                  scaling_grid;
+  std::vector<std::string>                           region_names;
+  std::vector<double>                                r_cumulative;
+  std::vector<std::vector<XYDataset::QualifiedName>> sed_names, red_names;
+  samplers.reserve(results.size());
+  scaling_grid.reserve(results.size());
+  region_names.reserve(results.size());
+  r_cumulative.reserve(results.size());
+
+  double total_volume = 0.;
+  for (auto& pair : results) {
+    auto& grid       = pair.second.get<GridType>();
+    auto& scale_grid = pair.second.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
+
+    // Get the axes of the grid
+    // Note that the qualified name is handled as an integer (its index) instead
+    auto&               red_axis = grid.template getAxis<2>();
+    auto&               sed_axis = grid.template getAxis<3>();
+    std::vector<double> z_axis(grid.template getAxis<0>().begin(), grid.template getAxis<0>().end());
+    std::vector<double> ebv_axis(grid.template getAxis<1>().begin(), grid.template getAxis<1>().end());
+    std::vector<int>    red_idxs(red_axis.size());
+    std::vector<int>    sed_idxs(sed_axis.size());
+
+    std::iota(red_idxs.begin(), red_idxs.end(), 0);
+    std::iota(sed_idxs.begin(), sed_idxs.end(), 0);
+
+    sed_names.emplace_back(sed_axis.begin(), sed_axis.end());
+    red_names.emplace_back(red_axis.begin(), red_axis.end());
+
+    // Build sampler
+    samplers.emplace_back(std::move(createSamplerFromGrid(grid, z_axis, ebv_axis, red_idxs, sed_idxs)));
+
+    // Build scale interpolator
+    scaling_grid.emplace_back(std::move(createInterpolatorFromGrid(scale_grid, z_axis, ebv_axis, red_idxs, sed_idxs)));
+
+    // Information about the grid
+    region_names.emplace_back(pair.first);
+    total_volume += region_volume_map.at(pair.first);
+    r_cumulative.emplace_back(total_volume);
+  }
+  std::uniform_real_distribution<> distrib_region(0, total_volume);
+
+  // Reserve output
+  std::vector<GridSample> sample(sample_number);
+
+  // To make things faster, select regions first, then take all needed samples within region
+  std::vector<size_t> draws_per_region(region_names.size());
+  for (size_t i = 0; i < sample_number; ++i) {
+    double region_draw  = distrib_region(gen);
+    int    region_index = std::lower_bound(r_cumulative.begin(), r_cumulative.end(), region_draw) - r_cumulative.begin();
+    ++draws_per_region[region_index];
   }
 
-  return cell_index;
+  // Draws samples from regions
+  size_t i = 0;
+  for (size_t region_index = 0; region_index < draws_per_region.size(); ++region_index) {
+    int ndraws = draws_per_region[region_index];
+    if (ndraws == 0)
+      continue;
 
-}
+    // Use the sampler for that region for all except alpha
+    auto output = samplers[region_index]->draw(ndraws, gen);
 
+    for (auto& d : output) {
+      auto& s        = sample[i++];
+      s.region_index = region_index;
 
-template<PhzDataModel::RegionResultType GridType>
-std::vector<double>  GridSampler<GridType>::computeNumericalAxisWeight(const Euclid::GridContainer::GridAxis<double>& axis_values) const{
-  std::vector<double> weight {};
+      std::tie(s.z, s.ebv, s.red_index, s.sed_index) = d;
+      s.sed                                          = sed_names[region_index][s.sed_index];
 
-  if (axis_values.size() == 1) {
-    weight.push_back(1.0);
-  } else {
-
-    std::vector<double> knots {};
-    knots.push_back((*axis_values.begin())/2.0);
-    for (auto& knot_value : axis_values) {
-      knots.push_back(knot_value/2.0);
-    }
-    knots.push_back(*(--axis_values.end())/2.0);
-
-    auto iter_p = knots.begin();
-    ++iter_p;
-    ++iter_p;
-    auto iter_m =knots.begin();
-    while (iter_p!=knots.end()){
-      weight.push_back(*iter_p - *iter_m);
-      ++iter_p;
-      ++iter_m;
-    }
-  }
-
-  return weight;
-}
-
-
-template<PhzDataModel::RegionResultType GridType>
-double GridSampler<GridType>::computeRegionOverallProbability(const PhzDataModel::RegionResults& results) const{
-    auto& grid = results.get<GridType>();
-    auto& axis = grid.getAxesTuple();
-
-    auto& z_axis = std::get<0>(axis);
-    std::vector<double> z_weight = computeNumericalAxisWeight(z_axis);
-
-    auto& ebv_axis = std::get<1>(axis);
-    std::vector<double> ebv_weight = computeNumericalAxisWeight(ebv_axis);
-
-    double region_prob = 0;
-    for (size_t sed_index = 0; sed_index<std::get<3>(axis).size(); ++sed_index){
-      for (size_t red_index = 0; red_index<std::get<2>(axis).size(); ++red_index){
-        for (size_t ebv_index = 0; ebv_index<ebv_weight.size(); ++ebv_index){
-          for (size_t z_index = 0; z_index<z_weight.size(); ++z_index){
-             region_prob += exp(grid.at(z_index,ebv_index,red_index,sed_index))*z_weight[z_index]*ebv_weight[ebv_index];
-
-           }
-         }
-       }
-    }
-
-    return region_prob;
-}
-
-
-template<PhzDataModel::RegionResultType GridType>
-std::pair<double, std::vector<posterior_cell>> GridSampler<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const{
- auto& grid = results.get<GridType>();
- auto& axis = grid.getAxesTuple();
- std::vector<posterior_cell> cells_list {};
- double total_cell_vol = 0.;
- size_t index_1 = 1;
- for (size_t sed_index = 0; sed_index<std::get<3>(axis).size(); ++sed_index) {
-   for (size_t red_index = 0; red_index<std::get<2>(axis).size(); ++red_index) {
-     for (size_t ebv_index = 0; ebv_index < std::max(index_1, std::get<1>(axis).size()-1); ++ebv_index){
-       for (size_t z_index = 0; z_index < std::max(index_1, std::get<0>(axis).size()-1); ++z_index){
-         double delta_z = 1.0;
-         double delta_e = 1.0;
-         double v_00 = exp(grid.at(z_index, ebv_index, red_index, sed_index));
-         double v_10 = 0.0;
-         if (std::get<0>(axis).size() > 1) {
-           v_10 = exp(grid.at(z_index+1, ebv_index, red_index, sed_index));
-           delta_z = std::get<0>(axis)[z_index+1] - std::get<0>(axis)[z_index];
-         }
-         double v_01 = 0.0;
-         if (std::get<1>(axis).size() > 1) {
-           v_01 = exp(grid.at(z_index, ebv_index + 1, red_index, sed_index));
-           delta_e = std::get<1>(axis)[ebv_index+1] - std::get<1>(axis)[ebv_index];
-         }
-         double v_11 = 0.0;
-         if (std::get<0>(axis).size() > 1 && std::get<1>(axis).size() > 1) {
-           v_11 = exp(grid.at(z_index + 1, ebv_index + 1, red_index, sed_index));
-         }
-
-         double v_max = std::max(std::max(v_00, v_10), std::max(v_01, v_11));
-         double value = v_max*delta_z * delta_e;
-
-         auto cell = posterior_cell{sed_index, red_index, ebv_index, z_index, v_max, value};
-         total_cell_vol += value;
-         cells_list.push_back(cell);
-       }
-     }
+      // Compute alpha from its grid
+      s.alpha = (*scaling_grid[s.region_index])(s.z, s.ebv, s.red_index, s.sed_index);
     }
   }
 
-  return std::make_pair(total_cell_vol, cells_list);
-
+  // Done!
+  return sample;
 }
 
-
-template<PhzDataModel::RegionResultType GridType>
-std::pair<std::pair<double,double>, double> GridSampler<GridType>::drawPointInCell(const posterior_cell& cell, const PhzDataModel::RegionResults& results,  std::mt19937& gen) const{
-    auto& grid = results.get<GridType>();
-    auto& axis = grid.getAxesTuple();
-    auto& z_axis = std::get<0>(axis);
-    auto& ebv_axis = std::get<1>(axis);
-    size_t sed_idx = cell.sed_index;
-    size_t red_idx = cell.red_curve_index;
-
-    float z_0 = z_axis[cell.z_index];
-    float z_1 = z_0;
-    float z_val = z_0;
-    size_t index_z_1 = cell.z_index;
-
-    if (z_axis.size() > 1) {
-      z_1 = z_axis[cell.z_index+1];
-      std::uniform_real_distribution<> distrib_z(z_axis[cell.z_index], z_axis[cell.z_index + 1]);
-      z_val = distrib_z(gen);
-      ++index_z_1;
-    }
-
-    float ebv_0 = ebv_axis[cell.ebv_index];
-    float ebv_1 = ebv_0;
-    float ebv_val = ebv_0;
-    size_t index_ebv_1 = cell.ebv_index;
-    if (ebv_axis.size() > 1) {
-      ebv_1 = ebv_axis[cell.ebv_index+1];
-      std::uniform_real_distribution<> distrib_ebv(ebv_axis[cell.ebv_index], ebv_axis[cell.ebv_index + 1]);
-      ebv_val = distrib_ebv(gen);
-      ++index_ebv_1;
-    }
-
-    double p_00 = exp(grid.at(cell.z_index, cell.ebv_index, red_idx, sed_idx));
-    double p_10 = exp(grid.at(index_z_1, cell.ebv_index, red_idx, sed_idx));
-    double p_01 = exp(grid.at(cell.z_index, index_ebv_1, red_idx, sed_idx));
-    double p_11 = exp(grid.at(index_z_1, index_ebv_1, red_idx, sed_idx));
-    double prob = interpolateProbability(z_0, z_1, ebv_0, ebv_1,
-                                   p_00, p_01, p_10, p_11,
-                                   z_val, ebv_val);
-
-    return std::make_pair(std::make_pair(z_val, ebv_val),prob);
-}
-
-} // end of namespace PhzOutput
-} // end of namespace Euclid
+}  // end of namespace PhzOutput
+}  // end of namespace Euclid

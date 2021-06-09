@@ -34,17 +34,15 @@
 #include "PhzConfiguration/LuminosityPriorConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzConfiguration/LuminosityFunctionConfig.h"
-#include "PhzConfiguration/LuminosityBandConfig.h"
 #include "PhzConfiguration/LuminositySedGroupConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/CosmologicalParameterConfig.h"
 
+#include "PhzConfiguration/ScaleFactorMarginalizationConfig.h"
 
 #include "PhzDataModel/PhotometryGridInfo.h"
-#include "PhzLuminosity/UnreddenedLuminosityCalculator.h"
-#include "PhzLuminosity/ReddenedLuminosityCalculator.h"
 #include "PhzLikelihood/SharedPriorAdapter.h"
 #include "PhzLuminosity/LuminosityPrior.h"
 #include "PhzLuminosity/LuminosityFunctionValidityDomain.h"
@@ -63,7 +61,6 @@ namespace PhzConfiguration {
 
 static const std::string LUMINOSITY_PRIOR {"luminosity-prior"};
 static const std::string LUMINOSITY_PRIOR_EFFECTIVENESS {"luminosity-prior-effectiveness"};
-static const std::string LUMINOSITY_MODEL_GRID_FILE {"luminosity-model-grid-file"};
 
 
 static Elements::Logging logger = Elements::Logging::getLogger("LuminosityPriorConfig");
@@ -73,10 +70,10 @@ LuminosityPriorConfig::LuminosityPriorConfig(long manager_id) : Configuration(ma
   declareDependency<CatalogTypeConfig>();
   declareDependency<PriorConfig>();
   declareDependency<LuminosityFunctionConfig>();
-  declareDependency<LuminosityBandConfig>();
   declareDependency<LuminositySedGroupConfig>();
   declareDependency<PhotometryGridConfig>();
   declareDependency<CosmologicalParameterConfig>();
+  declareDependency<ScaleFactorMarginalizationConfig>();
 
 }
 
@@ -85,117 +82,38 @@ auto LuminosityPriorConfig::getProgramOptions() -> std::map<std::string, OptionD
       {LUMINOSITY_PRIOR.c_str(), po::value<std::string>()->default_value("NO"),
           "If added, turn Luminosity Prior on  (YES/NO, default: NO)"},
     {LUMINOSITY_PRIOR_EFFECTIVENESS.c_str(), po::value<double>()->default_value(1.),
-          "A value in the range [0,1] showing how strongly to apply the prior"},
-      {LUMINOSITY_MODEL_GRID_FILE.c_str(), po::value<std::string>(),
-          "The grid containing the model photometry for the Luminosity computation."}
+          "A value in the range [0,1] showing how strongly to apply the prior"}
     }}};
 }
 
 void LuminosityPriorConfig::preInitialize(const UserValues& args) {
-  if (args.at(LUMINOSITY_PRIOR).as<std::string>() != "NO" 
+  if (args.at(LUMINOSITY_PRIOR).as<std::string>() != "NO"
       && args.at(LUMINOSITY_PRIOR).as<std::string>() != "YES") {
     throw Elements::Exception() << "Invalid " + LUMINOSITY_PRIOR + " value: "
-        << args.at(LUMINOSITY_PRIOR).as<std::string>() << " (allowed values: YES, NO)"; 
+        << args.at(LUMINOSITY_PRIOR).as<std::string>() << " (allowed values: YES, NO)";
   }
   auto eff = args.at(LUMINOSITY_PRIOR_EFFECTIVENESS).as<double>();
   if (eff < 0 || eff > 1) {
     throw Elements::Exception() << "Invalid " + LUMINOSITY_PRIOR_EFFECTIVENESS + " value: "
-        << eff << " (must be in range [0,1])"; 
+        << eff << " (must be in range [0,1])";
   }
   if (args.at(LUMINOSITY_PRIOR).as<std::string>() == "YES") {
-    getDependency<LuminosityBandConfig>().setEnabled(true);
     getDependency<LuminositySedGroupConfig>().setEnabled(true);
   } else {
-    getDependency<LuminosityBandConfig>().setEnabled(false);
     getDependency<LuminositySedGroupConfig>().setEnabled(false);
   }
 }
 
-template <typename IArchive>
-static PhzDataModel::PhotometryGrid readModelGrid(std::istream& in) {
-  IArchive bia{in};
-  // Skip the PhotometryGridInfo object
-  PhzDataModel::PhotometryGridInfo info;
-  bia >> info;
-  return GridContainer::gridImport<PhzDataModel::PhotometryGrid, IArchive>(in);
-}
 
 void LuminosityPriorConfig::initialize(const UserValues& args) {
-  m_is_configured = args.count(LUMINOSITY_PRIOR)==1
-      && args.find(LUMINOSITY_PRIOR)->second.as<std::string>().compare("YES")==0;
+  m_is_configured = args.count(LUMINOSITY_PRIOR) == 1
+      && args.find(LUMINOSITY_PRIOR)->second.as<std::string>().compare("YES") == 0;
 
-  if (m_is_configured){
-
-     auto& intermediate_dir = getDependency<IntermediateDirConfig>().getIntermediateDir();
-     auto& catalog_dir = getDependency<CatalogTypeConfig>().getCatalogType();
-     fs::path filename = intermediate_dir / catalog_dir / "LuminosityModelGrids" / "model_grid.dat";
-     if (args.count(LUMINOSITY_MODEL_GRID_FILE) > 0) {
-       fs::path path = args.find(LUMINOSITY_MODEL_GRID_FILE)->second.as<std::string>();
-       if (path.is_absolute()) {
-         filename = path;
-       } else {
-         filename = intermediate_dir / catalog_dir / "LuminosityModelGrids" / path;
-       }
-     }
-
-     if (!fs::exists(filename)) {
-       logger.error() << "File " << filename.string() << " not found!";
-       throw Elements::Exception() << "Luminosity model grid file (" << LUMINOSITY_MODEL_GRID_FILE
-                                   << " option) does not exist: " << filename.string();
-     }
-
-     // Read grids from the file
-     typedef std::function<PhzDataModel::PhotometryGrid(std::istream&)> GridInputFunction;
-
-     std::ifstream in {filename.string()};
-     auto format = PhzDataModel::guessArchiveFormat(in);
-
-     GridInputFunction input_function;
-     switch (format) {
-       case PhzDataModel::ArchiveFormat::BINARY:
-         logger.info() << "Model grid in binary format";
-         input_function = &readModelGrid<boost::archive::binary_iarchive>;
-         break;
-       case PhzDataModel::ArchiveFormat::TEXT:
-         logger.info() << "Model grid in text format";
-         input_function = &readModelGrid<boost::archive::text_iarchive>;
-         break;
-       default:
-         throw Elements::Exception() << "Unknown model grid format";
-     }
-
-     // Read grids from the file
-     auto grid = input_function(in);
-
-     // get the luminosity calculator
-     m_luminosity_model_grid.reset(new PhzDataModel::PhotometryGrid{std::move(grid)});
-
-     std::unique_ptr<const PhzLuminosity::LuminosityCalculator> luminosityCalculator=nullptr;
+  if (m_is_configured) {
 
      bool inMag = getDependency<LuminosityFunctionConfig>().isExpressedInMagnitude();
 
-     // Precompute the distance information needed for the luminosity computation
-     std::map<double,double> luminosity_distance_map{};
-     std::map<double,double> distance_modulus_map{};
-
-     auto& cosmological_param = getDependency<CosmologicalParameterConfig>().getCosmologicalParam() ;
-     PhysicsUtils::CosmologicalDistances cosmological_distances {};
-     for (auto& pair : getDependency<PhotometryGridConfig>().getPhotometryGridInfo().region_axes_map) {
-       for (auto& z_value : std::get<PhzDataModel::ModelParameter::Z>(pair.second)) {
-        distance_modulus_map[z_value] = cosmological_distances.distanceModulus(z_value, cosmological_param);
-        luminosity_distance_map[z_value] = cosmological_distances.luminousDistance(z_value, cosmological_param);
-       }
-     }
-     distance_modulus_map[0] = cosmological_distances.distanceModulus(0, cosmological_param);
-     luminosity_distance_map[0] = cosmological_distances.luminousDistance(0, cosmological_param);
-
-     // Get a copy of the filter
-     auto filter = getDependency<LuminosityBandConfig>().getLuminosityFilter();
-     if (getDependency<LuminosityFunctionConfig>().isCorrectedForExtinction()){
-       luminosityCalculator.reset(new PhzLuminosity::UnreddenedLuminosityCalculator{filter,m_luminosity_model_grid,luminosity_distance_map,distance_modulus_map,inMag});
-     } else {
-       luminosityCalculator.reset(new PhzLuminosity::ReddenedLuminosityCalculator{filter,m_luminosity_model_grid,luminosity_distance_map,distance_modulus_map,inMag});
-     }
+     double scale_sampling_range_sigma = getDependency<ScaleFactorMarginalizationConfig>().getRangeInSigma();
 
      // Get a copy of the Luminosity Function
      auto& luminosity_function = getDependency<LuminosityFunctionConfig>().getLuminosityFunction();
@@ -203,17 +121,16 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
      std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
                              std::unique_ptr<MathUtils::Function>>> lum_function_vector{};
 
-     for (auto& pair : luminosity_function.getFunctions()){
+     for (auto& pair : luminosity_function.getFunctions()) {
        lum_function_vector.emplace_back(std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
-           std::unique_ptr<MathUtils::Function>>{pair.first,pair.second->clone()});
+           std::unique_ptr<MathUtils::Function>>{pair.first, pair.second->clone()});
      }
 
      double effectiveness = args.at(LUMINOSITY_PRIOR_EFFECTIVENESS).as<double>();
      std::shared_ptr<PhzLuminosity::LuminosityPrior> prior_ptr{new PhzLuminosity::LuminosityPrior{
-       std::move(luminosityCalculator),
        getDependency<LuminositySedGroupConfig>().getLuminositySedGroupManager(),
        PhzLuminosity::LuminosityFunctionSet{std::move(lum_function_vector)},
-       cosmological_param, effectiveness}};
+       inMag, scale_sampling_range_sigma, effectiveness}};
 
      PhzLikelihood::SharedPriorAdapter<PhzLuminosity::LuminosityPrior> prior{prior_ptr};
 
@@ -222,19 +139,19 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
 }
 
 const PhzDataModel::PhotometryGrid & LuminosityPriorConfig::getLuminosityModelGrid() {
-  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
       throw Elements::Exception() << "Call to getLuminosityModelGrid() on a not initialized instance.";
   }
 
-  if (!m_is_configured){
+  if (!m_is_configured) {
     throw Elements::Exception() << "Call to getLuminosityModelGrid() while the luminosity prior was not turned on.";
   }
 
   return *m_luminosity_model_grid;
 }
 
-bool LuminosityPriorConfig::getIsLuminosityPriorEnabled(){
-  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
+bool LuminosityPriorConfig::getIsLuminosityPriorEnabled() {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
         throw Elements::Exception() << "Call to getIsLuminosityPriorEnabled() on a not initialized instance.";
     }
 

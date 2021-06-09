@@ -14,8 +14,13 @@
 #include "PhzModeling/ExtinctionFunctor.h"
 #include "PhzModeling/RedshiftFunctor.h"
 #include "PhzConfiguration/IgmConfig.h"
+#include "PhzConfiguration/SedProviderConfig.h"
+#include "PhzConfiguration/FilterProviderConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/ComputeModelSedConfig.h"
 #include "Configuration/Utils.h"
+#include "PhzConfiguration/RedshiftFunctorConfig.h"
+#include "PhzModeling/NormalizationFunctorFactory.h"
 
 using std::cout;
 using std::map;
@@ -56,8 +61,20 @@ class ComputeModelSed : public Elements::Program {
     }
     auto& igm_function = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
 
+
+    auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
+    auto sun_sed_name = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
+
+
+    auto filter_provider = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
+    auto sun_sed_provider = config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider();
+    auto normalizer_functor =
+        Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, sun_sed_provider, sun_sed_name);
+
+
+    auto redshiftFunctor = config_manager.getConfiguration<RedshiftFunctorConfig>().getRedshiftFunctor();
     ModelDatasetGrid grid {grid_axes, std::move(sed_map), std::move(red_curve_map),
-                               ExtinctionFunctor{}, RedshiftFunctor{}, igm_function};
+                               ExtinctionFunctor{}, redshiftFunctor, igm_function, normalizer_functor};
 
     for (auto iter=grid.begin(); iter!=grid.end(); ++iter) {
       cout << "\nDataset for model with:\n";

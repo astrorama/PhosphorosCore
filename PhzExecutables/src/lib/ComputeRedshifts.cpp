@@ -28,14 +28,15 @@
 
 #include "Configuration/CatalogConfig.h"
 #include "PhzConfiguration/ComputeRedshiftsConfig.h"
-#include "PhzConfiguration/PhotometryGridConfig.h"
-#include "PhzConfiguration/MarginalizationConfig.h"
-#include "PhzConfiguration/LikelihoodGridFuncConfig.h"
-#include "PhzConfiguration/PhotometricCorrectionConfig.h"
 #include "PhzConfiguration/ErrorAdjustmentConfig.h"
-#include "PhzConfiguration/PriorConfig.h"
-#include "PhzConfiguration/PdfOutputConfig.h"
+#include "PhzConfiguration/LikelihoodGridFuncConfig.h"
+#include "PhzConfiguration/MarginalizationConfig.h"
 #include "PhzConfiguration/ModelGridModificationConfig.h"
+#include "PhzConfiguration/PdfOutputConfig.h"
+#include "PhzConfiguration/PhotometricCorrectionConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
+#include "PhzConfiguration/PriorConfig.h"
+#include "PhzConfiguration/ScaleFactorMarginalizationConfig.h"
 
 #include "PhzLikelihood/ParallelCatalogHandler.h"
 
@@ -51,92 +52,83 @@ namespace {
 
 Elements::Logging logger = Elements::Logging::getLogger("PhosphorosComputeRedshifts");
 
-
 class DefaultProgressReporter {
 
 public:
-
   void operator()(size_t step, size_t total) {
-    int percentage_done = 100. * step / total;
-    auto now_time = std::chrono::system_clock::now();
-    auto time_diff = now_time - m_last_time;
+    int  percentage_done = 100. * step / total;
+    auto now_time        = std::chrono::steady_clock::now();
+    auto time_diff       = now_time - m_last_time;
+    auto done_diff       = step - m_last_done;
     if (percentage_done > m_last_progress || std::chrono::duration_cast<std::chrono::seconds>(time_diff).count() >= 5) {
+      float time_ns     = std::chrono::duration_cast<std::chrono::milliseconds>(time_diff).count();
+      float throughput  = done_diff / (time_ns * 1e-3);
+
       m_last_progress = percentage_done;
-      m_last_time = now_time;
-      logger.info() << "Progress: " << percentage_done << " % (" << step << "/" << total << ")";
+      m_last_done     = step;
+      m_last_time     = now_time;
+      logger.info() << "Progress: " << percentage_done << " % (" << step << "/" << total << ") [" << std::fixed
+                    << std::setprecision(2) << throughput << " objects / s]";
     }
   }
 
 private:
-
-  int m_last_progress = -1;
-  std::chrono::time_point<std::chrono::system_clock> m_last_time = std::chrono::system_clock::now();
-
+  int                                                m_last_progress = -1, m_last_done = 0;
+  std::chrono::time_point<std::chrono::steady_clock> m_last_time = std::chrono::steady_clock::now();
 };
 
-} // Anonymous namespace
+}  // Anonymous namespace
 
+ComputeRedshifts::ComputeRedshifts() : m_progress_listener(DefaultProgressReporter{}) {}
 
-ComputeRedshifts::ComputeRedshifts() : m_progress_listener(DefaultProgressReporter{}) {
-}
+ComputeRedshifts::ComputeRedshifts(ProgressListener progress_listener) : m_progress_listener(progress_listener) {}
 
-
-ComputeRedshifts::ComputeRedshifts(ProgressListener progress_listener)
-        : m_progress_listener(progress_listener) {
-}
-
-
-void ComputeRedshifts::run(Configuration::ConfigManager &config_manager) {
+void ComputeRedshifts::run(Configuration::ConfigManager& config_manager) {
   uint threads = PhzUtils::getThreadNumber();
   if (threads > 1) {
     doRun<PhzLikelihood::ParallelCatalogHandler>(config_manager);
-  }
-  else {
+  } else {
     doRun<PhzLikelihood::CatalogHandler>(config_manager);
   }
 }
 
-
 template <typename CatalogHandler>
 void ComputeRedshifts::doRun(ConfigManager& config_manager) {
 
-    auto& model_phot_grid = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
-    auto& marginalization_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
-    auto& likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
-    auto& phot_corr_map = config_manager.getConfiguration<PhotometricCorrectionConfig>().getPhotometricCorrectionMap();
-    auto& adjust_error_param_map = config_manager.getConfiguration<ErrorAdjustmentConfig>().getAdjustErrorParamMap();
-    auto& priors = config_manager.getConfiguration<PriorConfig>().getPriors();
-    auto& model_func_list = config_manager.getConfiguration<ModelGridModificationConfig>().getProcessModelGridFunctors();
-    bool do_normalize_pdf = config_manager.getConfiguration<PdfOutputConfig>().doNormalizePDFs();
+  auto&  model_phot_grid           = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
+  auto&  marginalization_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
+  auto&  likelihood_grid_func      = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
+  auto&  phot_corr_map             = config_manager.getConfiguration<PhotometricCorrectionConfig>().getPhotometricCorrectionMap();
+  auto&  adjust_error_param_map    = config_manager.getConfiguration<ErrorAdjustmentConfig>().getAdjustErrorParamMap();
+  auto&  priors                    = config_manager.getConfiguration<PriorConfig>().getPriors();
+  auto&  model_func_list           = config_manager.getConfiguration<ModelGridModificationConfig>().getProcessModelGridFunctors();
+  bool   do_normalize_pdf          = config_manager.getConfiguration<PdfOutputConfig>().doNormalizePDFs();
+  double sampling_sigma_range      = config_manager.getConfiguration<ScaleFactorMarginalizationConfig>().getSampleNumber();
 
-    CatalogHandler handler {phot_corr_map, adjust_error_param_map, model_phot_grid, likelihood_grid_func,
-                            priors, marginalization_func_list, model_func_list, do_normalize_pdf};
-                                
-    auto table_reader = config_manager.getConfiguration<CatalogConfig>().getTableReader();
-    auto catalog_converter = config_manager.getConfiguration<CatalogConfig>().getTableToCatalogConverter();
+  CatalogHandler handler{phot_corr_map, adjust_error_param_map,    model_phot_grid, likelihood_grid_func, sampling_sigma_range,
+                         priors,        marginalization_func_list, model_func_list, do_normalize_pdf};
 
-    auto out_ptr = config_manager.getConfiguration<ComputeRedshiftsConfig>().getOutputHandler();
+  auto table_reader      = config_manager.getConfiguration<CatalogConfig>().getTableReader();
+  auto catalog_converter = config_manager.getConfiguration<CatalogConfig>().getTableToCatalogConverter();
 
-    std::size_t chunk_size = config_manager.getConfiguration<ComputeRedshiftsConfig>().getInputBufferSize();
-    auto total_size = table_reader->rowsLeft();
-    logger.info() << "Total input catalog size: " << total_size;
-    if (total_size > chunk_size) {
-      logger.info() << "Processing the input catalog in chunks of " << chunk_size << " sources";
-    }
-    int chunk_counter = 0;
-    while (table_reader->hasMoreRows()) {
-      auto catalog = catalog_converter(table_reader->read(chunk_size));
-      handler.handleSources(catalog.begin(), catalog.end(), *out_ptr,
-              [this, total_size, chunk_size, &chunk_counter](size_t step, size_t) {
-                m_progress_listener(chunk_counter*chunk_size+step, total_size);
-              });
-      ++chunk_counter;
-    }
+  auto out_ptr = config_manager.getConfiguration<ComputeRedshiftsConfig>().getOutputHandler();
 
+  std::size_t chunk_size = config_manager.getConfiguration<ComputeRedshiftsConfig>().getInputBufferSize();
+  auto        total_size = table_reader->rowsLeft();
+  logger.info() << "Total input catalog size: " << total_size;
+  if (total_size > chunk_size) {
+    logger.info() << "Processing the input catalog in chunks of " << chunk_size << " sources";
+  }
+  int chunk_counter = 0;
+  while (table_reader->hasMoreRows()) {
+    auto catalog = catalog_converter(table_reader->read(chunk_size));
+    handler.handleSources(catalog.begin(), catalog.end(), *out_ptr,
+                          [this, total_size, chunk_size, &chunk_counter](size_t step, size_t) {
+                            m_progress_listener(chunk_counter * chunk_size + step, total_size);
+                          });
+    ++chunk_counter;
+  }
 }
 
-} // PhzExecutables namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzExecutables
+}  // namespace Euclid

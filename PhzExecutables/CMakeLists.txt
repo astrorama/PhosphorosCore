@@ -20,8 +20,6 @@ elements_add_library(PhzExecutables src/lib/*.cpp
 find_package(Boost REQUIRED COMPONENTS program_options)
 elements_add_executable(PhosphorosComputeModelGrid src/program/ComputeModelGrid.cpp
                      LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling)
-elements_add_executable(PhosphorosComputeLuminosityModelGrid src/program/ComputeLuminosityModelGrid.cpp
-                     LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling)
 elements_add_executable(PhosphorosComputeRedshifts src/program/ComputeRedshifts.cpp
                      LINK_LIBRARIES ElementsKernel Boost PhzExecutables)
 elements_add_executable(PhosphorosComputePhotometricCorrections src/program/ComputePhotometricCorrections.cpp
@@ -36,11 +34,17 @@ elements_add_executable(PhzModelGrid2Fits src/program/PhzModelGrid2Fits.cpp
                      LINK_LIBRARIES ElementsKernel PhzExecutables)
 elements_add_executable(PhosphorosComputeSedWeight src/program/ComputeSedWeight.cpp
                      LINK_LIBRARIES ElementsKernel PhzExecutables)
-                     
+elements_add_executable(PhosphorosBuildPPConfig src/program/BuildPPConfig.cpp
+                     LINK_LIBRARIES ElementsKernel PhzExecutables)                     
                      
                      
 elements_add_unit_test(ComputeSedWeight_test tests/src/ComputeSedWeight_test.cpp 
                      LINK_LIBRARIES PhzExecutables
                      TYPE Boost)
+elements_add_unit_test(BuildPPConfig_test tests/src/BuildPPConfig_test.cpp 
+                     LINK_LIBRARIES PhzExecutables
+                     TYPE Boost)
+                     
+
 
 elements_install_conf_files()

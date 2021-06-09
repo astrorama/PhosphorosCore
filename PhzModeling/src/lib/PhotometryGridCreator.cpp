@@ -18,6 +18,7 @@
 
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/PhotometryGrid.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
 
 #include "PhzModeling/ExtinctionFunctor.h"
 #include "PhzModeling/RedshiftFunctor.h"
@@ -103,9 +104,11 @@ PhotometryGridCreator::PhotometryGridCreator(
               std::shared_ptr<XYDataset::XYDatasetProvider> sed_provider,
               std::shared_ptr<XYDataset::XYDatasetProvider> reddening_curve_provider,
               std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider,
-              IgmAbsorptionFunction igm_absorption_function)
+              IgmAbsorptionFunction igm_absorption_function,
+              NormalizationFunction normalization_function)
       : m_sed_provider {sed_provider}, m_reddening_curve_provider {reddening_curve_provider},
-        m_filter_provider(filter_provider), m_igm_absorption_function {igm_absorption_function} {
+        m_filter_provider(filter_provider), m_igm_absorption_function {igm_absorption_function},
+        m_normalization_function{normalization_function} {
 }
 
 PhotometryGridCreator::~PhotometryGridCreator() {
@@ -151,6 +154,7 @@ private:
 PhzDataModel::PhotometryGrid PhotometryGridCreator::createGrid(
             const PhzDataModel::ModelAxesTuple& parameter_space,
             const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+            const PhysicsUtils::CosmologicalParameters& cosmology,
             ProgressListener progress_listener) {
 
   // Create the maps
@@ -163,13 +167,13 @@ PhzDataModel::PhotometryGrid PhotometryGridCreator::createGrid(
 
   // Define the functions and the algorithms based on the Functors
   ModelDatasetGrid::ReddeningFunction reddening_function {ExtinctionFunctor{}};
-  ModelDatasetGrid::RedshiftFunction redshift_function {RedshiftFunctor{}};
+  ModelDatasetGrid::RedshiftFunction redshift_function {RedshiftFunctor{cosmology}};
   ModelFluxAlgorithm::ApplyFilterFunction apply_filter_function {ApplyFilterFunctor{}};
   ModelFluxAlgorithm flux_model_algo {std::move(apply_filter_function)};
 
   // Create the model grid
   auto model_grid= ModelDatasetGrid(parameter_space, std::move(sed_map),std::move(reddening_curve_map),
-                                    reddening_function, redshift_function, m_igm_absorption_function);
+                                    reddening_function, redshift_function, m_igm_absorption_function, m_normalization_function);
 
   // Create the photometry Grid
   auto photometry_grid = PhzDataModel::PhotometryGrid(parameter_space);

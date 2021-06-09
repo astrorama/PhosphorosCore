@@ -13,6 +13,7 @@
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzModeling/ModelDatasetGrid.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
 
 namespace Euclid {
 
@@ -30,6 +31,7 @@ class SparseGridCreator {
 public:
 
   typedef ModelDatasetGrid::IgmAbsorptionFunction IgmAbsorptionFunction;
+  typedef ModelDatasetGenerator::NormalizationFunction NormalizationFunction;
 
   /**
    * Defines the signature of the functions which can be used as listeners for
@@ -61,7 +63,8 @@ public:
       std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
       std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
       std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
-      IgmAbsorptionFunction igm_absorption_function);
+      IgmAbsorptionFunction igm_absorption_function,
+      NormalizationFunction normalization_function);
   /**
    * @brief destructor.
    */
@@ -91,6 +94,7 @@ public:
   std::map<std::string, PhzDataModel::PhotometryGrid> createGrid(
               const  std::map<std::string, PhzDataModel::ModelAxesTuple>& parameter_space_map,
               const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+              const PhysicsUtils::CosmologicalParameters& cosmology,
               ProgressListener progress_listener=ProgressListener{});
 
 private:
@@ -98,6 +102,7 @@ private:
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
   IgmAbsorptionFunction m_igm_absorption_function;
+  NormalizationFunction m_normalization_function;
 
 };
 

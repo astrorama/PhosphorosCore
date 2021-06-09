@@ -95,9 +95,6 @@ elements_add_unit_test(PriorConfig_test tests/src/PriorConfig_test.cpp
 elements_add_unit_test(LikelihoodGridFuncConfig_test tests/src/LikelihoodGridFuncConfig_test.cpp 
                      LINK_LIBRARIES XYDataset PhzDataModel PhzConfiguration
                      TYPE Boost)
-elements_add_unit_test(LuminosityBandConfig_test tests/src/LuminosityBandConfig_test.cpp 
-                     LINK_LIBRARIES PhzConfiguration
-                     TYPE Boost)
 elements_add_unit_test(LuminosityFunctionConfig_test tests/src/LuminosityFunctionConfig_test.cpp 
                      LINK_LIBRARIES XYDataset MathUtils PhzDataModel PhzLuminosity PhzConfiguration
                      TYPE Boost)
@@ -131,7 +128,27 @@ elements_add_unit_test(GenericGridPriorConfig_test tests/src/GenericGridPriorCon
 elements_add_unit_test(PdfOutputFlagsConfig_test tests/src/PdfOutputFlagsConfig_test.cpp 
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(ModelNormalizationConfig_test tests/src/ModelNormalizationConfig_test.cpp
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)     
 elements_add_unit_test(ComputeReferenceSampleConfig tests/src/BuildReferenceSampleConfig_test.cpp
                      EXECUTABLE PhzConfiguration_ComputeReferenceSampleConfig_test
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(RedshiftFunctorConfig_test tests/src/RedshiftFunctorConfig_test.cpp
+                     EXECUTABLE PhzConfiguration_RedshiftFunctorConfig_test
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)     
+elements_add_unit_test(ScaleFactorMarginalizationConfig_test tests/src/ScaleFactorMarginalizationConfig_test.cpp
+                     EXECUTABLE PhzConfiguration_ScaleFactorMarginalizationConfig_test
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)     
+elements_add_unit_test(BuildPPConfigConfig_test tests/src/BuildPPConfigConfig_test.cpp
+                     EXECUTABLE PhzConfiguration_BuildPPConfigConfig_test
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)   
+elements_add_unit_test(PhysicalParametersConfig_test tests/src/PhysicalParametersConfig_test.cpp
+                     EXECUTABLE PhzConfiguration_PhysicalParametersConfig_test
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)                                  
+                     

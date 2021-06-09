@@ -66,6 +66,23 @@ struct PhotometryGridCreator_Fixture {
   std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_provider;
   std::unique_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider;
 
+  class DummyNormalizing{
+     public:
+
+       virtual ~DummyNormalizing() = default;
+       Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed) const{
+         std::vector<std::pair<double, double>> normalized_values {};
+         for (auto& sed_pair : sed) {
+           normalized_values.push_back(std::make_pair(sed_pair.first,sed_pair.second));
+         }
+          return  Euclid::XYDataset::XYDataset {std::move(normalized_values)};
+       }
+
+     };
+
+  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>  m_norm_function = std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>(DummyNormalizing{});
+
+
   PhotometryGridCreator_Fixture() {
     std::map<Euclid::XYDataset::QualifiedName, Euclid::XYDataset::XYDataset>
         seds{};
@@ -141,6 +158,8 @@ struct PhotometryGridCreator_Fixture {
 
     filter_provider = std::unique_ptr<Euclid::XYDataset::XYDatasetProvider>{
         new DatasetProvider{std::move(filters)}};
+
+
   }
 };
 
@@ -168,7 +187,7 @@ BOOST_FIXTURE_TEST_CASE(Constructor_test, PhotometryGridCreator_Fixture) {
 
   Euclid::PhzModeling::PhotometryGridCreator gridCreator{
       std::move(sed_provider), std::move(reddening_provider),
-      std::move(filter_provider), Euclid::PhzModeling::NoIgmFunctor{}};
+      std::move(filter_provider), Euclid::PhzModeling::NoIgmFunctor{}, m_norm_function};
 }
 
 BOOST_FIXTURE_TEST_CASE(throw_SED_test, PhotometryGridCreator_Fixture) {
@@ -195,8 +214,8 @@ BOOST_FIXTURE_TEST_CASE(throw_SED_test, PhotometryGridCreator_Fixture) {
   BOOST_CHECK_THROW(
       Euclid::PhzModeling::PhotometryGridCreator(
           std::move(sed_provider), std::move(reddening_provider),
-          std::move(filter_provider), Euclid::PhzModeling::NoIgmFunctor{})
-          .createGrid(axes, filter_name_list),
+          std::move(filter_provider), Euclid::PhzModeling::NoIgmFunctor{}, m_norm_function)
+          .createGrid(axes, filter_name_list, {}),
       Elements::Exception);
 }
 
@@ -224,8 +243,8 @@ BOOST_FIXTURE_TEST_CASE(throw_curve_test, PhotometryGridCreator_Fixture) {
   BOOST_CHECK_THROW(
       Euclid::PhzModeling::PhotometryGridCreator(
           std::move(sed_provider), std::move(reddening_provider),
-          std::move(filter_provider), Euclid::PhzModeling::NoIgmFunctor{})
-          .createGrid(axes, filter_name_list),
+          std::move(filter_provider), Euclid::PhzModeling::NoIgmFunctor{}, m_norm_function)
+          .createGrid(axes, filter_name_list, {}),
       Elements::Exception);
 }
 
@@ -253,8 +272,8 @@ BOOST_FIXTURE_TEST_CASE(throw_filter_test, PhotometryGridCreator_Fixture) {
   BOOST_CHECK_THROW(
       Euclid::PhzModeling::PhotometryGridCreator(
           std::move(sed_provider), std::move(reddening_provider),
-          std::move(filter_provider), Euclid::PhzModeling::NoIgmFunctor{})
-          .createGrid(axes, filter_name_list),
+          std::move(filter_provider), Euclid::PhzModeling::NoIgmFunctor{}, m_norm_function)
+          .createGrid(axes, filter_name_list, {}),
       Elements::Exception);
 }
 
@@ -278,10 +297,11 @@ BOOST_FIXTURE_TEST_CASE(execution_test, PhotometryGridCreator_Fixture) {
 
   Euclid::PhzModeling::PhotometryGridCreator gridCreator{
       std::move(sed_provider), std::move(reddening_provider),
-      std::move(filter_provider), Euclid::PhzModeling::NoIgmFunctor{}};
+      std::move(filter_provider), Euclid::PhzModeling::NoIgmFunctor{}, m_norm_function};
   double sum_filter_1 = 0.;
-  auto photometry_grid = gridCreator.createGrid(axes, filter_name_list);
+  auto photometry_grid = gridCreator.createGrid(axes, filter_name_list, {});
   for (auto photometry : photometry_grid) {
+
     auto filter_value = photometry.find("filter/filter_1");
     BOOST_CHECK(filter_value->flux >= 0.0);
     sum_filter_1 += filter_value->flux;

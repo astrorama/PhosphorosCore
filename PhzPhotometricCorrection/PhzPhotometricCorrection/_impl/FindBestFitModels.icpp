@@ -36,10 +36,13 @@ template<typename SourceCalculatorFunctor>
 FindBestFitModels<SourceCalculatorFunctor>::FindBestFitModels(
                                         LikelihoodGridFunction likelihood_func,
                                         const PhzDataModel::AdjustErrorParamMap& adjust_error_param_map,
+                                        double sampling_sigma_range,
                                         std::vector<PriorFunction> priors,
                                         std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> marginalization_func_list,
                                         std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list)
-        : m_adjust_error_param_map(adjust_error_param_map), m_likelihood_func(likelihood_func),
+        : m_adjust_error_param_map(adjust_error_param_map),
+          m_likelihood_func(likelihood_func),
+          m_sampling_sigma_range{sampling_sigma_range},
           m_priors(priors),
           m_marginalization_func_list(marginalization_func_list),
           m_model_funct_list(model_funct_list) {
@@ -110,6 +113,7 @@ std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> FindBestFitM
         m_adjust_error_param_map,
         model_grid_map,
         m_likelihood_func,
+        m_sampling_sigma_range,
         m_priors,
         m_marginalization_func_list,
         m_model_funct_list

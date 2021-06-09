@@ -33,10 +33,15 @@ void SingleGridPhzFunctor::operator()(PhzDataModel::RegionResults& results) cons
   auto& posterior_grid = results.set<ResType::POSTERIOR_LOG_GRID>(likelihood_grid.getAxesTuple());
   std::copy(likelihood_grid.begin(), likelihood_grid.end(), posterior_grid.begin());
 
+  if (results.get<ResType::SAMPLE_SCALE_FACTOR>()) {
+    auto& likelihood_sampled_grid = results.get<ResType::LIKELIHOOD_SCALING_LOG_GRID>();
+    auto& posterior_sampled_grid = results.set<ResType::POSTERIOR_SCALING_LOG_GRID>(likelihood_sampled_grid.getAxesTuple());
+    std::copy(likelihood_sampled_grid.begin(), likelihood_sampled_grid.end(), posterior_sampled_grid.begin());
+  }
+
   // Find the likelihood best fitted model
   auto best_likelihood_fit = std::max_element(likelihood_grid.begin(), likelihood_grid.end());
   results.set<ResType::BEST_LIKELIHOOD_MODEL_ITERATOR>(best_likelihood_fit);
-
   // Apply all the priors to the posterior
   for (auto& prior : m_priors) {
     prior(results);

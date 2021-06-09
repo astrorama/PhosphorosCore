@@ -64,6 +64,7 @@ public:
               // Add the likelihood and scale factor grids, full with zeros
               results.set<ResType::LIKELIHOOD_LOG_GRID>(phot_grid.getAxesTuple());
               results.set<ResType::SCALE_FACTOR_GRID>(phot_grid.getAxesTuple());
+              results.set<ResType::SAMPLE_SCALE_FACTOR>(false);
               
             }
     ));      

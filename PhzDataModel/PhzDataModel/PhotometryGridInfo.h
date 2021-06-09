@@ -30,8 +30,10 @@ class PhotometryGridInfo {
 
   PhotometryGridInfo(const std::map<std::string, PhotometryGrid>& grid_map,
                      std::string arg_igm_method,
+                     XYDataset::QualifiedName arg_luminosity_filter_name,
                      std::vector<XYDataset::QualifiedName> arg_filter_names)
       : igm_method{std::move(arg_igm_method)},
+        luminosity_filter_name{std::move(arg_luminosity_filter_name)},
         filter_names{std::move(arg_filter_names)} {
     for (auto& pair : grid_map) {
       region_axes_map.emplace(pair.first, pair.second.getAxesTuple());
@@ -41,6 +43,8 @@ class PhotometryGridInfo {
   std::map<std::string, PhzDataModel::ModelAxesTuple> region_axes_map{};
 
   std::string igm_method{};
+
+  XYDataset::QualifiedName luminosity_filter_name{"NotSet"};
 
   std::vector<XYDataset::QualifiedName> filter_names{};
 };

@@ -40,6 +40,8 @@ public:
   typedef std::function<XYDataset::XYDataset(const XYDataset::XYDataset& ,
                                              double)> IgmAbsorptionFunction;
 
+  typedef std::function<XYDataset::XYDataset(const XYDataset::XYDataset&)> NormalizationFunction;
+
   /**
    * @brief Constructor
    * @details
@@ -67,6 +69,9 @@ public:
    *
    * @param igm_function
    * A function used to apply the IGM absorption to a redshifted SED
+   *
+   * @param normalization_function
+   * A function used to normalize the SED
    */
   ModelDatasetGenerator(const PhzDataModel::ModelAxesTuple& parameter_space,
                         const std::map<XYDataset::QualifiedName,
@@ -76,7 +81,8 @@ public:
                         size_t current_index,
                         const ReddeningFunction& reddening_function,
                         const RedshiftFunction& redshift_function,
-                        const IgmAbsorptionFunction& igm_function);
+                        const IgmAbsorptionFunction& igm_function,
+                        const NormalizationFunction& normalization_function);
 
   /**
     * @brief Copy constructor.
@@ -249,6 +255,7 @@ private:
   ReddeningFunction m_reddening_function;
   RedshiftFunction m_redshift_function;
   IgmAbsorptionFunction m_igm_function;
+  NormalizationFunction m_normalization_function;
 
 
 }; // End of ModelDatasetGenerator class

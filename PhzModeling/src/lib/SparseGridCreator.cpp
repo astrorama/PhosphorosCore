@@ -40,21 +40,24 @@ SparseGridCreator::SparseGridCreator(
     std::shared_ptr<XYDataset::XYDatasetProvider> sed_provider,
     std::shared_ptr<XYDataset::XYDatasetProvider> reddening_curve_provider,
     std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider,
-    IgmAbsorptionFunction igm_absorption_function) :
+    IgmAbsorptionFunction igm_absorption_function,
+    NormalizationFunction normalization_function) :
     m_sed_provider {sed_provider}, m_reddening_curve_provider {reddening_curve_provider},
-        m_filter_provider(filter_provider), m_igm_absorption_function {igm_absorption_function} {
+        m_filter_provider(filter_provider), m_igm_absorption_function {igm_absorption_function},
+        m_normalization_function{normalization_function}{
 }
 
 std::map<std::string, PhzDataModel::PhotometryGrid> SparseGridCreator::createGrid(
     const std::map<std::string, PhzDataModel::ModelAxesTuple>& parameter_space_map,
     const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+    const PhysicsUtils::CosmologicalParameters& cosmology,
     ProgressListener progress_listener) {
 
   std::map<std::string, PhzDataModel::PhotometryGrid> results { };
 
   PhzModeling::PhotometryGridCreator creator { std::move(m_sed_provider),
       std::move(m_reddening_curve_provider), std::move(m_filter_provider),
-      std::move(m_igm_absorption_function) };
+      std::move(m_igm_absorption_function), std::move(m_normalization_function)};
 
   // Compute the total number of models
   size_t total = 0;
@@ -68,7 +71,7 @@ std::map<std::string, PhzDataModel::PhotometryGrid> SparseGridCreator::createGri
         << pair.first << '\"';
     SparseProgressReporter reporter {progress_listener, already_done, total};
     results.emplace(make_pair(pair.first,
-                creator.createGrid(pair.second, filter_name_list, reporter)));
+                creator.createGrid(pair.second, filter_name_list, cosmology, reporter)));
     already_done += results.at(pair.first).size();
 
   }

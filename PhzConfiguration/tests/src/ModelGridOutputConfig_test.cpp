@@ -74,6 +74,8 @@ struct ModelGridOutputConfig_fixture : public ConfigManager_fixture {
     options_map["igm-absorption-type"].value() = std::string{"MADAU"};
     options_map["catalog-type"].value() = boost::any(std::string{"CatalogType"});
     options_map["intermediate-products-dir"].value() = boost::any(temp_dir.path().string());
+    std::string filter_lum = "filter_1";
+    options_map["normalization-filter"].value() = boost::any(filter_lum);
 
   }
 };
@@ -162,6 +164,10 @@ BOOST_FIXTURE_TEST_CASE(directory_test, ModelGridOutputConfig_fixture) {
   options_map["filter-name"].value() = std::vector<std::string>{};
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter1");
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
+  std::string filter_lum = "filter_1";
+  options_map["normalization-filter"].value() = boost::any(filter_lum);
+  std::string solar_sed = "solar_sed";
+  options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
   config_manager.initialize(options_map);
 
@@ -188,6 +194,10 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunction_test, T, archive_types, Model
   options_map["filter-name"].value() = std::vector<std::string>{};
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter1");
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
+  std::string filter_lum = "filter_1";
+  options_map["normalization-filter"].value() = boost::any(filter_lum);
+  std::string solar_sed = "solar_sed";
+  options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
   // When
   config_manager.initialize(options_map);
@@ -217,6 +227,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunction_test, T, archive_types, Model
   BOOST_CHECK_EQUAL(2, info.filter_names.size());
   BOOST_CHECK_EQUAL("filter1", info.filter_names[0].qualifiedName());
   BOOST_CHECK_EQUAL("filter2", info.filter_names[1].qualifiedName());
+  BOOST_CHECK_EQUAL("filter_1", info.luminosity_filter_name.qualifiedName());
   BOOST_CHECK_EQUAL(4,retrieved_grid.size());
 }
 
@@ -237,6 +248,10 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionRelative_test, T, archive_type
   options_map["filter-name"].value() = std::vector<std::string>{};
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter1");
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
+  std::string filter_lum = "filter_1";
+  options_map["normalization-filter"].value() = boost::any(filter_lum);
+  std::string solar_sed = "solar_sed";
+  options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
   // When
   config_manager.initialize(options_map);
@@ -266,6 +281,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionRelative_test, T, archive_type
   BOOST_CHECK_EQUAL(2, info.filter_names.size());
   BOOST_CHECK_EQUAL("filter1", info.filter_names[0].qualifiedName());
   BOOST_CHECK_EQUAL("filter2", info.filter_names[1].qualifiedName());
+  BOOST_CHECK_EQUAL("filter_1", info.luminosity_filter_name.qualifiedName());
   BOOST_CHECK_EQUAL(4, retrieved_grid.size());
 }
 
@@ -284,6 +300,10 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionDefault_test, T, archive_types
   options_map["output-model-grid-format"].value() = T::getFormatOption();
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter1");
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
+  std::string filter_lum = "filter_1";
+  options_map["normalization-filter"].value() = boost::any(filter_lum);
+  std::string solar_sed = "solar_sed";
+  options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
   // When
   config_manager.initialize(options_map);
@@ -313,7 +333,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionDefault_test, T, archive_types
   BOOST_CHECK_EQUAL(2, info.filter_names.size());
   BOOST_CHECK_EQUAL("filter1", info.filter_names[0].qualifiedName());
   BOOST_CHECK_EQUAL("filter2", info.filter_names[1].qualifiedName());
-  BOOST_CHECK_EQUAL(4,retrieved_grid.size());
+  BOOST_CHECK_EQUAL("filter_1", info.luminosity_filter_name.qualifiedName());
+  BOOST_CHECK_EQUAL(4, retrieved_grid.size());
 }
 
 //-----------------------------------------------------------------------------

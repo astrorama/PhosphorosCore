@@ -46,14 +46,25 @@ enum class RegionResultType {
   BEST_MODEL_ITERATOR,
   /// The grid containing the scale factor for all models
   SCALE_FACTOR_GRID,
+  /// The grid containing the sigma of the scale factor for all models
+  SIGMA_SCALE_FACTOR_GRID,
   /// The grid containing the logarithm of the likelihood for all models
   LIKELIHOOD_LOG_GRID,
   /// The grid containing the logarithm of the posterior for all models
   POSTERIOR_LOG_GRID,
+  /// The grid containing the logarithm of the likelihood for all models x all the scaling
+  LIKELIHOOD_SCALING_LOG_GRID,
+  /// The grid containing the logarithm of the posterior for all models x all the scaling
+  POSTERIOR_SCALING_LOG_GRID,
   /// The grid containing the normalized likelihood for all models
   LIKELIHOOD_GRID,
   /// The grid containing the normalized posterior for all models
   POSTERIOR_GRID,
+  /// The grid containing the normalized of the likelihood for all models x all the scaling
+  LIKELIHOOD_SCALING_GRID,
+  /// The grid containing the normalized of the posterior for all models x all the scaling
+  POSTERIOR_SCALING_GRID,
+  /// The grid containing the normalized likelihood for all models
   /// The 1D PDF over the SED
   SED_1D_PDF,
   /// The 1D PDF over the reddening curve
@@ -74,6 +85,8 @@ enum class RegionResultType {
   LIKELIHOOD_NORMALIZATION_LOG,
   /// The logarithm of the normalization of the posterior grid and the 1D PDFs
   NORMALIZATION_LOG,
+  /// Do use sampling of the scale factor
+  SAMPLE_SCALE_FACTOR,
   /// Computation Flags
   FLAGS
 };

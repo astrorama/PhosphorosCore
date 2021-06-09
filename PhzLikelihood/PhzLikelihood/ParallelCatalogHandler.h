@@ -58,6 +58,7 @@ public:
                          PhzDataModel::AdjustErrorParamMap adjust_error_param_map,
                          const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                          LikelihoodGridFunction likelihood_grid_func,
+                         double sampling_sigma_range,
                          std::vector<StaticPriorFunction> static_priors,
                          std::vector<MarginalizationFunction> marginalization_func_list,
                          std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list,

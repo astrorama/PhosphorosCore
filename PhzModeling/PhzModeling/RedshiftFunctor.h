@@ -7,10 +7,13 @@
 #ifndef PHZMODELING_REDSHIFTFUNCTOR_H
 #define	PHZMODELING_REDSHIFTFUNCTOR_H
 
+#include "PhysicsUtils/CosmologicalParameters.h"
+
 namespace Euclid {
 namespace XYDataset {
   class XYDataset;
 }
+
 
 namespace PhzModeling {
 
@@ -23,11 +26,12 @@ namespace PhzModeling {
  * The shift is applied to all the pair of the SED.
  * For a given z, the wavelength component of the SED is multiplied by
  * the factor(1+z)
- * while the corresponding flux is multiplied by 1/(1+z)²
+ * while the corresponding flux is multiplied by 1/((1+z)(DL/10)²)
  */
 class RedshiftFunctor {
 
 public:
+  RedshiftFunctor(Euclid::PhysicsUtils::CosmologicalParameters cosmology);
 
 	/**
 		* @brief Function Call Operator
@@ -45,6 +49,9 @@ public:
 		*/
 	Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed,
 	    double z) const;
+
+private:
+	Euclid::PhysicsUtils::CosmologicalParameters m_cosmology;
 };
 
 } // end of namespace PhzModeling

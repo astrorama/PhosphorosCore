@@ -34,6 +34,7 @@
 #include "XYDataset/QualifiedName.h"
 #include "XYDataset/XYDatasetProvider.h"
 #include "PhzModeling/ModelDatasetGrid.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
 
 namespace Euclid {
 namespace PhzGalacticCorrection {
@@ -42,6 +43,7 @@ class GalacticCorrectionSingleGridCreator{
 public:
 
   typedef PhzModeling::ModelDatasetGrid::IgmAbsorptionFunction IgmAbsorptionFunction;
+  typedef PhzModeling::ModelDatasetGenerator::NormalizationFunction NormalizationFunction;
   typedef std::function<void(size_t step, size_t total)> ProgressListener;
 
   GalacticCorrectionSingleGridCreator(
@@ -49,6 +51,7 @@ public:
        std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
        const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
        IgmAbsorptionFunction igm_absorption_function,
+       NormalizationFunction normalization_function,
        XYDataset::QualifiedName milky_way_reddening
        );
 
@@ -57,6 +60,7 @@ public:
   PhzDataModel::PhotometryGrid createGrid(
                const PhzDataModel::ModelAxesTuple& parameter_space,
                const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+               const PhysicsUtils::CosmologicalParameters& cosmology,
                ProgressListener progress_listener=ProgressListener{});
 
 private:
@@ -64,6 +68,7 @@ private:
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
   const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
   IgmAbsorptionFunction m_igm_absorption_function;
+  NormalizationFunction m_normalization_function;
   XYDataset::QualifiedName m_milky_way_reddening;
 
 };

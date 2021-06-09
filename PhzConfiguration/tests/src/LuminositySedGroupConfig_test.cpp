@@ -77,7 +77,7 @@ struct LuminositySedGroupConfig_fixture: public ConfigManager_fixture {
     
     std::ofstream out {model_grid_file.string()};
     boost::archive::binary_oarchive boa {out};
-    PhzDataModel::PhotometryGridInfo info {model_grid_map, "OFF", {}};
+    PhzDataModel::PhotometryGridInfo info {model_grid_map, "OFF", filter, {}};
     boa << info;
     GridContainer::gridBinaryExport(out, model_grid_map.at(""));
     

@@ -146,7 +146,7 @@ BOOST_FIXTURE_TEST_CASE(SourcePhzFunctor_test, SourcePhzFunctor_Fixture) {
 
   // When
   PhzLikelihood::SourcePhzFunctor functor(correctionMap, error_param_null_map, photo_grid_map,
-      likelihood_function.getFunctorObject(), {},
+      likelihood_function.getFunctorObject(), 5, {},
       {PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}});
   auto best_model = functor(source);
 }
@@ -160,7 +160,7 @@ BOOST_FIXTURE_TEST_CASE(NoErrorRecompute_test, SourcePhzFunctor_Fixture) {
 
   // When
   PhzLikelihood::SourcePhzFunctor functor(correction_null_Map, error_param_map, photo_grid_map,
-      likelihood_function.getFunctorObject(), {},
+      likelihood_function.getFunctorObject(), 5, {},
       {PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}});
   auto best_model = functor(source);
 }
@@ -174,7 +174,7 @@ BOOST_FIXTURE_TEST_CASE(ErrorRecompute_test, SourcePhzFunctor_Fixture) {
 
   // When
   PhzLikelihood::SourcePhzFunctor functor(correction_null_Map, error_param_map, photo_grid_map,
-      likelihood_function.getFunctorObject(), {},
+      likelihood_function.getFunctorObject(), 5, {},
       {PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}});
   auto best_model = functor(source);
 }
@@ -188,10 +188,28 @@ BOOST_FIXTURE_TEST_CASE(ErrorRecomputeNegatifFlux_test, SourcePhzFunctor_Fixture
 
   // When
   PhzLikelihood::SourcePhzFunctor functor(correction_null_Map, error_param_map, photo_grid_map,
-      likelihood_function.getFunctorObject(), {},
+      likelihood_function.getFunctorObject(), 5, {},
       {PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}});
   auto best_model = functor(sourceNeg);
 }
 
+
+BOOST_FIXTURE_TEST_CASE(computeMeanScaleFactor, SourcePhzFunctor_Fixture) {
+  // no re-computation
+    LikelihoodFunctionMock likelihood_function;
+    likelihood_function.expectFunctorCall(corr_neg_phot, ref_photo_grid);
+    std::map<std::string, PhzDataModel::PhotometryGrid> photo_grid_map {};
+    photo_grid_map.emplace(std::make_pair(std::string{""}, std::move(photo_grid)));
+    PhzLikelihood::SourcePhzFunctor functor(correction_null_Map, error_param_map, photo_grid_map,
+        likelihood_function.getFunctorObject(), 5, {},
+        {PhzLikelihood::SumMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}});
+    auto best_model = functor(sourceNeg);
+    auto sampling_1 = std::vector<double>{0, 0, 0, 1, 0, 0, 0};
+   // When
+    BOOST_CHECK_CLOSE(0, functor.computeMeanScaleFactor(0, 3, sampling_1), 1E-3);
+    BOOST_CHECK_CLOSE(10, functor.computeMeanScaleFactor(10, 3, sampling_1), 1E-3);
+    BOOST_CHECK_CLOSE(10, functor.computeMeanScaleFactor(10, 10, sampling_1), 1E-3);
+
+}
 
 BOOST_AUTO_TEST_SUITE_END ()

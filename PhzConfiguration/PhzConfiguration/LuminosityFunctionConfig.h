@@ -134,17 +134,11 @@ public:
    */
   bool isExpressedInMagnitude();
 
-  /**
-   * @brief return the isCorrectedForExtinction flag
-   */
-  bool isCorrectedForExtinction();
 
 private:
 
   std::unique_ptr<PhzLuminosity::LuminosityFunctionSet> m_luminosity_function;
   bool m_is_expressed_in_magnitude = false;
-  bool m_is_corrected_for_extinction = false;
-
 }; /* End of LuminosityFunctionConfig class */
 
 

@@ -4,6 +4,7 @@ elements_depends_on_subdirs(XYDataset)
 elements_depends_on_subdirs(GridContainer)
 elements_depends_on_subdirs(SourceCatalog)
 elements_depends_on_subdirs(MathUtils)
+elements_depends_on_subdirs(PhysicsUtils)
 elements_depends_on_subdirs(PhzDataModel)
 elements_depends_on_subdirs(PhzUtils)
 
@@ -11,8 +12,8 @@ find_package(Boost REQUIRED COMPONENTS serialization)
 
 #===== Libraries ===============================================================
 elements_add_library(PhzModeling src/lib/*.cpp
-                  LINK_LIBRARIES ${CMAKE_DL_LIBS} Boost SourceCatalog XYDataset MathUtils PhzDataModel PhzUtils
-                  INCLUDE_DIRS Boost SourceCatalog XYDataset MathUtils PhzDataModel GridContainer
+                  LINK_LIBRARIES ${CMAKE_DL_LIBS} Boost SourceCatalog XYDataset MathUtils PhzDataModel PhzUtils GridContainer PhysicsUtils
+                  INCLUDE_DIRS Boost SourceCatalog XYDataset MathUtils PhzDataModel PhzUtils GridContainer PhysicsUtils
                   PUBLIC_HEADERS PhzModeling )
 
 #===== Boost tests =============================================================
@@ -39,3 +40,9 @@ elements_add_unit_test(IntegrateDatasetFunctor_test tests/src/IntegrateDatasetFu
                        LINK_LIBRARIES PhzModeling TYPE Boost)
 elements_add_unit_test(IntegrateLambdaTimeDatasetFunctor_test tests/src/IntegrateLambdaTimeDatasetFunctor_test.cpp
                        LINK_LIBRARIES PhzModeling TYPE Boost)
+elements_add_unit_test(NormalizationFunctor_test tests/src/NormalizationFunctor_test.cpp
+                       LINK_LIBRARIES PhzModeling TYPE Boost)
+elements_add_unit_test(NormalizationFunctorFactory_test tests/src/NormalizationFunctorFactory_test.cpp
+                       LINK_LIBRARIES PhzModeling TYPE Boost)
+                       
+                       

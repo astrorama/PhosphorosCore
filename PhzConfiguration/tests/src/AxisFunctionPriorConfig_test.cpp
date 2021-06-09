@@ -56,6 +56,7 @@ struct AxisFunctionPriorConfig_fixture : public ConfigManager_fixture {
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
   
   PhzDataModel::DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(axes);
+  bool do_sample = results.set<RegionResultType::SAMPLE_SCALE_FACTOR>(false);
   
   std::map<std::string, po::variable_value> options_map {};
   

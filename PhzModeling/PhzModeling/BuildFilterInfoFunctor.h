@@ -9,11 +9,9 @@
 
 #include <utility>
 #include <memory>
+#include "MathUtils/function/Function.h"
 
 namespace Euclid {
-namespace MathUtils {
-  class Function;
-}
 
 namespace XYDataset {
   class XYDataset;

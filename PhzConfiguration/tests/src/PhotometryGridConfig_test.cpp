@@ -63,7 +63,7 @@ struct PhotometryGridConfig_fixture : public ConfigManager_fixture {
   PhotometryGridConfig_fixture() {
     
     grid_map.insert(std::pair<const std::string, PhotometryGrid>("", PhotometryGrid {createAxesTuple(zs, ebvs, reddening_curves, seds)}));
-    PhotometryGridInfo info {grid_map, "OFF", {}};
+    PhotometryGridInfo info {grid_map, "OFF", {"Filter1"}, {}};
     {
       fs::create_directories(intermediate_dir/catalog_type/"ModelGrids");
       std::ofstream stream {(intermediate_dir/catalog_type/"ModelGrids"/filename).string()};
@@ -129,6 +129,7 @@ BOOST_FIXTURE_TEST_CASE(nominal_test, PhotometryGridConfig_fixture) {
 
   // Then
   BOOST_CHECK_EQUAL(result_info.igm_method, "OFF");
+  BOOST_CHECK_EQUAL(result_info.luminosity_filter_name.qualifiedName(), "Filter1");
   BOOST_CHECK_EQUAL_COLLECTIONS(z_axis.begin(), z_axis.end(), zs.begin(), zs.end());
   BOOST_CHECK_EQUAL_COLLECTIONS(ebv_axis.begin(), ebv_axis.end(), ebvs.begin(), ebvs.end());
   
@@ -152,6 +153,7 @@ BOOST_FIXTURE_TEST_CASE(relativePath_test, PhotometryGridConfig_fixture) {
 
   // Then
   BOOST_CHECK_EQUAL(result_info.igm_method, "OFF");
+  BOOST_CHECK_EQUAL(result_info.luminosity_filter_name.qualifiedName(), "Filter1");
   BOOST_CHECK_EQUAL_COLLECTIONS(z_axis.begin(), z_axis.end(), zs.begin(), zs.end());
   BOOST_CHECK_EQUAL_COLLECTIONS(ebv_axis.begin(), ebv_axis.end(), ebvs.begin(), ebvs.end());
   
@@ -175,6 +177,7 @@ BOOST_FIXTURE_TEST_CASE(absolutePath_test, PhotometryGridConfig_fixture) {
 
   // Then
   BOOST_CHECK_EQUAL(result_info.igm_method, "OFF");
+  BOOST_CHECK_EQUAL(result_info.luminosity_filter_name.qualifiedName(), "Filter1");
   BOOST_CHECK_EQUAL_COLLECTIONS(z_axis.begin(), z_axis.end(), zs.begin(), zs.end());
   BOOST_CHECK_EQUAL_COLLECTIONS(ebv_axis.begin(), ebv_axis.end(), ebvs.begin(), ebvs.end());
   

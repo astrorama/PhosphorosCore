@@ -26,6 +26,10 @@
 #include "PhzLikelihood/Pdf1DTraits.h"
 #include "PhzLikelihood/LikelihoodPdf1DTraits.h"
 #include "PhzLikelihood/ProcessModelGridFunctor.h"
+#include "PhzLuminosity/LuminosityPrior.h"
+#include "XYDataset/XYDataset.h"
+#include "PhzModeling/IntegrateLambdaTimeDatasetFunctor.h"
+#include "PhzModeling/IntegrateDatasetFunctor.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -39,11 +43,17 @@ SourcePhzFunctor::SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_c
                                    PhzDataModel::AdjustErrorParamMap adjust_error_param_map,
                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
                                    LikelihoodGridFunction likelihood_func,
+                                   double sampling_sigma_range,
                                    std::vector<PriorFunction> priors,
                                    std::vector<MarginalizationFunction> marginalization_func_list,
                                    std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list,
                                    bool doNormalizePdf)
-        : m_phot_corr_map{std::move(phot_corr_map)}, m_adjust_error_param_map{std::move(adjust_error_param_map)}, m_phot_grid_map(phot_grid_map), m_model_funct_list{model_funct_list},m_do_normalize_pdf{doNormalizePdf} {
+        : m_phot_corr_map{std::move(phot_corr_map)},
+          m_adjust_error_param_map{std::move(adjust_error_param_map)},
+          m_phot_grid_map(phot_grid_map),
+          m_sampling_sigma_range{sampling_sigma_range},
+          m_model_funct_list{model_funct_list},
+          m_do_normalize_pdf{doNormalizePdf} {
   for (auto& pair : phot_grid_map) {
     m_single_grid_functor_map.emplace(std::piecewise_construct,
 
@@ -329,6 +339,25 @@ typename PhzDataModel::Pdf1DParam<FixedAxis> combineLikelihood1DPdfs(const std::
 } // end of anonymous namespace
 
 
+double SourcePhzFunctor::computeMeanScaleFactor(double best_alpha, double n_sigma, const std::vector<double>& scale_sample) const {
+
+   std::vector<double> sampling{};
+     for (size_t index = 0; index< scale_sample.size(); ++index) {
+       sampling.push_back(PhzLuminosity::LuminosityPrior::getLuminosityInSample(best_alpha, n_sigma, scale_sample.size(), index));
+   }
+
+   auto scale_pdf =  XYDataset::XYDataset::factory(sampling, scale_sample);
+
+   auto xy_functor = PhzModeling::IntegrateLambdaTimeDatasetFunctor(MathUtils::InterpolationType::LINEAR);
+   auto x_functor = PhzModeling::IntegrateDatasetFunctor(MathUtils::InterpolationType::LINEAR);
+
+   double numerator =  xy_functor(scale_pdf, std::make_pair(sampling[0], sampling[sampling.size()-1]));
+   double denominator =  x_functor(scale_pdf, std::make_pair(sampling[0], sampling[sampling.size()-1]));
+
+   return numerator/denominator;
+}
+
+
 PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::Source & source) const {
 
   auto source_phot_ptr = source.getAttribute<SourceCatalog::Photometry>();
@@ -414,7 +443,7 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
   std::string best_region;
   bool found = false;
   double best_region_posterior = std::numeric_limits<double>::lowest();
-  for (auto& pair : results.get<ResType::REGION_RESULTS_MAP>()){
+  for (auto& pair : results.get<ResType::REGION_RESULTS_MAP>()) {
     auto& iter = pair.second.get<RegResType::BEST_MODEL_ITERATOR>();
     if (*iter > best_region_posterior) {
       best_region = pair.first;
@@ -438,13 +467,16 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
   // We add the combined 1D PDFs only if they are computed for the regions
   auto& first_region_results = results.get<ResType::REGION_RESULTS_MAP>().begin()->second;
   if (first_region_results.contains<RegResType::SED_1D_PDF>()) {
-    results.set<ResType::SED_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::SED>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
+    results.set<ResType::SED_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::SED>(results.get<ResType::REGION_RESULTS_MAP>(),
+                                     m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::RED_CURVE_1D_PDF>()) {
-    results.set<ResType::RED_CURVE_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::REDDENING_CURVE>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
+    results.set<ResType::RED_CURVE_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::REDDENING_CURVE>(results.get<ResType::REGION_RESULTS_MAP>(),
+                                           m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::EBV_1D_PDF>()) {
-    results.set<ResType::EBV_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::EBV>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf));
+    results.set<ResType::EBV_1D_PDF>(combine1DPdfs<PhzDataModel::ModelParameter::EBV>(results.get<ResType::REGION_RESULTS_MAP>(),
+                                     m_do_normalize_pdf));
   }
   if (first_region_results.contains<RegResType::Z_1D_PDF>()) {
     auto pdz = combine1DPdfs<PhzDataModel::ModelParameter::Z>(results.get<ResType::REGION_RESULTS_MAP>(), m_do_normalize_pdf);
@@ -475,9 +507,24 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
 
 
 
+  // In case of sampling of the scale factor the Posterior best value has to be replaced by the mean
   auto scale_it = best_region_results.get<RegResType::SCALE_FACTOR_GRID>().begin();
   scale_it.fixAllAxes(post_it);
-  results.set<ResType::BEST_MODEL_SCALE_FACTOR>(*scale_it);
+
+  if (best_region_results.get<RegResType::SAMPLE_SCALE_FACTOR>()) {
+    auto signa_scale_it = best_region_results.get<RegResType::SIGMA_SCALE_FACTOR_GRID>().begin();
+    signa_scale_it.fixAllAxes(post_it);
+
+    auto cel_sampled_it = best_region_results.get<RegResType::POSTERIOR_SCALING_LOG_GRID>().begin();
+    cel_sampled_it.fixAllAxes(post_it);
+
+    results.set<ResType::BEST_MODEL_SCALE_FACTOR>(computeMeanScaleFactor(*scale_it,
+                                                  (*signa_scale_it)*m_sampling_sigma_range,
+                                                  *cel_sampled_it));
+  } else {
+    results.set<ResType::BEST_MODEL_SCALE_FACTOR>(*scale_it);
+  }
+
 
   results.set<ResType::BEST_MODEL_POSTERIOR_LOG>(*post_it);
 

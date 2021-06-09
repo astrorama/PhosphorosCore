@@ -14,7 +14,8 @@ ModelDatasetGrid::ModelDatasetGrid(const PhzDataModel::ModelAxesTuple& parameter
                   std::map<XYDataset::QualifiedName,XYDataset::XYDataset> sed_map,
                   std::map<XYDataset::QualifiedName,std::unique_ptr<MathUtils::Function> > reddening_curve_map,
                   ReddeningFunction reddening_function, RedshiftFunction redshift_function,
-                  IgmAbsorptionFunction igm_function)
+                  IgmAbsorptionFunction igm_function,
+                  NormalizationFunction normalization_function)
   : PhzDataModel::PhzGrid<ModelDatasetCellManager>(parameter_space) {
 
   m_sed_map=std::move(sed_map);
@@ -22,6 +23,7 @@ ModelDatasetGrid::ModelDatasetGrid(const PhzDataModel::ModelAxesTuple& parameter
   m_reddening_function=std::move(reddening_function);
   m_redshift_function=std::move(redshift_function);
   m_igm_function = std::move(igm_function);
+  m_normalization_function = std::move(normalization_function);
   size_t z_size = std::get<PhzDataModel::ModelParameter::Z>(parameter_space).size();
   size_t ebv_size = std::get<PhzDataModel::ModelParameter::EBV>(parameter_space).size();
   size_t reddening_curve_size = std::get<PhzDataModel::ModelParameter::REDDENING_CURVE>(parameter_space).size();
@@ -41,7 +43,8 @@ PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator
       0,
       m_reddening_function,
       m_redshift_function,
-      m_igm_function));
+      m_igm_function,
+      m_normalization_function));
 }
 
 
@@ -55,7 +58,8 @@ PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator
       m_size,
       m_reddening_function,
       m_redshift_function,
-      m_igm_function));
+      m_igm_function,
+      m_normalization_function));
 }
 
 
