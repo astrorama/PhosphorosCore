@@ -29,9 +29,9 @@ yum install -y git
 
 # Astrorama repository
 cat > /etc/yum.repos.d/astrorama.repo << EOF
-[bintray--astrorama-fedora]
-name=bintray--astrorama-fedora
-baseurl=https://dl.bintray.com/astrorama/travis/master/${ID}/\$releasever/\$basearch
+[artifactory--astrorama-fedora]
+name=artifactory--astrorama-fedora
+baseurl=https://astrorama.jfrog.io/artifactory/rpm/stable/${ID}/\$releasever/\$basearch
 gpgcheck=0
 repo_gpgcheck=0
 enabled=1
@@ -39,9 +39,9 @@ EOF
 
 if [ "${BRANCH}" == "develop" ]; then
   cat >> /etc/yum.repos.d/astrorama.repo <<EOF
-[bintray--astrorama-fedora-develop]
-name=bintray--astrorama-fedora-develop
-baseurl=https://dl.bintray.com/astrorama/travis/develop/${ID}/\$releasever/\$basearch
+[artifactory--astrorama-fedora-develop]
+name=artifactory--astrorama-fedora-develop
+baseurl=https://astrorama.jfrog.io/artifactory/rpm/develop/${ID}/\$releasever/\$basearch
 gpgcheck=0
 repo_gpgcheck=0
 enabled=1
