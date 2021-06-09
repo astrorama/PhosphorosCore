@@ -24,7 +24,7 @@ LikelihoodScaleSampleLogarithmAlgorithm::LikelihoodScaleSampleLogarithmAlgorithm
                       m_scale_sample_number{scale_sample_number},
                       m_scale_sample_range{scale_sample_range} {
   if (m_scale_sample_number < 3) {
-    LikelihoodScaleSampleLogarithmAlgorithmlogger.warn() << "scale_sample_number parameter to small set to 3";
+    LikelihoodScaleSampleLogarithmAlgorithmlogger.warn() << "scale_sample_number parameter too small set to 3";
     m_scale_sample_number = 3;
   }
 

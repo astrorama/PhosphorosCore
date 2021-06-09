@@ -62,11 +62,9 @@ std::map<std::string, std::map<std::string, std::pair<double, double>>> Physical
 
   // Check file exists
   if (sfile) {
-    std::unique_ptr<CCfits::FITS> fits{new CCfits::FITS(path.generic_string(), CCfits::RWmode::Read)};
     try {
-      const CCfits::ExtHDU& table_hdu = fits->extension(1);
       // Read first HDU
-      auto table = Table::FitsReader{table_hdu}.read();
+      auto table = Table::FitsReader{path.generic_string(), 1}.read();
 
       for (auto row : table) {
             std::string param_name = boost::get<std::string>(row[0]);

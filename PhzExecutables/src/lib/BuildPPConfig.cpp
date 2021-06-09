@@ -119,7 +119,7 @@ void BuildPPConfig::run(Euclid::Configuration::ConfigManager &config_manager) {
   Table::Table table{row_list};
   Table::FitsWriter writer{output_file.generic_string()};
   writer.setFormat(Table::FitsWriter::Format::ASCII);
-  writer.setHduName("PhysicalParmaeterConfig");
+  writer.setHduName("PhysicalParameterConfig");
   writer.addData(table);
 
 

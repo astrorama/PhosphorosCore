@@ -18,7 +18,6 @@
 
 /**
  * @file PhzConfiguration/
-#include "PhzConfiguration/PhysicalParametersConfig.h".h
  * @date 2021/04/22
  * @author Florian Dubath
  */

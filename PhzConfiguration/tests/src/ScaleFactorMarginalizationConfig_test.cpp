@@ -52,9 +52,9 @@ BOOST_AUTO_TEST_CASE(getProgramOptions_test) {
   config_manager.registerConfiguration<ScaleFactorMarginalizationConfig>();
   auto options = config_manager.closeRegistration();
 
-  BOOST_CHECK_NO_THROW(options.find("scale-factor-magrinalization-enabled", false));
-  BOOST_CHECK_NO_THROW(options.find("scale-factor-magrinalization-sample-number", false));
-  BOOST_CHECK_NO_THROW(options.find("scale-factor-magrinalization-range-size", false));
+  BOOST_CHECK_NO_THROW(options.find("scale-factor-marginalization-enabled", false));
+  BOOST_CHECK_NO_THROW(options.find("scale-factor-marginalization-sample-number", false));
+  BOOST_CHECK_NO_THROW(options.find("scale-factor-marginalization-range-size", false));
 
 }
 
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(default_values_param_test) {
 
   std::string param = "YES";
 
-  options_map["scale-factor-magrinalization-enabled"].value() = boost::any(param);
+  options_map["scale-factor-marginalization-enabled"].value() = boost::any(param);
 
   config_manager.initialize(options_map);
 
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(getIsEnabled_NO_test) {
 
   std::string param="NO";
 
-  options_map["scale-factor-magrinalization-enabled"].value() = boost::any(param);
+  options_map["scale-factor-marginalization-enabled"].value() = boost::any(param);
 
   config_manager.initialize(options_map);
 
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(getIsEnabled_YES_test) {
 
   std::string param = "YES";
 
-  options_map["scale-factor-magrinalization-enabled"].value() = boost::any(param);
+  options_map["scale-factor-marginalization-enabled"].value() = boost::any(param);
 
   config_manager.initialize(options_map);
 
@@ -152,9 +152,9 @@ BOOST_AUTO_TEST_CASE(getSample_getRange_test) {
 
   std::string param = "YES";
 
-  options_map["scale-factor-magrinalization-enabled"].value() = boost::any(param);
-  options_map["scale-factor-magrinalization-sample-number"].value() = boost::any(param_number);
-  options_map["scale-factor-magrinalization-range-size"].value() = boost::any(param_sigma);
+  options_map["scale-factor-marginalization-enabled"].value() = boost::any(param);
+  options_map["scale-factor-marginalization-sample-number"].value() = boost::any(param_number);
+  options_map["scale-factor-marginalization-range-size"].value() = boost::any(param_sigma);
 
   config_manager.initialize(options_map);
 
@@ -175,10 +175,10 @@ BOOST_AUTO_TEST_CASE(exception_sample_getRange_test) {
   std::map<std::string, po::variable_value> options_map {};
 
   int param_number = 1;
-  options_map["scale-factor-magrinalization-sample-number"].value() = boost::any(param_number);
+  options_map["scale-factor-marginalization-sample-number"].value() = boost::any(param_number);
 
   std::string param = "YES";
-  options_map["scale-factor-magrinalization-enabled"].value() = boost::any(param);
+  options_map["scale-factor-marginalization-enabled"].value() = boost::any(param);
 
   BOOST_CHECK_THROW(config_manager.initialize(options_map), Elements::Exception);
 
@@ -196,10 +196,10 @@ BOOST_AUTO_TEST_CASE(exception_range_test) {
   std::map<std::string, po::variable_value> options_map {};
 
   double param_sigma = -2.1;
-  options_map["scale-factor-magrinalization-range-size"].value() = boost::any(param_sigma);
+  options_map["scale-factor-marginalization-range-size"].value() = boost::any(param_sigma);
 
   std::string param = "YES";
-  options_map["scale-factor-magrinalization-enabled"].value() = boost::any(param);
+  options_map["scale-factor-marginalization-enabled"].value() = boost::any(param);
 
   BOOST_CHECK_THROW(config_manager.initialize(options_map), Elements::Exception);
 

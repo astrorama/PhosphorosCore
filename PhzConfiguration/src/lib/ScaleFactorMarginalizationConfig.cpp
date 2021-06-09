@@ -36,9 +36,9 @@ namespace PhzConfiguration {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
-static const std::string SCALE_FACTOR_MARGINALIZATION_ENABLED {"scale-factor-magrinalization-enabled"};
-static const std::string SCALE_FACTOR_SAMPLE_NUMBER {"scale-factor-magrinalization-sample-number"};
-static const std::string SCALE_FACTOR_RANGE {"scale-factor-magrinalization-range-size"};
+static const std::string SCALE_FACTOR_MARGINALIZATION_ENABLED {"scale-factor-marginalization-enabled"};
+static const std::string SCALE_FACTOR_SAMPLE_NUMBER {"scale-factor-marginalization-sample-number"};
+static const std::string SCALE_FACTOR_RANGE {"scale-factor-marginalization-range-size"};
 
 ScaleFactorMarginalizationConfig::ScaleFactorMarginalizationConfig(long manager_id) : Configuration(manager_id) {}
 
