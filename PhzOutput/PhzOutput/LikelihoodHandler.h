@@ -12,6 +12,7 @@
 #include "PhzOutput/OutputHandler.h"
 #include <boost/filesystem.hpp>
 #include <map>
+#include <tuple>
 #include <string>
 #include <utility>
 #include <vector>
@@ -24,7 +25,7 @@ class LikelihoodHandler : public OutputHandler {
 
 public:
   LikelihoodHandler(boost::filesystem::path                                                        out_dir,
-                    const std::map<std::string, std::map<std::string, std::pair<double, double>>>& param_config, bool do_sample,
+                    const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& param_config, bool do_sample,
                     size_t sample_number = 1000, size_t chunk_size = 10000);
 
   virtual ~LikelihoodHandler();
@@ -33,7 +34,7 @@ public:
 
 private:
   boost::filesystem::path                                                        m_out_dir;
-  const std::map<std::string, std::map<std::string, std::pair<double, double>>>& m_param_config;
+  const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& m_param_config;
 
   bool   m_do_sample;
   size_t m_sample_number;

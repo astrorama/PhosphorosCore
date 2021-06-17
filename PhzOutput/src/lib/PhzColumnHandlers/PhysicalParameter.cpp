@@ -24,6 +24,7 @@
  */
 
 
+#include <tuple>
 #include "PhzOutput/PhzColumnHandlers/PhysicalParameter.h"
 
 
@@ -36,7 +37,14 @@ std::vector<Table::ColumnInfo::info_type> PhysicalParameter::getColumnInfoList()
 
   std::vector<Table::ColumnInfo::info_type> column_list {};
   for (auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
-    column_list.push_back(Table::ColumnInfo::info_type(m_column_prefix+iter->first, typeid(double)));
+    std::string units = "";
+    for (auto param_iter =  iter->second.begin(); param_iter!=iter->second.end(); ++param_iter) {
+      if (std::get<2>(param_iter->second) !="") {
+        units = std::get<2>(param_iter->second);
+        break;
+      }
+    }
+    column_list.push_back(Table::ColumnInfo::info_type(m_column_prefix+iter->first, typeid(double), units));
   }
 
   return column_list;
@@ -53,13 +61,13 @@ std::vector<Table::Row::cell_type> PhysicalParameter::convertResults(
     std::vector<Table::Row::cell_type> res_list {};
     for (auto iter = m_param_config.cbegin(); iter != m_param_config.cend(); ++iter) {
       const auto& funct_param = iter->second.at(sed);
-      res_list.push_back(funct_param.first * scale + funct_param.second);
+      res_list.push_back( std::get<0>(funct_param) * scale + std::get<1>(funct_param));
     }
 
     return res_list;
   }
 
-PhysicalParameter::PhysicalParameter(PhzDataModel::GridType grid_type,  const std::map<std::string, std::map<std::string, std::pair<double, double>>>& param_config):
+PhysicalParameter::PhysicalParameter(PhzDataModel::GridType grid_type,  const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& param_config):
     m_param_config{param_config} {
   switch (grid_type) {
     case PhzDataModel::GridType::LIKELIHOOD:
