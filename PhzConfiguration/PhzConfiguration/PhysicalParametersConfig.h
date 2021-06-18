@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <string>
 #include <map>
+#include <tuple>
 #include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzOutput/PhzColumnHandlers/PhysicalParameter.h"
@@ -69,17 +70,17 @@ public:
   void initialize(const UserValues& args) override;
 
 
-  const std::map<std::string, std::map<std::string, std::pair<double, double>>>& getParamConfig() const;
+  const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& getParamConfig() const;
 
 
   std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter> getLikelihoodOutputHandler() const;
   std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter> getPosteriorOutputHandler() const;
 
-  std::map<std::string, std::map<std::string, std::pair<double, double>>> readConfig(boost::filesystem::path path) const;
+  std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> readConfig(boost::filesystem::path path) const;
 
 private:
 
-  std::map<std::string, std::map<std::string, std::pair<double, double>>> m_param_config = {};
+  std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> m_param_config = {};
 
 }; /* End of AuxDataDirConfig class */
 

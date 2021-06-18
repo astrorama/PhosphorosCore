@@ -48,24 +48,28 @@ BOOST_AUTO_TEST_CASE(getParamMap_test) {
 
   BOOST_CHECK_EQUAL(result.size(), 0);
 
-  input = "MASS=1E30*L+0";
+  input = "MASS=1E30*L+0[Solar Mass]";
   result = runner.getParamMap(input);
 
   BOOST_CHECK_EQUAL(result.size(), 1);
   BOOST_CHECK_EQUAL(result.begin()->first, "MASS");
-  BOOST_CHECK_EQUAL(result.begin()->second.first, 1E30);
-  BOOST_CHECK_EQUAL(result.begin()->second.second, 0);
+  BOOST_CHECK_EQUAL(std::get<0>(result.begin()->second), 1E30);
+  BOOST_CHECK_EQUAL(std::get<1>(result.begin()->second), 0);
+  BOOST_CHECK_EQUAL(std::get<2>(result.begin()->second), "Solar Mass");
 
-  input = "MASS=1E30*L+0;AGE=1E10";
+  input = "MASS=1E30*L+0;AGE=1E10[Year]";
   result = runner.getParamMap(input);
 
   BOOST_CHECK_EQUAL(result.size(), 2);
   BOOST_CHECK_EQUAL(result.begin()->first, "AGE");
-  BOOST_CHECK_EQUAL(result.begin()->second.first, 0);
-  BOOST_CHECK_EQUAL(result.begin()->second.second, 1E10);
+  BOOST_CHECK_EQUAL(std::get<0>(result.begin()->second), 0);
+  BOOST_CHECK_EQUAL(std::get<1>(result.begin()->second), 1E10);
+  BOOST_CHECK_EQUAL(std::get<2>(result.begin()->second), "Year");
   BOOST_CHECK_EQUAL((++(result.begin()))->first, "MASS");
-  BOOST_CHECK_EQUAL((++(result.begin()))->second.first, 1E30);
-  BOOST_CHECK_EQUAL((++(result.begin()))->second.second, 0);
+  BOOST_CHECK_EQUAL(std::get<0>((++(result.begin()))->second), 1E30);
+  BOOST_CHECK_EQUAL(std::get<1>((++(result.begin()))->second), 0);
+  BOOST_CHECK_EQUAL(std::get<2>((++(result.begin()))->second), "");
+
 
 }
 

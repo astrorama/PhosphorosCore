@@ -78,17 +78,18 @@ BOOST_AUTO_TEST_CASE(readConfig_test) {
   std::vector<Euclid::Table::ColumnInfo::info_type> info_list{Euclid::Table::ColumnInfo::info_type("PARAM_NAME", typeid(std::string)),
                                                               Euclid::Table::ColumnInfo::info_type("SED", typeid(std::string)),
                                                               Euclid::Table::ColumnInfo::info_type("A", typeid(double)),
-                                                              Euclid::Table::ColumnInfo::info_type("B", typeid(double))};
+                                                              Euclid::Table::ColumnInfo::info_type("B", typeid(double)),
+                                                              Euclid::Table::ColumnInfo::info_type("UNIT", typeid(std::string))};
 
   std::shared_ptr<Euclid::Table::ColumnInfo>        column_info{new Euclid::Table::ColumnInfo{info_list}};
 
-  std::vector<Euclid::Table::Row::cell_type>        values0{std::string{"MASS"}, std::string{"SED1"}, 1E30, 0.0};
+  std::vector<Euclid::Table::Row::cell_type>        values0{std::string{"MASS"}, std::string{"SED1"}, 1E30, 0.0, "Solar Mass"};
   Euclid::Table::Row                                row0{values0, column_info};
-  std::vector<Euclid::Table::Row::cell_type>        values1{std::string{"MASS"}, std::string{"SED2"}, 2E30, 0.0};
+  std::vector<Euclid::Table::Row::cell_type>        values1{std::string{"MASS"}, std::string{"SED2"}, 2E30, 0.0, "Solar Mass"};
   Euclid::Table::Row                                row1{values1, column_info};
-  std::vector<Euclid::Table::Row::cell_type>        values2{std::string{"AGE"}, std::string{"SED1"}, 0.0, 1E10};
+  std::vector<Euclid::Table::Row::cell_type>        values2{std::string{"AGE"}, std::string{"SED1"}, 0.0, 1E10, "Year"};
   Euclid::Table::Row                                row2{values2, column_info};
-  std::vector<Euclid::Table::Row::cell_type>        values3{std::string{"AGE"}, std::string{"SED2"}, 0.0, 2E10};
+  std::vector<Euclid::Table::Row::cell_type>        values3{std::string{"AGE"}, std::string{"SED2"}, 0.0, 2E10, "Year"};
   Euclid::Table::Row                                row3{values3, column_info};
   std::vector<Euclid::Table::Row>                   row_list{row0, row1, row2, row3};
   Euclid::Table::Table table{row_list};
@@ -103,21 +104,25 @@ BOOST_AUTO_TEST_CASE(readConfig_test) {
 
   auto mass_map = params.at("MASS");
   BOOST_CHECK(mass_map.find("SED1") != mass_map.end());
-  BOOST_CHECK_CLOSE(mass_map.at("SED1").first, 1E30, 0.001);
-  BOOST_CHECK_CLOSE(mass_map.at("SED1").second, 0.0, 0.001);
+  BOOST_CHECK_CLOSE(std::get<0>(mass_map.at("SED1")), 1E30, 0.001);
+  BOOST_CHECK_CLOSE(std::get<1>(mass_map.at("SED1")), 0.0, 0.001);
+  BOOST_CHECK_EQUAL(std::get<2>(mass_map.at("SED1")),  "Solar Mass");
   BOOST_CHECK(mass_map.find("SED2") != mass_map.end());
-  BOOST_CHECK_CLOSE(mass_map.at("SED2").first, 2E30, 0.001);
-  BOOST_CHECK_CLOSE(mass_map.at("SED2").second, 0.0, 0.001);
+  BOOST_CHECK_CLOSE(std::get<0>(mass_map.at("SED2")), 2E30, 0.001);
+  BOOST_CHECK_CLOSE(std::get<1>(mass_map.at("SED2")), 0.0, 0.001);
+  BOOST_CHECK_EQUAL(std::get<2>(mass_map.at("SED2")),  "Solar Mass");
 
 
   BOOST_CHECK(params.find("AGE") != params.end());
   auto age_map = params.at("AGE");
   BOOST_CHECK(age_map.find("SED1") != age_map.end());
-  BOOST_CHECK_CLOSE(age_map.at("SED1").first, 0.0, 0.001);
-  BOOST_CHECK_CLOSE(age_map.at("SED1").second, 1e10, 0.001);
+  BOOST_CHECK_CLOSE(std::get<0>(age_map.at("SED1")), 0.0, 0.001);
+  BOOST_CHECK_CLOSE(std::get<1>(age_map.at("SED1")), 1e10, 0.001);
+  BOOST_CHECK_EQUAL(std::get<2>(age_map.at("SED1")),  "Year");
   BOOST_CHECK(age_map.find("SED2") != age_map.end());
-  BOOST_CHECK_CLOSE(age_map.at("SED2").first, 0.0, 0.001);
-  BOOST_CHECK_CLOSE(age_map.at("SED2").second, 2e10, 0.001);
+  BOOST_CHECK_CLOSE(std::get<0>(age_map.at("SED2")), 0.0, 0.001);
+  BOOST_CHECK_CLOSE(std::get<1>(age_map.at("SED2")), 2e10, 0.001);
+  BOOST_CHECK_EQUAL(std::get<2>(age_map.at("SED2")),  "Year");
 }
 
 
