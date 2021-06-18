@@ -27,6 +27,7 @@
 #define _PHZEXECUTABLES_BUILDPPCONFIG_H
 
 #include <functional>
+#include <tuple>
 #include "Configuration/ConfigManager.h"
 
 #include "MathUtils/function/Function.h"
@@ -56,7 +57,7 @@ public:
 
   void run(Configuration::ConfigManager& config_manager);
 
-  std::map<std::string, std::pair<double,double>> getParamMap(std::string string_params) const;
+  std::map<std::string, std::tuple<double, double, std::string>> getParamMap(std::string string_params) const;
 
 
 

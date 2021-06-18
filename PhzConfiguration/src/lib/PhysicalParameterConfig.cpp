@@ -31,6 +31,7 @@
 #include "PhzDataModel/GridType.h"
 #include <CCfits/CCfits>
 #include "Table/FitsReader.h"
+#include <tuple>
 
 
 namespace po = boost::program_options;
@@ -54,8 +55,8 @@ auto PhysicalParametersConfig::getProgramOptions() -> std::map<std::string, Opti
 }
 
 
-std::map<std::string, std::map<std::string, std::pair<double, double>>> PhysicalParametersConfig::readConfig(fs::path path) const {
-  std::map<std::string, std::map<std::string, std::pair<double, double>>> results {};
+std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> PhysicalParametersConfig::readConfig(fs::path path) const {
+  std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> results {};
 
   std::ifstream  sfile(path.generic_string());
   CCfits::FITS::setVerboseMode(true);
@@ -71,12 +72,13 @@ std::map<std::string, std::map<std::string, std::pair<double, double>>> Physical
             std::string sed_name = boost::get<std::string>(row[1]);
             double param_A = boost::get<double>(row[2]);
             double param_B = boost::get<double>(row[3]);
+            std::string param_unit = boost::get<std::string>(row[4]);
 
             if (results.find(param_name) == results.end()) {
-              results.insert(std::make_pair(param_name, std::map<std::string, std::pair<double, double>>()));
+              results.insert(std::make_pair(param_name, std::map<std::string, std::tuple<double, double, std::string>>()));
             }
 
-            results.at(param_name).insert(std::make_pair(sed_name, std::make_pair(param_A, param_B)));
+            results.at(param_name).insert(std::make_pair(sed_name, std::make_tuple(param_A, param_B, param_unit)));
 
        }
     } catch (CCfits::FitsException& fits_except) {
@@ -96,7 +98,7 @@ void PhysicalParametersConfig::initialize(const UserValues& args) {
   }
 }
 
-const std::map<std::string, std::map<std::string, std::pair<double, double>>>& PhysicalParametersConfig::getParamConfig() const{
+const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& PhysicalParametersConfig::getParamConfig() const{
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
       throw Elements::Exception() << "Call to getParamConfig() on a not initialized instance.";
   }

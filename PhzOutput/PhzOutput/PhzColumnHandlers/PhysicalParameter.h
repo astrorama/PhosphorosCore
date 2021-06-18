@@ -28,6 +28,7 @@
 #include <functional>
 #include <map>
 #include <string>
+#include <tuple>
 #include "PhzOutput/PhzColumnHandlers/ColumnHandler.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/GridType.h"
@@ -52,7 +53,7 @@ public:
   using ModelIteratorFunctor = std::function<PhzDataModel::PhotometryGrid::const_iterator(const PhzDataModel::SourceResults&)>;
   using ScaleFunctor = std::function<double(const PhzDataModel::SourceResults&)>;
 
-  PhysicalParameter(PhzDataModel::GridType grid_type, const std::map<std::string, std::map<std::string, std::pair<double, double>>>& param_config);
+  PhysicalParameter(PhzDataModel::GridType grid_type, const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& param_config);
 
 
   /**
@@ -72,7 +73,7 @@ private:
   std::string m_column_prefix;
   ModelIteratorFunctor m_model_iterator_functor;
   ScaleFunctor m_scale_functor;
-  const std::map<std::string, std::map<std::string, std::pair<double, double>>>& m_param_config;
+  const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& m_param_config;
 
 
 }; /* End of BestModel class */
