@@ -62,17 +62,20 @@ auto ModelNormalizationConfig::getProgramOptions() -> std::map<std::string, Opti
 
 void ModelNormalizationConfig::initialize(const UserValues& args) {
   if (args.count(NORMALIZATION_FILTER) > 0) {
-    m_band =  XYDataset::QualifiedName(args.find(NORMALIZATION_FILTER)->second.as<std::string>());
+    m_band = XYDataset::QualifiedName(args.find(NORMALIZATION_FILTER)->second.as<std::string>());
   } else {
     throw Elements::Exception() << "Missing " << NORMALIZATION_FILTER << " option ";
   }
 
   if (args.count(NORMALIZATION_SED) > 0) {
-      m_solar_sed =  XYDataset::QualifiedName(args.find(NORMALIZATION_SED)->second.as<std::string>());
-    } else {
-      throw Elements::Exception() << "Missing " << NORMALIZATION_SED << " option ";
+    auto normalization_sed = args.find(NORMALIZATION_SED)->second.as<std::string>();
+    if (normalization_sed.empty()) {
+      throw Elements::Exception() << "Empty reference solar SED";
     }
-
+    m_solar_sed = XYDataset::QualifiedName(args.find(NORMALIZATION_SED)->second.as<std::string>());
+  } else {
+    throw Elements::Exception() << "Missing " << NORMALIZATION_SED << " option ";
+  }
 }
 
 // Returns the band of the luminosity normalization
