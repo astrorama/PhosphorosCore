@@ -30,6 +30,8 @@
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
 #include "XYDataset/QualifiedName.h"
+#include "PhzModeling/NormalizationFunctor.h"
+#include "PhzModeling/NormalizationFunctorFactory.h"
 
 using namespace Euclid::Configuration;
 namespace fs = boost::filesystem;
@@ -68,10 +70,23 @@ void ModelNormalizationConfig::initialize(const UserValues& args) {
   }
 
   if (args.count(NORMALIZATION_SED) > 0) {
-      m_solar_sed =  XYDataset::QualifiedName(args.find(NORMALIZATION_SED)->second.as<std::string>());
-    } else {
-      throw Elements::Exception() << "Missing " << NORMALIZATION_SED << " option ";
-    }
+    m_solar_sed =  XYDataset::QualifiedName(args.find(NORMALIZATION_SED)->second.as<std::string>());
+  } else {
+    throw Elements::Exception() << "Missing " << NORMALIZATION_SED << " option ";
+  }
+
+
+  auto filter_provider = getDependency<FilterProviderConfig>().getFilterDatasetProvider();
+  auto sun_sed_provider = getDependency<SedProviderConfig>().getSedDatasetProvider();
+
+  PhzModeling::NormalizationFunctor normalizer_functor =
+      PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(filter_provider,
+      m_band,
+      sun_sed_provider,
+      m_solar_sed);
+  auto flux = normalizer_functor.getReferenceFlux();
+
+  m_solar_MAG_AB = -2.5 * log10(flux / 3.631E9);
 
 }
 
@@ -91,6 +106,14 @@ void ModelNormalizationConfig::initialize(const UserValues& args) {
            << "Call to getReferenceSolarSed() on a not initialized instance.";
      }
      return m_solar_sed;
+  }
+
+  double ModelNormalizationConfig::getSolarMagAB() const {
+    if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+          throw Elements::Exception()
+              << "Call to getSolarMagAB() on a not initialized instance.";
+        }
+    return m_solar_MAG_AB;
   }
 
 } // PhzConfiguration namespace

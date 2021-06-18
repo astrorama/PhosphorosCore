@@ -70,6 +70,8 @@ struct ModelGridOutputConfig_fixture : public ConfigManager_fixture {
 
   std::map<std::string, po::variable_value> options_map;
 
+  std::string solar_sed = "solar_sed";
+
   ModelGridOutputConfig_fixture(){
     options_map["igm-absorption-type"].value() = std::string{"MADAU"};
     options_map["catalog-type"].value() = boost::any(std::string{"CatalogType"});
@@ -77,6 +79,37 @@ struct ModelGridOutputConfig_fixture : public ConfigManager_fixture {
     std::string filter_lum = "filter_1";
     options_map["normalization-filter"].value() = boost::any(filter_lum);
     options_map["aux-data-dir"].value() = boost::any(Elements::getAuxiliaryPath("Phosphoros/AuxiliaryData").native());
+
+    auto path_filter_1 = (Elements::getAuxiliaryPath("Phosphoros/AuxiliaryData/Filters") / std::string(filter_lum+".txt")).string();
+
+    std::ofstream filter_data_file(path_filter_1);
+    if (filter_data_file.is_open()) {
+      filter_data_file << 3000 << " " << 0.0 << std::endl;
+      filter_data_file << 3970 << " " << 0.0 << std::endl;
+      filter_data_file << 3980 << " " << 1.0 << std::endl;
+      filter_data_file << 5480 << " " << 1.0 << std::endl;
+      filter_data_file << 5490 << " " << 0.0 << std::endl;
+      filter_data_file << 11000 << " " << 0.0 << std::endl;
+      filter_data_file.close();
+    } else {
+      throw new Elements::Exception("Unable to create the ref filter file");
+    }
+
+    auto path_solar_sed = (Elements::getAuxiliaryPath("Phosphoros/AuxiliaryData/SEDs") / std::string(solar_sed+".txt")).string();
+
+        std::ofstream filter_solar_sed_file(path_solar_sed);
+        if (filter_solar_sed_file.is_open()) {
+          filter_solar_sed_file << 5 << " " << 1e-16 << std::endl;
+          filter_solar_sed_file << 12550 << " " << 1e-11 << std::endl;
+          filter_solar_sed_file << 29999 << " " << 6e-13 << std::endl;
+          filter_data_file.close();
+        } else {
+          throw new Elements::Exception("Unable to create the solar sed file");
+        }
+
+
+
+
   }
 };
 
@@ -166,7 +199,6 @@ BOOST_FIXTURE_TEST_CASE(directory_test, ModelGridOutputConfig_fixture) {
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
   std::string filter_lum = "filter_1";
   options_map["normalization-filter"].value() = boost::any(filter_lum);
-  std::string solar_sed = "solar_sed";
   options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
   config_manager.initialize(options_map);
@@ -196,7 +228,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunction_test, T, archive_types, Model
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
   std::string filter_lum = "filter_1";
   options_map["normalization-filter"].value() = boost::any(filter_lum);
-  std::string solar_sed = "solar_sed";
   options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
   // When
@@ -250,7 +281,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionRelative_test, T, archive_type
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
   std::string filter_lum = "filter_1";
   options_map["normalization-filter"].value() = boost::any(filter_lum);
-  std::string solar_sed = "solar_sed";
   options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
   // When
@@ -302,7 +332,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionDefault_test, T, archive_types
   options_map["filter-name"].as<std::vector<std::string>>().push_back("filter2");
   std::string filter_lum = "filter_1";
   options_map["normalization-filter"].value() = boost::any(filter_lum);
-  std::string solar_sed = "solar_sed";
   options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
   // When

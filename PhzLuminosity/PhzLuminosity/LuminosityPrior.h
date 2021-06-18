@@ -33,6 +33,7 @@ public:
                              const PhzDataModel::DoubleGrid& scale_factor_grid,
                              const PhzDataModel::DoubleGrid& sigma_scale_factor_grid,
                              bool in_mag,
+                             double solar_mag,
                              double caling_sigma_range,
                              const size_t sample_number);
 
@@ -44,6 +45,7 @@ public:
     const PhzDataModel::DoubleGrid& m_scale_factor_grid;
     const PhzDataModel::DoubleGrid& m_sigma_scale_factor_grid;
     const bool m_in_mag;
+    const double m_solar_mag;
     const double m_scaling_sigma_range;
     const size_t m_sample_number;
     double m_max = 0.0;
@@ -54,7 +56,8 @@ public:
   public:
     LuminosityGroupdProcessor(PhzDataModel::DoubleGrid& prior_grid,
                               const PhzDataModel::DoubleGrid& scale_factor_grid,
-                              bool in_mag);
+                              bool in_mag,
+                              double solar_mag);
 
      void operator()(const std::function<double(double)>& luminosity_funct, size_t sed_index, size_t z_index);
 
@@ -63,7 +66,9 @@ public:
      PhzDataModel::DoubleGrid& m_prior_grid;
      const PhzDataModel::DoubleGrid& m_scale_factor_grid;
      const bool m_in_mag;
+     const double m_solar_mag;
      double m_max = 0.0;
+
   };
 
 
@@ -73,6 +78,7 @@ LuminosityPrior(
     LuminosityFunctionSet luminosityFunctionSet,
     bool in_mag = true,
     double scaling_sigma_range = 5.,
+    double solar_mag = 0.,
     double effectiveness = 1.);
 
 void operator()(PhzDataModel::RegionResults& results) const;
@@ -87,7 +93,7 @@ void applyPrior(PhzDataModel::DoubleGrid& prior_grid, PhzDataModel::DoubleGrid& 
 void applySamplePrior(PhzDataModel::DoubleListGrid& prior_grid, PhzDataModel::DoubleListGrid& posterior_grid) const;
 
 
-static double getMagFromFlux(double flux);
+static double getMagFromSolarLum(double solar_lum, double ref_solar_mag);
 
 static double getLuminosityInSample(double alpha, double n_sigma, size_t sample_number, size_t sample_index);
 
@@ -100,6 +106,7 @@ private:
   LuminosityFunctionSet m_luminosity_function_set;
   const bool m_in_mag;
   const double m_scaling_sigma_range;
+  const double m_solar_mag;
   const double m_effectiveness;
 };
 

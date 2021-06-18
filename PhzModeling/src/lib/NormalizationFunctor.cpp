@@ -24,6 +24,13 @@ Euclid::PhzModeling::NormalizationFunctor::NormalizationFunctor(PhzDataModel::Fi
                                   m_integrated_flux{integrated_flux} {}
 
 
+
+
+double Euclid::PhzModeling::NormalizationFunctor::getReferenceFlux() const {
+  return m_integrated_flux;
+}
+
+
 Euclid::XYDataset::XYDataset
  Euclid::PhzModeling::NormalizationFunctor::operator()(const Euclid::XYDataset::XYDataset& sed) const {
 
