@@ -70,11 +70,11 @@ void ModelNormalizationConfig::initialize(const UserValues& args) {
   }
 
   if (args.count(NORMALIZATION_SED) > 0) {
-
-    m_solar_sed =  XYDataset::QualifiedName(args.find(NORMALIZATION_SED)->second.as<std::string>());
-    if (m_solar_sed.empty()) {
+    auto solar_sed_str = args.find(NORMALIZATION_SED)->second.as<std::string>();
+    if (solar_sed_str.empty()) {
       throw Elements::Exception() << "Empty reference solar SED";
     }
+    m_solar_sed =  XYDataset::QualifiedName(solar_sed_str);
   } else {
     throw Elements::Exception() << "Missing " << NORMALIZATION_SED << " option ";
   }
