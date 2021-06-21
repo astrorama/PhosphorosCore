@@ -32,11 +32,11 @@ XYDataset::XYDataset divideByLambda(const XYDataset::XYDataset filter, bool appl
   }
 }
 
-NormalizationFunction NormalizationFunctorFactory::GetFunction(
-      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
-      XYDataset::QualifiedName filter_name,
-      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
-      XYDataset::QualifiedName solar_sed_name) {
+NormalizationFunctor NormalizationFunctorFactory::GetFunctor(
+    std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+    XYDataset::QualifiedName filter_name,
+    std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
+    XYDataset::QualifiedName solar_sed_name) {
   auto dataset_ptr = filter_provider->getDataset(filter_name);
   if (!dataset_ptr) {
     throw Elements::Exception() << "Failed to find Filter: " << filter_name;
@@ -64,6 +64,14 @@ NormalizationFunction NormalizationFunctorFactory::GetFunction(
 
   return NormalizationFunctor(filter_info[0], fluxes[0].flux);
 
+}
+
+NormalizationFunction NormalizationFunctorFactory::GetFunction(
+      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+      XYDataset::QualifiedName filter_name,
+      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
+      XYDataset::QualifiedName solar_sed_name) {
+  return NormalizationFunctorFactory::GetFunctor(filter_provider, filter_name, sed_provider, solar_sed_name);
 }
 
 }

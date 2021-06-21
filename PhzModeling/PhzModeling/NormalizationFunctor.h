@@ -51,6 +51,8 @@ public:
   */
   Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed) const;
 
+  double getReferenceFlux() const;
+
 private:
   std::vector<PhzDataModel::FilterInfo> m_filter_info;
   double m_integrated_flux;

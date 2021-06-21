@@ -73,6 +73,7 @@ BOOST_FIXTURE_TEST_CASE( checkDependency_test, ConfigManager_fixture ) {
       3.3, 4.3 } };
   std::vector<Euclid::SourceCatalog::FluxErrorPair> values_4 { { 1.4, 2.4 }, {
       3.4, 4.4 } };
+  std::string solar_sed = "solar_sed";
 
   Euclid::SourceCatalog::Photometry photometry_1 { filter_1, values_1 };
   Euclid::SourceCatalog::Photometry photometry_2 { filter_1, values_2 };
@@ -110,7 +111,7 @@ BOOST_FIXTURE_TEST_CASE( checkDependency_test, ConfigManager_fixture ) {
       "filter2");
 
   options_map["normalization-filter"].value() = std::string {"MER/filtre1"};
-  options_map["normalization-solar-sed"].value() = std::string {"solar_sed"};
+  options_map["normalization-solar-sed"].value() = std::string {solar_sed};
 
   fs::create_directories(base_directory);
   fs::create_directories(cal_directory);
@@ -120,6 +121,7 @@ BOOST_FIXTURE_TEST_CASE( checkDependency_test, ConfigManager_fixture ) {
   // Create files
   std::ofstream file1_mer((mer_directory / "file1.txt").string());
   std::ofstream file2_mer((mer_directory / "file2.txt").string());
+  std::ofstream solar_sed_file((base_directory /  std::string("SEDs") / std::string(solar_sed+".txt")).string());
 
   // Fill up file
   file1_mer << "\n";
@@ -137,6 +139,11 @@ BOOST_FIXTURE_TEST_CASE( checkDependency_test, ConfigManager_fixture ) {
   filter1_mer << "\n";
   filter1_mer << "1234. 569.6\n";
   filter1_mer.close();
+
+  solar_sed_file << 5 << " " << 1e-16 << std::endl;
+  solar_sed_file << 12550 << " " << 1e-11 << std::endl;
+  solar_sed_file << 29999 << " " << 6e-13 << std::endl;
+  solar_sed_file.close();
 
   // Create files
   std::ofstream calzetti_file1((cal_directory / "calzetti_1.dat").string());

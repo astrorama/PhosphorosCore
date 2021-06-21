@@ -41,6 +41,7 @@
 #include "PhzConfiguration/CosmologicalParameterConfig.h"
 
 #include "PhzConfiguration/ScaleFactorMarginalizationConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
 
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzLikelihood/SharedPriorAdapter.h"
@@ -74,6 +75,8 @@ LuminosityPriorConfig::LuminosityPriorConfig(long manager_id) : Configuration(ma
   declareDependency<PhotometryGridConfig>();
   declareDependency<CosmologicalParameterConfig>();
   declareDependency<ScaleFactorMarginalizationConfig>();
+  declareDependency<ModelNormalizationConfig>();
+
 
 }
 
@@ -126,11 +129,12 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
            std::unique_ptr<MathUtils::Function>>{pair.first, pair.second->clone()});
      }
 
+     double solar_MAG = getDependency<ModelNormalizationConfig>().getSolarMagAB();
      double effectiveness = args.at(LUMINOSITY_PRIOR_EFFECTIVENESS).as<double>();
      std::shared_ptr<PhzLuminosity::LuminosityPrior> prior_ptr{new PhzLuminosity::LuminosityPrior{
        getDependency<LuminositySedGroupConfig>().getLuminositySedGroupManager(),
        PhzLuminosity::LuminosityFunctionSet{std::move(lum_function_vector)},
-       inMag, scale_sampling_range_sigma, effectiveness}};
+       inMag, scale_sampling_range_sigma, solar_MAG, effectiveness}};
 
      PhzLikelihood::SharedPriorAdapter<PhzLuminosity::LuminosityPrior> prior{prior_ptr};
 

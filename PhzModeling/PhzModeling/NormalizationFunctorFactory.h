@@ -27,6 +27,12 @@ typedef ModelDatasetGenerator::NormalizationFunction NormalizationFunction;
 class NormalizationFunctorFactory {
 
 public:
+  static NormalizationFunctor GetFunctor(
+        std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+        XYDataset::QualifiedName filter_name,
+        std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
+        XYDataset::QualifiedName solar_sed_name);
+
   static NormalizationFunction GetFunction(
       std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
       XYDataset::QualifiedName filter_name,
