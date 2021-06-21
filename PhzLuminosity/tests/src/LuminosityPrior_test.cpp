@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(constructor) {
   PhzDataModel::DoubleGrid scale_factor_grid{axes};
 
   // When
-  PhzLuminosity::LuminosityPrior::LuminosityGroupdProcessor proc(posterior_grid, scale_factor_grid, true);
+  PhzLuminosity::LuminosityPrior::LuminosityGroupdProcessor proc(posterior_grid, scale_factor_grid, true, 1.0);
 
   // Then
   BOOST_CHECK_CLOSE(0.0, proc.getMaxPrior(), 1E-3);
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(operator_function) {
 
   PhzDataModel::DoubleGrid prior_grid{axes};
   PhzDataModel::DoubleGrid scale_factor_grid{axes};
-  PhzLuminosity::LuminosityPrior::LuminosityGroupdProcessor proc(prior_grid, scale_factor_grid, false);
+  PhzLuminosity::LuminosityPrior::LuminosityGroupdProcessor proc(prior_grid, scale_factor_grid, false, 0.0);
 
   // When
   proc(test_lum, 0, 0);
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(operator_function_flux) {
   ++scale_iter;
   (*scale_iter) = 0;
 
-  PhzLuminosity::LuminosityPrior::LuminosityGroupdProcessor proc(prior_grid, scale_factor_grid, false);
+  PhzLuminosity::LuminosityPrior::LuminosityGroupdProcessor proc(prior_grid, scale_factor_grid, false, 0.0);
 
   // When
   proc(test_lum_mirror, 0, 0);
@@ -154,18 +154,18 @@ BOOST_AUTO_TEST_CASE(operator_function_mag) {
   ++scale_iter;
   (*scale_iter) = 0;
 
-  PhzLuminosity::LuminosityPrior::LuminosityGroupdProcessor proc(prior_grid, scale_factor_grid, true);
+  PhzLuminosity::LuminosityPrior::LuminosityGroupdProcessor proc(prior_grid, scale_factor_grid, true, 1.0);
 
   // When
   proc(test_lum_abs, 0, 0);
 
   // Then
   auto iter = prior_grid.begin();
-  BOOST_CHECK_CLOSE(5, (*iter), 1E-3);
+  BOOST_CHECK_CLOSE(27.90006562228223, (*iter), 1E-3);
   ++iter;
   BOOST_CHECK_CLOSE(0.0, (*iter), 1E-3);
 
-  BOOST_CHECK_CLOSE(5.0, proc.getMaxPrior(), 1E-3);
+  BOOST_CHECK_CLOSE(27.90006562228223, proc.getMaxPrior(), 1E-3);
 }
 
 BOOST_AUTO_TEST_SUITE_END ()
@@ -198,6 +198,7 @@ BOOST_AUTO_TEST_CASE(constructor) {
                                                                        scale_factor_grid,
                                                                        sigma_scale_factor_grid,
                                                                        true,
+                                                                       1.0,
                                                                        2.0,
                                                                        3);
 
@@ -228,6 +229,7 @@ BOOST_AUTO_TEST_CASE(operator_function) {
                                                                        scale_factor_grid,
                                                                        sigma_scale_factor_grid,
                                                                        false,
+                                                                       0.0,
                                                                        2.0,
                                                                        3);
 
@@ -286,6 +288,7 @@ BOOST_AUTO_TEST_CASE(operator_function_flux) {
                                                                         scale_factor_grid,
                                                                         sigma_scale_factor_grid,
                                                                         false,
+                                                                        0.0,
                                                                         2.0,
                                                                         3);
 
@@ -343,6 +346,7 @@ BOOST_AUTO_TEST_CASE(operator_function_mag) {
                                                                          scale_factor_grid,
                                                                          sigma_scale_factor_grid,
                                                                          true,
+                                                                         1.0,
                                                                          1,
                                                                          3);
 
@@ -351,15 +355,15 @@ BOOST_AUTO_TEST_CASE(operator_function_mag) {
 
    // Then
    auto iter = prior_grid.begin();
-   BOOST_CHECK_CLOSE(4.247425010840046, (*iter)[0], 1E-3);
-   BOOST_CHECK_CLOSE(5.0, (*iter)[1], 1E-3);
-   BOOST_CHECK_CLOSE(5.4402281476392025, (*iter)[2], 1E-3);
+   BOOST_CHECK_CLOSE(27.147490633122278, (*iter)[0], 1E-3);
+   BOOST_CHECK_CLOSE(27.90006562228223, (*iter)[1], 1E-3);
+   BOOST_CHECK_CLOSE(28.340293769921434, (*iter)[2], 1E-3);
    ++iter;
    BOOST_CHECK_CLOSE(0.0, (*iter)[0], 1E-3);
    BOOST_CHECK_CLOSE(0.0, (*iter)[1], 1E-3);
    BOOST_CHECK_CLOSE(0.0, (*iter)[2], 1E-3);
 
-   BOOST_CHECK_CLOSE(5.4402281476392025, proc.getMaxPrior(), 1E-3);
+   BOOST_CHECK_CLOSE(28.340293769921434, proc.getMaxPrior(), 1E-3);
 
 }
 
@@ -369,15 +373,16 @@ BOOST_AUTO_TEST_SUITE_END ()
 
 BOOST_AUTO_TEST_SUITE (LuminosityPrior_test)
 
-BOOST_AUTO_TEST_CASE(getMagFromFlux) {
+BOOST_AUTO_TEST_CASE(getMagFromSolarLum) {
   // Given
+  double shift = 3.1415;
   std::vector<double> inputs{1.0, 3631E6, 3631E8};
-  std::vector<double> expected{23.9, 0, -5};
+  std::vector<double> expected{3.1415, -20.75856562228223, -25.75856562228223};
   std::vector<double> results{};
 
   // When
   for (size_t index = 0; index < inputs.size(); ++index) {
-    results.push_back(PhzLuminosity::LuminosityPrior::getMagFromFlux(inputs[index]));
+    results.push_back(PhzLuminosity::LuminosityPrior::getMagFromSolarLum(inputs[index], shift));
   }
 
   // Then
@@ -523,7 +528,7 @@ BOOST_AUTO_TEST_CASE(applyEffectiveness) {
     std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
                           std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
 
-    PhzLuminosity::LuminosityPrior prior(PhzDataModel::QualifiedNameGroupManager{grp_list}, std::move(luminosityFunctions), true, 0.5, 0.7);
+    PhzLuminosity::LuminosityPrior prior(PhzDataModel::QualifiedNameGroupManager{grp_list}, std::move(luminosityFunctions), true, 0.5, 1.0, 0.7);
 
     auto prior_grid = prior.createPriorGrid(posterior_grid);
 
@@ -570,7 +575,7 @@ BOOST_AUTO_TEST_CASE(applySampleEffectiveness) {
     std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
                           std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
 
-    PhzLuminosity::LuminosityPrior prior(PhzDataModel::QualifiedNameGroupManager{grp_list}, std::move(luminosityFunctions), true, 0.5, 0.7);
+    PhzLuminosity::LuminosityPrior prior(PhzDataModel::QualifiedNameGroupManager{grp_list}, std::move(luminosityFunctions), true, 0.5, 1.0, 0.7);
 
     auto prior_grid = prior.createListPriorGrid(posterior_grid);
 
@@ -617,7 +622,7 @@ BOOST_AUTO_TEST_CASE(applyPrior) {
     std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
                           std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
 
-    PhzLuminosity::LuminosityPrior prior(PhzDataModel::QualifiedNameGroupManager{grp_list}, std::move(luminosityFunctions), true, 0.5, 0.7);
+    PhzLuminosity::LuminosityPrior prior(PhzDataModel::QualifiedNameGroupManager{grp_list}, std::move(luminosityFunctions), true, 0.5, 1.0, 0.7);
 
     auto prior_grid = prior.createPriorGrid(posterior_grid);
 
@@ -685,7 +690,7 @@ BOOST_AUTO_TEST_CASE(applySamplePrior) {
     std::vector<std::pair<PhzLuminosity::LuminosityFunctionValidityDomain,
                           std::unique_ptr<MathUtils::Function>>> luminosityFunctions {};
 
-    PhzLuminosity::LuminosityPrior prior(PhzDataModel::QualifiedNameGroupManager{grp_list}, std::move(luminosityFunctions), true, 0.5, 0.7);
+    PhzLuminosity::LuminosityPrior prior(PhzDataModel::QualifiedNameGroupManager{grp_list}, std::move(luminosityFunctions), true, 0.5, 1.0, 0.7);
 
     auto prior_grid = prior.createListPriorGrid(posterior_grid);
 

@@ -24,11 +24,13 @@ LuminosityPrior::LuminosityPrior(
     LuminosityFunctionSet luminosityFunctionSet,
     bool in_mag,
     double scaling_sigma_range,
+    double solar_mag,
     double effectiveness):
 m_sed_group_manager(std::move(sedGroupManager)),
 m_luminosity_function_set{std::move(luminosityFunctionSet)},
 m_in_mag{in_mag},
 m_scaling_sigma_range{scaling_sigma_range},
+m_solar_mag{solar_mag},
 m_effectiveness{effectiveness} {
 
 }
@@ -38,12 +40,14 @@ LuminosityPrior::LuminosityGroupSampledProcessor::LuminosityGroupSampledProcesso
                              const PhzDataModel::DoubleGrid& scale_factor_grid,
                              const PhzDataModel::DoubleGrid& sigma_scale_factor_grid,
                              bool in_mag,
+                             double solar_mag,
                              double scaling_sigma_range,
                              const size_t sample_number):
                                  m_prior_scal_grid{prior_scal_grid},
                                  m_scale_factor_grid{scale_factor_grid},
                                  m_sigma_scale_factor_grid{sigma_scale_factor_grid},
                                  m_in_mag{in_mag},
+                                 m_solar_mag{solar_mag},
                                  m_scaling_sigma_range{scaling_sigma_range},
                                  m_sample_number{sample_number} {}
 
@@ -73,7 +77,8 @@ void LuminosityPrior::LuminosityGroupSampledProcessor::operator()(const std::fun
       double n_sigma = m_scaling_sigma_range*(*sigma_scal_iter);
       double luminosity = getLuminosityInSample(alpha, n_sigma, m_sample_number, lum_iter);
       if (m_in_mag) {
-        luminosity = getMagFromFlux(luminosity);
+        double ref = m_solar_mag;
+        luminosity = getMagFromSolarLum(luminosity, ref);
       }
 
       if (!std::isfinite(luminosity)) {
@@ -94,8 +99,8 @@ void LuminosityPrior::LuminosityGroupSampledProcessor::operator()(const std::fun
 }
 
 LuminosityPrior::LuminosityGroupdProcessor::LuminosityGroupdProcessor(PhzDataModel::DoubleGrid& prior_grid,
-                            const PhzDataModel::DoubleGrid& scale_factor_grid, bool in_mag):
-    m_prior_grid{prior_grid}, m_scale_factor_grid{scale_factor_grid}, m_in_mag{in_mag} {}
+                            const PhzDataModel::DoubleGrid& scale_factor_grid, bool in_mag, double solar_mag):
+    m_prior_grid{prior_grid}, m_scale_factor_grid{scale_factor_grid}, m_in_mag{in_mag}, m_solar_mag{solar_mag}{}
 
 double LuminosityPrior::LuminosityGroupdProcessor::getMaxPrior() {
       return m_max;
@@ -114,7 +119,8 @@ void LuminosityPrior::LuminosityGroupdProcessor::operator()(const std::function<
   while (prior_iter != m_prior_grid.end()) {
    double luminosity = *scal_iter;
    if (m_in_mag) {
-     luminosity = getMagFromFlux(luminosity);
+     double ref = m_solar_mag;
+     luminosity = getMagFromSolarLum(luminosity, ref);
    }
 
    if (!std::isfinite(luminosity)) {
@@ -166,9 +172,8 @@ double LuminosityPrior::fillTheGrid(Processor& processor, Axis_SED& sed_axis, Ax
       return processor.getMaxPrior();
 }
 
-
-double LuminosityPrior::getMagFromFlux(double flux) {
-  return -2.5 * std::log10(flux / 3631E6);
+double LuminosityPrior::getMagFromSolarLum(double solarLum, double ref_solar_mag) {
+  return -2.5 * std::log10(solarLum) + ref_solar_mag;
 }
 
 double LuminosityPrior::getLuminosityInSample(double alpha, double n_sigma, size_t sample_number, size_t sample_index) {
@@ -260,7 +265,7 @@ void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
     // Create & fill the prior grid
     auto prior_scal_grid = createListPriorGrid(sampled_posterior_grid);
     auto sample_proc = LuminosityGroupSampledProcessor(prior_scal_grid, scale_factor_grid,
-        sigma_scale_factor_grid, m_in_mag, m_scaling_sigma_range, sample_number);
+        sigma_scale_factor_grid, m_in_mag,m_solar_mag, m_scaling_sigma_range, sample_number);
     auto& z_axis = sampled_posterior_grid.getAxis<PhzDataModel::ModelParameter::Z>();
     auto& sed_axis = sampled_posterior_grid.getAxis<PhzDataModel::ModelParameter::SED>();
     double max = fillTheGrid(sample_proc, sed_axis, z_axis);
@@ -277,7 +282,7 @@ void LuminosityPrior::operator()(PhzDataModel::RegionResults& results) const {
   // We first create a grid that contains only the prior, so we can normalize
   // it and apply the efficiency
   auto prior_grid  = createPriorGrid(posterior_grid);
-  auto simple_proc = LuminosityGroupdProcessor(prior_grid, scale_factor_grid, m_in_mag);
+  auto simple_proc = LuminosityGroupdProcessor(prior_grid, scale_factor_grid, m_in_mag, m_solar_mag);
   auto& z_axis = prior_grid.getAxis<PhzDataModel::ModelParameter::Z>();
   auto& sed_axis = prior_grid.getAxis<PhzDataModel::ModelParameter::SED>();
   double max = fillTheGrid(simple_proc, sed_axis, z_axis);
