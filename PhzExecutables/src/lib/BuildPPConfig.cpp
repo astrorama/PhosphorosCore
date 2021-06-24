@@ -120,6 +120,10 @@ void BuildPPConfig::run(Euclid::Configuration::ConfigManager &config_manager) {
                   current_units << " != " << std::get<2>(parsed_param);
             }
 
+            if (current_units == "" && std::get<2>(parsed_param) != "") {
+               current_units = std::get<2>(parsed_param);
+            }
+
             std::vector<Table::Row::cell_type> values{ std::string{pp},
                                                        std::string{sed_iter.qualifiedName()},
                                                        std::get<0>(parsed_param),
