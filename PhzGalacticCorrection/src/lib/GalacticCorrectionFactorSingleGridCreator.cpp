@@ -101,7 +101,7 @@ Euclid::XYDataset::XYDataset expDataSet(const Euclid::XYDataset::XYDataset & inp
   std::vector<std::pair<double, double>> result{};
 
   for (auto& pair :input){
-    result.push_back(std::make_pair(pair.first,std::pow(10,pair.second*factor)));
+    result.push_back(std::make_pair(pair.first, std::pow(10,pair.second*factor)));
   }
 
   return Euclid::XYDataset::XYDataset(result);
