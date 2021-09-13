@@ -58,11 +58,12 @@
 #include "PhzConfiguration/OutputStatisticsConfig.h"
 #include "PhzConfiguration/CopyColumnsConfig.h"
 
-#include "PhzConfiguration/DustColumnDensityColumnConfig.h"
+#include "PhzConfiguration/ObservationConditionColumnConfig.h"
 #include "PhzConfiguration/CorrectionCoefficientGridConfig.h"
 #include "PhzConfiguration/ModelGridModificationConfig.h"
 #include "PhzConfiguration/FixedRedshiftModelGridModifConfig.h"
 #include "PhzConfiguration/GalactiAbsorptionModelGridModifConfig.h"
+#include "PhzConfiguration/FilterVariationModelGridModifConfig.h"
 #include "PhzConfiguration/ScaleFactorMarginalizationConfig.h"
 #include "PhzConfiguration/PhysicalParametersConfig.h"
 
@@ -132,11 +133,12 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<CopyColumnsConfig>();
   declareDependency<ErrorAdjustmentConfig>();
 
-  declareDependency<DustColumnDensityColumnConfig>();
+  declareDependency<ObservationConditionColumnConfig>();
   declareDependency<CorrectionCoefficientGridConfig>();
   declareDependency<ModelGridModificationConfig>();
   declareDependency<FixedRedshiftModelGridModifConfig>();
   declareDependency<GalactiAbsorptionModelGridModifConfig>();
+  declareDependency<FilterVariationModelGridModifConfig>();
   declareDependency<ScaleFactorMarginalizationConfig>();
   declareDependency<PhysicalParametersConfig>();
 

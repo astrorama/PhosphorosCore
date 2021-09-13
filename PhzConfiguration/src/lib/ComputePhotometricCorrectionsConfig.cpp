@@ -36,9 +36,10 @@
 #include "PhzConfiguration/AxisWeightPriorConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/CorrectionCoefficientGridConfig.h"
-#include "PhzConfiguration/DustColumnDensityColumnConfig.h"
+#include "PhzConfiguration/ObservationConditionColumnConfig.h"
 #include "PhzConfiguration/ErrorAdjustmentConfig.h"
 #include "PhzConfiguration/GalactiAbsorptionModelGridModifConfig.h"
+#include "PhzConfiguration/FilterVariationModelGridModifConfig.h"
 #include "PhzConfiguration/GenericGridPriorConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/LikelihoodGridFuncConfig.h"
@@ -92,10 +93,11 @@ ComputePhotometricCorrectionsConfig::ComputePhotometricCorrectionsConfig(
   declareDependency<GenericGridPriorConfig>();
   declareDependency<ErrorAdjustmentConfig>();
 
-  declareDependency<DustColumnDensityColumnConfig>();
+  declareDependency<ObservationConditionColumnConfig>();
   declareDependency<CorrectionCoefficientGridConfig>();
   declareDependency<ModelGridModificationConfig>();
   declareDependency<GalactiAbsorptionModelGridModifConfig>();
+  declareDependency<FilterVariationModelGridModifConfig>();
   declareDependency<MultithreadConfig>();
 }
 
