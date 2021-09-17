@@ -116,6 +116,7 @@ static void outputFunction(const std::string &filename, IgmConfig &igm_config, X
 }
 
 void FilterVariationCoefficientGridOutputConfig::initialize(const UserValues& args) {
+
   // Extract file option
   std::string filename = getFilenameFromOptions(args,
       getDependency<IntermediateDirConfig>().getIntermediateDir(),

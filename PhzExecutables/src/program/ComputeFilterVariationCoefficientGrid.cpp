@@ -97,7 +97,11 @@ class ComputeFilterVariationCoefficientGrid : public Elements::Program {
   Elements::ExitCode mainMethod(map<string, po::variable_value>& args) override {
 
     auto& config_manager = ConfigManager::getInstance(config_manager_id);
+
+    logger.info()<<"Initializing the ConfigManager";
     config_manager.initialize(args);
+
+    logger.info()<<"ConfigManager initilized";
 
     auto& model_phot_grid = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGridInfo();
     auto& sed_provider = config_manager.template getConfiguration<SedProviderConfig>().getSedDatasetProvider();
@@ -114,7 +118,6 @@ class ComputeFilterVariationCoefficientGrid : public Elements::Program {
 
     auto normalizer_functor =
           Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, sed_provider, sun_sed_name);
-
 
     std::map<std::string, PhzDataModel::PhotometryGrid> result_map{};
 
