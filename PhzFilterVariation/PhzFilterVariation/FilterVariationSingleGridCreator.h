@@ -43,6 +43,11 @@
 namespace Euclid {
 namespace PhzFilterVariation {
 
+/**
+ * This class compute the parameters needed to correct the filter shift.
+ * As we need a set of parameters for each model and eacch filters,
+ * the parameters are stored in a grid.
+ */
 class FilterVariationSingleGridCreator{
 public:
 
@@ -62,29 +67,44 @@ public:
 
   virtual ~FilterVariationSingleGridCreator();
 
+
   PhzDataModel::PhotometryGrid createGrid(
                const PhzDataModel::ModelAxesTuple& parameter_space,
                const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
                const PhysicsUtils::CosmologicalParameters& cosmology,
                ProgressListener progress_listener = ProgressListener{});
 
-
+/**
+ * compute the sampling: return a vector of "numbers" values between "min" and "max"
+ */
  static std::vector<double> computeSampling(double min, double max, int numbers);
 
+ /**
+  * Shift the filter of value "shift"
+  */
  static XYDataset::XYDataset shifFilter(const XYDataset::XYDataset& filter_dataset, double shift);
 
+ /**
+  * For a given "sed" compute, for each filter, the coefficient Flux_i(d_lambda_i)/Flux_i(No shift)
+  */
  static std::vector<double> compute_coef(const Euclid::XYDataset::XYDataset& sed,
      const XYDataset::XYDataset& filter_dataset,
      const std::vector<double>& d_lambda,
      PhzModeling::ApplyFilterFunctor& filter_functor,
      PhzModeling::IntegrateDatasetFunctor& integrate_funct);
 
+ /**
+  * For a given "sed" compute, for each filter, the reduced coefficient (Flux_i(d_lambda_i)/Flux_i(No shift)- 1)/d_lambda_i
+  */
  static std::vector<double> compute_tild_coef(const Euclid::XYDataset::XYDataset& sed,
      const XYDataset::XYDataset& filter_dataset,
      const std::vector<double>& d_lambda,
      PhzModeling::ApplyFilterFunctor& filter_functor,
      PhzModeling::IntegrateDatasetFunctor& integrate_funct);
 
+ /**
+  * return the factors a and b of the linear regression such that tild_coef = a * delta_lambda + b
+  */
  static std::pair<double, double> do_regression(std::vector<double> delta_lambda, std::vector<double> tild_coef);
 
 private:
