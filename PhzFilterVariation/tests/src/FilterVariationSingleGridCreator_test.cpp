@@ -69,7 +69,7 @@ BOOST_FIXTURE_TEST_CASE(computeSampling_test, FilterVariationSingleGridCreator_F
    }
 }
 
-/*
+
 BOOST_FIXTURE_TEST_CASE(compute_coef_test, FilterVariationSingleGridCreator_Fixture) {
   std::vector<double> lambda{};
   std::vector<double> sed_val{};
@@ -77,23 +77,22 @@ BOOST_FIXTURE_TEST_CASE(compute_coef_test, FilterVariationSingleGridCreator_Fixt
   for (int index = 0; index < 701; ++index) {
     lambda.push_back(5000+index);
     sed_val.push_back(index);
-    if (index<300 || index>400) {
+    if (index < 300 || index > 400) {
       filter_val.push_back(0);
     } else {
       filter_val.push_back(1);
     }
   }
 
-  std::vector<double> delta_lambda{-10, -8.0909, -6.181818, -4.272727, -2.363636, 0.454545, 1.454545, 3.363636, 5.272727, 7.181818, 9.090909,11, 11.90909, 12.81818, 13.727272,14.636363, 15.54545, 16.454545, 17.36363, 618.272727, 19.181818, 20.090909, 21};
+  // nominal flux = int_300^400 x dx = 1/2x² |_300^400 = 35000
+  std::vector<double> delta_lambda{-100, -10, 0, 10, 100};
   auto filter = XYDataset::XYDataset::factory(lambda, filter_val);
   auto sed = XYDataset::XYDataset::factory(lambda, sed_val);
 
   auto filter_functor = PhzModeling::ApplyFilterFunctor();
-  auto integrate_dataset_function = PhzModeling::IntegrateDatasetFunctor{MathUtils::InterpolationType::CUBIC_SPLINE};
+  auto integrate_dataset_function = PhzModeling::IntegrateDatasetFunctor{MathUtils::InterpolationType::LINEAR};
 
-  std::vector<double> expected{0.7142857142857143, 0.8085714285714286, 0.9028571428571429,
-                               1.002857142857143, 1.0942857142857143, 1.1885714285714286,
-                               1.2857142857142858};
+  std::vector<double> expected{0.7142857,0.9714286,1,1.0285714,1.2857143};
 
   auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_coef(sed,
       filter, delta_lambda, filter_functor, integrate_dataset_function);
@@ -103,7 +102,53 @@ BOOST_FIXTURE_TEST_CASE(compute_coef_test, FilterVariationSingleGridCreator_Fixt
   }
 }
 
-*/
+BOOST_FIXTURE_TEST_CASE(compute_tilde_coef_test, FilterVariationSingleGridCreator_Fixture) {
+  std::vector<double> lambda{};
+  std::vector<double> sed_val{};
+  std::vector<double> filter_val{};
+  for (int index = 0; index < 701; ++index) {
+    lambda.push_back(5000+index);
+    sed_val.push_back(index);
+    if (index < 300 || index > 400) {
+      filter_val.push_back(0);
+    } else {
+      filter_val.push_back(1);
+    }
+  }
+
+  // nominal flux = int_300^400 x dx = 1/2x² |_300^400 = 35000
+  std::vector<double> delta_lambda{-100, -10, -1, 0, 1, 10, 100};
+  auto filter = XYDataset::XYDataset::factory(lambda, filter_val);
+  auto sed = XYDataset::XYDataset::factory(lambda, sed_val);
+
+  auto filter_functor = PhzModeling::ApplyFilterFunctor();
+  auto integrate_dataset_function = PhzModeling::IntegrateDatasetFunctor{MathUtils::InterpolationType::LINEAR};
+
+  std::vector<double> expected{0.0028571,0.0028571,0.0028571,0,0.0028571,0.0028571,0.0028571};
+
+  auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_tild_coef(sed,
+      filter, delta_lambda, filter_functor, integrate_dataset_function);
+
+  for (size_t i = 0; i < expected.size(); ++i) {
+      BOOST_CHECK_CLOSE(res[i], expected[i], 0.01);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE(regression_test, FilterVariationSingleGridCreator_Fixture) {
+	  std::vector<double> delta_lambda{-100,-50,-20,-10,10,20,50,100};
+	  std::vector<double> tild_coef{1,1.5,1.8,1.9,2.1,2.2,2.5,3};
+
+	  double expected_a = 0.01;
+	  double expected_b = 2.0;
+
+	  auto res = PhzFilterVariation::FilterVariationSingleGridCreator::do_regression(delta_lambda, tild_coef);
+
+	  BOOST_CHECK_CLOSE(res.first, expected_a, 0.01);
+	  BOOST_CHECK_CLOSE(res.second, expected_b, 0.01);
+}
+
+
+
 BOOST_AUTO_TEST_SUITE_END ()
 
 }
