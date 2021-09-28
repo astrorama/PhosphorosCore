@@ -154,8 +154,10 @@ void ObservationConditionColumnConfig::initialize(const UserValues& args) {
 
   m_filter_variation_enabled = false;
   for(size_t filter_index = 0; filter_index < filter_shift_columns.size(); ++filter_index) {
-    m_filter_variation_enabled &= filter_shift_columns[filter_index].second != "NONE";
+    m_filter_variation_enabled |= filter_shift_columns[filter_index].second != "NONE";
   }
+
+  logger.info() << "Filter variation handling is :" << m_filter_variation_enabled;
 
 
   auto handler = std::make_shared<PhzDataModel::ObservationConditionFromRow>(column_info, ebv_column, filter_shift_columns);

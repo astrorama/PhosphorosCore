@@ -52,10 +52,10 @@ static Elements::Logging logger = Elements::Logging::getLogger("FilterShiftProce
                                   SourceCatalog::Photometry::iterator out_begin) {
     auto shift_iterator = filter_shift.begin();
     while (model_begin != model_end) {
-      out_begin->flux = (*model_begin).flux * (1.0
-          + (*shift_iterator)*(*shift_iterator)*(*corr_begin).flux
-          + (*shift_iterator)*(*corr_begin).error);
-      out_begin->error = 0.;
+      double correction = (1.0 + (*shift_iterator)*(*shift_iterator)*(*corr_begin).flux + (*shift_iterator)*(*corr_begin).error);
+      // logger.info() << "Correction value " << correction;
+      out_begin->flux *= correction;
+      out_begin->error *= correction;
       ++model_begin;
       ++corr_begin;
       ++out_begin;

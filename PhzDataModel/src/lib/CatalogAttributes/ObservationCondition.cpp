@@ -24,9 +24,11 @@
 
 #include "PhzDataModel/CatalogAttributes/ObservationCondition.h"
 #include "Table/CastVisitor.h"
+#include "ElementsKernel/Logging.h"
 
 namespace Euclid {
 namespace PhzDataModel {
+static Elements::Logging logger = Elements::Logging::getLogger("ObservationCondition");
 
 
 ObservationCondition::ObservationCondition(std::vector<double> filter_shifts, double dust_column_density) :
@@ -87,6 +89,7 @@ std::unique_ptr<SourceCatalog::Attribute> ObservationConditionFromRow::createAtt
       shifts.push_back(0.0);
     } else {
       double shift = boost::apply_visitor(Table::CastVisitor<double>(), row[value]);
+      // logger.info() << "Shift value " << shift << " for index " << index_index << "  (column index " << value << ")";
       shifts.push_back(shift);
     }
   }
