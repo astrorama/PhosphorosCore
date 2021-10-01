@@ -67,7 +67,7 @@ static Elements::Logging logger = Elements::Logging::getLogger("FilterShiftProce
   FilterShiftProcessModelGridFunctor::FilterShiftProcessModelGridFunctor(
       const std::map<std::string, PhzDataModel::PhotometryGrid> & coefficient_grid):
       m_coefficient_grid(coefficient_grid) {
-    logger.info() << "A FilterShiftProcessModelGridFunctor has been instantiated";
+    logger.debug() << "A FilterShiftProcessModelGridFunctor has been instantiated";
   }
 
   PhzDataModel::PhotometryGrid FilterShiftProcessModelGridFunctor::operator()(

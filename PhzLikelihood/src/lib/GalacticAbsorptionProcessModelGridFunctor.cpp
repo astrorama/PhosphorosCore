@@ -64,7 +64,7 @@ static Elements::Logging logger = Elements::Logging::getLogger("GalacticAbsorpti
       const std::map<std::string,PhzDataModel::PhotometryGrid> & coefficient_grid,
       double dust_map_sed_bpc):
       m_coefficient_grid(coefficient_grid), m_dust_map_sed_bpc{dust_map_sed_bpc} {
-        logger.info() << "A GalacticAbsorptionProcessModelGridFunctor has been instantiated";
+        logger.debug() << "A GalacticAbsorptionProcessModelGridFunctor has been instantiated";
       }
 
   PhzDataModel::PhotometryGrid GalacticAbsorptionProcessModelGridFunctor::operator()
