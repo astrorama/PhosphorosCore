@@ -98,6 +98,8 @@ static const std::string SOURCES_NUMBER_PER_SAMPLING_FILE {"PDF-sample-file-sour
 static const std::string CREATE_OUTPUT_LIKELIHOODS_FLAG {"create-output-likelihoods"};
 static const std::string CREATE_OUTPUT_POSTERIORS_FLAG {"create-output-posteriors"};
 static const std::string INPUT_BUFFER_SIZE {"input-buffer-size"};
+static const std::string INPUT_SKIP_HEAD {"input-skip-head"};
+static const std::string INPUT_PROCESS_MAX {"input-process-max"};
 
 static Elements::Logging logger = Elements::Logging::getLogger("ComputeRedshiftsConfig");
 
@@ -162,7 +164,11 @@ auto ComputeRedshiftsConfig::getProgramOptions() -> std::map<std::string, Option
     }},
     {"Input catalog options", {
       {INPUT_BUFFER_SIZE.c_str(), po::value<int>()->default_value(5000),
-          "The size of input sources chunk that are kept in memory at the same time"}
+          "The size of input sources chunk that are kept in memory at the same time"},
+      {INPUT_PROCESS_MAX.c_str(), po::value<int>()->default_value(0),
+	      "If set (and > 0) the processing will stop after this number of sources"},
+      {INPUT_SKIP_HEAD.c_str(), po::value<int>()->default_value(0),
+          "If set skip the first sources of the catalog, combined with the other Input catalog options it allows to process only a specific chunk of the input catalog"}
     }}
   };
 }
@@ -211,6 +217,14 @@ void ComputeRedshiftsConfig::preInitialize(const UserValues& args) {
 
   if (args.at(GRID_SAMPLING_NUMBER).as<int>() <= 0) {
       throw Elements::Exception() << "Option " << GRID_SAMPLING_NUMBER << " must be bigger than 0";
+  }
+
+  if (args.at(INPUT_PROCESS_MAX).as<int>() < 0) {
+        throw Elements::Exception() << "Option " << INPUT_PROCESS_MAX << " must be non negative";
+  }
+
+  if (args.at(INPUT_SKIP_HEAD).as<int>() < 0) {
+        throw Elements::Exception() << "Option " << INPUT_SKIP_HEAD << " must be non negative";
   }
 }
 
@@ -274,6 +288,10 @@ void ComputeRedshiftsConfig::initialize(const UserValues& args) {
   }
 
   m_input_buffer_size = args.at(INPUT_BUFFER_SIZE).as<int>();
+
+  m_input_process_max = args.at(INPUT_PROCESS_MAX).as<int>();
+
+  m_input_skip_first = args.at(INPUT_SKIP_HEAD).as<int>();
 }
 
 
@@ -336,7 +354,24 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
 }
 
 std::size_t ComputeRedshiftsConfig::getInputBufferSize() const {
-  return m_input_buffer_size;
+	if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+		throw Elements::Exception() << "Call to getInputBufferSize() on a not initialized instance.";
+	}
+	return m_input_buffer_size;
+}
+
+std::size_t ComputeRedshiftsConfig::getSkipFirstNumber() const {
+	if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+		throw Elements::Exception() << "Call to getSkipFirstNumber() on a not initialized instance.";
+	}
+	return m_input_skip_first;
+}
+
+std::size_t ComputeRedshiftsConfig::getProcessMaxNumber() const{
+	if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+		throw Elements::Exception() << "Call to getProcessMaxNumber() on a not initialized instance.";
+	}
+	return m_input_process_max;
 }
 
 
