@@ -45,7 +45,7 @@ namespace PhzLikelihood {
 
 static Elements::Logging logger = Elements::Logging::getLogger("FilterShiftProcessModelGridFunctor");
 
-  static void computeCorrectedPhotometry(SourceCatalog::Photometry::const_iterator model_begin,
+   void FilterShiftProcessModelGridFunctor::computeCorrectedPhotometry(SourceCatalog::Photometry::const_iterator model_begin,
                                   SourceCatalog::Photometry::const_iterator model_end,
                                   SourceCatalog::Photometry::const_iterator corr_begin,
                                   const std::vector<double>& filter_shift,
