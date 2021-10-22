@@ -134,21 +134,6 @@ BOOST_FIXTURE_TEST_CASE(compute_tilde_coef_test, FilterVariationSingleGridCreato
   }
 }
 
-BOOST_FIXTURE_TEST_CASE(regression_test, FilterVariationSingleGridCreator_Fixture) {
-	  std::vector<double> delta_lambda{-100,-50,-20,-10,10,20,50,100};
-	  std::vector<double> tild_coef{1,1.5,1.8,1.9,2.1,2.2,2.5,3};
-
-	  double expected_a = 0.01;
-	  double expected_b = 2.0;
-
-	  auto res = PhzFilterVariation::FilterVariationSingleGridCreator::do_regression(delta_lambda, tild_coef);
-
-	  BOOST_CHECK_CLOSE(res.first, expected_a, 0.01);
-	  BOOST_CHECK_CLOSE(res.second, expected_b, 0.01);
-}
-
-
-
 BOOST_AUTO_TEST_SUITE_END ()
 
 }

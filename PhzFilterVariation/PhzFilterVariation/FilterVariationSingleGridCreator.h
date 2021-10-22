@@ -102,11 +102,6 @@ public:
      PhzModeling::ApplyFilterFunctor& filter_functor,
      PhzModeling::IntegrateDatasetFunctor& integrate_funct);
 
- /**
-  * return the factors a and b of the linear regression such that tild_coef = a * delta_lambda + b
-  */
- static std::pair<double, double> do_regression(std::vector<double> delta_lambda, std::vector<double> tild_coef);
-
 private:
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_sed_provider;
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
