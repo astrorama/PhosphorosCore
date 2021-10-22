@@ -14,6 +14,7 @@
 #include "ElementsKernel/Logging.h"
 #include "ElementsKernel/Exception.h"
 #include "MathUtils/interpolation/interpolation.h"
+#include "MathUtils/regression/LinearRegression.h"
 
 #include "PhzModeling/ExtinctionFunctor.h"
 #include "PhzModeling/RedshiftFunctor.h"
@@ -116,32 +117,6 @@ std::vector<double> FilterVariationSingleGridCreator::compute_tild_coef(
   return result;
  }
 
- std::pair<double, double> FilterVariationSingleGridCreator::do_regression(std::vector<double> delta_lambda,
-                                                                           std::vector<double> tild_coef) {
-   double mean_x = 0;
-   double mean_y = 0;
-
-   for (size_t index = 0; index < delta_lambda.size(); ++index) {
-     mean_x += delta_lambda[index];
-     mean_y += tild_coef[index];
-   }
-
-   mean_x/= delta_lambda.size();
-   mean_y/= delta_lambda.size();
-
-   double nom = 0;
-   double denom = 0;
-   for (size_t index = 0; index < delta_lambda.size(); ++index) {
-     nom += (delta_lambda[index] - mean_x)*(tild_coef[index] - mean_y);
-     denom += (delta_lambda[index] - mean_x)*(delta_lambda[index] - mean_x);
-   }
-
-   double a = nom / denom;
-   double b = mean_y - a * mean_x;
-
-   return std::make_pair(a, b);
- }
-
  ////////////////////////////////////////////////////////////////////////////////
  class ParallelJob {
 
@@ -188,7 +163,7 @@ std::vector<double> FilterVariationSingleGridCreator::compute_tild_coef(
              m_delta_lambda,
              m_filter_functor,
              m_integrate_funct);
-         auto coef = FilterVariationSingleGridCreator::do_regression(m_delta_lambda, tild_coef);
+         auto coef = MathUtils::linearRegression(m_delta_lambda, tild_coef);
 
          (*corr_iter).flux = coef.first;
          (*corr_iter).error = coef.second;
