@@ -7,13 +7,13 @@
 #ifndef PHZMODELING_APPLYFILTERFUNCTOR_H
 #define PHZMODELING_APPLYFILTERFUNCTOR_H
 
-#include <utility>
 #include "MathUtils/function/Function.h"
+#include <utility>
 
 namespace Euclid {
 
 namespace XYDataset {
-  class XYDataset;
+class XYDataset;
 }
 
 namespace PhzModeling {
@@ -29,14 +29,15 @@ namespace PhzModeling {
 class ApplyFilterFunctor {
 
 public:
-
   /**
    * @brief Function Call Operator
    * @details
-   * Apply the filter to the Model dataset.
-   * Points out of the range are discarded. If the given model dataset starts
-   * or ends outside the given range, the returned dataset starts or ends
-   * with datapoints with the range wavelengths, with zero values.
+   * Apply the filter to the Model dataset. The output grid contains knots within the filter range,
+   * with the first and last values always 0. The grid resolution is based on the minimum dλ for both
+   * the model and the filter transmission (if it is an interpolated function!).
+   * The resolution of either one may be highest at some particular point (i.e. an emission line). Additionally,
+   * when using filter shifts, the shift may mis-align the filter and SED features, breaking the correlation between
+   * the shift and the resulting photometry.
    *
    * @param model
    * An XYDataset representing the Model to be filtered.
@@ -52,15 +53,11 @@ public:
    * @return
    * A XYDataset representing the filtered Model.
    */
-  XYDataset::XYDataset operator()(
-    const XYDataset::XYDataset& model,
-    const std::pair<double,double>& filter_range,
-    const MathUtils::Function& filter
-  ) const;
-
+  XYDataset::XYDataset operator()(const XYDataset::XYDataset& model, const std::pair<double, double>& filter_range,
+                                  const MathUtils::Function& filter) const;
 };
 
-} // end of namespace PhzModeling
-} // end of namespace Euclid
+}  // end of namespace PhzModeling
+}  // end of namespace Euclid
 
-#endif    /* PHZMODELING_APPLYFILTERFUNCTOR_H */
+#endif /* PHZMODELING_APPLYFILTERFUNCTOR_H */
