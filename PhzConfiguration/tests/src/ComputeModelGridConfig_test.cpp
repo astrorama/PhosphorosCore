@@ -137,7 +137,9 @@ BOOST_FIXTURE_TEST_CASE( checkDependency_test, ConfigManager_fixture ) {
   std::ofstream filter1_mer((filter_mer_directory / "filtre1.txt").string());
   // Fill up file
   filter1_mer << "\n";
+  filter1_mer << "1233. 0.0\n";
   filter1_mer << "1234. 569.6\n";
+  filter1_mer << "1235. 0.0\n";
   filter1_mer.close();
 
   solar_sed_file << 5 << " " << 1e-16 << std::endl;
