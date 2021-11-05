@@ -82,7 +82,7 @@ void LuminosityPrior::LuminosityGroupSampledProcessor::operator()(const std::fun
       }
 
       if (!std::isfinite(luminosity)) {
-               logger.warn() << "Undefined luminosity in the prior computation.";
+               logger.debug() << "Undefined luminosity in the prior computation.";
       } else {
         (*prior_sample_iter)[lum_iter] = luminosity_funct(luminosity);
          if ((*prior_sample_iter)[lum_iter] > m_max) {
@@ -124,7 +124,7 @@ void LuminosityPrior::LuminosityGroupdProcessor::operator()(const std::function<
    }
 
    if (!std::isfinite(luminosity)) {
-     logger.warn() << "Undefined luminosity in the prior computation.";
+     logger.debug() << "Undefined luminosity in the prior computation.";
    } else {
       *prior_iter = luminosity_funct(luminosity);
       if (*prior_iter > m_max) {

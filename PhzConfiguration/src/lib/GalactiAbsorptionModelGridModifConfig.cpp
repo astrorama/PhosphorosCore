@@ -28,7 +28,7 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/CorrectionCoefficientGridConfig.h"
-#include "PhzConfiguration/DustColumnDensityColumnConfig.h"
+#include "PhzConfiguration/ObservationConditionColumnConfig.h"
 #include "PhzConfiguration/ModelGridModificationConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzLikelihood/GalacticAbsorptionProcessModelGridFunctor.h"
@@ -45,32 +45,14 @@ GalactiAbsorptionModelGridModifConfig::GalactiAbsorptionModelGridModifConfig(
     long manager_id)
     : Configuration(manager_id) {
   declareDependency<CorrectionCoefficientGridConfig>();
-  declareDependency<DustColumnDensityColumnConfig>();
+  declareDependency<ObservationConditionColumnConfig>();
   declareDependency<ModelGridModificationConfig>();
   declareDependency<PhotometryGridConfig>();
 }
 
-template <int I>
-bool checkAxis(const PhzDataModel::ModelAxesTuple& first_grid_info,
-               const PhzDataModel::ModelAxesTuple& second_grid_info) {
-  auto first_items = std::get<I>(first_grid_info);
-  auto second_items = std::get<I>(second_grid_info);
 
-  if (first_items.size() != second_items.size()) {
-    return false;
-  }
 
-  for (auto& first_item : first_items) {
-    if (std::find(second_items.begin(), second_items.end(), first_item) ==
-        second_items.end()) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool areGridsCompatible(const PhzDataModel::PhotometryGridInfo& first_grid,
+bool GalactiAbsorptionModelGridModifConfig::areGridsCompatible(const PhzDataModel::PhotometryGridInfo& first_grid,
                         const PhzDataModel::PhotometryGridInfo second_grid) {
   if (first_grid.region_axes_map.size() != second_grid.region_axes_map.size()) {
     logger.error() << "Number of regions differs between the grids.";
@@ -118,7 +100,7 @@ bool areGridsCompatible(const PhzDataModel::PhotometryGridInfo& first_grid,
 
 void GalactiAbsorptionModelGridModifConfig::postInitialize(
     const UserValues& /* args */) {
-  if (getDependency<DustColumnDensityColumnConfig>()
+  if (getDependency<ObservationConditionColumnConfig>()
           .isGalacticCorrectionEnabled()) {
     // CHECK grid compatibility we already know we have the same filters
     const auto& model_grid_info =
@@ -133,7 +115,7 @@ void GalactiAbsorptionModelGridModifConfig::postInitialize(
     }
 
     double dus_map_sed_bpc =
-        getDependency<DustColumnDensityColumnConfig>().getDustMapSedBpc();
+        getDependency<ObservationConditionColumnConfig>().getDustMapSedBpc();
 
     auto& coef_grid = getDependency<CorrectionCoefficientGridConfig>()
                           .getCorrectionCoefficientGrid();

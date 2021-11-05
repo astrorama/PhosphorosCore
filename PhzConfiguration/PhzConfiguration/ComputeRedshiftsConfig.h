@@ -73,6 +73,8 @@ public:
   std::unique_ptr<PhzOutput::OutputHandler> getOutputHandler() const;
   
   std::size_t getInputBufferSize() const;
+  std::size_t getSkipFirstNumber() const;
+  std::size_t getProcessMaxNumber() const;
 
 private:
 
@@ -87,6 +89,8 @@ private:
   boost::filesystem::path m_out_posterior_dir;
 
   std::size_t m_input_buffer_size = 5000;
+  std::size_t m_input_skip_first = 0;
+  std::size_t m_input_process_max = 0;
 
 }; /* End of ComputeRedshiftsConfig class */
 

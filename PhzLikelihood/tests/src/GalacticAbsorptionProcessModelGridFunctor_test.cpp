@@ -34,7 +34,7 @@
 #include "PhzLikelihood/GalacticAbsorptionProcessModelGridFunctor.h"
 #include "SourceCatalog/Source.h"
 #include "SourceCatalog/Attribute.h"
-#include "PhzDataModel/CatalogAttributes/DustColumnDensity.h"
+#include "PhzDataModel/CatalogAttributes/ObservationCondition.h"
 
 using std::get;
 using std::shared_ptr;
@@ -77,7 +77,8 @@ struct GalacticAbsorptionProcessModelGridFunctor_Fixture {
   PhzDataModel::PhotometryGrid photo_grid_2 { axes };
 
   std::vector<std::shared_ptr<SourceCatalog::Attribute>> attibuteVector_1{};
-  std::vector<std::shared_ptr<SourceCatalog::Attribute>> attibuteVector_2{std::shared_ptr<PhzDataModel::DustColumnDensity>(new PhzDataModel::DustColumnDensity(0.1))};
+  std::vector<std::shared_ptr<SourceCatalog::Attribute>> attibuteVector_2{
+    std::shared_ptr<PhzDataModel::ObservationCondition>(new PhzDataModel::ObservationCondition( std::vector<double>{0,0,0}, 0.1))};
 
 
   SourceCatalog::Source source_1 = SourceCatalog::Source(1, attibuteVector_1);

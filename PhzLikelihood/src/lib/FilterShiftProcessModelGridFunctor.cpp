@@ -17,8 +17,8 @@
  */
 
 /**
- * @file PhzLikelihood/GalacticAbsorptionProcessModelGridFunctor.h
- * @date 11/28/18
+ * @file PhzLikelihood/FilterShiftProcessModelGridFunctor.h
+ * @date  2021/09/10
  * @author Florian Dubath
  */
 
@@ -37,62 +37,66 @@
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/CatalogAttributes/ObservationCondition.h"
 
-#include "PhzLikelihood/GalacticAbsorptionProcessModelGridFunctor.h"
+#include "PhzLikelihood/FilterShiftProcessModelGridFunctor.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
 
 
-static Elements::Logging logger = Elements::Logging::getLogger("GalacticAbsorptionProcessModelGridFunctor");
+static Elements::Logging logger = Elements::Logging::getLogger("FilterShiftProcessModelGridFunctor");
 
-  static void computeCorrectedPhotometry(SourceCatalog::Photometry::const_iterator model_begin,
+   void FilterShiftProcessModelGridFunctor::computeCorrectedPhotometry(SourceCatalog::Photometry::const_iterator model_begin,
                                   SourceCatalog::Photometry::const_iterator model_end,
                                   SourceCatalog::Photometry::const_iterator corr_begin,
-                                  double dust_density,
+                                  const std::vector<double>& filter_shift,
                                   SourceCatalog::Photometry::iterator out_begin) {
-    while (model_begin!=model_end){
-      out_begin->flux = (*model_begin).flux * std::pow(10,-0.4 * (*corr_begin).flux * dust_density);
-      out_begin->error = 0.;
+    auto shift_iterator = filter_shift.begin();
+    while (model_begin != model_end) {
+      double correction = (1.0 + (*shift_iterator)*(*shift_iterator)*(*corr_begin).flux + (*shift_iterator)*(*corr_begin).error);
+      // logger.info() << "Correction value " << correction;
+      out_begin->flux *= correction;
+      out_begin->error *= correction;
       ++model_begin;
       ++corr_begin;
       ++out_begin;
+      ++shift_iterator;
     }
   }
 
 
-  GalacticAbsorptionProcessModelGridFunctor::GalacticAbsorptionProcessModelGridFunctor(
-      const std::map<std::string,PhzDataModel::PhotometryGrid> & coefficient_grid,
-      double dust_map_sed_bpc):
-      m_coefficient_grid(coefficient_grid), m_dust_map_sed_bpc{dust_map_sed_bpc} {
-        logger.debug() << "A GalacticAbsorptionProcessModelGridFunctor has been instantiated";
-      }
+  FilterShiftProcessModelGridFunctor::FilterShiftProcessModelGridFunctor(
+      const std::map<std::string, PhzDataModel::PhotometryGrid> & coefficient_grid):
+      m_coefficient_grid(coefficient_grid) {
+    logger.debug() << "A FilterShiftProcessModelGridFunctor has been instantiated";
+  }
 
-  PhzDataModel::PhotometryGrid GalacticAbsorptionProcessModelGridFunctor::operator()
-      ( const std::string & region_name, const PhzDataModel::PhotometryGrid & model_grid, const SourceCatalog::Source & source) const{
+  PhzDataModel::PhotometryGrid FilterShiftProcessModelGridFunctor::operator()(
+      const std::string & region_name,
+      const PhzDataModel::PhotometryGrid & model_grid,
+      const SourceCatalog::Source & source) const {
 
-    auto corrected_grid = PhzDataModel::PhotometryGrid (model_grid.getAxesTuple());
+    auto corrected_grid = PhzDataModel::PhotometryGrid(model_grid.getAxesTuple());
     std::copy(model_grid.begin(), model_grid.end(), corrected_grid.begin());
 
 
-    auto dust_ebv_ptr = source.getAttribute<PhzDataModel::ObservationCondition>();
-
-    if (dust_ebv_ptr==NULL){
+    auto observation_condition_ptr = source.getAttribute<PhzDataModel::ObservationCondition>();
+    if (observation_condition_ptr == NULL) {
       throw Elements::Exception() << "The ObservationCondition attribute is missing in the source object";
     }
 
-    double dust_ebv = m_dust_map_sed_bpc * dust_ebv_ptr->getDustColumnDensity();
+    const std::vector<double>& shifts = observation_condition_ptr->getFilterShifts();
 
     auto current_model = model_grid.begin();
     auto model_grid_end = model_grid.end();
     auto current_corr = m_coefficient_grid.at(region_name).begin();
     auto current_result = corrected_grid.begin();
-    while (current_model!=model_grid_end){
+    while (current_model != model_grid_end) {
 
       computeCorrectedPhotometry(
            (*current_model).begin(),
            (*current_model).end(),
            (*current_corr).begin(),
-           dust_ebv ,
+           shifts,
            current_result->begin());
        ++current_model;
        ++current_corr;
@@ -102,6 +106,6 @@ static Elements::Logging logger = Elements::Logging::getLogger("GalacticAbsorpti
   }
 
 
-} // end of namespace PhzLikelihood
-} // end of namespace Euclid
+}  //  end of namespace PhzLikelihood
+}  //  end of namespace Euclid
 

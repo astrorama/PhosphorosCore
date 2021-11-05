@@ -26,6 +26,8 @@
 #define _PHZCONFIGURATION_GALACTICABSORPTIONMODELGRIDMODIFCONFIG_H
 
 #include "Configuration/Configuration.h"
+#include "PhzDataModel/PhotometryGrid.h"
+#include "PhzDataModel/PhotometryGridInfo.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -43,6 +45,31 @@ public:
 
 
   void postInitialize(const UserValues& args) override;
+
+
+  static bool areGridsCompatible(const PhzDataModel::PhotometryGridInfo& first_grid,
+      const PhzDataModel::PhotometryGridInfo second_grid);
+
+
+  template <int I>
+  static bool checkAxis(const PhzDataModel::ModelAxesTuple& first_grid_info,
+                 const PhzDataModel::ModelAxesTuple& second_grid_info) {
+    auto first_items = std::get<I>(first_grid_info);
+    auto second_items = std::get<I>(second_grid_info);
+
+    if (first_items.size() != second_items.size()) {
+      return false;
+    }
+
+    for (auto& first_item : first_items) {
+      if (std::find(second_items.begin(), second_items.end(), first_item) ==
+          second_items.end()) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 
 };
 

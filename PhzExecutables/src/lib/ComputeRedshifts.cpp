@@ -114,18 +114,44 @@ void ComputeRedshifts::doRun(ConfigManager& config_manager) {
   auto out_ptr = config_manager.getConfiguration<ComputeRedshiftsConfig>().getOutputHandler();
 
   std::size_t chunk_size = config_manager.getConfiguration<ComputeRedshiftsConfig>().getInputBufferSize();
+  std::size_t skip = config_manager.getConfiguration<ComputeRedshiftsConfig>().getSkipFirstNumber();
+  std::size_t max_process = config_manager.getConfiguration<ComputeRedshiftsConfig>().getProcessMaxNumber();
+
   auto        total_size = table_reader->rowsLeft();
+
   logger.info() << "Total input catalog size: " << total_size;
-  if (total_size > chunk_size) {
+  if (skip > 0) {
+	  logger.info() << "Skipping the first " << skip << " sources.";
+	  if (skip >= total_size) {
+		  logger.info() << "No source to process.";
+		  return;
+	  }
+
+	  total_size -= skip;
+	  table_reader->read(skip);
+  }
+
+  if (max_process > 0 && total_size > max_process) {
+	  logger.info() << "Process only " << max_process << " sources.";
+  } else {
+	  max_process = total_size;
+  }
+
+  if (max_process > chunk_size) {
     logger.info() << "Processing the input catalog in chunks of " << chunk_size << " sources";
   }
+
   int chunk_counter = 0;
-  while (table_reader->hasMoreRows()) {
-    auto catalog = catalog_converter(table_reader->read(chunk_size));
+  size_t row_to_process = max_process;
+  while (row_to_process > 0) {
+    size_t current_chunk_size = std::min(chunk_size, row_to_process);
+    auto catalog = catalog_converter(table_reader->read(current_chunk_size));
     handler.handleSources(catalog.begin(), catalog.end(), *out_ptr,
                           [this, total_size, chunk_size, &chunk_counter](size_t step, size_t) {
                             m_progress_listener(chunk_counter * chunk_size + step, total_size);
                           });
+
+    row_to_process -= current_chunk_size;
     ++chunk_counter;
   }
 }

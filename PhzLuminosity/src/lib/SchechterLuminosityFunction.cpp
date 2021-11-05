@@ -38,7 +38,7 @@ double SchechterLuminosityFunction::operator()(const double luminosity) const {
   }
 
   if (value > 100) {
-       logger.warn() << "Luminosity function computation for " << luminosity << " gives a result bigger than 100:" << value;
+       logger.debug() << "Luminosity function computation for " << luminosity << " gives a result bigger than 100:" << value;
        value = 100;
      }
    return value;

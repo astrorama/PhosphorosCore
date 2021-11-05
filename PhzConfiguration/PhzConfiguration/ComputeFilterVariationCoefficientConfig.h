@@ -17,59 +17,48 @@
  */
 
 /**
- * @file PhzConfiguration/DustColumnDensityColumnConfig.h
- * @date 2016/11/08
+ * @file PhzConfiguration/ComputeFilterVariationCoefficientConfig.h
+ * @date 2021/09/07
  * @author Florian Dubath
  */
 
-#ifndef PHZCONFIGURATION_DUSTCOLUMNDENSITYCOLUMNCONFIG_H
-#define	PHZCONFIGURATION_DUSTCOLUMNDENSITYCOLUMNCONFIG_H
+#ifndef PHZCONFIGURATION_COMPUTEFILTERVARIATIONCOEFFICIENTSCONFIG_H
+#define	PHZCONFIGURATION_COMPUTEFILTERVARIATIONCOEFFICIENTSCONFIG_H
 
+#include <cstdlib>
+#include <string>
+#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
 
 /**
- * @class DustColumnDensityColumnConfig
+ * @class ComputeFilterVariationCoefficientConfig
  *
- * @brief
- * This class defines the standard B and V Filters options
  */
-class DustColumnDensityColumnConfig : public Configuration::Configuration {
+class ComputeFilterVariationCoefficientConfig : public Configuration::Configuration {
 
 public:
+
   /**
    * @brief constructor
+   * Add the specific parameters
    */
-  DustColumnDensityColumnConfig(long manager_id);
+  ComputeFilterVariationCoefficientConfig(long manager_id);
 
   /**
    * @brief Destructor
    */
-  virtual ~DustColumnDensityColumnConfig() = default;
+  virtual ~ComputeFilterVariationCoefficientConfig() = default;
 
-  /**
-   * @details
-   * This class define the "dust-column-density-column-name"
-   * options into the "Galactic Correction Coefficient options" group
-   */
-  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
-  void initialize(const UserValues& args) override;
-  bool isGalacticCorrectionEnabled();
-  double getDustMapSedBpc() const;
 
-private:
-
-  bool m_galactic_correction_enabled = false;
-  double m_dust_map_sed_bpc=1.;
-
-}; /* End of DustColumnDensityColumnConfig class */
+};
 
 
 } // end of namespace PhzConfiguration
 } // end of namespace Euclid
 
-#endif	/* PHZCONFIGURATION_DUSTCOLUMNDENSITYCOLUMNCONFIG_H */
+#endif	/* PHZCONFIGURATION_COMPUTEFILTERVARIATIONCOEFFICIENTSCONFIG_H */
 

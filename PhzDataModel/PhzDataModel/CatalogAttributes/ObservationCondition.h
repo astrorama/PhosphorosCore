@@ -17,14 +17,16 @@
  */
 
 /**
- * @file PhzDataModel/CatalogAttributes/DustColumnDensity.h
- * @date 2016/11/08
+ * @file PhzDataModel/CatalogAttributes/ObservationCondition.h
+ * @date 2021/09/08
  * @author Florian Dubath
  */
 
-#ifndef _PHZDATAMODEL_CATALOGATTRIBUTES_DUSTCOLUMNDENSITY_H
-#define _PHZDATAMODEL_CATALOGATTRIBUTES_DUSTCOLUMNDENSITY_H
+#ifndef _PHZDATAMODEL_CATALOGATTRIBUTES_OBSERVATIONCONDITION_H
+#define _PHZDATAMODEL_CATALOGATTRIBUTES_OBSERVATIONCONDITION_H
 
+#include <vector>
+#include <map>
 #include "ElementsKernel/Exception.h"
 #include "Table/Table.h"
 #include "SourceCatalog/Attribute.h"
@@ -34,43 +36,49 @@ namespace Euclid {
 namespace PhzDataModel {
 
 /**
- * @class DustColumnDensity
+ * @class ObservationCondition
  * @brief
  *
  */
-class DustColumnDensity : public SourceCatalog::Attribute {
+class ObservationCondition : public SourceCatalog::Attribute {
 
 public:
 
-  DustColumnDensity(double value);
+  ObservationCondition(std::vector<double> filter_shifts, double dust_column_density);
 
   /**
    * @brief Destructor
    */
-  virtual ~DustColumnDensity() = default;
+  virtual ~ObservationCondition() = default;
 
   double getDustColumnDensity() const;
+  const std::vector<double>&  getFilterShifts() const;
 
 private:
 
+  std::vector<double>   m_filter_shifts {};
   double m_dust_column_density {};
 
-}; /* End of DustColumnDensity class */
+}; /* End of ObservationCondition class */
 
 
-class DustColumnDensityFromRow : public SourceCatalog::AttributeFromRow {
+class ObservationConditionFromRow : public SourceCatalog::AttributeFromRow {
 
 public:
 
-  DustColumnDensityFromRow(std::shared_ptr<Table::ColumnInfo> column_info, const std::string& dust_column_density_col_name);
+  ObservationConditionFromRow(
+      std::shared_ptr<Table::ColumnInfo> column_info,
+      const std::string& dust_column_density_col_name,
+      const std::vector<std::pair<std::string, std::string>>& filter_shift_col_names);
 
-  virtual ~DustColumnDensityFromRow() = default;
+  virtual ~ObservationConditionFromRow() = default;
 
   std::unique_ptr<SourceCatalog::Attribute> createAttribute(const Table::Row& row) override;
 
 private:
 
-  std::size_t m_column_index;
+  int m_dust_column_index;
+  std::vector<int> m_filter_shift_column_indexes {};
 
 };
 

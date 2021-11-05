@@ -101,7 +101,7 @@ Euclid::XYDataset::XYDataset expDataSet(const Euclid::XYDataset::XYDataset & inp
   std::vector<std::pair<double, double>> result{};
 
   for (auto& pair :input){
-    result.push_back(std::make_pair(pair.first,std::pow(10,pair.second*factor)));
+    result.push_back(std::make_pair(pair.first, std::pow(10,pair.second*factor)));
   }
 
   return Euclid::XYDataset::XYDataset(result);
@@ -181,10 +181,10 @@ public:
         if (flux_int != 0 && flux_obs > 0 && flux_int > 0) {
           a_sed_x = -5.*std::log10(flux_obs/flux_int)/0.6;
         } else {
-          logger.info() << "A correction coefficient where not computed and set to 0. "
+          logger.debug() << "A correction coefficient where not computed and set to 0. "
           << "This can be due to SED fully outside of the filter range or may point to negative values in the filter transmissions.";
           if (flux_obs < 0 || flux_int < 0) {
-            logger.warn() << "A computed flux is negative: check your filter transmission for un-physical negatives values! ";
+            logger.info() << "A computed flux is negative: check your filter transmission for un-physical negatives values! ";
           }
        }
         (*corr_iter).flux = a_sed_x;
