@@ -101,7 +101,7 @@ public:
 
 private:
   std::pair<double,double> m_range;
-  std::unique_ptr<Euclid::MathUtils::Function> m_filter;
+  std::shared_ptr<const Euclid::MathUtils::Function> m_filter;
   double m_normalization;
 };
 
