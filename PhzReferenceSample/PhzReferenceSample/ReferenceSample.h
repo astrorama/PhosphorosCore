@@ -25,15 +25,14 @@
 #define _REFERENCESAMPLE_REFERENCESAMPLE_H
 
 #include "IndexProvider.h"
-#include "SedDataProvider.h"
 #include "PdzDataProvider.h"
+#include "SedDataProvider.h"
 
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 
 namespace Euclid {
 namespace ReferenceSample {
-
 
 /**
  * @class ReferenceSample
@@ -43,7 +42,6 @@ namespace ReferenceSample {
 class ReferenceSample {
 
 public:
-
   /**
    * @brief Destructor
    */
@@ -57,12 +55,12 @@ public:
    *    Maximum data file size. Defaults to 1GiB.
    * @note Always open for read/write.
    */
-  ReferenceSample(const boost::filesystem::path &path, size_t max_file_size = 1073741824);
+  ReferenceSample(const boost::filesystem::path& path, size_t max_file_size = 1073741824);
 
   /**
    * Move constructor
    */
-  ReferenceSample(ReferenceSample &&) = default;
+  ReferenceSample(ReferenceSample&&) = default;
 
   /**
    * Create a new reference sample.
@@ -72,7 +70,7 @@ public:
    *    Maximum data file size. Defaults to 1GiB.
    * @return A ReferenceSample instance
    */
-  static ReferenceSample create(const boost::filesystem::path &path, size_t max_file_size = 1073741824);
+  static ReferenceSample create(const boost::filesystem::path& path, size_t max_file_size = 1073741824);
 
   /**
    * @return Number of entries on the reference sample.
@@ -110,10 +108,10 @@ public:
    *    On failure to write to disk, if the object already has a sed, or if
    *    the bins are not in ascending order.
    */
-  void addSedData(int64_t id, const XYDataset::XYDataset &data);
+  void addSedData(int64_t id, const XYDataset::XYDataset& data);
 
   /**
-   * Sotre PDZ data for the given object.
+   * Store PDZ data for the given object.
    * @param id
    *    The object ID.
    * @param data
@@ -125,22 +123,32 @@ public:
    * @note
    *    The dataset will be normalized (integral with a value of 1)
    */
-  void addPdzData(int64_t id, const XYDataset::XYDataset &data);
+  void addPdzData(int64_t id, const XYDataset::XYDataset& data);
+
+  /**
+   * Optimize the index: sort it following the physical layout of the SED data files,
+   * so reading the index in order means reading the SEDs in order
+   */
+  void optimize();
 
 private:
-  boost::filesystem::path m_root_path;
-  size_t m_max_file_size;
-  IndexProvider m_index;
-  std::map<size_t, size_t> m_sed_prov_for_size;
-  std::vector<std::unique_ptr<SedDataProvider>> m_sed_providers;
-  std::vector<std::unique_ptr<PdzDataProvider>> m_pdz_providers;
+  boost::filesystem::path                             m_root_path;
+  size_t                                              m_max_file_size;
+  IndexProvider                                       m_index;
+  int64_t                                             m_sed_provider_count, m_pdz_provider_count;
+  std::map<int64_t, std::unique_ptr<SedDataProvider>> m_write_sed_provider;
+  std::map<size_t, int64_t>                           m_write_sed_idx;
+  mutable std::unique_ptr<SedDataProvider>            m_read_sed_provider;
+  mutable int64_t                                     m_read_sed_idx;
+  mutable std::unique_ptr<PdzDataProvider>            m_pdz_provider;
+  mutable int64_t                                     m_pdz_index;
 
-  void initSedProviders();
-  void initPdzProviders();
-  void createNewSedProvider();
+  void                                                 initSedProviders();
+  void                                                 initPdzProviders();
+  std::pair<int64_t, std::unique_ptr<SedDataProvider>> createNewSedProvider();
 };  // End of PhzReferenceSample class
 
-}  // namespace PhzReferenceSample
-} // namespace Euclid
+}  // namespace ReferenceSample
+}  // namespace Euclid
 
 #endif

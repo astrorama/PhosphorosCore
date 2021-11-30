@@ -24,14 +24,14 @@
 #ifndef _REFERENCESAMPLE_SEDDATAPROVIDER_H
 #define _REFERENCESAMPLE_SEDDATAPROVIDER_H
 
-#include "XYDataset/XYDataset.h"
 #include "NdArray/NdArray.h"
-#include <fstream>
+#include "XYDataset/XYDataset.h"
 #include <boost/filesystem/path.hpp>
+#include <fstream>
 
-#  include <sys/types.h>
+#include <sys/types.h>
 #if defined(__APPLE__)
-#  include <sys/dtrace.h>
+#include <sys/dtrace.h>
 #endif
 
 namespace Euclid {
@@ -45,7 +45,6 @@ namespace ReferenceSample {
 class SedDataProvider {
 
 public:
-
   /**
    * @brief Destructor
    */
@@ -60,12 +59,12 @@ public:
    * @throw Elements::Exception
    *    On failure to open the file.
    */
-  SedDataProvider(const boost::filesystem::path &path, std::size_t max_size = 1 << 30);
+  SedDataProvider(const boost::filesystem::path& path, std::size_t max_size = 1 << 30);
 
   /**
    * Move constructor.
    */
-  SedDataProvider(SedDataProvider &&) = default;
+  SedDataProvider(SedDataProvider&&) = default;
 
   /**
    * Read SED data.
@@ -80,7 +79,12 @@ public:
   /**
    * @return Size on disk of the data file.
    */
-  size_t size() const;
+  size_t diskSize() const;
+
+  /**
+   * @return number of elements
+   */
+  size_t length() const;
 
   /**
    * Store a new SED entry.
@@ -92,7 +96,7 @@ public:
    *    On failure to write to disk, or if the
    *    bins are not in ascending order.
    */
-  int64_t addSed(const XYDataset::XYDataset &data);
+  int64_t addSed(const XYDataset::XYDataset& data);
 
   /**
    * @return How many knots supports this particular provider
@@ -100,15 +104,15 @@ public:
   size_t getKnots() const;
 
 private:
-  boost::filesystem::path m_data_path;
-  size_t m_max_size;
+  boost::filesystem::path                  m_data_path;
+  size_t                                   m_max_size;
   std::unique_ptr<NdArray::NdArray<float>> m_array;
-  uint32_t m_length;
+  uint32_t                                 m_length;
 
   void create(size_t knots);
 };  // End of SedDataProvider class
 
-}  // namespace PhzReferenceSample
+}  // namespace ReferenceSample
 }  // namespace Euclid
 
 #endif

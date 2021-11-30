@@ -63,7 +63,7 @@ auto BuildReferenceSampleConfig::getProgramOptions() -> std::map<std::string, Op
   return {{"Build NNPZ reference sample", {
     {REFSAMPLE_DIR.c_str(), po::value<std::string>()->required(), "The directory of the reference sample to create"},
     {REFSAMPLE_OVERWRITE.c_str(), po::bool_switch(), "Overwrite the reference sample"},
-    {REFSAMPLE_MAXSIZE.c_str(), po::value<size_t>()->default_value(1073741824), "Maximum file size"},
+    {REFSAMPLE_MAXSIZE.c_str(), po::value<size_t>()->default_value(1000000000), "Maximum file size"},
     {PHOSPHOROS_CATALOG.c_str(), po::value<std::string>()->required(), "Filename of the Phosphoros output catalog"},
     {PHOSPHOROS_CATALOG_FORMAT.c_str(), po::value<std::string>()->default_value("FITS"), "Format of the Phosphoros output catalog"}
   }}};
@@ -110,6 +110,7 @@ bool BuildReferenceSampleConfig::overwrite() const {
 }
 
 size_t BuildReferenceSampleConfig::getMaxSize() const {
+  assert(m_max_size > 0);
   return m_max_size;
 }
 

@@ -82,7 +82,12 @@ public:
   /**
    * @return Size on disk of the data file.
    */
-  size_t size() const;
+  size_t diskSize() const;
+
+  /**
+   * @return number of elements
+   */
+  size_t length() const;
 
   /**
    * Store a new PDZ entry.
@@ -95,12 +100,20 @@ public:
    */
   int64_t addPdz(const XYDataset::XYDataset &data);
 
+  /**
+   * Modify a PDZ entry.
+   * @param position
+   *    Address inside the file where the PDZ is stored.
+   * @param data
+   *    PDZ data. The X axis contains the bins, and the Y axis the values.
+   */
+  void setPdz(int64_t position, const XYDataset::XYDataset &data);
+
 private:
   boost::filesystem::path m_data_path;
   size_t m_max_size;
   std::unique_ptr<NdArray::NdArray<float>> m_array;
 
-  uint32_t m_length;
   std::vector<float> m_bins;
 
   void setBins(const std::vector<float> &bins);

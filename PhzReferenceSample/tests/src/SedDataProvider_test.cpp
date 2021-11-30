@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE( open_non_existing ) {
 
 BOOST_FIXTURE_TEST_CASE( add_one, SedDataProvider_Fixture ) {
   SedDataProvider sed_provider {m_sed_bin};
-  BOOST_CHECK_EQUAL(sed_provider.size(), 0);
+  BOOST_CHECK_EQUAL(sed_provider.diskSize(), 0);
 
   auto offset = sed_provider.addSed(sed);
   auto recovered = sed_provider.readSed(offset);
@@ -125,7 +125,7 @@ BOOST_FIXTURE_TEST_CASE( open_and_close, SedDataProvider_Fixture ) {
   }
 
   SedDataProvider sed_provider{m_sed_bin};
-  BOOST_CHECK_NE(sed_provider.size(), 0);
+  BOOST_CHECK_NE(sed_provider.diskSize(), 0);
 
   auto recovered = sed_provider.readSed(offset);
   BOOST_CHECK(checkAllClose(recovered, sed));

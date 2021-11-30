@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(open_non_existing) {
 
 BOOST_FIXTURE_TEST_CASE(add_one, PdzDataProvider_Fixture) {
   PdzDataProvider pdz_provider{m_pdz_bin};
-  BOOST_CHECK_EQUAL(pdz_provider.size(), 0);
+  BOOST_CHECK_EQUAL(pdz_provider.diskSize(), 0);
 
   auto offset = pdz_provider.addPdz(pdz);
   auto recovered = pdz_provider.readPdz(offset);
@@ -128,7 +128,7 @@ BOOST_FIXTURE_TEST_CASE(open_and_close, PdzDataProvider_Fixture) {
   }
 
   PdzDataProvider pdz_provider{m_pdz_bin};
-  BOOST_CHECK_NE(pdz_provider.size(), 0);
+  BOOST_CHECK_NE(pdz_provider.diskSize(), 0);
 
   auto recovered = pdz_provider.readPdz(offset);
   BOOST_CHECK(checkAllClose(recovered, pdz));
