@@ -124,19 +124,48 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_mana
   auto ref_sample = ReferenceSample::create(ref_sample_config.getReferenceSamplePath(), ref_sample_config.getMaxSize());
 
   logger.info() << "Reading the Phosphoros catalog";
-  auto phosphoros_reader = ref_sample_config.getPhosphorosCatalogReader();
+  auto phosphoros_readers = ref_sample_config.getPhosphorosCatalogReader();
 
-  auto pdz_bins = getPdzBins(phosphoros_reader->getComment());
+  logger.info() << "Processing " << phosphoros_readers.size() << " catalogs";
+
+  std::vector<double> pdz_bins;
+  size_t              total = 0;
+  for (auto& reader : phosphoros_readers) {
+    total += reader->rowsLeft();
+    auto cat_pdz_bins = getPdzBins(reader->getComment());
+    if (pdz_bins.empty()) {
+      pdz_bins = cat_pdz_bins;
+    } else if (pdz_bins != cat_pdz_bins) {
+      throw Elements::Exception() << "All catalogs must have the same PDZ bins";
+    }
+  }
+
   if (pdz_bins.empty()) {
     logger.warn() << "No PDZ bins found, skipping PDZ processing";
   } else {
     logger.debug() << "PDZ bins: " << pdz_bins;
   }
 
-  int64_t total = phosphoros_reader->rowsLeft();
-  int64_t i     = 0;
-  while (phosphoros_reader->hasMoreRows()) {
-    auto phosphoros_table = phosphoros_reader->read(10000);
+  int64_t i = 0;
+  for (auto& reader : phosphoros_readers) {
+    logger.info() << "Processing input catalog with " << reader->rowsLeft() << " sources";
+
+    processCatalog(*reader, ref_sample, igm_function, normalizer_functor, reddening_provider, sed_provider, redshiftFunctor,
+                   pdz_bins, total, i);
+  }
+
+  logger.info() << "Optimizing the reference sample index";
+  ref_sample.optimize();
+}
+
+void BuildReferenceSample::processCatalog(Table::TableReader& reader, ReferenceSample& ref_sample,
+                                          const PhotometryGridCreator::IgmAbsorptionFunction& igm_function,
+                                          const NormalizationFunction&                        normalizer_functor,
+                                          XYDataset::XYDatasetProvider&                       reddening_provider,
+                                          XYDataset::XYDatasetProvider& sed_provider, const RedshiftFunctor& redshiftFunctor,
+                                          const std::vector<double>& pdz_bins, size_t total, int64_t& i) {
+  while (reader.hasMoreRows()) {
+    auto phosphoros_table = reader.read(10000);
     logger.info() << phosphoros_table.size() << " entries loaded";
 
     for (auto& object : phosphoros_table) {
@@ -185,9 +214,6 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_mana
       m_progress_listener(i, total);
     }
   }
-
-  logger.info() << "Optimizing the reference sample index";
-  ref_sample.optimize();
 }
 
 std::unique_ptr<MathUtils::Function>
