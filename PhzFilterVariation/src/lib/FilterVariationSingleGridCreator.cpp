@@ -58,14 +58,11 @@ std::vector<double> FilterVariationSingleGridCreator::computeSampling(double min
 
 
 XYDataset::XYDataset FilterVariationSingleGridCreator::shifFilter(const XYDataset::XYDataset& filter_dataset, double shift) {
-   std::vector<double> lambda{};
-   std::vector<double> values{};
-   for (auto current = filter_dataset.begin(); current != filter_dataset.end(); ++current) {
-     values.push_back(current->second);
-     lambda.push_back(current->first+shift);
+   std::vector<std::pair<double, double>> shifted(filter_dataset.begin(), filter_dataset.end());
+   for (auto &knot : shifted) {
+     knot.first += shift;
    }
-
-   return XYDataset::XYDataset::factory(lambda, values);
+   return XYDataset::XYDataset::factory(std::move(shifted));
 }
 
 
