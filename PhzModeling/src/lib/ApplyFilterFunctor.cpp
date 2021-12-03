@@ -23,25 +23,24 @@ static std::vector<double> getInterpolationGrid(const XYDataset::XYDataset& mode
                              [&filter_range](const std::pair<double, double>& v) { return v.first >= filter_range.first; });
   auto mlast  = std::find_if(mfirst, model.end(),
                              [&filter_range](const std::pair<double, double>& v) { return v.first > filter_range.second; });
-  grid.reserve(mlast - mfirst);
-  for (auto i = mfirst; i != mlast; ++i) {
-    grid.emplace_back(i->first);
-  }
+  grid.resize(mlast - mfirst);
+  std::transform(mfirst, mlast, grid.begin(), [](const std::pair<double, double>& v) { return v.first; });
 
   // If the filter is an interpolated function, add the knots from it
   auto filter_intepolated = dynamic_cast<const MathUtils::PiecewiseBase*>(&filter);
   if (filter_intepolated != nullptr) {
     auto& knots = filter_intepolated->getKnots();
-    grid.reserve(grid.size() + knots.size());
-    auto first = std::find_if(knots.begin(), knots.end(), [&filter_range](double v) { return v >= filter_range.first; });
-    auto last  = std::find_if(first, knots.end(), [&filter_range](double v) { return v > filter_range.second; });
-    std::copy(first, last, std::back_inserter(grid));
-  }
 
-  // Sort
-  std::sort(grid.begin(), grid.end());
-  auto last = std::unique(grid.begin(), grid.end());
-  grid.erase(last, grid.end());
+    std::vector<double> filtered_knots;
+    filtered_knots.reserve(knots.size());
+    std::copy_if(knots.begin(), knots.end(), std::back_inserter(filtered_knots),
+                 [&filter_range](double v) { return v >= filter_range.first && v < filter_range.second; });
+
+    std::vector<double> merge;
+    merge.reserve(filtered_knots.size() + grid.size());
+    std::merge(grid.begin(), grid.end(), filtered_knots.begin(), filtered_knots.end(), std::back_inserter(merge));
+    grid = std::move(merge);
+  }
   return grid;
 }
 
