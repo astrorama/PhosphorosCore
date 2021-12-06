@@ -22,7 +22,7 @@ namespace PhzLuminosity {
  *
  * @brief The Schechter Luminosity Function in magnitude or flux.
  */
-class SchechterLuminosityFunction :public MathUtils::Integrable{
+class SchechterLuminosityFunction final : public MathUtils::Integrable {
 public:
   /**
    * @brief constructor
@@ -50,6 +50,8 @@ public:
     * @return The density of galaxy by computing the Schechter function.
     */
   double operator()(const double luminosity) const override;
+
+  void operator()(const std::vector<double>& xs, std::vector<double>& output) const override;
 
   /**
    * Calculates the integral of the function in the range [a,b].

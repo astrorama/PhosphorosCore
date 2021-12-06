@@ -24,24 +24,22 @@ static Elements::Logging logger = Elements::Logging::getLogger("SchechterLuminos
 SchechterLuminosityFunction::SchechterLuminosityFunction(double phi_star, double mag_L_star ,double alpha,bool inMag):
   m_phi_star{phi_star},m_mag_L_star{mag_L_star},m_alpha{alpha},m_in_mag{inMag}{}
 
-
-
 double SchechterLuminosityFunction::operator()(const double luminosity) const {
-  double value  = 0;
+  double value = 0;
   if (m_in_mag) {
     double ms_m = 0.4 * (m_mag_L_star - luminosity);
-    value = 0.4*std::log(10.)*m_phi_star*std::pow(10., ms_m*(m_alpha+1))*std::exp(-std::pow(10., ms_m));
+    value       = 0.4 * std::log(10.) * m_phi_star * std::pow(10., ms_m * (m_alpha + 1)) * std::exp(-std::pow(10., ms_m));
 
   } else {
-    double l_l_star = luminosity/m_mag_L_star;
-    value = luminosity*(m_phi_star/m_mag_L_star)*std::pow(l_l_star, m_alpha)*std::exp(-l_l_star);
+    double l_l_star = luminosity / m_mag_L_star;
+    value           = luminosity * (m_phi_star / m_mag_L_star) * std::pow(l_l_star, m_alpha) * std::exp(-l_l_star);
   }
 
   if (value > 100) {
-       logger.debug() << "Luminosity function computation for " << luminosity << " gives a result bigger than 100:" << value;
-       value = 100;
-     }
-   return value;
+    logger.debug() << "Luminosity function computation for " << luminosity << " gives a result bigger than 100:" << value;
+    value = 100;
+  }
+  return value;
 }
 
 double SchechterLuminosityFunction::integrate(const double a, const double b) const {
@@ -76,6 +74,11 @@ double SchechterLuminosityFunction::integrate(const double a, const double b) co
     return -m_phi_star * I;
   else
     return m_phi_star * I;
+}
+
+void SchechterLuminosityFunction::operator()(const std::vector<double>& xs, std::vector<double>& output) const {
+  output.resize(xs.size());
+  std::transform(xs.begin(), xs.end(), output.begin(), std::cref(*this));
 }
 
 std::unique_ptr<MathUtils::Function> SchechterLuminosityFunction::clone() const {

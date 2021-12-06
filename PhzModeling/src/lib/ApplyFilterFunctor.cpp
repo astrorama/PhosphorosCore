@@ -54,23 +54,30 @@ XYDataset::XYDataset ApplyFilterFunctor::operator()(const XYDataset::XYDataset& 
   auto model_interp = MathUtils::interpolate(model, MathUtils::InterpolationType::LINEAR, false);
 
   // The data points of the filtered model
-  std::vector<std::pair<double, double>> filtered_values;
-  filtered_values.reserve(grid.size() + 2);
+  std::vector<std::pair<double, double>> output;
+  output.reserve(grid.size() + 2);
 
-  // Add the minimum of the range as a zero point, if the first model point is outside of the range
+  // Add the minimum of the range as a zero point, if the first model point is outside the range
   if (model.front().first <= filter_range.first) {
-    filtered_values.emplace_back(filter_range.first, 0);
+    output.emplace_back(filter_range.first, 0);
   }
 
-  std::transform(grid.begin(), grid.end(), std::back_inserter(filtered_values),
-                 [&model_interp, &filter](double x) { return std::make_pair(x, (*model_interp)(x)*filter(x)); });
+  // Compute transmission and model values
+  std::vector<double> filter_transmission, model_values;
+  (filter)(grid, filter_transmission);
+  (*model_interp)(grid, model_values);
 
-  // Add the maximum of the range as a zero point, if the last model point is outside of the range
+  // Push into the output array
+  for (size_t i = 0; i < grid.size(); ++i) {
+    output.emplace_back(grid[i], filter_transmission[i] * model_values[i]);
+  }
+
+  // Add the maximum of the range as a zero point, if the last model point is outside the range
   if (model.back().first >= filter_range.second) {
-    filtered_values.emplace_back(filter_range.second, 0.);
+    output.emplace_back(filter_range.second, 0.);
   }
 
-  return XYDataset::XYDataset{std::move(filtered_values)};
+  return XYDataset::XYDataset{std::move(output)};
 }
 
 }  // end of namespace PhzModeling
