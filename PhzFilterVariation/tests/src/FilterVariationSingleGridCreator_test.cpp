@@ -4,19 +4,19 @@
  * @author Florian Dubath
  */
 
-#include <string>
-#include <set>
-#include <vector>
+#include <PhzModeling/BuildFilterInfoFunctor.h>
 #include <boost/test/unit_test.hpp>
+#include <set>
+#include <string>
+#include <vector>
 
-#include "ElementsKernel/Real.h"
 #include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Real.h"
 #include "PhzFilterVariation/FilterVariationSingleGridCreator.h"
-#include "XYDataset/QualifiedName.h"
-#include "XYDataset/XYDataset.h"
 #include "PhzModeling/ApplyFilterFunctor.h"
 #include "PhzModeling/IntegrateDatasetFunctor.h"
-
+#include "XYDataset/QualifiedName.h"
+#include "XYDataset/XYDataset.h"
 
 namespace Euclid {
 struct FilterVariationSingleGridCreator_Fixture {
@@ -38,7 +38,7 @@ BOOST_FIXTURE_TEST_CASE(shifFilter_test, FilterVariationSingleGridCreator_Fixtur
    std::vector<double> y{0.1, 0.2, 0.3, 0.4};
    XYDataset::XYDataset filter = XYDataset::XYDataset::factory(x, y);
 
-   auto result = PhzFilterVariation::FilterVariationSingleGridCreator::shifFilter(filter, 0.3);
+   auto result = PhzFilterVariation::FilterVariationSingleGridCreator::shiftFilter(filter, 0.3);
 
    auto iter = result.begin();
    for (size_t i = 0; i < x.size(); ++i) {
@@ -85,9 +85,18 @@ BOOST_FIXTURE_TEST_CASE(compute_coef_test, FilterVariationSingleGridCreator_Fixt
   }
 
   // nominal flux = int_300^400 x dx = 1/2x² |_300^400 = 35000
+  PhzModeling::BuildFilterInfoFunctor filter_info_functor;
+
   std::vector<double> delta_lambda{-100, -10, 0, 10, 100};
-  auto filter = XYDataset::XYDataset::factory(lambda, filter_val);
-  auto sed = XYDataset::XYDataset::factory(lambda, sed_val);
+  auto                filter_dataset = XYDataset::XYDataset::factory(lambda, filter_val);
+  auto                filter         = filter_info_functor(filter_dataset);
+  auto                sed            = XYDataset::XYDataset::factory(lambda, sed_val);
+
+  std::vector<PhzDataModel::FilterInfo> shifted_filter;
+  for (auto dl : delta_lambda) {
+    shifted_filter.emplace_back(
+        filter_info_functor(PhzFilterVariation::FilterVariationSingleGridCreator::shiftFilter(filter_dataset, dl)));
+  }
 
   auto filter_functor = PhzModeling::ApplyFilterFunctor();
   auto integrate_dataset_function = PhzModeling::IntegrateDatasetFunctor{MathUtils::InterpolationType::LINEAR};
@@ -95,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE(compute_coef_test, FilterVariationSingleGridCreator_Fixt
   std::vector<double> expected{0.7142857,0.9714286,1,1.0285714,1.2857143};
 
   auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_coef(sed,
-      filter, delta_lambda, filter_functor, integrate_dataset_function);
+      filter, shifted_filter, filter_functor, integrate_dataset_function);
 
   for (size_t i = 0; i < expected.size(); ++i) {
       BOOST_CHECK_CLOSE(res[i], expected[i], 0.001);
@@ -117,17 +126,26 @@ BOOST_FIXTURE_TEST_CASE(compute_tilde_coef_test, FilterVariationSingleGridCreato
   }
 
   // nominal flux = int_300^400 x dx = 1/2x² |_300^400 = 35000
+  PhzModeling::BuildFilterInfoFunctor filter_info_functor;
+
   std::vector<double> delta_lambda{-100, -10, -1, 0, 1, 10, 100};
-  auto filter = XYDataset::XYDataset::factory(lambda, filter_val);
-  auto sed = XYDataset::XYDataset::factory(lambda, sed_val);
+  auto                filter_dataset = XYDataset::XYDataset::factory(lambda, filter_val);
+  auto                filter         = filter_info_functor(filter_dataset);
+  auto                sed            = XYDataset::XYDataset::factory(lambda, sed_val);
+
+  std::vector<PhzDataModel::FilterInfo> shifted_filter;
+  for (auto dl : delta_lambda) {
+    shifted_filter.emplace_back(
+        filter_info_functor(PhzFilterVariation::FilterVariationSingleGridCreator::shiftFilter(filter_dataset, dl)));
+  }
 
   auto filter_functor = PhzModeling::ApplyFilterFunctor();
   auto integrate_dataset_function = PhzModeling::IntegrateDatasetFunctor{MathUtils::InterpolationType::LINEAR};
 
   std::vector<double> expected{0.0028571,0.0028571,0.0028571,0,0.0028571,0.0028571,0.0028571};
 
-  auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_tild_coef(sed,
-      filter, delta_lambda, filter_functor, integrate_dataset_function);
+  auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_tild_coef(sed, filter, shifted_filter, delta_lambda,
+                                                                                     filter_functor, integrate_dataset_function);
 
   for (size_t i = 0; i < expected.size(); ++i) {
       BOOST_CHECK_CLOSE(res[i], expected[i], 0.01);

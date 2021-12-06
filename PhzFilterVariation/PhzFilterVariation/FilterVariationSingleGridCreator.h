@@ -82,37 +82,33 @@ public:
  /**
   * Shift the filter of value "shift"
   */
- static XYDataset::XYDataset shifFilter(const XYDataset::XYDataset& filter_dataset, double shift);
+ static XYDataset::XYDataset shiftFilter(const XYDataset::XYDataset& filter_dataset, double shift);
 
  /**
   * For a given "sed" compute, for each filter, the coefficient Flux_i(d_lambda_i)/Flux_i(No shift)
   */
- static std::vector<double> compute_coef(const Euclid::XYDataset::XYDataset& sed,
-     const XYDataset::XYDataset& filter_dataset,
-     const std::vector<double>& d_lambda,
-     PhzModeling::ApplyFilterFunctor& filter_functor,
-     PhzModeling::IntegrateDatasetFunctor& integrate_funct);
+ static std::vector<double> compute_coef(const Euclid::XYDataset::XYDataset& sed, const PhzDataModel::FilterInfo& filter_nominal,
+                                         const std::vector<PhzDataModel::FilterInfo>& filter_shifted,
+                                         PhzModeling::ApplyFilterFunctor&             filter_functor,
+                                         PhzModeling::IntegrateDatasetFunctor&        integrate_funct);
 
  /**
   * For a given "sed" compute, for each filter, the reduced coefficient (Flux_i(d_lambda_i)/Flux_i(No shift)- 1)/d_lambda_i
   */
- static std::vector<double> compute_tild_coef(const Euclid::XYDataset::XYDataset& sed,
-     const XYDataset::XYDataset& filter_dataset,
-     const std::vector<double>& d_lambda,
-     PhzModeling::ApplyFilterFunctor& filter_functor,
-     PhzModeling::IntegrateDatasetFunctor& integrate_funct);
+ static std::vector<double> compute_tild_coef(const Euclid::XYDataset::XYDataset&          sed,
+                                              const PhzDataModel::FilterInfo&              filter_nominal,
+                                              const std::vector<PhzDataModel::FilterInfo>& filter_shifted,
+                                              const std::vector<double>& d_lambda, PhzModeling::ApplyFilterFunctor& filter_functor,
+                                              PhzModeling::IntegrateDatasetFunctor& integrate_funct);
 
-private:
+ private:
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_sed_provider;
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
-  const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
+  std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
   IgmAbsorptionFunction m_igm_absorption_function;
   NormalizationFunction m_normalization_function;
 
   std::vector<double> m_delta_lambda;
-
-
-
 };
 
 
