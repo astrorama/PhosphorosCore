@@ -40,7 +40,8 @@ static const std::string SCALE_FACTOR_MARGINALIZATION_ENABLED {"scale-factor-mar
 static const std::string SCALE_FACTOR_SAMPLE_NUMBER {"scale-factor-marginalization-sample-number"};
 static const std::string SCALE_FACTOR_RANGE {"scale-factor-marginalization-range-size"};
 
-ScaleFactorMarginalizationConfig::ScaleFactorMarginalizationConfig(long manager_id) : Configuration(manager_id) {}
+ScaleFactorMarginalizationConfig::ScaleFactorMarginalizationConfig(long manager_id)
+    : Configuration(manager_id), m_sample_number(101), m_range_in_sigma(5) {}
 
 auto ScaleFactorMarginalizationConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Scale factor marginalization options", {
