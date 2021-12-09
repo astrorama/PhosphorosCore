@@ -389,33 +389,17 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
 
     PhzDataModel::PhotometryGrid current_grid = PhzDataModel::PhotometryGrid(model_grid.getAxesTuple());
     std::copy(model_grid.begin(), model_grid.end(), current_grid.begin());
-    bool first = true;
+    region_results.set<RegResType::ORIGINAL_MODEL_GRID_REFERENCE>(model_grid);
+
     for (auto functor_ptr : m_model_funct_list) {
-      if (first) {
-        region_results.set<RegResType::ORIGINAL_MODEL_GRID_REFERENCE>(model_grid);
-        (*functor_ptr)(pair.first, source, current_grid);
-        first = false;
-      } else {
-        (*functor_ptr)(pair.first, source, current_grid);
-      }
+      (*functor_ptr)(pair.first, source, current_grid);
     }
 
-    if (!first && !current_grid.size()){
-      continue;
-    }
-
-    if (first){
-      region_results.set<RegResType::MODEL_GRID_REFERENCE>( model_grid );
-      region_results.set<RegResType::ORIGINAL_MODEL_GRID_REFERENCE>(model_grid);
-    } else {
-      auto& fixed_model_grid = region_results.set<RegResType::FIXED_REDSHIFT_MODEL_GRID>(std::move(current_grid));
-      region_results.set<RegResType::MODEL_GRID_REFERENCE>(fixed_model_grid);
-    }
-
+    auto& fixed_model_grid = region_results.set<RegResType::FIXED_REDSHIFT_MODEL_GRID>(std::move(current_grid));
+    region_results.set<RegResType::MODEL_GRID_REFERENCE>(fixed_model_grid);
 
     // Call the functor
     pair.second(region_results);
-
   }
 
   // Find the result region which contains the model with the best likelihood
