@@ -51,25 +51,6 @@ BOOST_AUTO_TEST_CASE(Const_and_accessor_test) {
   BOOST_CHECK_CLOSE(16, param.getCst(3), 0.00001);
 }
 
-BOOST_AUTO_TEST_CASE(fail_accessor_test) {
-  auto param = PhzNzPrior::NzPriorParam(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16);
-
-  BOOST_CHECK_THROW(param.getZ0t(0), Elements::Exception);
-  BOOST_CHECK_THROW(param.getKmt(0), Elements::Exception);
-  BOOST_CHECK_THROW(param.getAlphat(0), Elements::Exception);
-  BOOST_CHECK_THROW(param.getKt(0), Elements::Exception);
-  BOOST_CHECK_THROW(param.getFt(0), Elements::Exception);
-  BOOST_CHECK_THROW(param.getCst(0), Elements::Exception);
-
-  BOOST_CHECK_THROW(param.getZ0t(4), Elements::Exception);
-  BOOST_CHECK_THROW(param.getKmt(4), Elements::Exception);
-  BOOST_CHECK_THROW(param.getAlphat(4), Elements::Exception);
-  BOOST_CHECK_THROW(param.getKt(3), Elements::Exception);
-  BOOST_CHECK_THROW(param.getFt(3), Elements::Exception);
-  BOOST_CHECK_THROW(param.getCst(4), Elements::Exception);
-
-}
-
 BOOST_AUTO_TEST_CASE(default_test) {
   auto param = PhzNzPrior::NzPriorParam::defaultParam();
 
