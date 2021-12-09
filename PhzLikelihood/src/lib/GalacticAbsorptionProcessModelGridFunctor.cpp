@@ -48,7 +48,7 @@ static void computeCorrectedPhotometry(SourceCatalog::Photometry::const_iterator
                                        SourceCatalog::Photometry::const_iterator corr_begin, double dust_density,
                                        SourceCatalog::Photometry::iterator out_begin) {
   while (model_begin != model_end) {
-    out_begin->flux  = (*model_begin).flux * std::pow(10, -0.4 * (*corr_begin).flux * dust_density);
+    out_begin->flux  = (*model_begin).flux * std::pow(10.0, -0.4 * (*corr_begin).flux * dust_density);
     out_begin->error = 0.;
     ++model_begin;
     ++corr_begin;
