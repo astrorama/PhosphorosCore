@@ -35,23 +35,26 @@ double zmt(double z0t, double kmt, double m0) {
 }
 
 struct PriorCoefficients {
-  double m_pt_m0 = 0, m_A = 0, m_alpt = 0, m_zmt = 0;
+  double m_pt_m0 = 0, m_A = 0, m_alpt = 0, m_inv_zmt_pow = 0;
 
   static PriorCoefficients T1(double m0, const NzPriorParam& prior_param) {
     PriorCoefficients coeff;
-    coeff.m_pt_m0 = pt__m0(prior_param.getFt(1), prior_param.getKt(1), m0);
-    coeff.m_zmt   = zmt(prior_param.getZ0t(1), prior_param.getKmt(1), m0);
-    coeff.m_alpt  = prior_param.getAlphat(1);
-    coeff.m_A     = prior_param.getCst(1) * std::pow(coeff.m_zmt, coeff.m_alpt + 1) / coeff.m_alpt;
+    double            zmtv = zmt(prior_param.getZ0t(1), prior_param.getKmt(1), m0);
+    coeff.m_pt_m0          = pt__m0(prior_param.getFt(1), prior_param.getKt(1), m0);
+    coeff.m_alpt           = prior_param.getAlphat(1);
+    coeff.m_A              = prior_param.getCst(1) * std::pow(zmtv, coeff.m_alpt + 1) / coeff.m_alpt;
+    coeff.m_inv_zmt_pow    = std::pow(1. / zmtv, coeff.m_alpt);
     return coeff;
   }
 
   static PriorCoefficients T2(double m0, const NzPriorParam& prior_param) {
     PriorCoefficients coeff;
-    coeff.m_pt_m0 = pt__m0(prior_param.getFt(2), prior_param.getKt(2), m0);
-    coeff.m_zmt   = zmt(prior_param.getZ0t(2), prior_param.getKmt(2), m0);
-    coeff.m_alpt  = prior_param.getAlphat(2);
-    coeff.m_A     = prior_param.getCst(2) * std::pow(coeff.m_zmt, coeff.m_alpt + 1) / coeff.m_alpt;
+    double            zmtv = zmt(prior_param.getZ0t(2), prior_param.getKmt(2), m0);
+
+    coeff.m_pt_m0       = pt__m0(prior_param.getFt(2), prior_param.getKt(2), m0);
+    coeff.m_alpt        = prior_param.getAlphat(2);
+    coeff.m_A           = prior_param.getCst(2) * std::pow(zmtv, coeff.m_alpt + 1) / coeff.m_alpt;
+    coeff.m_inv_zmt_pow = std::pow(1. / zmtv, coeff.m_alpt);
     return coeff;
   }
 
@@ -60,47 +63,29 @@ struct PriorCoefficients {
 
     double pt_m0_1 = pt__m0(prior_param.getFt(1), prior_param.getKt(1), m0);
     double pt_m0_2 = pt__m0(prior_param.getFt(2), prior_param.getKt(2), m0);
+    double zmtv    = zmt(prior_param.getZ0t(3), prior_param.getKmt(3), m0);
 
-    coeff.m_pt_m0 = 1 - pt_m0_1 - pt_m0_2;
-    coeff.m_zmt   = zmt(prior_param.getZ0t(3), prior_param.getKmt(3), m0);
-    coeff.m_alpt  = prior_param.getAlphat(3);
-    coeff.m_A     = prior_param.getCst(3) * std::pow(coeff.m_zmt, coeff.m_alpt + 1) / coeff.m_alpt;
+    coeff.m_pt_m0       = 1 - pt_m0_1 - pt_m0_2;
+    coeff.m_alpt        = prior_param.getAlphat(3);
+    coeff.m_A           = prior_param.getCst(3) * std::pow(zmtv, coeff.m_alpt + 1) / coeff.m_alpt;
+    coeff.m_inv_zmt_pow = std::pow(1. / zmtv, coeff.m_alpt);
     return coeff;
   }
 };
 
-void NzPrior::computeP_T_z__m0(double m0, const XYDataset::QualifiedName& sed, PhzDataModel::DoubleGrid& grid) {
-  const auto&       group_name = m_sedGroupManager.findGroupContaining(sed).first;
-  PriorCoefficients coeff;
-  if (group_name == "T1") {
-    coeff = PriorCoefficients::T1(m0, m_prior_param);
-  } else if (group_name == "T2") {
-    coeff = PriorCoefficients::T2(m0, m_prior_param);
-  } else {
-    coeff = PriorCoefficients::T3(m0, m_prior_param);
-  }
-
-  // For bright sources, set z > 1 prior to 0, leave the values for z < 1
-  if (m0 < 20) {
-    for (auto grid_iter = grid.begin(); grid_iter != grid.end(); ++grid_iter) {
-      double z = grid_iter.axisValue<PhzDataModel::ModelParameter::Z>();
-      if (z > 1) {
-        *grid_iter = 0;
-      }
-    }
-    return;
-  }
-
-  const double pt_m0_div_A = coeff.m_pt_m0 / coeff.m_A;
-  const double inv_zmt_pow = std::pow(1. / coeff.m_zmt, coeff.m_alpt);
-
+static void computeP_T_z__m0(std::array<PriorCoefficients, 3>& coeffs, std::vector<int> coeff_index,
+                             PhzDataModel::DoubleGrid& grid) {
   for (auto grid_iter = grid.begin(); grid_iter != grid.end(); ++grid_iter) {
-    double z = grid_iter.axisValue<PhzDataModel::ModelParameter::Z>();
+    auto z       = grid_iter.axisValue<PhzDataModel::ModelParameter::Z>();
+    auto sed_idx = grid_iter.axisIndex<PhzDataModel::ModelParameter::SED>();
+
     if (z <= 0.0) {
       z = 1e-4;
     }
-    double z_pow = std::pow(z, coeff.m_alpt);
-    *grid_iter   = pt_m0_div_A * z_pow * std::exp(-z_pow * inv_zmt_pow);
+
+    const auto& coeff = coeffs[coeff_index[sed_idx]];
+    double      z_pow = std::pow(z, coeff.m_alpt);
+    *grid_iter        = (coeff.m_pt_m0 / coeff.m_A) * z_pow * std::exp(-z_pow * coeff.m_inv_zmt_pow);
   }
 }
 
@@ -125,10 +110,39 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
   if (!flux_ptr->missing_photometry_flag) {
     // flux is in micro Jy the AB mag factor is then 3613E6
     double mag_Iab = -2.5 * std::log10(flux_ptr->flux / 3.631E9);
-    auto&  seds    = prior_grid.getAxis<PhzDataModel::ModelParameter::SED>();
-    for (auto& sed : seds) {
-      auto grid_slice = prior_grid.fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
-      computeP_T_z__m0(mag_Iab, sed, grid_slice);
+
+    // Precompute the coefficients for the three group of seds
+    std::array<PriorCoefficients, 3> coeffs{PriorCoefficients::T1(mag_Iab, m_prior_param),
+                                            PriorCoefficients::T2(mag_Iab, m_prior_param),
+                                            PriorCoefficients::T3(mag_Iab, m_prior_param)};
+
+    // The Z axis changes more slowly than the SED axis, so it is interesting to have the inner loop
+    // iterate over the SEDs for memory locality, but we need to know to which group the SED correspond
+    // to know which set of coefficients to use. To avoid a map lookup, we populate a vector with the coefficient
+    // index corresponding to each SED.
+    auto&            seds = prior_grid.getAxis<PhzDataModel::ModelParameter::SED>();
+    std::vector<int> coeff_index(seds.size());
+    for (size_t i = 0; i < seds.size(); ++i) {
+      const auto& group_name = m_sedGroupManager.findGroupContaining(seds[i]).first;
+      if (group_name == "T1") {
+        coeff_index[i] = 0;
+      } else if (group_name == "T2") {
+        coeff_index[i] = 1;
+      } else {
+        coeff_index[i] = 2;
+      }
+    }
+
+    // For bright sources, set z > 1 prior to 0, leave the values for z < 1
+    if (mag_Iab < 20) {
+      for (auto grid_iter = prior_grid.begin(); grid_iter != prior_grid.end(); ++grid_iter) {
+        double z = grid_iter.axisValue<PhzDataModel::ModelParameter::Z>();
+        if (z > 1) {
+          *grid_iter = 0;
+        }
+      }
+    } else {
+      computeP_T_z__m0(coeffs, coeff_index, prior_grid);
     }
 
     // Apply the effectiveness to the prior.

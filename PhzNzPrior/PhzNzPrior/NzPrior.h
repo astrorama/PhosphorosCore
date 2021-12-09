@@ -23,7 +23,6 @@ public:
   void operator()(PhzDataModel::RegionResults& results);
 
 private:
-  void computeP_T_z__m0(double m0, const XYDataset::QualifiedName& sed, PhzDataModel::DoubleGrid& grid);
   PhzDataModel::QualifiedNameGroupManager m_sedGroupManager;
   XYDataset::QualifiedName                m_i_filter_name;
   NzPriorParam                            m_prior_param;
