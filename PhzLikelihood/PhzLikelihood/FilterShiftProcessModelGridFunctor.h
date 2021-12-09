@@ -25,41 +25,34 @@
 #ifndef PHZLIKELIHOOD_FILTERSHIFTPROCESSMODELGRIDFUNCTOR_H
 #define PHZLIKELIHOOD_FILTERSHIFTPROCESSMODELGRIDFUNCTOR_H
 
+#include "PhzDataModel/PhotometryGrid.h"
+#include "PhzLikelihood/ProcessModelGridFunctor.h"
+#include "SourceCatalog/Source.h"
 #include <map>
 #include <string>
 #include <vector>
-#include "SourceCatalog/Source.h"
-#include "PhzDataModel/PhotometryGrid.h"
-#include "PhzLikelihood/ProcessModelGridFunctor.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
 
-class FilterShiftProcessModelGridFunctor : public ProcessModelGridFunctor{
-  public:
-    FilterShiftProcessModelGridFunctor(
-        const std::map<std::string, PhzDataModel::PhotometryGrid> & coefficient_grid);
-    ~FilterShiftProcessModelGridFunctor() {}
+class FilterShiftProcessModelGridFunctor : public ProcessModelGridFunctor {
+public:
+  FilterShiftProcessModelGridFunctor(const std::map<std::string, PhzDataModel::PhotometryGrid>& coefficient_grid);
+  ~FilterShiftProcessModelGridFunctor() {}
 
-    PhzDataModel::PhotometryGrid operator()(const std::string & region_name,
-        const PhzDataModel::PhotometryGrid & model_grid,
-        const SourceCatalog::Source & source) const override;
+  void operator()(const std::string& region_name, const SourceCatalog::Source& source,
+                  PhzDataModel::PhotometryGrid& model_grid) const override;
 
-    static void computeCorrectedPhotometry(SourceCatalog::Photometry::const_iterator model_begin,
-                                     SourceCatalog::Photometry::const_iterator model_end,
-                                     SourceCatalog::Photometry::const_iterator corr_begin,
-                                     const std::vector<double>& filter_shift,
-                                     SourceCatalog::Photometry::iterator out_begin);
+  static void computeCorrectedPhotometry(SourceCatalog::Photometry::const_iterator model_begin,
+                                         SourceCatalog::Photometry::const_iterator model_end,
+                                         SourceCatalog::Photometry::const_iterator corr_begin,
+                                         const std::vector<double>& filter_shift, SourceCatalog::Photometry::iterator out_begin);
 
-  protected:
-    const std::map<std::string, PhzDataModel::PhotometryGrid> & m_coefficient_grid;
-
-
+protected:
+  const std::map<std::string, PhzDataModel::PhotometryGrid>& m_coefficient_grid;
 };
 
+}  // end of namespace PhzLikelihood
+}  // end of namespace Euclid
 
-
-} // end of namespace PhzLikelihood
-} // end of namespace Euclid
-
-#endif  /* PHZLIKELIHOOD_FILTERSHIFTPROCESSMODELGRIDFUNCTOR_H */
+#endif /* PHZLIKELIHOOD_FILTERSHIFTPROCESSMODELGRIDFUNCTOR_H */

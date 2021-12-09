@@ -95,7 +95,7 @@ BOOST_FIXTURE_TEST_CASE(test_precondition,FixRedshiftProcessModelGridFunctor_Fix
   FixRedshiftProcessModelGridFunctor functor{};
   std::string region = "dummy";
   // Then
-  BOOST_CHECK_THROW(functor(region, photo_grid, source_1),  Elements::Exception);
+  BOOST_CHECK_THROW(functor(region, source_1, photo_grid),  Elements::Exception);
 }
 
 //-----------------------------------------------------------------------------
@@ -105,7 +105,9 @@ BOOST_FIXTURE_TEST_CASE(test_nominal,FixRedshiftProcessModelGridFunctor_Fixture)
   FixRedshiftProcessModelGridFunctor functor{};
   std::string region = "dummy";
   // When
-  auto new_grid = functor(region, photo_grid, source_2);
+  PhzDataModel::PhotometryGrid new_grid(photo_grid.getAxesTuple());
+  std::copy(photo_grid.begin(), photo_grid.end(), new_grid.begin());
+  functor(region, source_2, new_grid);
   // Then
   auto new_tuple = new_grid.getAxesTuple();
   auto ref_tuple = photo_grid.getAxesTuple();

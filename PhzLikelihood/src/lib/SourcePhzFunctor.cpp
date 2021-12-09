@@ -388,15 +388,15 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
     auto& model_grid = m_phot_grid_map.at(pair.first);
 
     PhzDataModel::PhotometryGrid current_grid = PhzDataModel::PhotometryGrid(model_grid.getAxesTuple());
-    bool first=true;
-    for(auto functor_ptr : m_model_funct_list){
-      if (first){
+    std::copy(model_grid.begin(), model_grid.end(), current_grid.begin());
+    bool first = true;
+    for (auto functor_ptr : m_model_funct_list) {
+      if (first) {
         region_results.set<RegResType::ORIGINAL_MODEL_GRID_REFERENCE>(model_grid);
-        current_grid = std::move((*functor_ptr)(pair.first, model_grid, source));
-        first=false;
-      }
-      else {
-        current_grid = std::move((*functor_ptr)(pair.first, current_grid, source));
+        (*functor_ptr)(pair.first, source, current_grid);
+        first = false;
+      } else {
+        (*functor_ptr)(pair.first, source, current_grid);
       }
     }
 

@@ -25,34 +25,32 @@
 #ifndef PHZLIKELIHOOD_GALACTICABSORPTIONPROCESSMODELGRIDFUNCTOR_H
 #define PHZLIKELIHOOD_GALACTICABSORPTIONPROCESSMODELGRIDFUNCTOR_H
 
-#include <map>
-#include <string>
-#include "SourceCatalog/Source.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzLikelihood/ProcessModelGridFunctor.h"
+#include "SourceCatalog/Source.h"
+#include <map>
+#include <string>
 
 namespace Euclid {
 namespace PhzLikelihood {
 
-class GalacticAbsorptionProcessModelGridFunctor : public ProcessModelGridFunctor{
-  public:
-    GalacticAbsorptionProcessModelGridFunctor(const std::map<std::string,PhzDataModel::PhotometryGrid> & coefficient_grid, double dust_map_sed_bpc);
-    ~GalacticAbsorptionProcessModelGridFunctor(){};
+class GalacticAbsorptionProcessModelGridFunctor : public ProcessModelGridFunctor {
+public:
+  GalacticAbsorptionProcessModelGridFunctor(const std::map<std::string, PhzDataModel::PhotometryGrid>& coefficient_grid,
+                                            double                                                     dust_map_sed_bpc);
+  ~GalacticAbsorptionProcessModelGridFunctor(){};
 
-    PhzDataModel::PhotometryGrid operator()( const std::string & region_name,
-        const PhzDataModel::PhotometryGrid & model_grid,
-        const SourceCatalog::Source & source) const override;
+  void operator()(const std::string& region_name, const SourceCatalog::Source& source,
+                  PhzDataModel::PhotometryGrid& model_grid) const override;
 
-  protected:
-    const std::map<std::string,PhzDataModel::PhotometryGrid> & m_coefficient_grid;
+protected:
+  const std::map<std::string, PhzDataModel::PhotometryGrid>& m_coefficient_grid;
 
-  private:
-    double m_dust_map_sed_bpc;
+private:
+  double m_dust_map_sed_bpc;
 };
 
+}  // end of namespace PhzLikelihood
+}  // end of namespace Euclid
 
-
-} // end of namespace PhzLikelihood
-} // end of namespace Euclid
-
-#endif  /* PHZLIKELIHOOD_GALACTICABSORPTIONPROCESSMODELGRIDFUNCTOR_H */
+#endif /* PHZLIKELIHOOD_GALACTICABSORPTIONPROCESSMODELGRIDFUNCTOR_H */
