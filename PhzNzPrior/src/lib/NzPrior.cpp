@@ -91,12 +91,16 @@ void NzPrior::computeP_T_z__m0(double m0, const XYDataset::QualifiedName& sed, P
     return;
   }
 
+  const double pt_m0_div_A = coeff.m_pt_m0 / coeff.m_A;
+  const double inv_zmt_pow = std::pow(1. / coeff.m_zmt, coeff.m_alpt);
+
   for (auto grid_iter = grid.begin(); grid_iter != grid.end(); ++grid_iter) {
     double z = grid_iter.axisValue<PhzDataModel::ModelParameter::Z>();
     if (z <= 0.0) {
       z = 1e-4;
     }
-    *grid_iter = (coeff.m_pt_m0 / coeff.m_A) * std::pow(z, coeff.m_alpt) * std::exp(-std::pow(z / coeff.m_zmt, coeff.m_alpt));
+    double z_pow = std::pow(z, coeff.m_alpt);
+    *grid_iter   = pt_m0_div_A * z_pow * std::exp(-z_pow * inv_zmt_pow);
   }
 }
 
