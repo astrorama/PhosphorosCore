@@ -20,10 +20,10 @@
 #ifndef _REFERENCESAMPLE_INDEXPROVIDER_H
 #define _REFERENCESAMPLE_INDEXPROVIDER_H
 
+#include "NdArray/NdArray.h"
+#include <boost/filesystem/path.hpp>
 #include <map>
 #include <set>
-#include <boost/filesystem/path.hpp>
-#include "NdArray/NdArray.h"
 
 namespace Euclid {
 namespace ReferenceSample {
@@ -35,17 +35,14 @@ namespace ReferenceSample {
  */
 class IndexProvider {
 public:
-
-  enum IndexKey {
-    SED, PDZ
-  };
+  enum IndexKey { SED, PDZ };
 
   /**
    * Location of an object on a set of data files
    */
   struct ObjectLocation {
-    ssize_t file; ///< File index
-    ssize_t offset; ///< Position inside the file
+    ssize_t file;    ///< File index
+    ssize_t offset;  ///< Position inside the file
   };
 
   /**
@@ -107,10 +104,28 @@ public:
    */
   std::vector<int64_t> getIds() const;
 
+  /**
+   * Sort the index for the given key so physically adjacent entries are also adjacent on the index
+   * @param key
+   */
+  void sort(IndexKey key);
+
+  /**
+   * Find the ID of the object stored at the given location
+   * @param key
+   *    Provider key
+   * @param loc
+   *    Object location to look for
+   * @param
+   *    Start looking at this position
+   * @return
+   */
+  int64_t findId(IndexKey key, const ObjectLocation& loc, size_t offset) const;
+
 private:
-  boost::filesystem::path m_path;
+  boost::filesystem::path                    m_path;
   std::unique_ptr<NdArray::NdArray<int64_t>> m_data;
-  std::map<int64_t, size_t> m_index;
+  std::map<int64_t, size_t>                  m_index;
 
   /**
    * Register a new object ID on the reference sample.
@@ -122,7 +137,7 @@ private:
   std::map<int64_t, size_t>::iterator create(int64_t id);
 };
 
-} // end of namespace ReferenceSample
-} // end of namespace Euclid
+}  // end of namespace ReferenceSample
+}  // end of namespace Euclid
 
-#endif // _REFERENCESAMPLE_INDEXPROVIDER_H
+#endif  // _REFERENCESAMPLE_INDEXPROVIDER_H

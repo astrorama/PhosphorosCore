@@ -36,7 +36,7 @@ double FilterInfo::getNormalization() const {
 
 FilterInfo::FilterInfo(const FilterInfo& other)
       : m_range{std::make_pair(other.m_range.first,other.m_range.second)},
-        m_filter{(*(other.m_filter)).clone()},
+        m_filter{other.m_filter},
         m_normalization{other.m_normalization} {
 }
 

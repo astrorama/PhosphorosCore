@@ -21,24 +21,23 @@
  *
  */
 
+#include "PhzReferenceSample/SedDataProvider.h"
+#include "NdArray/io/NpyMmap.h"
 #include <ElementsKernel/Exception.h>
 #include <boost/filesystem/operations.hpp>
-#include "NdArray/io/NpyMmap.h"
-#include "PhzReferenceSample/SedDataProvider.h"
 
 namespace Euclid {
 namespace ReferenceSample {
 
-using NdArray::mmapNpy;
 using NdArray::createMmapNpy;
+using NdArray::mmapNpy;
 using NdArray::NdArray;
 
-SedDataProvider::SedDataProvider(const boost::filesystem::path &path, std::size_t max_size)
-  : m_data_path{path}, m_max_size{max_size}, m_length{0} {
+SedDataProvider::SedDataProvider(const boost::filesystem::path& path, std::size_t max_size)
+    : m_data_path{path}, m_max_size{max_size}, m_length{0} {
   if (boost::filesystem::exists(m_data_path)) {
     m_array = Euclid::make_unique<NdArray<float>>(
-      mmapNpy<float>(m_data_path, boost::iostreams::mapped_file_base::readwrite,
-                     m_max_size + 1024));
+        mmapNpy<float>(m_data_path, boost::iostreams::mapped_file_base::readwrite, m_max_size + 1024));
 
     if (m_array->shape().size() != 3) {
       throw Elements::Exception() << "Expected an NdArray with three dimensions";
@@ -48,8 +47,7 @@ SedDataProvider::SedDataProvider(const boost::filesystem::path &path, std::size_
     }
 
     m_length = m_array->shape()[1];
-  }
-  else {
+  } else {
     // We can not create the file yet: we need to know the size of the binning
     // Just touch it to get hold of the name and fail soon if we can not write here
     std::fstream stream;
@@ -70,34 +68,38 @@ XYDataset::XYDataset SedDataProvider::readSed(int64_t position) const {
   }
 
   std::vector<std::pair<double, double>> data(m_length);
-  for (uint32_t i = 0; i < m_length; ++i) {
-    data[i].first = m_array->at(position, i, 0);
-    data[i].second = m_array->at(position, i, 1);
+  for (size_t i = 0; i < m_length; ++i) {
+    data[i].first  = m_array->at(static_cast<size_t>(position), i, 0);
+    data[i].second = m_array->at(static_cast<size_t>(position), i, 1);
   }
   return data;
 }
 
-size_t SedDataProvider::size() const {
+size_t SedDataProvider::diskSize() const {
   return boost::filesystem::file_size(m_data_path);
 }
 
-int64_t SedDataProvider::addSed(const XYDataset::XYDataset &data) {
+size_t SedDataProvider::length() const {
+  return m_array->shape()[0];
+}
+
+int64_t SedDataProvider::addSed(const XYDataset::XYDataset& data) {
   typedef XYDataset::XYDataset::const_iterator::value_type pair_type;
-  auto cmp_bin_func = [](const pair_type &a, const pair_type &b) { return a.first < b.first; };
+  auto cmp_bin_func = [](const pair_type& a, const pair_type& b) { return a.first < b.first; };
 
   if (!m_array) {
     create(data.size());
   }
   if (data.size() != m_length) {
-    throw Elements::Exception() << "All SEDs are expected to have the same number of knots ("
-                                << data.size() << " vs " << m_length << ")";
+    throw Elements::Exception() << "All SEDs are expected to have the same number of knots (" << data.size() << " vs " << m_length
+                                << ")";
   }
   if (!std::is_sorted(data.begin(), data.end(), cmp_bin_func)) {
     throw Elements::Exception() << "SED bins not in order";
   }
 
   NdArray<float> values{1, m_length, 2};
-  size_t i = 0;
+  size_t         i = 0;
   for (auto p : data) {
     values.at(0, i, 0) = p.first;
     values.at(0, i, 1) = p.second;
@@ -109,14 +111,12 @@ int64_t SedDataProvider::addSed(const XYDataset::XYDataset &data) {
 
 void SedDataProvider::create(size_t knots) {
   m_length = knots;
-  m_array = Euclid::make_unique<NdArray<float>>(
-    createMmapNpy<float>(m_data_path, {0, knots, 2}, m_max_size)
-  );
+  m_array  = Euclid::make_unique<NdArray<float>>(createMmapNpy<float>(m_data_path, {0, knots, 2}, m_max_size));
 }
 
 size_t SedDataProvider::getKnots() const {
   return m_length;
 }
 
-}  // namespace PhzReferenceSample
+}  // namespace ReferenceSample
 }  // namespace Euclid

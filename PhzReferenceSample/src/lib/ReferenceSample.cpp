@@ -23,29 +23,31 @@
 
 #include "PhzReferenceSample/ReferenceSample.h"
 #include <ElementsKernel/Exception.h>
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/format.hpp>
+#include <ElementsKernel/Logging.h>
 #include <MathUtils/function/function_tools.h>
 #include <MathUtils/interpolation/interpolation.h>
-
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/format.hpp>
 
 namespace Euclid {
 namespace ReferenceSample {
+
+using Euclid::make_unique;
+
+static Elements::Logging logger = Elements::Logging::getLogger("ReferenceSample");
 
 static const std::string INDEX_FILE_NAME{"index.npy"};
 static const std::string SED_DATA_NAME_PATTERN{"sed_data_%1%.npy"};
 static const std::string PDZ_DATA_NAME_PATTERN{"pdz_data_%1%.npy"};
 
-
-ReferenceSample::ReferenceSample(const boost::filesystem::path &path, size_t max_file_size) :
-  m_root_path{path}, m_max_file_size(max_file_size),
-  m_index{path / INDEX_FILE_NAME} {
+ReferenceSample::ReferenceSample(const boost::filesystem::path& path, size_t max_file_size)
+    : m_root_path{path}, m_max_file_size(max_file_size), m_index{path / INDEX_FILE_NAME} {
   initSedProviders();
   initPdzProviders();
 }
 
-ReferenceSample ReferenceSample::create(const boost::filesystem::path &path, size_t max_file_size) {
+ReferenceSample ReferenceSample::create(const boost::filesystem::path& path, size_t max_file_size) {
   if (!boost::filesystem::create_directories(path)) {
     throw Elements::Exception() << "The directory already exists: " << path;
   }
@@ -65,10 +67,20 @@ boost::optional<XYDataset::XYDataset> ReferenceSample::getSedData(int64_t id) co
   if (loc.file == -1) {
     return {};
   }
-  if (loc.file > static_cast<ssize_t>(m_sed_providers.size())) {
+  if (loc.file > m_sed_provider_count) {
     throw Elements::Exception() << "Invalid SED file " << loc.file;
   }
-  return m_sed_providers.at(loc.file - 1)->readSed(loc.offset);
+  if (m_read_sed_idx != loc.file) {
+    auto write_sed_i = m_write_sed_idx.find(loc.file);
+    if (write_sed_i != m_write_sed_idx.end()) {
+      return m_write_sed_provider.at(write_sed_i->second)->readSed(loc.offset);
+    }
+    auto sed_filename   = boost::str(boost::format(SED_DATA_NAME_PATTERN) % loc.file);
+    auto sed_path       = m_root_path / sed_filename;
+    m_read_sed_provider = make_unique<SedDataProvider>(sed_path);
+    m_read_sed_idx      = loc.file;
+  }
+  return m_read_sed_provider->readSed(loc.offset);
 }
 
 boost::optional<XYDataset::XYDataset> ReferenceSample::getPdzData(int64_t id) const {
@@ -76,45 +88,58 @@ boost::optional<XYDataset::XYDataset> ReferenceSample::getPdzData(int64_t id) co
   if (loc.file == -1) {
     return {};
   }
-  if (loc.file > static_cast<ssize_t>(m_pdz_providers.size())) {
+  if (loc.file > m_pdz_provider_count) {
     throw Elements::Exception() << "Invalid PDZ file " << loc.file;
   }
-  return m_pdz_providers.at(loc.file - 1)->readPdz(loc.offset);
+  if (loc.file != m_pdz_index) {
+    auto pdz_filename = boost::str(boost::format(PDZ_DATA_NAME_PATTERN) % loc.file);
+    auto pdz_path     = m_root_path / pdz_filename;
+    m_pdz_provider    = make_unique<PdzDataProvider>(pdz_path);
+  }
+  return m_pdz_provider->readPdz(loc.offset);
 }
 
-void ReferenceSample::addSedData(int64_t id, const XYDataset::XYDataset &data) {
+void ReferenceSample::addSedData(int64_t id, const XYDataset::XYDataset& data) {
   auto loc = m_index.get(id, IndexProvider::SED);
   if (loc.file > -1) {
     throw Elements::Exception() << "SED for ID " << id << " is already set";
   }
 
-  size_t data_size = data.size() * 2 * sizeof(double);
+  size_t                           data_size = data.size() * 2 * sizeof(double);
+  int64_t                          sed_write_idx;
+  std::unique_ptr<SedDataProvider> sed_writer_ptr;
 
-  auto current_prov = m_sed_prov_for_size.find(data.size());
-  if (current_prov == m_sed_prov_for_size.end()) {
-    createNewSedProvider();
-    current_prov = m_sed_prov_for_size.emplace(
-      std::make_pair(data.size(), m_sed_providers.size() - 1)).first;
+  // No provider for this size
+  auto write_provider_i = m_write_sed_idx.find(data.size());
+  if (write_provider_i == m_write_sed_idx.end()) {
+    std::tie(sed_write_idx, sed_writer_ptr) = createNewSedProvider();
+    m_write_sed_provider.emplace(std::make_pair(sed_write_idx, std::move(sed_writer_ptr)));
+    write_provider_i = m_write_sed_idx.emplace(std::make_pair(data.size(), sed_write_idx)).first;
   }
-  else if (m_sed_providers[current_prov->second]->size() + data_size >= m_max_file_size) {
-    createNewSedProvider();
-    current_prov->second = m_sed_providers.size() - 1;
+  // There is a provider, but the size is bigger than the limit
+  else if (m_write_sed_provider.at(write_provider_i->second)->diskSize() + data_size >= m_max_file_size) {
+    m_write_sed_provider.erase(write_provider_i->second);
+    std::tie(sed_write_idx, sed_writer_ptr) = createNewSedProvider();
+    m_write_sed_provider.emplace(std::make_pair(sed_write_idx, std::move(sed_writer_ptr)));
+    write_provider_i->second = sed_write_idx;
   }
 
-  loc.file = current_prov->second + 1;
-  loc.offset = m_sed_providers[current_prov->second]->addSed(data);
+  auto  write_idx  = write_provider_i->second;
+  auto& sed_writer = m_write_sed_provider.at(write_idx);
+
+  loc.file   = write_idx;
+  loc.offset = sed_writer->addSed(data);
   m_index.add(id, IndexProvider::SED, loc);
 }
 
-void ReferenceSample::createNewSedProvider() {
-  uint16_t new_sed_idx = m_sed_providers.size() + 1;
-  auto sed_filename = boost::str(boost::format(SED_DATA_NAME_PATTERN) % new_sed_idx);
-  auto sed_path = m_root_path / sed_filename;
-
-  m_sed_providers.emplace_back(new SedDataProvider{sed_path});
+std::pair<int64_t, std::unique_ptr<SedDataProvider>> ReferenceSample::createNewSedProvider() {
+  uint16_t new_sed_idx  = ++m_sed_provider_count;
+  auto     sed_filename = boost::str(boost::format(SED_DATA_NAME_PATTERN) % new_sed_idx);
+  auto     sed_path     = m_root_path / sed_filename;
+  return std::make_pair(new_sed_idx, make_unique<SedDataProvider>(sed_path));
 }
 
-void ReferenceSample::addPdzData(int64_t id, const XYDataset::XYDataset &data) {
+void ReferenceSample::addPdzData(int64_t id, const XYDataset::XYDataset& data) {
   auto loc = m_index.get(id, IndexProvider::PDZ);
   if (loc.file > -1) {
     throw Elements::Exception() << "PDZ for ID " << id << " is already set";
@@ -135,57 +160,119 @@ void ReferenceSample::addPdzData(int64_t id, const XYDataset::XYDataset &data) {
     y_axis.push_back(p.second);
   }
 
-  double integral = MathUtils::integrate(
-    *MathUtils::interpolate(data, MathUtils::InterpolationType::LINEAR), x_min, x_max
-  );
+  double integral = MathUtils::integrate(*MathUtils::interpolate(data, MathUtils::InterpolationType::LINEAR), x_min, x_max);
 
   for (auto& y : y_axis) {
     y /= integral;
   }
 
-  auto normalized = XYDataset::XYDataset::factory(x_axis, y_axis);
-  size_t data_size = normalized.size() * 2 * sizeof(double);
+  auto   normalized = XYDataset::XYDataset::factory(x_axis, y_axis);
+  size_t data_size  = normalized.size() * 2 * sizeof(double);
 
-  if (m_pdz_providers.back()->size() + data_size >= m_max_file_size) {
-    uint16_t new_pdz_file = m_pdz_providers.size() + 1;
-    auto pdz_filename = boost::str(boost::format(PDZ_DATA_NAME_PATTERN) % new_pdz_file);
-    auto pdz_path = m_root_path / pdz_filename;
-
-    m_pdz_providers.emplace_back(new PdzDataProvider{pdz_path});
+  if (!m_pdz_provider || m_pdz_provider->diskSize() + data_size >= m_max_file_size) {
+    m_pdz_index       = ++m_pdz_provider_count;
+    auto pdz_filename = boost::str(boost::format(PDZ_DATA_NAME_PATTERN) % m_pdz_index);
+    auto pdz_path     = m_root_path / pdz_filename;
+    m_pdz_provider    = make_unique<PdzDataProvider>(pdz_path);
   }
 
-  loc.file = m_pdz_providers.size();
-  loc.offset = m_pdz_providers.back()->addPdz(normalized);
+  loc.file   = m_pdz_index;
+  loc.offset = m_pdz_provider->addPdz(normalized);
   m_index.add(id, IndexProvider::PDZ, loc);
 }
 
 void ReferenceSample::initSedProviders() {
+  m_read_sed_idx = 0;
+
   auto sed_files = m_index.getFiles(IndexProvider::SED);
-  if (sed_files.size() == 0)
+  if (sed_files.empty()) {
+    m_sed_provider_count = 0;
     return;
+  }
 
-  m_sed_providers.resize(*std::max_element(sed_files.begin(), sed_files.end()));
-
+  m_sed_provider_count = static_cast<int64_t>(*std::max_element(sed_files.begin(), sed_files.end()));
   for (auto sed_idx : sed_files) {
-    auto sed_filename = boost::str(boost::format(SED_DATA_NAME_PATTERN) % sed_idx);
-    auto sed_path = m_root_path / sed_filename;
-    m_sed_providers[sed_idx - 1].reset(new SedDataProvider{sed_path});
-    m_sed_prov_for_size[m_sed_providers[sed_idx - 1]->getKnots()] = sed_idx - 1;
+    auto sed_filename             = boost::str(boost::format(SED_DATA_NAME_PATTERN) % sed_idx);
+    auto sed_path                 = m_root_path / sed_filename;
+    auto sed_prov                 = make_unique<SedDataProvider>(sed_path);
+    auto knots                    = sed_prov->getKnots();
+    m_write_sed_provider[sed_idx] = std::move(sed_prov);
+    m_write_sed_idx[knots]        = sed_idx;
   }
 }
 
 void ReferenceSample::initPdzProviders() {
   auto pdz_files = m_index.getFiles(IndexProvider::PDZ);
-  pdz_files.insert(1); // At least create the first one
-
-  m_pdz_providers.resize(*std::max_element(pdz_files.begin(), pdz_files.end()));
-
-  for (auto pdz_idx : pdz_files) {
-    auto pdz_filename = boost::str(boost::format(PDZ_DATA_NAME_PATTERN) % pdz_idx);
-    auto pdz_path = m_root_path / pdz_filename;
-    m_pdz_providers[pdz_idx - 1].reset(new PdzDataProvider{pdz_path, m_max_file_size});
+  if (pdz_files.empty()) {
+    m_pdz_index          = 0;
+    m_pdz_provider_count = 0;
+    return;
   }
+
+  m_pdz_provider_count = static_cast<int64_t>(*std::max_element(pdz_files.begin(), pdz_files.end()));
+  m_pdz_index          = m_pdz_provider_count;
+  auto pdz_filename    = boost::str(boost::format(PDZ_DATA_NAME_PATTERN) % m_pdz_index);
+  auto pdz_path        = m_root_path / pdz_filename;
+  m_pdz_provider       = make_unique<PdzDataProvider>(pdz_path);
 }
 
-}  // namespace PhzReferenceSample
+void ReferenceSample::optimize() {
+  // Clear providers
+  m_pdz_provider.reset();
+  m_read_sed_provider.reset();
+  m_write_sed_provider.clear();
+
+  // Sort index based on SED (biggest dataset)
+  logger.info() << "Sorting based on SED";
+  m_index.sort(IndexProvider::SED);
+
+  // Map all PDZ providers
+  std::vector<std::unique_ptr<PdzDataProvider>> pdz_providers(m_pdz_provider_count);
+  for (int64_t i = 1; i <= m_pdz_provider_count; ++i) {
+    auto pdz_filename    = boost::str(boost::format(PDZ_DATA_NAME_PATTERN) % i);
+    auto pdz_path        = m_root_path / pdz_filename;
+    pdz_providers[i - 1] = make_unique<PdzDataProvider>(pdz_path);
+  }
+
+  // Shuffle around the PDZs so they are in order too
+  logger.info() << "Reordering PDZ";
+  auto                          ids = m_index.getIds();
+  IndexProvider::ObjectLocation loc{1, 1};
+  int64_t                       prov_size = pdz_providers[loc.file - 1]->length();
+  size_t                        id_offset = 0, nobjs = ids.size(), last = 0;
+  for (auto id : ids) {
+    if (loc.offset >= prov_size + 1) {
+      ++loc.file;
+      loc.offset = 1;
+      prov_size  = pdz_providers[loc.file - 1]->length();
+    }
+
+    auto this_loc = m_index.get(id, IndexProvider::PDZ);
+    // If it does not match the expected position, swap
+    if (this_loc.file != loc.file || this_loc.offset != loc.offset) {
+      auto other_id  = m_index.findId(IndexProvider::PDZ, loc, id_offset);
+      auto other_pdz = pdz_providers[loc.file - 1]->readPdz(loc.offset);
+      auto this_pdz  = pdz_providers[this_loc.file - 1]->readPdz(this_loc.offset);
+
+      pdz_providers[loc.file - 1]->setPdz(loc.offset, this_pdz);
+      pdz_providers[this_loc.file - 1]->setPdz(this_loc.offset, other_pdz);
+
+      m_index.add(other_id, IndexProvider::PDZ, this_loc);
+      m_index.add(id, IndexProvider::PDZ, loc);
+    }
+    ++id_offset;
+    ++loc.offset;
+    if ((id_offset * 100) / nobjs > last) {
+      last = (id_offset * 100) / nobjs;
+      logger.info() << last << "% (" << id_offset << '/' << nobjs << ')';
+    }
+  }
+
+  // Clear work area and reload
+  pdz_providers.clear();
+  initSedProviders();
+  initPdzProviders();
+}
+
+}  // namespace ReferenceSample
 }  // namespace Euclid

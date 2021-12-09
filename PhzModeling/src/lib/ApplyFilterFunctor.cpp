@@ -29,7 +29,7 @@ static std::vector<double> getInterpolationGrid(const XYDataset::XYDataset& mode
   }
 
   // If the filter is an interpolated function, add the knots from it
-  auto filter_intepolated = dynamic_cast<const MathUtils::Piecewise*>(&filter);
+  auto filter_intepolated = dynamic_cast<const MathUtils::PiecewiseBase*>(&filter);
   if (filter_intepolated != nullptr) {
     auto& knots = filter_intepolated->getKnots();
     grid.reserve(grid.size() + knots.size());
