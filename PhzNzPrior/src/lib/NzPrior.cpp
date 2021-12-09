@@ -34,43 +34,70 @@ double zmt(double z0t, double kmt, double m0) {
   return z0t + kmt * (m0 - 20);
 }
 
-double NzPrior::computeP_T_z__m0(double m0, double z, const XYDataset::QualifiedName& sed) {
-  if (z <= 0.0) {
-    z = 1e-4;
-  }
-  const auto& group_name = m_sedGroupManager.findGroupContaining(sed).first;
+struct PriorCoefficients {
+  double m_pt_m0 = 0, m_A = 0, m_alpt = 0, m_zmt = 0;
 
-  double res = 0;
+  static PriorCoefficients T1(double m0, const NzPriorParam& prior_param) {
+    PriorCoefficients coeff;
+    coeff.m_pt_m0 = pt__m0(prior_param.getFt(1), prior_param.getKt(1), m0);
+    coeff.m_zmt   = zmt(prior_param.getZ0t(1), prior_param.getKmt(1), m0);
+    coeff.m_alpt  = prior_param.getAlphat(1);
+    coeff.m_A     = prior_param.getCst(1) * std::pow(coeff.m_zmt, coeff.m_alpt + 1) / coeff.m_alpt;
+    return coeff;
+  }
+
+  static PriorCoefficients T2(double m0, const NzPriorParam& prior_param) {
+    PriorCoefficients coeff;
+    coeff.m_pt_m0 = pt__m0(prior_param.getFt(2), prior_param.getKt(2), m0);
+    coeff.m_zmt   = zmt(prior_param.getZ0t(2), prior_param.getKmt(2), m0);
+    coeff.m_alpt  = prior_param.getAlphat(2);
+    coeff.m_A     = prior_param.getCst(2) * std::pow(coeff.m_zmt, coeff.m_alpt + 1) / coeff.m_alpt;
+    return coeff;
+  }
+
+  static PriorCoefficients T3(double m0, const NzPriorParam& prior_param) {
+    PriorCoefficients coeff;
+
+    double pt_m0_1 = pt__m0(prior_param.getFt(1), prior_param.getKt(1), m0);
+    double pt_m0_2 = pt__m0(prior_param.getFt(2), prior_param.getKt(2), m0);
+
+    coeff.m_pt_m0 = 1 - pt_m0_1 - pt_m0_2;
+    coeff.m_zmt   = zmt(prior_param.getZ0t(3), prior_param.getKmt(3), m0);
+    coeff.m_alpt  = prior_param.getAlphat(3);
+    coeff.m_A     = prior_param.getCst(3) * std::pow(coeff.m_zmt, coeff.m_alpt + 1) / coeff.m_alpt;
+    return coeff;
+  }
+};
+
+void NzPrior::computeP_T_z__m0(double m0, const XYDataset::QualifiedName& sed, PhzDataModel::DoubleGrid& grid) {
+  const auto&       group_name = m_sedGroupManager.findGroupContaining(sed).first;
+  PriorCoefficients coeff;
   if (group_name == "T1") {
-
-    double pt_m0_1 = pt__m0(m_prior_param.getFt(1), m_prior_param.getKt(1), m0);
-    double zmt_1   = zmt(m_prior_param.getZ0t(1), m_prior_param.getKmt(1), m0);
-    double alpt_1  = m_prior_param.getAlphat(1);
-    double A_1     = m_prior_param.getCst(1) * std::pow(zmt_1, alpt_1 + 1) / alpt_1;
-
-    res = (pt_m0_1 / A_1) * std::pow(z, alpt_1) * std::exp(-std::pow(z / zmt_1, alpt_1));
-
+    coeff = PriorCoefficients::T1(m0, m_prior_param);
   } else if (group_name == "T2") {
-    double pt_m0_2 = pt__m0(m_prior_param.getFt(2), m_prior_param.getKt(2), m0);
-    double zmt_2   = zmt(m_prior_param.getZ0t(2), m_prior_param.getKmt(2), m0);
-    double alpt_2  = m_prior_param.getAlphat(2);
-    double A_2     = m_prior_param.getCst(2) * std::pow(zmt_2, alpt_2 + 1) / alpt_2;
-
-    res = (pt_m0_2 / A_2) * std::pow(z, alpt_2) * std::exp(-std::pow(z / zmt_2, alpt_2));
-
+    coeff = PriorCoefficients::T2(m0, m_prior_param);
   } else {
-    double pt_m0_1 = pt__m0(m_prior_param.getFt(1), m_prior_param.getKt(1), m0);
-    double pt_m0_2 = pt__m0(m_prior_param.getFt(2), m_prior_param.getKt(2), m0);
-    double pt_m0_3 = 1 - pt_m0_1 - pt_m0_2;
-
-    double zmt_3  = zmt(m_prior_param.getZ0t(3), m_prior_param.getKmt(3), m0);
-    double alpt_3 = m_prior_param.getAlphat(3);
-    double A_3    = m_prior_param.getCst(3) * std::pow(zmt_3, alpt_3 + 1) / alpt_3;
-
-    res = (pt_m0_3 / A_3) * std::pow(z, alpt_3) * std::exp(-std::pow(z / zmt_3, alpt_3));
+    coeff = PriorCoefficients::T3(m0, m_prior_param);
   }
 
-  return res;
+  // For bright sources, set z > 1 prior to 0, leave the values for z < 1
+  if (m0 < 20) {
+    for (auto grid_iter = grid.begin(); grid_iter != grid.end(); ++grid_iter) {
+      double z = grid_iter.axisValue<PhzDataModel::ModelParameter::Z>();
+      if (z > 1) {
+        *grid_iter = 0;
+      }
+    }
+    return;
+  }
+
+  for (auto grid_iter = grid.begin(); grid_iter != grid.end(); ++grid_iter) {
+    double z = grid_iter.axisValue<PhzDataModel::ModelParameter::Z>();
+    if (z <= 0.0) {
+      z = 1e-4;
+    }
+    *grid_iter = (coeff.m_pt_m0 / coeff.m_A) * std::pow(z, coeff.m_alpt) * std::exp(-std::pow(z / coeff.m_zmt, coeff.m_alpt));
+  }
 }
 
 void NzPrior::operator()(PhzDataModel::RegionResults& results) {
@@ -94,18 +121,10 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
   if (!flux_ptr->missing_photometry_flag) {
     // flux is in micro Jy the AB mag factor is then 3613E6
     double mag_Iab = -2.5 * std::log10(flux_ptr->flux / 3.631E9);
-
-    for (auto grid_iter = prior_grid.begin(); grid_iter != prior_grid.end(); ++grid_iter) {
-      double      z   = grid_iter.axisValue<PhzDataModel::ModelParameter::Z>();
-      const auto& sed = grid_iter.axisValue<PhzDataModel::ModelParameter::SED>();
-
-      if (mag_Iab < 20) {
-        if (z > 1) {
-          *grid_iter = 0;
-        }
-      } else {
-        *grid_iter = computeP_T_z__m0(mag_Iab, z, sed);
-      }
+    auto&  seds    = prior_grid.getAxis<PhzDataModel::ModelParameter::SED>();
+    for (auto& sed : seds) {
+      auto grid_slice = prior_grid.fixAxisByValue<PhzDataModel::ModelParameter::SED>(sed);
+      computeP_T_z__m0(mag_Iab, sed, grid_slice);
     }
 
     // Apply the effectiveness to the prior.
