@@ -159,8 +159,9 @@ double LuminosityPrior::fillTheGrid(Processor& processor, Axis_SED& sed_axis, Ax
               luminosity_function = std::function<double(double)> {};
             }
             if (!luminosity_function) {
+              double (MathUtils::Function::*fptr)(double) const = &MathUtils::Function::operator();
               luminosity_function = std::bind(
-                  &MathUtils::Function::operator(),
+                  fptr,
                   m_luminosity_function_set.getLuminosityFunction(current_sed_group, z).second.get(),
                   std::placeholders::_1);
             }

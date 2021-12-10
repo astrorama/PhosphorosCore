@@ -89,11 +89,12 @@ std::unique_ptr<SourceCatalog::Attribute> ObservationConditionFromRow::createAtt
       shifts.push_back(0.0);
     } else {
       double shift = boost::apply_visitor(Table::CastVisitor<double>(), row[value]);
-      // logger.info() << "Shift value " << shift << " for index " << index_index << "  (column index " << value << ")";
+      if (!std::isfinite(shift)) {
+        shift = 0.;
+      }
       shifts.push_back(shift);
     }
   }
-
   return std::unique_ptr<SourceCatalog::Attribute> {new ObservationCondition{shifts, ebv}};
 }
 
