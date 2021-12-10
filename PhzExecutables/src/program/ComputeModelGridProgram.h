@@ -49,22 +49,30 @@ public:
   }
   
   void operator()(size_t step, size_t total) {
-    int percentage_done = 100. * step / total;
-    auto now_time = std::chrono::system_clock::now();
-    auto time_diff = now_time - m_last_time;
-    if (percentage_done > m_last_progress || std::chrono::duration_cast<std::chrono::seconds>(time_diff).count() >= 5) {
+    using std::chrono::duration_cast;
+    using std::chrono::duration;
+    using std::chrono::system_clock;
+
+    int  percentage_done = 100. * step / total;
+    auto now_time        = system_clock::now();
+    auto time_diff       = duration_cast<duration<float>>(now_time - m_last_time);
+    if (percentage_done > m_last_progress || time_diff.count() >= 5) {
+      float obj_per_sec = (step - m_last_done) / time_diff.count();
+      if (!std::isfinite(obj_per_sec)) {
+        obj_per_sec = 0.;
+      }
       m_last_progress = percentage_done;
-      m_last_time = now_time;
-      m_logger.info() << "Parameter space progress: " << percentage_done << " % ";
+      m_last_time     = now_time;
+      m_last_done     = step;
+      m_logger.info() << "Parameter space progress: " << percentage_done << " % (" << std::fixed << std::setprecision(2)
+                      << obj_per_sec << " cells/sec)";
     }
   }
   
 private:
-  
-  int m_last_progress = -1;
+  int                                                m_last_progress = -1, m_last_done = 0;
   std::chrono::time_point<std::chrono::system_clock> m_last_time = std::chrono::system_clock::now();
-  Elements::Logging m_logger;
-  
+  Elements::Logging                                  m_logger;
 };
 
 template <typename ComputeModelGridTraits>
