@@ -27,6 +27,9 @@ namespace GridContainer {
 template<>
 struct GridCellManagerTraits<PhzModeling::ModelDatasetCellManager> {
   typedef XYDataset::XYDataset data_type;
+  typedef data_type*           pointer_type;
+  typedef data_type&           reference_type;
+
   typedef PhzModeling::ModelDatasetGenerator iterator;
   static std::unique_ptr<PhzModeling::ModelDatasetCellManager> factory(size_t size) {
     return std::unique_ptr<PhzModeling::ModelDatasetCellManager>{

@@ -176,7 +176,7 @@ PhzDataModel::PhotometryGrid PhotometryGridCreator::createGrid(
                                     reddening_function, redshift_function, m_igm_absorption_function, m_normalization_function);
 
   // Create the photometry Grid
-  auto photometry_grid = PhzDataModel::PhotometryGrid(parameter_space);
+  auto photometry_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list);
 
   // Define the algo
 

@@ -71,7 +71,7 @@ BOOST_FIXTURE_TEST_CASE(serializationException_test, PhzPhotometryGridName_Fixtu
   boost::archive::text_oarchive oa(stream);
 
   auto axes=Euclid::PhzDataModel::createAxesTuple({},ebvs,reddeing_curves,seds);
-  Euclid::PhzDataModel::PhotometryGrid empty_grid{axes};
+  Euclid::PhzDataModel::PhotometryGrid empty_grid(axes, *filter_1);
   Euclid::PhzDataModel::PhotometryGrid *grid_ptr=&empty_grid;
   // Get the empty grid exception
   BOOST_CHECK_THROW((oa << grid_ptr),Elements::Exception);
@@ -79,7 +79,7 @@ BOOST_FIXTURE_TEST_CASE(serializationException_test, PhzPhotometryGridName_Fixtu
   //---------------------------------------------------------------
 
   axes=Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);
-  Euclid::PhzDataModel::PhotometryGrid original_grid{axes};
+  Euclid::PhzDataModel::PhotometryGrid original_grid(axes, *filter_1);
 
   original_grid(0,0,0,0)=photometry_1;
   original_grid(1,0,0,0)=photometry_2;
@@ -93,7 +93,7 @@ BOOST_FIXTURE_TEST_CASE(serializationException_test, PhzPhotometryGridName_Fixtu
   BOOST_CHECK_THROW((oa2 << grid_ptr),Elements::Exception);
   //---------------------------------------------------------------
 
-  Euclid::PhzDataModel::PhotometryGrid original_grid_2{axes};
+  Euclid::PhzDataModel::PhotometryGrid original_grid_2{axes, *filter_1};
   original_grid_2(0,0,0,0)=photometry_1;
   original_grid_2(1,0,0,0)=photometry_2;
   original_grid_2(0,1,0,0)=photometry_3;
@@ -111,31 +111,23 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, T, archive_types, PhzPhotom
   BOOST_TEST_MESSAGE(" ");
 
   auto axes=Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);
-  Euclid::PhzDataModel::PhotometryGrid original_grid{axes};
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1};
   original_grid(0,0,0,0)=photometry_1;
   original_grid(1,0,0,0)=photometry_2;
   original_grid(0,1,0,0)=photometry_3;
   original_grid(1,1,0,0)=photometry_4;
-  Euclid::PhzDataModel::PhotometryGrid *original_grid_ptr=&original_grid;
+
   std::stringstream stream;
-  {
-    typename T::oarchive oa(stream);
-    oa << original_grid_ptr;
-  }
-
-  typename T::iarchive ia(stream);
-
-  Euclid::PhzDataModel::PhotometryGrid *retrived_grid_ptr;
-  ia >> retrived_grid_ptr;
-  std::unique_ptr<Euclid::PhzDataModel::PhotometryGrid> ptr(retrived_grid_ptr);
+  Euclid::GridContainer::gridExport<typename T::oarchive>(stream, original_grid);
+  auto retrived_grid = Euclid::GridContainer::gridImport<Euclid::PhzDataModel::PhotometryGrid, typename T::iarchive>(stream);
 
   //-------------------------------------------------------------------
-  BOOST_CHECK_EQUAL(original_grid_ptr->size(),retrived_grid_ptr->size());
+  BOOST_CHECK_EQUAL(original_grid.size(), retrived_grid.size());
   // Check values
   for(int v_index=0;v_index==2;v_index++){
     for(int evb_index=0;evb_index==2;evb_index++){
       auto expected_photometry = original_grid(v_index,evb_index,0,0);
-      auto actual_photometry = (*retrived_grid_ptr)(v_index,evb_index,0,0);
+      auto actual_photometry = retrived_grid(v_index,evb_index,0,0);
 
       auto expected_iterator = expected_photometry.begin();
       for(auto actual_iterator : actual_photometry){
@@ -150,35 +142,18 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, T, archive_types, PhzPhotom
   for(int v_index=0;v_index==2;v_index++){
      for(int evb_index=0;evb_index==2;evb_index++){
        auto expected_photometry = original_grid(v_index,evb_index,0,0);
-       auto actual_photometry = (*retrived_grid_ptr)(v_index,evb_index,0,0);
-       auto expected_iterator = expected_photometry.begin();
-       auto actual_iterator = actual_photometry.begin();
-       do{
-         BOOST_CHECK_EQUAL(expected_iterator.filterName(), actual_iterator.filterName());
-         ++expected_iterator;
-         ++actual_iterator;
-       } while(expected_iterator != expected_photometry.end());
+       auto actual_photometry = retrived_grid(v_index,evb_index,0,0);
+       auto original_filters = original_grid.getCellManager().filterNames();
+       auto actual_filters =  retrived_grid.getCellManager().filterNames();
+       BOOST_CHECK_EQUAL_COLLECTIONS(original_filters.begin(), original_filters.end(), actual_filters.begin(), actual_filters.end());
      }
    }
-
-  // check that all the photometries use the same Filter vector
-  auto ref_photometry = (*retrived_grid_ptr)(0,0,0,0);
-  auto ref_iterator = ref_photometry.begin();
-  const std::string* ref_address = &(ref_iterator.filterName());
-  for(int v_index=0;v_index==2;v_index++){
-    for(int evb_index=0;evb_index==2;evb_index++){
-      auto actual_photometry = (*retrived_grid_ptr)(v_index,evb_index,0,0);
-      auto actual_iterator = actual_photometry.begin();
-      const std::string* actual_address = &(actual_iterator.filterName());
-      BOOST_CHECK_EQUAL(ref_address, actual_address);
-    }
-  }
 }
 
 
 BOOST_FIXTURE_TEST_CASE(toTable_test, PhzPhotometryGridName_Fixture) {
   auto axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-  Euclid::PhzDataModel::PhotometryGrid original_grid{axes};
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1};
   original_grid(0, 0, 0, 0) = photometry_1;
   original_grid(1, 0, 0, 0) = photometry_2;
   original_grid(0, 1, 0, 0) = photometry_3;

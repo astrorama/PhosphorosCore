@@ -142,7 +142,7 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
       m_info.filter_names.insert(m_info.filter_names.begin(), filter_names->begin(), filter_names->end());
       
       for (auto& pair : m_grids) {
-        for (auto& p : pair.second) {
+        for (auto p : pair.second) {
           std::vector<SourceCatalog::FluxErrorPair> values {};
           for (auto& f : *filter_names) {
             values.emplace_back(*(p.find(f)));

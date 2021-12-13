@@ -67,10 +67,10 @@ struct LuminositySedGroupConfig_fixture: public ConfigManager_fixture {
     options_map[CATALOG_TYPE].value() = boost::any{std::string{"CatalogType"}};
     options_map[MODEL_GRID_FILE].value() = boost::any{model_grid_file.string()};
     
-    PhzDataModel::PhotometryGrid model_grid {axes};
+    PhzDataModel::PhotometryGrid model_grid {axes, std::vector<std::string>{"Filter1"}};
     auto filter_ptr = std::make_shared<std::vector<std::string>>();
     filter_ptr->emplace_back(filter.qualifiedName());
-    for (auto& m : model_grid) {
+    for (auto m : model_grid) {
       m = Euclid::SourceCatalog::Photometry {filter_ptr, {{0., 0.}}};
     }
     model_grid_map.emplace("", std::move(model_grid));
