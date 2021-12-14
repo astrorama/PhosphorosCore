@@ -43,22 +43,22 @@ namespace PhzLikelihood {
 
 static Elements::Logging logger = Elements::Logging::getLogger("FilterShiftProcessModelGridFunctor");
 
+__attribute__((optimize("tree-vectorize")))
 void FilterShiftProcessModelGridFunctor::computeCorrectedPhotometry(SourceCatalog::Photometry::const_iterator model_begin,
                                                                     SourceCatalog::Photometry::const_iterator model_end,
                                                                     SourceCatalog::Photometry::const_iterator corr_begin,
                                                                     const std::vector<double>&                filter_shift,
                                                                     SourceCatalog::Photometry::iterator       out_begin) {
-  auto shift_iterator = filter_shift.begin();
-  while (model_begin != model_end) {
-    double correction =
-        (1.0 + (*shift_iterator) * (*shift_iterator) * (*corr_begin).flux + (*shift_iterator) * (*corr_begin).error);
-    // logger.info() << "Correction value " << correction;
-    out_begin->flux *= correction;
-    out_begin->error *= correction;
-    ++model_begin;
-    ++corr_begin;
-    ++out_begin;
-    ++shift_iterator;
+  size_t n = model_end - model_begin;
+  assert(n == filter_shift.size());
+
+  auto corr_ptr = &(*corr_begin);
+  auto out_ptr = &(*out_begin);
+
+  for (size_t i = 0; i < n; ++i) {
+    double correction = (1.0 + filter_shift[i] * filter_shift[i] * corr_ptr[i].flux + filter_shift[i] * corr_ptr[i].error);
+    out_ptr[i].flux *= correction;
+    out_ptr[i].error *= correction;
   }
 }
 
