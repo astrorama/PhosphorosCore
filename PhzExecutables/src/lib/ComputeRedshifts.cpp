@@ -121,14 +121,14 @@ void ComputeRedshifts::doRun(ConfigManager& config_manager) {
 
   logger.info() << "Total input catalog size: " << total_size;
   if (skip > 0) {
-	  logger.info() << "Skipping the first " << skip << " sources.";
-	  if (skip >= total_size) {
-		  logger.info() << "No source to process.";
-		  return;
-	  }
+    logger.info() << "Skipping the first " << skip << " sources.";
+    if (skip >= total_size) {
+      logger.info() << "No source to process.";
+      return;
+    }
 
-	  total_size -= skip;
-	  table_reader->read(skip);
+    total_size -= skip;
+    table_reader->read(skip);
   }
 
   if (max_process > 0 && total_size > max_process) {
@@ -141,6 +141,7 @@ void ComputeRedshifts::doRun(ConfigManager& config_manager) {
     logger.info() << "Processing the input catalog in chunks of " << chunk_size << " sources";
   }
 
+  auto start = std::chrono::steady_clock::now();
   int chunk_counter = 0;
   size_t row_to_process = max_process;
   while (row_to_process > 0) {
@@ -154,6 +155,10 @@ void ComputeRedshifts::doRun(ConfigManager& config_manager) {
     row_to_process -= current_chunk_size;
     ++chunk_counter;
   }
+  auto end = std::chrono::steady_clock::now();
+  auto duration = end - start;
+  float time_ns  = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+  logger.info() << "Overall throughput: " << 1e3 * max_process / time_ns;
 }
 
 }  // namespace PhzExecutables

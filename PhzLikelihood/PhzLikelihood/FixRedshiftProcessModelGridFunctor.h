@@ -38,10 +38,8 @@ class FixRedshiftProcessModelGridFunctor : public ProcessModelGridFunctor{
   public:
   ~FixRedshiftProcessModelGridFunctor(){};
 
-  PhzDataModel::PhotometryGrid operator()( const std::string & region_name,
-      const PhzDataModel::PhotometryGrid & model_grid,
-      const SourceCatalog::Source & source) const override;
-
+  void operator()(const std::string& region_name, const SourceCatalog::Source& source,
+                  PhzDataModel::PhotometryGrid& model_grid) const override;
 };
 
 
