@@ -189,16 +189,18 @@ LikelihoodHandler<GridType, Sampler>::drawSample(std::string source_id, const st
   auto               sample = m_grid_sampler.drawSample(m_sample_number, region_volume, result_map, gen);
 
   loggerPhz.debug() << "Add data to the sampling file ";
-  std::vector<Table::Row> sampling_row_list{};
+  std::vector<Table::Row> sampling_row_list;
+  sampling_row_list.reserve(sample.size());
   for (auto& s : sample) {
-    auto                               sed_qualified = s.sed.qualifiedName();
+    const auto&                        sed_qualified = s.sed.qualifiedName();
     std::vector<Table::Row::cell_type> values{source_id, s.region_index, s.sed_index, s.z, s.red_index, s.ebv, s.alpha};
     for (auto& param : m_param_config) {
-      float param_value = float(std::get<0>(param.second.at(sed_qualified)) * s.alpha + std::get<1>(param.second.at(sed_qualified)));
+      float param_value =
+          float(std::get<0>(param.second.at(sed_qualified)) * s.alpha + std::get<1>(param.second.at(sed_qualified)));
       values.push_back(param_value);
     }
 
-    sampling_row_list.push_back(Table::Row{values, m_sampling_column_info});
+    sampling_row_list.emplace_back(std::move(values), m_sampling_column_info);
   }
   return sampling_row_list;
 }
