@@ -60,6 +60,8 @@ void load(Archive& ar, Euclid::PhzDataModel::PhotometryGrid& grid, const unsigne
   std::vector<std::string> filter_names;
   ar >> filter_names;
   auto filter_names_ptr = std::make_shared<std::vector<std::string>>(std::move(filter_names));
+  // Note that the PhotometryGrid returns a proxy object when iterating, not the object.
+  // We can not get a reference to this proxy
   for (auto cell : grid) {
     std::vector<Euclid::SourceCatalog::FluxErrorPair> phot_values;
     for (size_t i=0; i< filter_names_ptr->size(); ++i) {

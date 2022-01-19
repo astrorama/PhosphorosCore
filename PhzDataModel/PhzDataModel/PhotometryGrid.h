@@ -16,14 +16,39 @@
 namespace Euclid {
 namespace PhzDataModel {
 
+/**
+ * @brief Handle the cells storing the photometry values for the model grid
+ * @details
+ * To avoid allocating one vector of photometry values per cell, this cell manager
+ * does one single allocation of n.cells * n.filters.
+ * However, Phosphoros code expects to be able to iterate on the filters for a single cell.
+ * To keep compatibility with the existing code, iterating over a grid of photometries yields
+ * a proxy object, that can be used in place, and iterated as if it was a
+ * regular SourceCatalog::Photometry.
+ *
+ * Basically it is like a 2D array. The first dimension corresponds to the number of cells, the second to the number
+ * of filters.
+ */
 class PhotometryCellManager {
 public:
+
+  /**
+   * Proxy class for the photometry values. It provides an API compatible with SourceCatalog::Photometry,
+   * hiding the fact that it references a slice of a 2D array.
+   * @note A PhotometryProxy is the reference *and* the pointer type for a cell inside a Photometry grid.
+   */
   class PhotometryProxy {
   public:
     template <bool Const>
     using PhotometryIterator = typename SourceCatalog::Photometry::PhotometryIterator<Const>;
 
   protected:
+    /**
+     * The existing SourceCatalog::Photometry::PhotometryIterator class conveniently accepts
+     * an iterator over the filter names, and an iterator over values. Since the PhotometryIterator
+     * constructor is protected, this class provides a bypass so PhotometryCellManager can create one.
+     * @tparam Const
+     */
     template <bool Const>
     class PhotometryIteratorWrapper : public PhotometryIterator<Const> {
     public:
@@ -57,6 +82,11 @@ public:
       return m_end - m_begin;
     }
 
+    /**
+     * Since PhotometryProxy is the pointer-type, it needs to provide a dereference operator.
+     * A dereference operator is recursive, and has to eventually return a pointer.
+     * The compiler uses this final pointer to figure out whose method or attribute you are getting.
+     */
     PhotometryProxy* operator->() const {
       return const_cast<PhotometryProxy*>(this);
     }
@@ -66,18 +96,35 @@ public:
       return *this;
     }
 
-    // For compatibility
+    /**
+     * For compatibility, the proxy allows being assigned an existing SourceCatalog::Photometry
+     * @param photometry
+     * @return
+     */
     PhotometryProxy& operator=(const SourceCatalog::Photometry& photometry) {
       assert(photometry.size() == size());
       std::copy(photometry.begin(), photometry.end(), m_begin);
       return *this;
     }
 
+    /**
+     * For compatibility, transform transparently a proxy into the a SourceCatalog::Photometry.
+     * This makes sense when an algorithm takes one cell and does some operations over it. It expects
+     * to get a copy and not to modify the original. This is how this can be achieved.
+     * @note
+     *  This works as long as SourceCatalog::Photometry are sparingly used and short lived.
+     *  If it ends being a bottleneck, m_parent.filterNames() could be modified to return directly a shared pointer.
+     */
     explicit operator SourceCatalog::Photometry() const {
       return {std::make_shared<std::vector<std::string>>(m_parent.filterNames()),
               std::vector<SourceCatalog::FluxErrorPair>(m_begin, m_end)};
     }
 
+    /**
+     * For compatibility
+     * @param filter
+     * @return
+     */
     SourceCatalog::FluxErrorPair* find(const std::string& filter) const {
       auto i = std::find(m_parent.m_filter_names.begin(), m_parent.m_filter_names.end(), filter);
       if (i == m_parent.m_filter_names.end()) {
@@ -90,6 +137,17 @@ public:
   protected:
     using photometry_iterator = std::vector<SourceCatalog::FluxErrorPair>::iterator;
 
+    /**
+     * Constructor.
+     * @param parent
+     *  PhotometryCellManager that owns the memory.
+     * @param begin
+     *  Iterator to the first value
+     * @param end
+     *  Iterator to the one-after-the-last value
+     * @note
+     *  Going back to the 2D analogy, begin should point to array.begin() + cell_index * n_filters
+     */
     PhotometryProxy(const PhotometryCellManager& parent, photometry_iterator begin, photometry_iterator end)
         : m_parent(parent), m_begin(begin), m_end(end){};
 
@@ -99,14 +157,28 @@ public:
     friend class PhotometryCellManager;
   };
 
+  /**
+   * Iterator class to iterate over the cells
+   */
   class iterator {
   public:
     iterator(const iterator& other) = default;
 
+    /**
+     * PhotometryProxy is the reference-type
+     */
     PhotometryProxy operator*() const {
       return {m_parent, m_position, m_position + m_stride};
     }
 
+    /**
+     * PhotometryProxy is the pointer type.
+     * @details
+     *  The operator -> is recursive, and has to eventually return a pointer.
+     *  If you call iter->find, for instance, what will happen is that you get
+     *  and instance of PhotometryProxy, which is not a pointer. The compiler will look at -> inside PhotometryProxy,
+     *  which returns a pointer to itself. This final pointer is usable to access the methods and attributes.
+     */
     PhotometryProxy operator->() const {
       return {m_parent, m_position, m_position + m_stride};
     }
@@ -242,7 +314,7 @@ struct GridCellToTable<PhzDataModel::PhotometryCellManager::PhotometryProxy> {
  *
  * @details
  * We define the GridCellManagerTraits for a vector of Photometries to redefine the
- * factory method because the Photometry does not have default constructor *
+ * factory method because the Photometry does not have default constructor
  */
 template <>
 struct GridCellManagerTraits<PhzDataModel::PhotometryCellManager> {

@@ -142,6 +142,8 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
       m_info.filter_names.insert(m_info.filter_names.begin(), filter_names->begin(), filter_names->end());
       
       for (auto& pair : m_grids) {
+        // Note that the PhotometryGrid returns a proxy object when iterating, not the object.
+        // We can not get a reference to this proxy
         for (auto p : pair.second) {
           std::vector<SourceCatalog::FluxErrorPair> values {};
           for (auto& f : *filter_names) {
