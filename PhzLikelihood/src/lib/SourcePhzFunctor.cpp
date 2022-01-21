@@ -387,8 +387,7 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
     // full model grid.
     auto& model_grid = m_phot_grid_map.at(pair.first);
 
-    PhzDataModel::PhotometryGrid current_grid = PhzDataModel::PhotometryGrid(model_grid.getAxesTuple());
-    std::copy(model_grid.begin(), model_grid.end(), current_grid.begin());
+    PhzDataModel::PhotometryGrid current_grid = PhzDataModel::PhotometryGrid(model_grid.getAxesTuple(), model_grid.getCellManager());
     region_results.set<RegResType::ORIGINAL_MODEL_GRID_REFERENCE>(model_grid);
 
     for (auto functor_ptr : m_model_funct_list) {

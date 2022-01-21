@@ -69,7 +69,7 @@ void FixRedshiftProcessModelGridFunctor::operator()(const std::string&, const So
   auto& z_axis = model_grid.getAxis<PhzDataModel::ModelParameter::Z>();
   // If we have a fixed redshift and we are out of range we skip the region
   if (fixed_z < z_axis[0] || fixed_z > z_axis[z_axis.size() - 1]) {
-    model_grid = PhzDataModel::PhotometryGrid(model_grid.getAxesTuple());
+    model_grid = PhzDataModel::PhotometryGrid(model_grid.getAxesTuple(), model_grid.getCellManager().filterNames());
   }
 
   auto fixed_z_index = getFixedZIndex(model_grid, fixed_z);

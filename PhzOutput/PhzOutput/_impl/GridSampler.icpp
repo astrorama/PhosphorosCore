@@ -81,24 +81,24 @@ double GridSampler<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::
         for (size_t z_index = 0; z_index < std::max(index_1, std::get<0>(axis).size() - 1); ++z_index) {
           double delta_z = 1.0;
           double delta_e = 1.0;
-          double v_00    = exp(grid.at(z_index, ebv_index, red_index, sed_index));
+          double v_00    = exp(grid(z_index, ebv_index, red_index, sed_index));
           double v_10    = v_00;
           double v_01    = v_00;
           double v_11    = v_00;
           if (std::get<0>(axis).size() > 1) {
-            v_10    = exp(grid.at(z_index + 1, ebv_index, red_index, sed_index));
+            v_10    = exp(grid(z_index + 1, ebv_index, red_index, sed_index));
             v_11    = v_10;
             delta_z = std::get<0>(axis)[z_index + 1] - std::get<0>(axis)[z_index];
           }
 
           if (std::get<1>(axis).size() > 1) {
-            v_01    = exp(grid.at(z_index, ebv_index + 1, red_index, sed_index));
+            v_01    = exp(grid(z_index, ebv_index + 1, red_index, sed_index));
             v_11    = v_01;
             delta_e = std::get<1>(axis)[ebv_index + 1] - std::get<1>(axis)[ebv_index];
           }
 
           if (std::get<0>(axis).size() > 1 && std::get<1>(axis).size() > 1) {
-            v_11 = exp(grid.at(z_index + 1, ebv_index + 1, red_index, sed_index));
+            v_11 = exp(grid(z_index + 1, ebv_index + 1, red_index, sed_index));
           }
 
           double value = 0.25 * (v_00 + v_10 + v_01 + v_11) * delta_z * delta_e;

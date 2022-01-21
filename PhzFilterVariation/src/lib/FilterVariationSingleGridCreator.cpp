@@ -310,7 +310,7 @@ PhzDataModel::PhotometryGrid FilterVariationSingleGridCreator::createGrid(
                                     reddening_function, redshift_function, m_igm_absorption_function, m_normalization_function);
 
   // Create the photometry Grid
-  auto correction_grid = PhzDataModel::PhotometryGrid(parameter_space);
+  auto correction_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list);
 
   auto filter_functor = PhzModeling::ApplyFilterFunctor();
   auto integrate_dataset_function = PhzModeling::IntegrateDatasetFunctor{MathUtils::InterpolationType::LINEAR};

@@ -31,10 +31,7 @@ void save(Archive& ar, const Euclid::PhzDataModel::PhotometryGrid& grid, const u
   }
   // We store the filter names only once. We require that all photometries have
   // the same filters
-  std::vector<std::string> filter_names {};
-  for (auto iter=(*grid.begin()).begin(); iter!=(*grid.begin()).end(); ++iter) {
-    filter_names.push_back(iter.filterName());
-  }
+  std::vector<std::string> filter_names = grid.getCellManager().filterNames();
   ar << filter_names;
   // We store the flux and error values for each photometry and we check if the
   // filters are matching the common ones
@@ -43,12 +40,7 @@ void save(Archive& ar, const Euclid::PhzDataModel::PhotometryGrid& grid, const u
       throw Elements::Exception() << "Serialization of grids of Photometries with "
                                 << "different filters is not supported";
     }
-    auto filt_iter = filter_names.begin();
-    for (auto phot_iter=photometry.begin(); phot_iter!=photometry.end(); ++phot_iter, ++ filt_iter) {
-      if (*filt_iter != phot_iter.filterName()) {
-        throw Elements::Exception() << "Serialization of grids of Photometries with "
-                                  << "different filters is not supported";
-      }
+    for (auto phot_iter = photometry.begin(); phot_iter != photometry.end(); ++phot_iter) {
       ar << (*phot_iter).flux;
       ar << (*phot_iter).error;
     }
@@ -68,7 +60,9 @@ void load(Archive& ar, Euclid::PhzDataModel::PhotometryGrid& grid, const unsigne
   std::vector<std::string> filter_names;
   ar >> filter_names;
   auto filter_names_ptr = std::make_shared<std::vector<std::string>>(std::move(filter_names));
-  for (auto& cell : grid) {
+  // Note that the PhotometryGrid returns a proxy object when iterating, not the object.
+  // We can not get a reference to this proxy
+  for (auto cell : grid) {
     std::vector<Euclid::SourceCatalog::FluxErrorPair> phot_values;
     for (size_t i=0; i< filter_names_ptr->size(); ++i) {
       double flux;

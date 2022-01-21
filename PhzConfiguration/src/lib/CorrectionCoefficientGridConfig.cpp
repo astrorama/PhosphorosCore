@@ -137,20 +137,7 @@ void CorrectionCoefficientGridConfig::initialize(const UserValues& args) {
             throw Elements::Exception() << "Filter " << f << " missing from the model grid";
           }
         }
-
-        // Here we know we need to make new photometries and replace the members
-        m_info.filter_names.clear();
-        m_info.filter_names.insert(m_info.filter_names.begin(), filter_names->begin(), filter_names->end());
-
-        for (auto& pair : m_grids) {
-          for (auto& p : pair.second) {
-            std::vector<SourceCatalog::FluxErrorPair> values {};
-            for (auto& f : *filter_names) {
-              values.emplace_back(*(p.find(f)));
-            }
-            p = SourceCatalog::Photometry(filter_names, std::move(values));
-          }
-        }
+        throw Elements::Exception() << "Filter order on the correction grid does not match the model grid";
       }
     }
   }

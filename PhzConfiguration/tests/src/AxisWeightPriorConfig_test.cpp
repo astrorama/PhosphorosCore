@@ -69,7 +69,7 @@ struct AxisWeightPriorConfig_fixture : public ConfigManager_fixture {
     
     std::string model_grid_file = (temp_dir.path()/"model_grid.dat").string();
     std::map<std::string, PhzDataModel::PhotometryGrid> grid_map {};
-    grid_map.emplace("", PhotometryGrid{axes});
+    grid_map.emplace("", PhotometryGrid{axes, std::vector<std::string>{"Filter1"}});
     PhotometryGridInfo info {grid_map, "OFF", {"Filter1"}, {}};
     
     std::ofstream out {model_grid_file};

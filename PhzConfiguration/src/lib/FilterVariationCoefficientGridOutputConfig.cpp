@@ -95,11 +95,9 @@ static void outputFunction(const std::string &filename, IgmConfig &igm_config, X
                            const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
   auto local_logger = Elements::Logging::getLogger("PhzOutput");
   std::ofstream out {filename};
-  std::vector<XYDataset::QualifiedName> filter_list {};
-  auto& first_phot = *(grid_map.begin()->second.begin());
-  for (auto iter = first_phot.begin(); iter != first_phot.end(); ++iter) {
-    filter_list.emplace_back(iter.filterName());
-  }
+  auto& filter_names_str = grid_map.begin()->second.getCellManager().filterNames();
+  std::vector<XYDataset::QualifiedName> filter_list;
+  std::copy(filter_names_str.begin(), filter_names_str.end(), std::back_inserter(filter_list));
   OArchive boa {out};
   // Store the info object describing the grids
   PhzDataModel::PhotometryGridInfo info {
