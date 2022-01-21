@@ -73,7 +73,7 @@ struct FixRedshiftProcessModelGridFunctor_Fixture {
 
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs,
       reddeing_curves, seds);
-  PhzDataModel::PhotometryGrid photo_grid { axes };
+  PhzDataModel::PhotometryGrid photo_grid { axes, *filters };
 
   std::vector<std::shared_ptr<SourceCatalog::Attribute>> attibuteVector_1{};
   std::vector<std::shared_ptr<SourceCatalog::Attribute>> attibuteVector_2{std::shared_ptr<PhzDataModel::FixedRedshift>(new PhzDataModel::FixedRedshift(0.1))};
@@ -105,7 +105,7 @@ BOOST_FIXTURE_TEST_CASE(test_nominal,FixRedshiftProcessModelGridFunctor_Fixture)
   FixRedshiftProcessModelGridFunctor functor{};
   std::string region = "dummy";
   // When
-  PhzDataModel::PhotometryGrid new_grid(photo_grid.getAxesTuple());
+  PhzDataModel::PhotometryGrid new_grid(photo_grid.getAxesTuple(), *filters);
   std::copy(photo_grid.begin(), photo_grid.end(), new_grid.begin());
   functor(region, source_2, new_grid);
   // Then
@@ -122,7 +122,7 @@ BOOST_FIXTURE_TEST_CASE(test_nominal,FixRedshiftProcessModelGridFunctor_Fixture)
   auto ref_iter = photo_grid.at(1,0,0,0).begin();
   auto new_iter = new_grid.at(0,0,0,0).begin();
   while (ref_iter!= photo_grid.at(1,0,0,0).end()){
-     BOOST_CHECK(ref_iter == new_iter);
+     BOOST_CHECK(ref_iter.filterName() == new_iter.filterName());
      ++ref_iter;
      ++new_iter;
    }

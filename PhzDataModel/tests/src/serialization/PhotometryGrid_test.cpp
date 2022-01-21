@@ -13,7 +13,6 @@
 #include "ElementsKernel/Real.h"
 #include "ElementsKernel/Exception.h"
 #include "PhzDataModel/serialization/PhotometryGrid.h"
-#include "PhzDataModel/Photometry.h"
 
 struct PhzPhotometryGridName_Fixture {
 
@@ -75,34 +74,6 @@ BOOST_FIXTURE_TEST_CASE(serializationException_test, PhzPhotometryGridName_Fixtu
   Euclid::PhzDataModel::PhotometryGrid *grid_ptr=&empty_grid;
   // Get the empty grid exception
   BOOST_CHECK_THROW((oa << grid_ptr),Elements::Exception);
-
-  //---------------------------------------------------------------
-
-  axes=Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);
-  Euclid::PhzDataModel::PhotometryGrid original_grid(axes, *filter_1);
-
-  original_grid(0,0,0,0)=photometry_1;
-  original_grid(1,0,0,0)=photometry_2;
-  original_grid(0,1,0,0)=photometry_3;
-  original_grid(1,1,0,0)=photometry_5;
-
-  std::stringstream stream2;
-  boost::archive::text_oarchive oa2(stream2);
-  grid_ptr=&original_grid;
-  // Get the exception for not identical filter list (not the same number)
-  BOOST_CHECK_THROW((oa2 << grid_ptr),Elements::Exception);
-  //---------------------------------------------------------------
-
-  Euclid::PhzDataModel::PhotometryGrid original_grid_2{axes, *filter_1};
-  original_grid_2(0,0,0,0)=photometry_1;
-  original_grid_2(1,0,0,0)=photometry_2;
-  original_grid_2(0,1,0,0)=photometry_3;
-  original_grid_2(1,1,0,0)=photometry_6;
-  std::stringstream stream3;
-  boost::archive::text_oarchive oa3(stream3);
-  grid_ptr=&original_grid_2;
-  // Get the exception for not identical filter list (not the same name)
-  BOOST_CHECK_THROW((oa3 << grid_ptr),Elements::Exception);
 }
 
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, T, archive_types, PhzPhotometryGridName_Fixture) {

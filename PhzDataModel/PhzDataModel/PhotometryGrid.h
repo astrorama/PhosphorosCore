@@ -31,7 +31,6 @@ namespace PhzDataModel {
  */
 class PhotometryCellManager {
 public:
-
   /**
    * Proxy class for the photometry values. It provides an API compatible with SourceCatalog::Photometry,
    * hiding the fact that it references a slice of a 2D array.
@@ -238,7 +237,7 @@ public:
   }
 
   bool empty() const {
-    return m_size > 0;
+    return m_size == 0;
   }
 
   size_t capacity() const {
@@ -291,9 +290,12 @@ struct GridCellToTable<PhzDataModel::PhotometryCellManager::PhotometryProxy> {
    * @param columns
    *    The column description(s) for the cell type. New columns must be *appended*
    */
-  static void addColumnDescriptions(const PhzDataModel::PhotometryCellManager::PhotometryProxy&,
-                                    std::vector<Table::ColumnDescription>&) {
-    assert(false);
+  static void addColumnDescriptions(const PhzDataModel::PhotometryCellManager::PhotometryProxy& p,
+                                    std::vector<Table::ColumnDescription>&                      columns) {
+    for (auto piter = p.begin(); piter != p.end(); ++piter) {
+      columns.emplace_back(piter.filterName(), typeid(double));
+      columns.emplace_back(piter.filterName() + "_error", typeid(double));
+    }
   }
 
   /**
@@ -303,8 +305,12 @@ struct GridCellToTable<PhzDataModel::PhotometryCellManager::PhotometryProxy> {
    * @param row
    *    Destination row. New cells must be *appended* on the same order as the column descriptions.
    */
-  static void addCells(const PhzDataModel::PhotometryCellManager::PhotometryProxy&, std::vector<Table::Row::cell_type>&) {
-    assert(false);
+  static void addCells(const PhzDataModel::PhotometryCellManager::PhotometryProxy& photometry,
+                       std::vector<Table::Row::cell_type>&                         row) {
+    for (auto& p : photometry) {
+      row.emplace_back(p.flux);
+      row.emplace_back(p.error);
+    }
   }
 };
 
