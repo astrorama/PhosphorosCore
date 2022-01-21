@@ -238,7 +238,7 @@ public:
   }
 
   bool empty() const {
-    return m_size > 0;
+    return m_size == 0;
   }
 
   size_t capacity() const {
