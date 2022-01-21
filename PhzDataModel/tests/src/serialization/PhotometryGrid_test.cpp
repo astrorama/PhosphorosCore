@@ -13,7 +13,6 @@
 #include "ElementsKernel/Real.h"
 #include "ElementsKernel/Exception.h"
 #include "PhzDataModel/serialization/PhotometryGrid.h"
-#include "PhzDataModel/Photometry.h"
 
 struct PhzPhotometryGridName_Fixture {
 

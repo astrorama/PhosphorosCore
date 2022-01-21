@@ -32,7 +32,6 @@
 #include "Table/FitsWriter.h"
 #include "PhzConfiguration/PhzModelGrid2FitsConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
-#include "PhzDataModel/Photometry.h"
 
 using namespace Euclid::Table;
 using namespace Euclid::Configuration;
