@@ -40,17 +40,17 @@ struct SharedPriorAdaptor_Fixture {
 
   Euclid::PhzDataModel::ModelAxesTuple parameter_space= Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);
 
-  // Create the Grids
-  RegionResults results {};
-  DoubleGrid& scale_factor_grid = results.set<RegionResultType::SCALE_FACTOR_GRID>(parameter_space);
-  PhotometryGrid photometry_grid {parameter_space};
-  const PhotometryGrid& photometry_grid_ref = results.set<RegionResultType::MODEL_GRID_REFERENCE>(photometry_grid).get();
-  DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(parameter_space);
-
-
   // Shared pointer of filter name vector
   std::shared_ptr<std::vector<std::string>> filter_name_vector_ptr {
       new std::vector<std::string> { "group/FilterName1" ,"group/FilterName2" } };
+
+  // Create the Grids
+  RegionResults results {};
+  DoubleGrid& scale_factor_grid = results.set<RegionResultType::SCALE_FACTOR_GRID>(parameter_space);
+  PhotometryGrid photometry_grid {parameter_space, *filter_name_vector_ptr};
+  const PhotometryGrid& photometry_grid_ref = results.set<RegionResultType::MODEL_GRID_REFERENCE>(photometry_grid).get();
+  DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(parameter_space);
+
 
   // photometry values vector
   std::vector<SourceCatalog::FluxErrorPair> photometry_vector { SourceCatalog::FluxErrorPair(1.0,
@@ -63,7 +63,7 @@ struct SharedPriorAdaptor_Fixture {
 
 
     double value = 1.7;
-    for (auto& photometry : photometry_grid){
+    for (auto photometry : photometry_grid){
       std::vector<SourceCatalog::FluxErrorPair> local_photometry_vector { SourceCatalog::FluxErrorPair(value,
            0.1), SourceCatalog::FluxErrorPair(0.1, 0.3) };
       photometry = SourceCatalog::Photometry{filter_name_vector_ptr,local_photometry_vector};
