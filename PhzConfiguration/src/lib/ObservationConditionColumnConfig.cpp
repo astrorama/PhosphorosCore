@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
- *
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 3.0 of the License, or (at your option)
- * any later version.
- *
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
+// Copyright (C) 2012-2022 Euclid Science Ground Segment
+//
+// This library is free software; you can redistribute it and/or modify it under
+// the terms of the GNU Lesser General Public License as published by the Free
+// Software Foundation; either version 3.0 of the License, or (at your option)
+// any later version.
+//
+// This library is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+// details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 /**
  * @file src/lib/DustColumnDensityColumnConfig.cpp
@@ -61,11 +59,7 @@ auto ObservationConditionColumnConfig::getProgramOptions() -> std::map<std::stri
   }}};
 }
 
-
-
-
-
-static std::vector<std::pair<std::string, std::string>> parseFile(fs::path filename) {
+static std::vector<std::pair<std::string, std::string>> parseFile(fs::path filename, const std::set<std::string>& enabled_bands) {
   Configuration::PhotometricBandMappingConfig::MappingMap             filter_name_mapping{};
   Configuration::PhotometricBandMappingConfig::UpperLimitThresholdMap threshold_mapping{};
   Configuration::PhotometricBandMappingConfig::ConvertFromMagMap      convert_from_mag_mapping{};
@@ -114,23 +108,25 @@ static std::vector<std::pair<std::string, std::string>> parseFile(fs::path filen
     boost::split(cells, line, boost::is_any_of(" "));
 
     try {
-     if (int(cells.size()) <= filtr_column_index) {
-       throw Elements::Exception() << "File with missing values for the mandatory fields";
-     }
-      std::string filter_value = cells[filtr_column_index];
-      boost::trim(filter_value);
+      if (int(cells.size()) <= filtr_column_index) {
+        throw Elements::Exception() << "File with missing values for the mandatory fields";
+      }
+      std::string filter_name = cells[filtr_column_index];
+      boost::trim(filter_name);
       std::string shift_value = "NONE";
 
-      if (filter_shift_column_index>=0) {
-        shift_value =  cells[filter_shift_column_index];
+      if (filter_shift_column_index >= 0) {
+        shift_value = cells[filter_shift_column_index];
         boost::trim(shift_value);
       }
 
-      result.push_back(std::make_pair(filter_value, shift_value));
-
+      if (enabled_bands.count(filter_name) > 0) {
+        result.push_back(std::make_pair(filter_name, shift_value));
+      }
     } catch (const std::exception& e) {
-           logger.error() << "Syntax error in " << filename << ": " << line << " => " << e.what();;
-           throw Elements::Exception() << "Syntax error in " << filename << ": " << line<< " => " << e.what();
+      logger.error() << "Syntax error in " << filename << ": " << line << " => " << e.what();
+      ;
+      throw Elements::Exception() << "Syntax error in " << filename << ": " << line << " => " << e.what();
     }
   }
   return result;
@@ -148,9 +144,15 @@ void ObservationConditionColumnConfig::initialize(const UserValues& args) {
     m_galactic_correction_enabled = true;
   }
 
-  const boost::filesystem::path  mapping_file = getDependency<Euclid::Configuration::PhotometricBandMappingConfig>().getMappingFile();
+  auto&       photometric_band_map_config = getDependency<Euclid::Configuration::PhotometricBandMappingConfig>();
+  const auto  mapping_file                = photometric_band_map_config.getMappingFile();
 
-  std::vector<std::pair<std::string, std::string>> filter_shift_columns = parseFile(mapping_file);
+  const auto& band_mapping                = photometric_band_map_config.getPhotometricBandMapping();
+  std::set<std::string> enabled_bands;
+  std::transform(band_mapping.begin(), band_mapping.end(), std::inserter(enabled_bands, enabled_bands.begin()),
+                 [](const std::pair < std::string, std::pair<std::string, std::string>> & entry) { return entry.first; });
+
+  std::vector<std::pair<std::string, std::string>> filter_shift_columns = parseFile(mapping_file, enabled_bands);
 
   m_filter_variation_enabled = false;
   for(size_t filter_index = 0; filter_index < filter_shift_columns.size(); ++filter_index) {
