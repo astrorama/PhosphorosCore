@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -98,19 +98,22 @@ ComputeSedWeight::ComputeSedWeight(ProgressListener progress_listener, long samp
 
 std::vector<std::pair<XYDataset::QualifiedName, double>> ComputeSedWeight::orderFilters(
     const std::vector<XYDataset::QualifiedName> & filter_list,
-    const std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider) {
+    const std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider) const {
   std::vector<std::pair<XYDataset::QualifiedName, double>> ordered_filters{};
     for (size_t filter_index = 0; filter_index < filter_list.size(); ++filter_index) {
       auto filterXY = filter_provider->getDataset(filter_list[filter_index]);
       std::vector<double> x{};
       std::vector<double> y{};
       std::vector<double> xy{};
-      auto iter = filterXY->begin();
-      while (iter != filterXY->end()) {
-            x.push_back((*iter).first);
-            y.push_back((*iter).second);
-            xy.push_back((*iter).first * (*iter).second);
-            ++iter;
+
+      x.reserve(filterXY->size());
+      y.reserve(filterXY->size());
+      xy.reserve(filterXY->size());
+
+      for (const auto& datapoint : *filterXY) {
+        x.emplace_back(datapoint.first);
+        y.emplace_back(datapoint.second);
+        xy.emplace_back(datapoint.first * datapoint.second);
       }
 
       // Compute the average lambda
@@ -143,29 +146,32 @@ std::vector<std::pair<XYDataset::QualifiedName, double>> ComputeSedWeight::order
 
 
 std::vector<std::vector<double>> ComputeSedWeight::computeSedColors(
-    std::vector<std::pair<XYDataset::QualifiedName, double>>& ordered_filters,
-    std::set<XYDataset::QualifiedName> sed_list,
+    const std::vector<std::pair<XYDataset::QualifiedName, double>>& ordered_filters,
+    const std::set<XYDataset::QualifiedName>& sed_list,
     const std::shared_ptr<XYDataset::XYDatasetProvider> sed_provider,
     const std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider
-    ) {
+    ) const {
     PhzModeling::ApplyFilterFunctor functor{};
   std::vector<std::vector<double>> fluxes{};
 
   size_t progress = 0;
+  fluxes.reserve(sed_list.size());
   for (auto sed_iter = sed_list.begin(); sed_iter != sed_list.end(); ++sed_iter) {
     std::vector<double> sed_fluxes{};
+    sed_fluxes.reserve(ordered_filters.size());
     for (size_t filter_index = 0; filter_index < ordered_filters.size(); ++filter_index) {
       auto filterXY = filter_provider->getDataset(ordered_filters[filter_index].first);
       std::vector<double> x{};
       std::vector<double> y{};
-      std::vector<double> xy{};
-      auto iter = filterXY->begin();
-      while (iter != filterXY->end()) {
-           x.push_back((*iter).first);
-           y.push_back((*iter).second);
-           ++iter;
+
+      x.reserve(filterXY->size());
+      y.reserve(filterXY->size());
+
+      for (const auto& datapoint: *filterXY) {
+           x.emplace_back(datapoint.first);
+           y.emplace_back(datapoint.second);
       }
-      auto filter = MathUtils::interpolate(x, y, MathUtils::InterpolationType::LINEAR);
+      auto filter = MathUtils::interpolate(*filterXY, MathUtils::InterpolationType::LINEAR);
       double norm = MathUtils::integrate(*(filter.get()), x[0], x[x.size()-1]);
 
       auto sedXY = sed_provider->getDataset(*sed_iter);
@@ -175,39 +181,43 @@ std::vector<std::vector<double>> ComputeSedWeight::computeSedColors(
 
       std::vector<double> x_fil{};
       std::vector<double> y_fil{};
-      iter = filtered.begin();
-      while (iter != filtered.end()) {
-              x_fil.push_back((*iter).first);
-              y_fil.push_back((*iter).second);
-              ++iter;
+
+      x_fil.reserve(filtered.size());
+      y_fil.reserve(filtered.size());
+
+      for (const auto& datapoint: filtered) {
+        x_fil.emplace_back(datapoint.first);
+        y_fil.emplace_back(datapoint.second);
       }
       auto filtered_func = MathUtils::interpolate(x_fil, y_fil, MathUtils::InterpolationType::LINEAR);
       double num = MathUtils::integrate(*(filtered_func.get()), x_fil[0], x_fil[x_fil.size()-1]);
-      sed_fluxes.push_back(num/norm);
+      sed_fluxes.emplace_back(num/norm);
 
       if (PhzUtils::getStopThreadsFlag()) {
           throw Elements::Exception() << "Stopped by the user";
       }
 
     }
-    fluxes.push_back(sed_fluxes);
+    fluxes.emplace_back(std::move(sed_fluxes));
     ++progress;
   }
 
   std::vector<std::vector<double>> colors{};
+  colors.reserve(sed_list.size());
   for (size_t sed_index = 0; sed_index < sed_list.size(); ++sed_index) {
     std::vector<double> sed_colors{};
+    sed_colors.reserve(ordered_filters.size());
     for (size_t filter_index = 0; filter_index < ordered_filters.size() - 1; ++filter_index) {
-      sed_colors.push_back(2.5*log10(fluxes[sed_index][filter_index]/fluxes[sed_index][filter_index+1]));
+      sed_colors.emplace_back(2.5*log10(fluxes[sed_index][filter_index]/fluxes[sed_index][filter_index+1]));
     }
-    colors.push_back(sed_colors);
+    colors.emplace_back(std::move(sed_colors));
   }
 
   return colors;
 }
 
 
-double ComputeSedWeight::distance(std::vector<double> colors_1, std::vector<double> colors_2) {
+double ComputeSedWeight::distance(const std::vector<double>& colors_1, const std::vector<double>& colors_2) const {
   double max = 0.0;
   for (size_t index_col = 0; index_col < colors_1.size(); ++index_col) {
    double dist_color = abs(colors_1[index_col] - colors_2[index_col]);
@@ -219,10 +229,12 @@ double ComputeSedWeight::distance(std::vector<double> colors_1, std::vector<doub
 }
 
 
-std::vector<std::vector<double>> ComputeSedWeight::computeSedDistance(std::vector<std::vector<double>> seds_colors) {
+std::vector<std::vector<double>> ComputeSedWeight::computeSedDistance(const std::vector<std::vector<double>>& seds_colors) const{
   std::vector<std::vector<double>> results {};
+  results.reserve(seds_colors.size());
   for (size_t index_i = 0; index_i < seds_colors.size(); ++index_i) {
     std::vector<double> row{};
+    row.reserve(seds_colors.size());
     for (size_t index_j = 0; index_j < seds_colors.size(); ++index_j) {
 
       double max = 0.0;
@@ -232,17 +244,17 @@ std::vector<std::vector<double>> ComputeSedWeight::computeSedDistance(std::vecto
         max = distance(seds_colors[index_i], seds_colors[index_j]);
       }
 
-      row.push_back(max);
+      row.emplace_back(max);
     }
-    results.push_back(row);
+    results.emplace_back(std::move(row));
   }
 
   return results;
 }
 
-double ComputeSedWeight::groupDistance(std::vector<size_t> sed_group_1,
-                      std::vector<size_t> sed_group_2,
-                      std::vector<std::vector<double>> sed_distances) {
+double ComputeSedWeight::groupDistance(const std::vector<size_t>& sed_group_1,
+                      const std::vector<size_t>& sed_group_2,
+                      const std::vector<std::vector<double>>& sed_distances) const {
   double min = std::numeric_limits<double>::infinity();
   for (auto iter_group_1 = sed_group_1.begin(); iter_group_1 !=  sed_group_1.end(); ++iter_group_1) {
     for (auto iter_group_2 = sed_group_2.begin(); iter_group_2 !=  sed_group_2.end(); ++iter_group_2) {
@@ -256,13 +268,13 @@ double ComputeSedWeight::groupDistance(std::vector<size_t> sed_group_1,
   return min;
 }
 
-double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) {
+double ComputeSedWeight::maxGap(const std::vector<std::vector<double>>& sed_distances) const {
   // Create the groups
   std::vector<std::vector<size_t>> sed_groups{};
+  sed_groups.reserve(sed_distances.size());
   for (size_t index_sed = 0; index_sed < sed_distances.size(); ++index_sed) {
-    std::vector<size_t> group {};
-    group.push_back(index_sed);
-    sed_groups.push_back(group);
+    std::vector<size_t> group {index_sed};
+    sed_groups.emplace_back(std::move(group));
   }
 
   // Merge the groups
@@ -283,8 +295,9 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
     }
 
     logger.info() << "Merging Group " << index_2 << " with Group " << index_1 << " Distance:" << dist_min;
+    sed_groups[index_1].reserve(sed_groups[index_1].size() + sed_groups[index_2].size());
     for (size_t sed_index = 0; sed_index < sed_groups[index_2].size(); ++sed_index) {
-      sed_groups[index_1].push_back(sed_groups[index_2][sed_index]);
+      sed_groups[index_1].emplace_back(sed_groups[index_2][sed_index]);
     }
     auto iter = sed_groups.begin();
     size_t current_index = 0;
@@ -306,11 +319,8 @@ double ComputeSedWeight::maxGap(std::vector<std::vector<double>> sed_distances) 
 }
 
 
-std::vector<double> ComputeSedWeight::getWeights(std::vector<std::vector<double>> seds_colors, double radius) {
-   std::vector<double> weight{};
-   for (size_t sed_index = 0; sed_index < seds_colors.size(); ++sed_index) {
-     weight.push_back(0.0);
-   }
+std::vector<double> ComputeSedWeight::getWeights(const std::vector<std::vector<double>>& seds_colors, double radius) const {
+   std::vector<double> weight(seds_colors.size(), 0.);
 
    size_t sed_number = seds_colors.size();
    size_t color_number = seds_colors[0].size();
@@ -326,11 +336,12 @@ std::vector<double> ComputeSedWeight::getWeights(std::vector<std::vector<double>
      double total_match = 0;
      for (long draw_index = 0; draw_index < m_sampling_number; ++draw_index) {
        std::vector<double> sample_color{};
+       sample_color.reserve(color_number);
        for (size_t color_index = 0; color_index < color_number; ++color_index) {
          std::uniform_real_distribution<double> dist(seds_colors[sed_index][color_index] - radius,
                                                      seds_colors[sed_index][color_index] + radius);
          double draw = dist(mt);
-         sample_color.push_back(draw);
+         sample_color.emplace_back(draw);
        }
 
        size_t match_number = 0;
