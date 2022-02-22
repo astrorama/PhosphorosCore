@@ -458,12 +458,12 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
            XYDataset::QualifiedName curve_value = curve_axis[curve_index];
            std::string key = getCellKey(z_value, e_value, curve_value);
 
-           if ( seds_weights_collection.find(cells_sed_collection[key]) == seds_weights_collection.end() ) {
+           const auto& sed_qualified = cells_sed_collection[key];
+           if ( seds_weights_collection.find(sed_qualified) == seds_weights_collection.end() ) {
             // compute weights
 
              // compute colors (filter N+1 - filter N)
-             std::vector<std::vector<double>> colors = computeSedColors(ordered_filters,
-                                                                        cells_sed_collection[key],
+             std::vector<std::vector<double>> colors = computeSedColors(ordered_filters, sed_qualified,
                                                                         sed_provider,
                                                                         filter_provider);
 
@@ -487,21 +487,19 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
              // fill the map
              size_t index = 0;
              std::map<XYDataset::QualifiedName, double> weight_map{};
-             for (auto sed_iter = cells_sed_collection[key].begin(); sed_iter != cells_sed_collection[key].end(); ++sed_iter) {
+             for (auto sed_iter = sed_qualified.begin(); sed_iter != sed_qualified.end(); ++sed_iter) {
                weight_map.insert(std::make_pair(*sed_iter, weights[index]));
                ++index;
              }
 
-             seds_weights_collection.insert(std::make_pair(cells_sed_collection[key], std::move(weight_map)));
+             seds_weights_collection.insert(std::make_pair(sed_qualified, std::move(weight_map)));
            }
 
            // fill the grid
+           const auto& sed_weights = seds_weights_collection[sed_qualified];
            for (size_t sed_index = 0; sed_index < sed_axis.size(); ++sed_index) {
-             XYDataset::QualifiedName sed_value = sed_axis[sed_index];
-
-             prior_grid.at(z_index, e_index, curve_index, sed_index) =
-                 seds_weights_collection[cells_sed_collection[key]][sed_value];
-
+             const XYDataset::QualifiedName& sed_value = sed_axis[sed_index];
+             prior_grid.at(z_index, e_index, curve_index, sed_index) = sed_weights.at(sed_value);
            }
            ++current;
            m_progress_listener(50+static_cast<int>((100*current)/total), 150);
