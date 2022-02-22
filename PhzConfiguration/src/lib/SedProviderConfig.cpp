@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -22,14 +22,15 @@
  * @author Florian Dubath
  */
 
-#include <cstdlib>
-#include <boost/filesystem/operations.hpp>
+#include "PhzConfiguration/SedProviderConfig.h"
+#include "AlexandriaKernel/memory_tools.h"
+#include "PhzConfiguration/AuxDataDirConfig.h"
+#include "XYDataset/AsciiParser.h"
+#include "XYDataset/CachedProvider.h"
 #include "XYDataset/FileParser.h"
 #include "XYDataset/FileSystemProvider.h"
-#include "XYDataset/AsciiParser.h"
-#include "PhzConfiguration/SedProviderConfig.h"
-#include "PhzConfiguration/AuxDataDirConfig.h"
-
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -42,21 +43,18 @@ SedProviderConfig::SedProviderConfig(long manager_id) : Configuration(manager_id
 }
 
 void SedProviderConfig::initialize(const UserValues&) {
-  fs::path result = getDependency<AuxDataDirConfig>().getAuxDataDir() / "SEDs";
-  std::unique_ptr<XYDataset::FileParser> file_parser {new XYDataset::AsciiParser{}};
-  m_sed_provider = std::shared_ptr<XYDataset::XYDatasetProvider> {
-    new XYDataset::FileSystemProvider{result.string(), std::move(file_parser)}};
+  fs::path result      = getDependency<AuxDataDirConfig>().getAuxDataDir() / "SEDs";
+  auto     file_parser = Euclid::make_unique<XYDataset::AsciiParser>();
+  auto     fs_provider = Euclid::make_unique<XYDataset::FileSystemProvider>(result.string(), std::move(file_parser));
+  m_sed_provider = Euclid::make_unique<XYDataset::CachedProvider>(std::move(fs_provider));
 }
 
 const std::shared_ptr<XYDataset::XYDatasetProvider> SedProviderConfig::getSedDatasetProvider() {
-  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-        throw Elements::Exception() << "Call to getAuxDataDir() on a not initialized instance.";
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getAuxDataDir() on a not initialized instance.";
   }
   return m_sed_provider;
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid
