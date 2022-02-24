@@ -441,18 +441,26 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
               throw Elements::Exception() << "Stopped by the user";
             }
 
-            // make group & compute minimal distance
-            std::vector<std::vector<double>> sed_distances = computeSedDistance(colors);
-            double                           max_gap       = maxGap(sed_distances);
-            logger.info() << "Maximum gap :" << max_gap;
-            double radius = max_gap / 2.0;
+            std::vector<double> weights;
 
-            if (PhzUtils::getStopThreadsFlag()) {
-              throw Elements::Exception() << "Stopped by the user";
+            if (colors.size() > 1) {
+              // make group & compute minimal distance
+              std::vector<std::vector<double>> sed_distances = computeSedDistance(colors);
+              double                           max_gap       = maxGap(sed_distances);
+              logger.info() << "Maximum gap :" << max_gap;
+              double radius = max_gap / 2.0;
+
+              if (PhzUtils::getStopThreadsFlag()) {
+                throw Elements::Exception() << "Stopped by the user";
+              }
+
+              // compute weights
+              weights = std::move(getWeights(colors, radius));
             }
-
-            // compute weights
-            auto weights = getWeights(colors, radius);
+            else {
+              logger.info() << "There is a single SED";
+              weights.emplace_back(1.);
+            }
 
             // fill the map
             size_t                                     index = 0;
