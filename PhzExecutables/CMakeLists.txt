@@ -1,6 +1,7 @@
 elements_subdir(PhzExecutables)
 
 elements_depends_on_subdirs(ElementsKernel)
+elements_depends_on_subdirs(KdTree)
 elements_depends_on_subdirs(Table)
 elements_depends_on_subdirs(XYDataset)
 elements_depends_on_subdirs(MathUtils)
