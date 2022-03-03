@@ -1,9 +1,5 @@
-/**
- * @file src/lib/BuildPPConfig.cpp
- * @date 2021/04/23
- * @author dubathf
- *
- * @copyright (C) 2012-2020 Euclid Science Ground Segment
+/*
+ * Copyright (C) 2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -18,7 +14,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- *
  */
 
 #include <boost/algorithm/string.hpp>
@@ -104,37 +99,35 @@ void BuildPPConfig::run(Euclid::Configuration::ConfigManager &config_manager) {
   std::string keyword = "PARAMETER";
   std::set<XYDataset::QualifiedName> added_seds{};
 
-  for (const auto& sed_region_pair : sed_list)  {
+  for (const auto& sed_region_pair : sed_list) {
     for (const auto& sed_iter : sed_region_pair.second) {
-       if (added_seds.find(sed_iter) == added_seds.end()) {
-          auto string_params = sed_provider_ptr->getParameter(sed_iter, keyword);
-          auto param_map = getParamMap(string_params);
-          for (const std::string& pp : pp_list) {
-        	std::string current_units ="";
-            if (param_map.find(pp) == param_map.end()) {
-              throw Elements::Exception() << "Parameter " << pp << " is not defined for the SED " << sed_iter.qualifiedName();
-            }
+      if (added_seds.find(sed_iter) == added_seds.end()) {
+        auto string_params = sed_provider_ptr->getParameter(sed_iter, keyword);
+        auto param_map     = getParamMap(string_params);
+        std::string current_units = "";
+        for (const std::string& pp : pp_list) {
+          if (param_map.find(pp) == param_map.end()) {
+            throw Elements::Exception() << "Parameter " << pp << " is not defined for the SED " << sed_iter.qualifiedName();
+          }
 
-            auto& parsed_param = param_map.at(pp);
-            if (current_units != "" && std::get<2>(parsed_param) != "" && std::get<2>(parsed_param) != current_units) {
-              throw Elements::Exception() << "Parameter " << pp << " Has mismatch in the units " <<
-                  current_units << " != " << std::get<2>(parsed_param);
-            }
+          auto& parsed_param = param_map.at(pp);
+          if (current_units != "" && std::get<2>(parsed_param) != "" && std::get<2>(parsed_param) != current_units) {
+            throw Elements::Exception() << "Parameter " << pp << " Has mismatch in the units " << current_units
+                                        << " != " << std::get<2>(parsed_param);
+          }
 
-            if (current_units == "" && std::get<2>(parsed_param) != "") {
-               current_units = std::get<2>(parsed_param);
-            }
+          if (current_units == "" && std::get<2>(parsed_param) != "") {
+            current_units = std::get<2>(parsed_param);
+          }
 
-            std::vector<Table::Row::cell_type> values{ std::string{pp},
-                                                       std::string{sed_iter.qualifiedName()},
-                                                       std::get<0>(parsed_param),
-                                                       std::get<1>(parsed_param),
-                                                       std::get<2>(parsed_param)};
-            Table::Row row{values, column_info};
-            row_list.push_back(row);
-            added_seds.insert(sed_iter);
-         }
-       }
+          std::vector<Table::Row::cell_type> values{std::string{pp}, std::string{sed_iter.qualifiedName()},
+                                                    std::get<0>(parsed_param), std::get<1>(parsed_param),
+                                                    std::get<2>(parsed_param)};
+          Table::Row                         row{values, column_info};
+          row_list.push_back(row);
+          added_seds.insert(sed_iter);
+        }
+      }
     }
   }
 
