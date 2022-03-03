@@ -1,9 +1,5 @@
-/**
- * @file src/lib/ComputeReferenceSampleConfig.cpp
- * @date 08/13/18
- * @author aalvarez
- *
- * @copyright (C) 2012-2020 Euclid Science Ground Segment
+/*
+ * Copyright (C) 2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -18,7 +14,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- *
  */
 
 #include "PhzConfiguration/BuildReferenceSampleConfig.h"
@@ -46,7 +41,8 @@ static const std::string PHOSPHOROS_CATALOG{"phosphoros-catalog"};
 static const std::string PHOSPHOROS_CATALOG_LIST{"phosphoros-catalog-list"};
 static const std::string PHOSPHOROS_CATALOG_FORMAT{"phosphoros-catalog-format"};
 
-BuildReferenceSampleConfig::BuildReferenceSampleConfig(long manager_id) : Configuration(manager_id) {
+BuildReferenceSampleConfig::BuildReferenceSampleConfig(long manager_id)
+    : Configuration(manager_id), m_overwrite(false), m_max_size(1000000000) {
   declareDependency<SedProviderConfig>();
   declareDependency<ReddeningProviderConfig>();
   declareDependency<FilterProviderConfig>();

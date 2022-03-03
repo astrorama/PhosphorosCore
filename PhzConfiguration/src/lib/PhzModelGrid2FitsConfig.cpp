@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -29,10 +29,9 @@ static const std::string OUTPUT{"output-file"};
 static const std::string OVERWRITE{"overwrite"};
 static const std::string SQUASH{"squash"};
 
-PhzModelGrid2FitsConfig::PhzModelGrid2FitsConfig(long manager_id) : Configuration(manager_id) {
+PhzModelGrid2FitsConfig::PhzModelGrid2FitsConfig(long manager_id) : Configuration(manager_id), m_overwrite(false), m_squash(false) {
   declareDependency<PhotometryGridConfig>();
 }
-
 
 auto PhzModelGrid2FitsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Model Grid to FITS options", {
