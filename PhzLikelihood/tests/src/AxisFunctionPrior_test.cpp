@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -55,7 +55,11 @@ struct MirrorFunction : public MathUtils::Function {
     return std::unique_ptr<Function>{new MirrorFunction{}};
   }
 
-  double operator()(const double x) const override { return x; }
+  double operator()(const double x) const override {
+    return x;
+  }
+
+  using MathUtils::Function::operator();
 };
 
 struct ZeroFunction : public MathUtils::Function {
@@ -64,6 +68,8 @@ struct ZeroFunction : public MathUtils::Function {
   }
 
   double operator()(const double /* x */) const override { return 0.0; }
+
+  using MathUtils::Function::operator();
 };
 
 //-----------------------------------------------------------------------------

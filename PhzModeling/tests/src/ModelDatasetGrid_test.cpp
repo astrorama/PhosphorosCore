@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2022 Euclid Science Ground Segment
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 /**
  * @file tests/src/ModelDatasetGenerator_test.cpp
  * @date Sep 30, 2014
@@ -56,15 +74,17 @@ struct ModelDatasetGrid_Fixture {
     virtual ~DummyExtinctionFunction() = default;
 
     double operator()(const double x) const override {
-      if (x<1100.){
-        return 2.*m_factor;
+      if (x < 1100.) {
+        return 2. * m_factor;
       }
 
-      if (x<1300.){
-        return 1.5*m_factor;
+      if (x < 1300.) {
+        return 1.5 * m_factor;
       }
-      return 1.*m_factor;
+      return 1. * m_factor;
     }
+
+    using Euclid::MathUtils::Function::operator();
 
     std::unique_ptr<Euclid::MathUtils::Function> clone() const override {
        return std::unique_ptr<Euclid::MathUtils::Function>{new DummyExtinctionFunction()};
