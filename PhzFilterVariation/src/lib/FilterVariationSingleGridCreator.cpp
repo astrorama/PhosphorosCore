@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -52,26 +52,6 @@ namespace Euclid {
 namespace PhzFilterVariation {
 
 static Elements::Logging logger = Elements::Logging::getLogger("FilterVariationSingleGridCreator");
-
-
-
-std::vector<double> FilterVariationSingleGridCreator::computeSampling(double min, double max, int numbers) {
-  if (min >= max) {
-    throw Elements::Exception("FilterVariationSingleGridCreator::computeSampling 'min' must b smaller than 'max'");
-  }
-
-  if (numbers < 4) {
-     throw Elements::Exception("FilterVariationSingleGridCreator::computeSampling 'numbers' must be at least 3");
-   }
-
-  double step = (max-min) / (numbers -1);
-  std::vector<double> result{};
-  for (int index = 0; index < numbers; ++index) {
-    result.push_back(min+step*index);
-  }
-
-  return result;
-}
 
 
 XYDataset::XYDataset FilterVariationSingleGridCreator::shiftFilter(const XYDataset::XYDataset& filter_dataset, double shift) {
@@ -263,16 +243,13 @@ FilterVariationSingleGridCreator::FilterVariationSingleGridCreator(
          std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
          const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
          IgmAbsorptionFunction igm_absorption_function,
-         NormalizationFunction normalization_function,
-         double delta_lambda_min,
-         double delta_lambda_max,
-         int sample_number)
-      : m_sed_provider {sed_provider},
-        m_reddening_curve_provider {reddening_curve_provider},
-        m_filter_provider(filter_provider),
-        m_igm_absorption_function {igm_absorption_function},
-        m_normalization_function{normalization_function},
-        m_delta_lambda{FilterVariationSingleGridCreator::computeSampling(delta_lambda_min, delta_lambda_max, sample_number)} {}
+    NormalizationFunction normalization_function, std::vector<double> delta_lambda)
+    : m_sed_provider{sed_provider}
+    , m_reddening_curve_provider{reddening_curve_provider}
+    , m_filter_provider(filter_provider)
+    , m_igm_absorption_function{igm_absorption_function}
+    , m_normalization_function{normalization_function}
+    , m_delta_lambda{std::move(delta_lambda)} {}
 
 FilterVariationSingleGridCreator::~FilterVariationSingleGridCreator() {
   // The multithreaded job is done, so reset the stop threads flag

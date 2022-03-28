@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -23,18 +23,17 @@
  */
 
 #ifndef PHZCONFIGURATION_FILTERVARIATIONCOEFFICIENTGRIDOUTPUTCONFIG_H
-#define	PHZCONFIGURATION_FILTERVARIATIONCOEFFICIENTGRIDOUTPUTCONFIG_H
+#define PHZCONFIGURATION_FILTERVARIATIONCOEFFICIENTGRIDOUTPUTCONFIG_H
 
-#include <cstdlib>
-#include <string>
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzModeling/PhotometryGridCreator.h"
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
+#include <string>
 
 namespace Euclid {
 namespace PhzConfiguration {
-
 
 /**
  * @class FilterVariationCoefficientGridOutputConfig
@@ -45,13 +44,12 @@ namespace PhzConfiguration {
 class FilterVariationCoefficientGridOutputConfig : public Configuration::Configuration {
 
 public:
-
- typedef std::function<void(const std::map<std::string, PhzDataModel::PhotometryGrid>&)> OutputFunction;
+  typedef std::function<void(const std::map<std::string, PhzDataModel::PhotometryGrid>&)> OutputFunction;
 
   /**
    * @brief Constructor
    */
- explicit FilterVariationCoefficientGridOutputConfig(long manager_id);
+  explicit FilterVariationCoefficientGridOutputConfig(long manager_id);
 
   /**
    * @brief Destructor
@@ -93,25 +91,13 @@ public:
    * @return
    * A function to be used for outputing the PhotometryGrid
    */
-  const OutputFunction & getOutputFunction();
-
-  double getMinShift();
-  double getMaxShift();
-  int getShiftNumber();
-
+  const OutputFunction& getOutputFunction();
 
 private:
-
   OutputFunction m_output_function;
-  double m_min_shift = -100;
-  double m_max_shift = 100;
-  int m_shift_number = 200;
-
 };
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_FILTERVARIATIONCOEFFICIENTGRIDOUTPUTCONFIG_H */
-
+#endif /* PHZCONFIGURATION_FILTERVARIATIONCOEFFICIENTGRIDOUTPUTCONFIG_H */
