@@ -1,9 +1,5 @@
 /**
- * @file ReferenceSample/ReferenceSample.h
- * @date 08/07/18
- * @author aalvarez
- *
- * @copyright (C) 2012-2020 Euclid Science Ground Segment
+ * @copyright (C) 2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -18,7 +14,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+/*
+ * Copyright (C) 2022 Euclid Science Ground Segment
  *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #ifndef _REFERENCESAMPLE_REFERENCESAMPLE_H
@@ -71,6 +84,14 @@ public:
    * @return A ReferenceSample instance
    */
   static ReferenceSample create(const boost::filesystem::path& path, size_t max_file_size = 1073741824);
+
+  /**
+   * Create a copy of the *state* reference sample.
+   * @warning
+   *    There is no copy of the underlying mmaped-files, only the status is cloned, so multiple
+   *    threads can access the same reference sample.
+   */
+  std::unique_ptr<ReferenceSample> clone() const;
 
   /**
    * @return Number of entries on the reference sample.
@@ -134,7 +155,7 @@ public:
 private:
   boost::filesystem::path                             m_root_path;
   size_t                                              m_max_file_size;
-  IndexProvider                                       m_index;
+  std::shared_ptr<IndexProvider>                      m_index;
   int64_t                                             m_sed_provider_count, m_pdz_provider_count;
   std::map<int64_t, std::unique_ptr<SedDataProvider>> m_write_sed_provider;
   std::map<size_t, int64_t>                           m_write_sed_idx;
@@ -142,6 +163,8 @@ private:
   mutable int64_t                                     m_read_sed_idx;
   mutable std::unique_ptr<PdzDataProvider>            m_pdz_provider;
   mutable int64_t                                     m_pdz_index;
+
+  ReferenceSample(boost::filesystem::path root_path, size_t max_file_size, std::shared_ptr<IndexProvider> index);
 
   void                                                 initSedProviders();
   void                                                 initPdzProviders();
