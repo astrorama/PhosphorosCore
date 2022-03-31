@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 /**
  * @file PhzGalacticCorrection/GalacticCorrectionFactorSingleGridCreator.cpp
  * @date 2016/11/02
@@ -68,8 +86,8 @@ XYDataset::XYDataset FilterVariationSingleGridCreator::shiftFilter(const XYDatas
 std::vector<double> FilterVariationSingleGridCreator::compute_coef(const Euclid::XYDataset::XYDataset&          sed,
                                                                    const PhzDataModel::FilterInfo&              filter_nominal,
                                                                    const std::vector<PhzDataModel::FilterInfo>& filter_shifted,
-                                                                   PhzModeling::ApplyFilterFunctor&             filter_functor,
-                                                                   PhzModeling::IntegrateDatasetFunctor&        integrate_funct) {
+                                                                   const PhzModeling::ApplyFilterFunctor&             filter_functor,
+                                                                   const PhzModeling::IntegrateDatasetFunctor&        integrate_funct) {
   auto   x_filterd    = filter_functor(sed, filter_nominal.getRange(), filter_nominal.getFilter());
   double nominal_flux = integrate_funct(x_filterd, filter_nominal.getRange());
 
@@ -87,12 +105,10 @@ std::vector<double> FilterVariationSingleGridCreator::compute_coef(const Euclid:
   return result;
 }
 
-std::vector<double> FilterVariationSingleGridCreator::compute_tild_coef(const Euclid::XYDataset::XYDataset&          sed,
-                                                                        const PhzDataModel::FilterInfo&              filter_nominal,
-                                                                        const std::vector<PhzDataModel::FilterInfo>& filter_shifted,
-                                                                        const std::vector<double>&                   d_lambda,
-                                                                        PhzModeling::ApplyFilterFunctor&             filter_functor,
-                                                                        PhzModeling::IntegrateDatasetFunctor& integrate_funct) {
+std::vector<double> FilterVariationSingleGridCreator::compute_tild_coef(
+    const Euclid::XYDataset::XYDataset& sed, const PhzDataModel::FilterInfo& filter_nominal,
+    const std::vector<PhzDataModel::FilterInfo>& filter_shifted, const std::vector<double>& d_lambda,
+    const PhzModeling::ApplyFilterFunctor& filter_functor, const PhzModeling::IntegrateDatasetFunctor& integrate_funct) {
   auto coef = FilterVariationSingleGridCreator::compute_coef(sed, filter_nominal, filter_shifted, filter_functor, integrate_funct);
   auto result = std::vector<double>{};
   for (size_t index = 0; index < d_lambda.size(); ++index) {

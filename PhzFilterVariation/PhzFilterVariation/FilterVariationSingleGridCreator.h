@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -89,8 +89,8 @@ public:
   */
  static std::vector<double> compute_coef(const Euclid::XYDataset::XYDataset& sed, const PhzDataModel::FilterInfo& filter_nominal,
                                          const std::vector<PhzDataModel::FilterInfo>& filter_shifted,
-                                         PhzModeling::ApplyFilterFunctor&             filter_functor,
-                                         PhzModeling::IntegrateDatasetFunctor&        integrate_funct);
+                                         const PhzModeling::ApplyFilterFunctor&       filter_functor,
+                                         const PhzModeling::IntegrateDatasetFunctor&  integrate_funct);
 
  /**
   * For a given "sed" compute, for each filter, the reduced coefficient (Flux_i(d_lambda_i)/Flux_i(No shift)- 1)/d_lambda_i
@@ -98,8 +98,9 @@ public:
  static std::vector<double> compute_tild_coef(const Euclid::XYDataset::XYDataset&          sed,
                                               const PhzDataModel::FilterInfo&              filter_nominal,
                                               const std::vector<PhzDataModel::FilterInfo>& filter_shifted,
-                                              const std::vector<double>& d_lambda, PhzModeling::ApplyFilterFunctor& filter_functor,
-                                              PhzModeling::IntegrateDatasetFunctor& integrate_funct);
+                                              const std::vector<double>&                   d_lambda,
+                                              const PhzModeling::ApplyFilterFunctor&       filter_functor,
+                                              const PhzModeling::IntegrateDatasetFunctor&  integrate_funct);
 
  private:
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_sed_provider;
