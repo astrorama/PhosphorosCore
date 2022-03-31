@@ -76,8 +76,10 @@ std::vector<double> FilterVariationSingleGridCreator::compute_coef(
   std::vector<double> result;
   result.reserve(filter_shifted.size());
 
+  auto sed_interp = MathUtils::interpolate(sed, MathUtils::InterpolationType::LINEAR, false);
+
   for (auto& shifted : filter_shifted) {
-    auto   x_shifted_filterd = filter_functor(sed, shifted.getRange(), shifted.getFilter());
+    auto   x_shifted_filterd = filter_functor(*sed_interp, shifted.getRange(), shifted.getFilter());
     double shifted_flux      = integrate_funct(x_shifted_filterd, shifted.getRange()) / shifted.getNormalization();
     result.emplace_back(shifted_flux / nominal_flux);
   }
