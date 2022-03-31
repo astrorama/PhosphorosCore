@@ -69,15 +69,17 @@ std::vector<double> FilterVariationSingleGridCreator::compute_coef(
   auto   x_filterd    = filter_functor(sed, filter_nominal.getRange(), filter_nominal.getFilter());
   double nominal_flux = integrate_funct(x_filterd, filter_nominal.getRange()) / filter_nominal.getNormalization();
 
-  auto result = std::vector<double>{};
+  if (nominal_flux == 0.0) {
+    return std::vector<double>(filter_shifted.size());
+  }
+
+  std::vector<double> result;
+  result.reserve(filter_shifted.size());
+
   for (auto& shifted : filter_shifted) {
-    if (nominal_flux == 0.0) {
-      result.push_back(0.0);
-    } else {
-      auto   x_shifted_filterd = filter_functor(sed, shifted.getRange(), shifted.getFilter());
-      double shifted_flux      = integrate_funct(x_shifted_filterd, shifted.getRange()) / shifted.getNormalization();
-      result.push_back(shifted_flux / nominal_flux);
-    }
+    auto   x_shifted_filterd = filter_functor(sed, shifted.getRange(), shifted.getFilter());
+    double shifted_flux      = integrate_funct(x_shifted_filterd, shifted.getRange()) / shifted.getNormalization();
+    result.emplace_back(shifted_flux / nominal_flux);
   }
 
   return result;
