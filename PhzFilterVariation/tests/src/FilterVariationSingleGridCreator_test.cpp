@@ -1,4 +1,22 @@
 /**
+ * Copyright (C) 2022 Euclid Science Ground Segment
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+/**
  * @file tests/src/FilterVariationSingleGridCreator_test.cpp
  * @date 2021/09/06
  * @author Florian Dubath
@@ -99,9 +117,9 @@ BOOST_FIXTURE_TEST_CASE(compute_coef_test, FilterVariationSingleGridCreator_Fixt
   }
 
   auto filter_functor = PhzModeling::ApplyFilterFunctor();
-  auto integrate_dataset_function = PhzModeling::IntegrateDatasetFunctor{MathUtils::InterpolationType::LINEAR};
+  auto integrate_dataset_function = PhzModeling::IntegrateLambdaTimeDatasetFunctor{MathUtils::InterpolationType::LINEAR};
 
-  std::vector<double> expected{0.7142857,0.9714286,1,1.0285714,1.2857143};
+  std::vector<double> expected{0.68796, 0.96781411, 1, 1.032406, 1.3340858};
 
   auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_coef(sed,
       filter, shifted_filter, filter_functor, integrate_dataset_function);
@@ -140,9 +158,9 @@ BOOST_FIXTURE_TEST_CASE(compute_tilde_coef_test, FilterVariationSingleGridCreato
   }
 
   auto filter_functor = PhzModeling::ApplyFilterFunctor();
-  auto integrate_dataset_function = PhzModeling::IntegrateDatasetFunctor{MathUtils::InterpolationType::LINEAR};
+  auto integrate_dataset_function = PhzModeling::IntegrateLambdaTimeDatasetFunctor{MathUtils::InterpolationType::LINEAR};
 
-  std::vector<double> expected{0.0028571,0.0028571,0.0028571,0,0.0028571,0.0028571,0.0028571};
+  std::vector<double> expected{0.003120346, 0.0032185, 0.0032285, 0., 0.0032307, 0.003240640, 0.003340858};
 
   auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_tild_coef(sed, filter, shifted_filter, delta_lambda,
                                                                                      filter_functor, integrate_dataset_function);
