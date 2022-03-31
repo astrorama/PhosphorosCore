@@ -119,7 +119,7 @@ BOOST_FIXTURE_TEST_CASE(compute_coef_test, FilterVariationSingleGridCreator_Fixt
   auto filter_functor = PhzModeling::ApplyFilterFunctor();
   auto integrate_dataset_function = PhzModeling::IntegrateLambdaTimeDatasetFunctor{MathUtils::InterpolationType::LINEAR};
 
-  std::vector<double> expected{0.7142857,0.9714286,1,1.0285714,1.2857143};
+  std::vector<double> expected{0.68796, 0.96781411, 1, 1.032406, 1.3340858};
 
   auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_coef(sed,
       filter, shifted_filter, filter_functor, integrate_dataset_function);
@@ -160,7 +160,7 @@ BOOST_FIXTURE_TEST_CASE(compute_tilde_coef_test, FilterVariationSingleGridCreato
   auto filter_functor = PhzModeling::ApplyFilterFunctor();
   auto integrate_dataset_function = PhzModeling::IntegrateLambdaTimeDatasetFunctor{MathUtils::InterpolationType::LINEAR};
 
-  std::vector<double> expected{0.0028571,0.0028571,0.0028571,0,0.0028571,0.0028571,0.0028571};
+  std::vector<double> expected{0.003120346, 0.0032185, 0.0032285, 0., 0.0032307, 0.003240640, 0.003340858};
 
   auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_tild_coef(sed, filter, shifted_filter, delta_lambda,
                                                                                      filter_functor, integrate_dataset_function);
