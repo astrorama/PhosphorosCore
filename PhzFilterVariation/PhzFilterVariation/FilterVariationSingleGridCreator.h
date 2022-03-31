@@ -32,7 +32,7 @@
 #include "MathUtils/function/Function.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzModeling/ApplyFilterFunctor.h"
-#include "PhzModeling/IntegrateDatasetFunctor.h"
+#include "PhzModeling/IntegrateLambdaTimeDatasetFunctor.h"
 #include "GridContainer/GridAxis.h"
 #include "XYDataset/QualifiedName.h"
 #include "XYDataset/XYDatasetProvider.h"
@@ -88,19 +88,19 @@ public:
   * For a given "sed" compute, for each filter, the coefficient Flux_i(d_lambda_i)/Flux_i(No shift)
   */
  static std::vector<double> compute_coef(const Euclid::XYDataset::XYDataset& sed, const PhzDataModel::FilterInfo& filter_nominal,
-                                         const std::vector<PhzDataModel::FilterInfo>& filter_shifted,
-                                         const PhzModeling::ApplyFilterFunctor&       filter_functor,
-                                         const PhzModeling::IntegrateDatasetFunctor&  integrate_funct);
+                                         const std::vector<PhzDataModel::FilterInfo>&          filter_shifted,
+                                         const PhzModeling::ApplyFilterFunctor&                filter_functor,
+                                         const PhzModeling::IntegrateLambdaTimeDatasetFunctor& integrate_funct);
 
  /**
   * For a given "sed" compute, for each filter, the reduced coefficient (Flux_i(d_lambda_i)/Flux_i(No shift)- 1)/d_lambda_i
   */
- static std::vector<double> compute_tild_coef(const Euclid::XYDataset::XYDataset&          sed,
-                                              const PhzDataModel::FilterInfo&              filter_nominal,
-                                              const std::vector<PhzDataModel::FilterInfo>& filter_shifted,
-                                              const std::vector<double>&                   d_lambda,
-                                              const PhzModeling::ApplyFilterFunctor&       filter_functor,
-                                              const PhzModeling::IntegrateDatasetFunctor&  integrate_funct);
+ static std::vector<double> compute_tild_coef(const Euclid::XYDataset::XYDataset&                   sed,
+                                              const PhzDataModel::FilterInfo&                       filter_nominal,
+                                              const std::vector<PhzDataModel::FilterInfo>&          filter_shifted,
+                                              const std::vector<double>&                            d_lambda,
+                                              const PhzModeling::ApplyFilterFunctor&                filter_functor,
+                                              const PhzModeling::IntegrateLambdaTimeDatasetFunctor& integrate_funct);
 
  private:
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_sed_provider;

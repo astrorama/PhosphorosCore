@@ -48,7 +48,6 @@
 #include "PhzDataModel/FilterInfo.h"
 #include "PhzDataModel/PhotometryGrid.h"
 
-
 namespace Euclid {
 namespace PhzFilterVariation {
 
@@ -83,13 +82,12 @@ XYDataset::XYDataset FilterVariationSingleGridCreator::shiftFilter(const XYDatas
    return XYDataset::XYDataset::factory(std::move(shifted));
 }
 
-std::vector<double> FilterVariationSingleGridCreator::compute_coef(const Euclid::XYDataset::XYDataset&          sed,
-                                                                   const PhzDataModel::FilterInfo&              filter_nominal,
-                                                                   const std::vector<PhzDataModel::FilterInfo>& filter_shifted,
-                                                                   const PhzModeling::ApplyFilterFunctor&             filter_functor,
-                                                                   const PhzModeling::IntegrateDatasetFunctor&        integrate_funct) {
+std::vector<double> FilterVariationSingleGridCreator::compute_coef(
+    const Euclid::XYDataset::XYDataset& sed, const PhzDataModel::FilterInfo& filter_nominal,
+    const std::vector<PhzDataModel::FilterInfo>& filter_shifted, const PhzModeling::ApplyFilterFunctor& filter_functor,
+    const PhzModeling::IntegrateLambdaTimeDatasetFunctor& integrate_funct) {
   auto   x_filterd    = filter_functor(sed, filter_nominal.getRange(), filter_nominal.getFilter());
-  double nominal_flux = integrate_funct(x_filterd, filter_nominal.getRange());
+  double nominal_flux = integrate_funct(x_filterd, filter_nominal.getRange()) / filter_nominal.getNormalization();
 
   auto result = std::vector<double>{};
   for (auto& shifted : filter_shifted) {
@@ -97,7 +95,7 @@ std::vector<double> FilterVariationSingleGridCreator::compute_coef(const Euclid:
       result.push_back(0.0);
     } else {
       auto   x_shifted_filterd = filter_functor(sed, shifted.getRange(), shifted.getFilter());
-      double shifted_flux      = integrate_funct(x_shifted_filterd, shifted.getRange());
+      double shifted_flux      = integrate_funct(x_shifted_filterd, shifted.getRange()) / shifted.getNormalization();
       result.push_back(shifted_flux / nominal_flux);
     }
   }
@@ -108,7 +106,7 @@ std::vector<double> FilterVariationSingleGridCreator::compute_coef(const Euclid:
 std::vector<double> FilterVariationSingleGridCreator::compute_tild_coef(
     const Euclid::XYDataset::XYDataset& sed, const PhzDataModel::FilterInfo& filter_nominal,
     const std::vector<PhzDataModel::FilterInfo>& filter_shifted, const std::vector<double>& d_lambda,
-    const PhzModeling::ApplyFilterFunctor& filter_functor, const PhzModeling::IntegrateDatasetFunctor& integrate_funct) {
+    const PhzModeling::ApplyFilterFunctor& filter_functor, const PhzModeling::IntegrateLambdaTimeDatasetFunctor& integrate_funct) {
   auto coef = FilterVariationSingleGridCreator::compute_coef(sed, filter_nominal, filter_shifted, filter_functor, integrate_funct);
   auto result = std::vector<double>{};
   for (size_t index = 0; index < d_lambda.size(); ++index) {
@@ -130,7 +128,7 @@ std::vector<double> FilterVariationSingleGridCreator::compute_tild_coef(
                const std::map<Euclid::XYDataset::QualifiedName, PhzDataModel::FilterInfo>&              filter_map,
                const std::map<Euclid::XYDataset::QualifiedName, std::vector<PhzDataModel::FilterInfo>>& shifted_filter_map,
                const std::vector<double>& delta_lambda, PhzModeling::ApplyFilterFunctor& filter_functor,
-               PhzModeling::IntegrateDatasetFunctor& integrate_funct, PhzModeling::ModelDatasetGrid::iterator model_begin,
+               PhzModeling::IntegrateLambdaTimeDatasetFunctor& integrate_funct, PhzModeling::ModelDatasetGrid::iterator model_begin,
                PhzModeling::ModelDatasetGrid::iterator model_end, typename PhzDataModel::PhotometryGrid::iterator correction_begin,
                std::atomic<size_t>& arg_progress, std::atomic<size_t>& done_counter)
        : m_filter_name_shared_ptr{filter_name_shared_ptr}
@@ -197,8 +195,8 @@ std::vector<double> FilterVariationSingleGridCreator::compute_tild_coef(
    const std::map<Euclid::XYDataset::QualifiedName, std::vector<PhzDataModel::FilterInfo>>& m_shifted_filter_map;
    const std::vector<double>& m_delta_lambda;
 
-   PhzModeling::ApplyFilterFunctor& m_filter_functor;
-   PhzModeling::IntegrateDatasetFunctor& m_integrate_funct;
+   PhzModeling::ApplyFilterFunctor&                m_filter_functor;
+   PhzModeling::IntegrateLambdaTimeDatasetFunctor& m_integrate_funct;
 
    PhzModeling::ModelDatasetGrid::iterator m_model_begin;
    PhzModeling::ModelDatasetGrid::iterator m_model_end;
@@ -329,7 +327,7 @@ PhzDataModel::PhotometryGrid FilterVariationSingleGridCreator::createGrid(
   auto correction_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list);
 
   auto filter_functor = PhzModeling::ApplyFilterFunctor();
-  auto integrate_dataset_function = PhzModeling::IntegrateDatasetFunctor{MathUtils::InterpolationType::LINEAR};
+  auto integrate_dataset_function = PhzModeling::IntegrateLambdaTimeDatasetFunctor{MathUtils::InterpolationType::LINEAR};
 
 
    // Here we keep the futures for the threads we start so we can wait for them
