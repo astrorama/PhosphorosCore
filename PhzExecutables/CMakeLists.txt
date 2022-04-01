@@ -15,8 +15,11 @@ elements_depends_on_subdirs(PhzReferenceSample)
 elements_depends_on_subdirs(PhzGalacticCorrection)
 elements_depends_on_subdirs(PhzFilterVariation)
 elements_add_library(PhzExecutables src/lib/*.cpp
-                     LINK_LIBRARIES ElementsKernel PhzConfiguration PhzDataModel PhzModeling PhzLikelihood PhzOutput PhzPhotometricCorrection PhzReferenceSample
-                     PUBLIC_HEADERS PhzExecutables)
+        LINK_LIBRARIES
+            ElementsKernel PhzConfiguration PhzDataModel PhzModeling PhzLikelihood
+            PhzOutput PhzPhotometricCorrection PhzReferenceSample
+            PhzGalacticCorrection PhzFilterVariation
+        PUBLIC_HEADERS PhzExecutables)
 
 
 find_package(Boost REQUIRED COMPONENTS program_options)
@@ -40,7 +43,8 @@ elements_add_executable(PhosphorosComputeSedWeight src/program/ComputeSedWeight.
                      LINK_LIBRARIES ElementsKernel PhzExecutables)
 elements_add_executable(PhosphorosBuildPPConfig src/program/BuildPPConfig.cpp
                      LINK_LIBRARIES ElementsKernel PhzExecutables)                     
-                     
+elements_add_executable(PhosphorosBuildPhotometry src/program/BuildPhotometry.cpp
+                     LINK_LIBRARIES PhzExecutables)
                      
 elements_add_unit_test(ComputeSedWeight_test tests/src/ComputeSedWeight_test.cpp 
                      LINK_LIBRARIES PhzExecutables
