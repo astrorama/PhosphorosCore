@@ -56,6 +56,9 @@ elements_add_unit_test(IgmConfig_test tests/src/IgmConfig_test.cpp
 elements_add_unit_test(FilterProviderConfig_test tests/src/FilterProviderConfig_test.cpp 
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)
+elements_add_unit_test(FilterVariationConfig_test tests/src/FilterVariationConfig_test.cpp
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)
 elements_add_unit_test(CatalogDirConfig_test tests/src/CatalogDirConfig_test.cpp 
                      LINK_LIBRARIES PhzConfiguration
                      TYPE Boost)

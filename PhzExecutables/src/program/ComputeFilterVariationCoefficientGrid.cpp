@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2022 Euclid Science Ground Segment
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 /**
  * @file ComputeFilterVariationCoefficientGrid.cpp
  * @date 2021/09/07
@@ -21,6 +39,7 @@
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhzConfiguration/ModelNormalizationConfig.h"
+#include "PhzConfiguration/FilterVariationConfig.h"
 #include "PhzModeling/NormalizationFunctorFactory.h"
 
 
@@ -113,9 +132,7 @@ class ComputeFilterVariationCoefficientGrid : public Elements::Program {
     const auto& filter_provider = config_manager.template getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
     auto& igm_abs_func = config_manager.template getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
     auto output_function = config_manager.template getConfiguration<FilterVariationCoefficientGridOutputConfig>().getOutputFunction();
-    auto min_shift = config_manager.template getConfiguration<FilterVariationCoefficientGridOutputConfig>().getMinShift();
-    auto max_shift = config_manager.template getConfiguration<FilterVariationCoefficientGridOutputConfig>().getMaxShift();
-    auto sample_number = config_manager.template getConfiguration<FilterVariationCoefficientGridOutputConfig>().getShiftNumber();
+    auto delta_lambda = config_manager.template getConfiguration<FilterVariationConfig>().getSampling();
     auto cosmology =  config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
     auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
     auto sun_sed_name = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
@@ -138,9 +155,7 @@ class ComputeFilterVariationCoefficientGrid : public Elements::Program {
       filter_provider,
       igm_abs_func,
       normalizer_functor,
-      min_shift,
-      max_shift,
-      sample_number
+      delta_lambda
     };
     ProgressReporter progress_listener{logger};
     size_t already_done = 0;

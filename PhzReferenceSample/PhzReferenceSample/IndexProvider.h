@@ -1,5 +1,5 @@
 /**
- * @copyright (C) 2012-2020 Euclid Science Ground Segment
+ * @copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- *
  */
 
 #ifndef _REFERENCESAMPLE_INDEXPROVIDER_H
@@ -50,7 +49,7 @@ public:
    * @param path
    *    Where to store the index
    */
-  IndexProvider(const boost::filesystem::path& path);
+  explicit IndexProvider(const boost::filesystem::path& path);
 
   /**
    * Move constructor

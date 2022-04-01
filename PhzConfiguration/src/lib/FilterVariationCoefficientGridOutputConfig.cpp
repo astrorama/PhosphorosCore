@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -36,7 +36,6 @@
 #include "PhzDataModel/ArchiveFormat.h"
 #include "PhzConfiguration/ModelNormalizationConfig.h"
 
-
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
@@ -45,9 +44,6 @@ namespace PhzConfiguration {
 
 static const std::string OUTPUT_CORRECTION_COEFFICIENT_GRID {"output-filter-variation-coefficient-grid"};
 static const std::string OUTPUT_CORRECTION_COEFFICIENT_GRID_FORMAT {"output-filter-variation-coefficient-grid-format"};
-static const std::string INPUT_MIN_SHIFT {"filter-variation-min-shift"};
-static const std::string INPUT_MAX_SHIFT {"filter-variation-max-shift"};
-static const std::string INPUT_SHIFT_SAMPLING {"filter-variation-shift-samples"};
 
 static Elements::Logging logger = Elements::Logging::getLogger("FilterVariationCoefficientGridOutputConfig");
 
@@ -56,23 +52,15 @@ FilterVariationCoefficientGridOutputConfig::FilterVariationCoefficientGridOutput
   declareDependency<IntermediateDirConfig>();
   declareDependency<IgmConfig>();
   declareDependency<ModelNormalizationConfig>();
-
 }
 
 auto FilterVariationCoefficientGridOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Compute Filter Variation Coefficient Grid options", {
-    {INPUT_MIN_SHIFT.c_str(), boost::program_options::value<double>()->default_value(-100.0),
-        "The maximum shift used to compute the filter variation coefficients (default -100 Angstrom)"},
-    {INPUT_MAX_SHIFT.c_str(), boost::program_options::value<double>()->default_value(100.0),
-        "The maximum shift used to compute the filter variation coefficients (default 100 Angstrom)"},
-    {INPUT_SHIFT_SAMPLING.c_str(), boost::program_options::value<int>()->default_value(200),
-      "The number of shifts used to compute the filter variation coefficients (default 200)"}
-  }}, {"Output Filter Variation Coefficient Grid options", {
-      {OUTPUT_CORRECTION_COEFFICIENT_GRID.c_str(), boost::program_options::value<std::string>(),
-          "The filename of the file to export the filter variation coefficient grid"},
-      {OUTPUT_CORRECTION_COEFFICIENT_GRID_FORMAT.c_str(), boost::program_options::value<std::string>()->default_value("BINARY"),
-        "The output format for the model grid. Possible values: BINARY, TEXT"}
-    }}};
+  return {
+      {"Output Filter Variation Coefficient Grid options",
+       {{OUTPUT_CORRECTION_COEFFICIENT_GRID.c_str(), boost::program_options::value<std::string>(),
+         "The filename of the file to export the filter variation coefficient grid"},
+        {OUTPUT_CORRECTION_COEFFICIENT_GRID_FORMAT.c_str(), boost::program_options::value<std::string>()->default_value("BINARY"),
+         "The output format for the model grid. Possible values: BINARY, TEXT"}}}};
 }
 
 static std::string getFilenameFromOptions(const std::map<std::string, po::variable_value>& options,
@@ -153,10 +141,6 @@ void FilterVariationCoefficientGridOutputConfig::initialize(const UserValues& ar
     inner_output_function(filename, igm_config, lum_filter, grid_map);
     local_logger.info() << "Created the model grid in file " << filename;
   };
-
-  m_min_shift = args.at(INPUT_MIN_SHIFT).as<double>();
-  m_max_shift = args.at(INPUT_MAX_SHIFT).as<double>();
-  m_shift_number = args.at(INPUT_SHIFT_SAMPLING).as<int>();
 }
 
 
@@ -167,27 +151,6 @@ void FilterVariationCoefficientGridOutputConfig::initialize(const UserValues& ar
 
   return m_output_function;
 }
-
-double FilterVariationCoefficientGridOutputConfig::getMinShift(){
-   if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-       throw Elements::Exception() << "Call to getMinShift() on a not initialized instance.";
-   }
-   return m_min_shift;
- }
-
-double FilterVariationCoefficientGridOutputConfig::getMaxShift(){
-   if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-       throw Elements::Exception() << "Call to getMaxShift() on a not initialized instance.";
-   }
-   return m_max_shift;
- }
-
-int FilterVariationCoefficientGridOutputConfig::getShiftNumber(){
-   if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-       throw Elements::Exception() << "Call to getShiftNumber() on a not initialized instance.";
-   }
-   return m_shift_number;
- }
 
 } // PhzConfiguration namespace
 } // Euclid namespace

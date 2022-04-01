@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -27,21 +27,17 @@
 #include "ElementsKernel/Logging.h"
 #include "PhzUtils/FileUtils.h"
 #include "PhzConfiguration/ComputeFilterVariationCoefficientConfig.h"
-
-
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/ResultsDirConfig.h"
 #include "PhzConfiguration/PhzOutputDirConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
-
-
 #include "PhzConfiguration/MilkyWayReddeningConfig.h"
 #include "PhzConfiguration/MultithreadConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/FilterVariationCoefficientGridOutputConfig.h"
-
+#include "PhzConfiguration/FilterVariationConfig.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -63,6 +59,7 @@ ComputeFilterVariationCoefficientConfig::ComputeFilterVariationCoefficientConfig
   declareDependency<MultithreadConfig>();
   declareDependency<FilterProviderConfig>();
   declareDependency<ModelNormalizationConfig>();
+  declareDependency<FilterVariationConfig>();
 }
 
 

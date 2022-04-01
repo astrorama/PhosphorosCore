@@ -61,9 +61,7 @@ public:
        const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
        IgmAbsorptionFunction igm_absorption_function,
        NormalizationFunction normalization_function,
-       double delta_lambda_min = -100.0,
-       double delta_lambda_max = 100.0,
-       int sample_number = 200);
+       std::vector<double> delta_lambda);
 
   virtual ~FilterVariationSingleGridCreator();
 
@@ -73,11 +71,6 @@ public:
                const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
                const PhysicsUtils::CosmologicalParameters& cosmology,
                ProgressListener progress_listener = ProgressListener{});
-
-/**
- * compute the sampling: return a vector of "numbers" values between "min" and "max"
- */
- static std::vector<double> computeSampling(double min, double max, int numbers);
 
  /**
   * Shift the filter of value "shift"
