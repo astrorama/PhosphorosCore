@@ -17,11 +17,19 @@ void CatalogHandler::handleSources(SourceIter source_begin, SourceIter source_en
   if (progress_listener)
     progress_listener(progress, total_sources);
   for (SourceIter source=source_begin; source != source_end; ++source) {
-    // Get the PHZ results
-    auto phz_results = m_source_phz_func(*source);
-    // Pass them to the handler
-    out_handler.handleSourceOutput(*source, phz_results);
-    if (progress_listener)
+
+   try {
+	   // Get the PHZ results
+	   auto phz_results = m_source_phz_func(*source);
+	   // Pass them to the handler
+	   out_handler.handleSourceOutput(*source, phz_results);
+   } catch (const Elements::Exception& e){
+       throw Elements::Exception() << "Exception while handling the source ID=" <<  (*source).getId() << " Exception : " << e.what();
+   } catch (...){
+       throw Elements::Exception() << "Exception while handling the source ID=" <<  (*source).getId();
+   }
+
+   if (progress_listener)
       progress_listener(++progress, total_sources);
   }
 }
