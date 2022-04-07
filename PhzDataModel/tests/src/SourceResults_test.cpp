@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( resultCreationAndRetrieval_new_elements ) {
 
   // Given
   SourceResults sr {};
-  auto& region = sr.set<SourceResultType::BEST_REGION>(1);
+  sr.set<SourceResultType::BEST_REGION>(1);
 
   // When
   auto& res = sr.get<SourceResultType::BEST_REGION>();
