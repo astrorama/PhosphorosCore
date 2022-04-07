@@ -49,6 +49,7 @@ public:
 
   using ModelIteratorFunctor = std::function<PhzDataModel::PhotometryGrid::const_iterator(const PhzDataModel::SourceResults&)>;
   using ScaleFunctor = std::function<double(const PhzDataModel::SourceResults&)>;
+  using RegonIndexFunctor = std::function<int(const PhzDataModel::SourceResults&)>;
 
   BestModel(PhzDataModel::GridType grid_type);
 
@@ -70,7 +71,7 @@ private:
   std::string m_column_prefix;
   ModelIteratorFunctor m_model_iterator_functor;
   ScaleFunctor m_scale_functor;
-
+  RegonIndexFunctor m_region_index_functior;
 
 }; /* End of BestModel class */
 

@@ -51,6 +51,23 @@ BOOST_AUTO_TEST_CASE( resultCreationAndRetrieval ) {
 
 //-----------------------------------------------------------------------------
 
+BOOST_AUTO_TEST_CASE( resultCreationAndRetrieval_new_elements ) {
+
+  // Given
+  SourceResults sr {};
+  auto& region = sr.set<SourceResultType::BEST_REGION>(1);
+
+  // When
+  auto& res = sr.get<SourceResultType::BEST_REGION>();
+
+  // Then
+  BOOST_CHECK_EQUAL(res, 1);
+
+}
+
+
+//-----------------------------------------------------------------------------
+
 BOOST_AUTO_TEST_CASE( copy ) {
 
   // Given
@@ -65,6 +82,7 @@ BOOST_AUTO_TEST_CASE( copy ) {
   BOOST_CHECK_EQUAL(res, scale);
 
 }
+
 
 //-----------------------------------------------------------------------------
 
