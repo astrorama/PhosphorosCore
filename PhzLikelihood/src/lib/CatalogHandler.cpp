@@ -5,6 +5,7 @@
  */
 
 #include "ElementsKernel/Logging.h"
+#include "ElementsKernel/Exception.h"
 #include "PhzLikelihood/CatalogHandler.h"
 #include "PhzLikelihood/ProcessModelGridFunctor.h"
 

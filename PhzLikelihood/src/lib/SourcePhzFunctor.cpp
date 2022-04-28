@@ -205,9 +205,11 @@ void normalizePdf(PhzDataModel::Pdf1D<AxisType>& pdf) {
     xs.push_back(iter.template axisValue<0>());
     ys.push_back(*iter);
   }
-
-  auto as_function = MathUtils::interpolate(xs, ys, MathUtils::InterpolationType::LINEAR);
-  double integral = MathUtils::integrate(*as_function, xs.front(), xs.back());
+  double integral=1.0;
+  if (xs.size() > 1) {
+	  auto as_function = MathUtils::interpolate(xs, ys, MathUtils::InterpolationType::LINEAR);
+	  integral = MathUtils::integrate(*as_function, xs.front(), xs.back());
+  }
   for (auto& cell : pdf) {
     cell /= integral;
   }
