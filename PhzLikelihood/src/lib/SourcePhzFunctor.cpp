@@ -405,14 +405,20 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
 
   // Find the result region which contains the model with the best likelihood
   std::string best_likelihood_region;
+  int best_likelihood_region_index=0;
+  int index=0;
   double best_region_likelihood = std::numeric_limits<double>::lowest();
   for (auto& pair : results.get<ResType::REGION_RESULTS_MAP>()){
     auto& iter = pair.second.get<RegResType::BEST_LIKELIHOOD_MODEL_ITERATOR>();
     if (*iter > best_region_likelihood) {
       best_likelihood_region = pair.first;
+      best_likelihood_region_index=index;
       best_region_likelihood = *iter;
     }
+    ++index;
   }
+  results.set<ResType::BEST_LIKELIHOOD_REGION>(best_likelihood_region_index);
+
   auto& best_likelihood_region_results = results.get<ResType::REGION_RESULTS_MAP>().at(best_likelihood_region);
 
   auto likelihood_post_it = best_likelihood_region_results.get<RegResType::BEST_LIKELIHOOD_MODEL_ITERATOR>();
@@ -426,21 +432,28 @@ PhzDataModel::SourceResults SourcePhzFunctor::operator()(const SourceCatalog::So
 
   // Find the result region which contains the model with the best posterior
   std::string best_region;
+
+  int best_region_index=0;
+  index=0;
   bool found = false;
   double best_region_posterior = std::numeric_limits<double>::lowest();
   for (auto& pair : results.get<ResType::REGION_RESULTS_MAP>()) {
     auto& iter = pair.second.get<RegResType::BEST_MODEL_ITERATOR>();
     if (*iter > best_region_posterior) {
+    	best_region_index=index;
       best_region = pair.first;
       best_region_posterior = *iter;
       found = true;
     }
+    ++index;
   }
 
   if (!found) {
+    best_region_index=0;
     best_region = results.get<ResType::REGION_RESULTS_MAP>().begin()->first;
     logger.warn() << "Source with id "<< source.getId() <<" has no best region result detected, using default one (first).";
   }
+  results.set<ResType::BEST_REGION>(best_region_index);
 
   auto& best_region_results = results.get<ResType::REGION_RESULTS_MAP>().at(best_region);
 

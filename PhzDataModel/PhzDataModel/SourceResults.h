@@ -70,7 +70,11 @@ enum class SourceResultType {
   /// The natural logarithm of the likelihood of the overall best fitted model on the posterior
   BEST_MODEL_LIKELIHOOD_LOG,
   // A map containing the results of all regions
-  REGION_RESULTS_MAP
+  REGION_RESULTS_MAP,
+  /// Index of the Region of the grid containing the overall best match
+  BEST_LIKELIHOOD_REGION,
+  /// Index of the Region of the grid containing the overall best match
+  BEST_REGION
 };
 
 using SourceResults = TypedEnumMap<SourceResultType>;
