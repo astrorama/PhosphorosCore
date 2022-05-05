@@ -22,6 +22,9 @@
  * @author Florian Dubath
  */
 
+#ifndef _PHZCONFIGURATION_GRIDFILEHELPER_H
+#define _PHZCONFIGURATION_GRIDFILEHELPER_H
+
 #include <string>
 #include <vector>
 #include <map>
@@ -66,3 +69,5 @@ static void outputFunction(const std::string &filename, PhzConfiguration::IgmCon
 
 }
 }
+
+#endif
