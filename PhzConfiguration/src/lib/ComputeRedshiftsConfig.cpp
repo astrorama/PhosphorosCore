@@ -92,7 +92,7 @@ namespace PhzConfiguration {
 
 
 
-static const std::string FULL_GRID_SAMPLING_FLAG {"full-PDF-samplig"};
+static const std::string FULL_GRID_SAMPLING_FLAG {"full-PDF-sampling"};
 static const std::string GRID_SAMPLING_NUMBER {"PDF-sample-number"};
 static const std::string SOURCES_NUMBER_PER_SAMPLING_FILE {"PDF-sample-file-source-number"};
 static const std::string CREATE_OUTPUT_LIKELIHOODS_FLAG {"create-output-likelihoods"};

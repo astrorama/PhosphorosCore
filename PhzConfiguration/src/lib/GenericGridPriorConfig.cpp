@@ -51,7 +51,7 @@ GenericGridPriorConfig::GenericGridPriorConfig(long manager_id) : Configuration(
 auto GenericGridPriorConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Generic Grid Prior options", {
     {(GENERIC_GRID_PRIOR).c_str(), po::value<std::vector<std::string>>(),
-        "A FITS file containing thee grids with the prior values"}
+        "A FITS file containing the grids with the prior values"}
   }}};
 }
 

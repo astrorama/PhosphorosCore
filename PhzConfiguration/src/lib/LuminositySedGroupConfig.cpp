@@ -59,7 +59,7 @@ static const std::string LUMINOSITY_SED_GROUP {"luminosity-sed-group"};
 auto LuminositySedGroupConfig::getProgramOptions () -> std::map<std::string, OptionDescriptionList> {
   return { {"SED group for the Luminosity Function options", {
         { (LUMINOSITY_SED_GROUP+"-*").c_str(), po::value<std::string>(),
-          "A SED Group defined errorby its name and the (comma separated) list of SED it contains."},
+          "A SED Group defined by its name and the (comma separated) list of SED it contains."},
       }}};
 }
 

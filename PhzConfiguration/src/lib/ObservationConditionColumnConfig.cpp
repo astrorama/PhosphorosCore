@@ -53,7 +53,7 @@ ObservationConditionColumnConfig::ObservationConditionColumnConfig(long manager_
 auto ObservationConditionColumnConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Galactic Correction Coefficient options", {
     {COLUMN_NAME_NAME.c_str(), po::value<std::string>()->default_value("NONE"),
-        "Name of the catalog column containing the dust column density (Galactic E(B-V) from Plank Map) in the direction of the source. If set and different from NONE, enable the Galactic reddening correction."},
+        "Name of the catalog column containing the dust column density (Galactic E(B-V) from Planck Map) in the direction of the source. If set and different from NONE, enable the Galactic reddening correction."},
     {DUST_MAP_SED_BPC.c_str(), po::value<double>()->default_value(1.018),
          "The band pass correction for the SED used for defining the dust column density map (default bpc_P14=1.018)"},
   }}};
