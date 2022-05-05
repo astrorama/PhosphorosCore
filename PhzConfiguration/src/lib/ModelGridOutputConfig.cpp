@@ -38,6 +38,7 @@
 #include "PhzDataModel/ArchiveFormat.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzConfiguration/ModelNormalizationConfig.h"
+#include "PhzConfiguration/GridFileHelper.h"
 
 
 namespace po = boost::program_options;
@@ -83,30 +84,6 @@ static std::string getFilenameFromOptions(const std::map<std::string, po::variab
   }
   return result.string();
 }
-
-template <typename OArchive>
-static void outputFunction(const std::string &filename, IgmConfig &igm_config, XYDataset::QualifiedName& luminosity_filter,
-                           const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
-  auto local_logger = Elements::Logging::getLogger("PhzOutput");
-  std::ofstream out {filename};
-  std::vector<XYDataset::QualifiedName> filter_list;
-  auto& filter_names_str = grid_map.begin()->second.getCellManager().filterNames();
-  std::copy(filter_names_str.begin(), filter_names_str.end(), std::back_inserter(filter_list));
-  OArchive boa {out};
-  // Store the info object describing the grids
-  PhzDataModel::PhotometryGridInfo info {
-    grid_map,
-    igm_config.getIgmAbsorptionType(),
-    luminosity_filter,
-    filter_list};
-  boa << info;
-  // Store the grids themselves
-  for (auto& pair : grid_map) {
-    GridContainer::gridExport<OArchive>(out, pair.second);
-  }
-  local_logger.info() << "Created the model grid in file " << filename;
-}
-
 
 void ModelGridOutputConfig::initialize(const UserValues& args) {
   // Extract file option
