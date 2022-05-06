@@ -24,7 +24,7 @@ elements_add_library(PhzExecutables src/lib/*.cpp
 
 find_package(Boost REQUIRED COMPONENTS program_options)
 elements_add_executable(PhosphorosComputeModelGrid src/program/ComputeModelGrid.cpp
-                     LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling)
+                     LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling PhzExecutables)
 elements_add_executable(PhosphorosComputeRedshifts src/program/ComputeRedshifts.cpp
                      LINK_LIBRARIES ElementsKernel Boost PhzExecutables)
 elements_add_executable(PhosphorosComputePhotometricCorrections src/program/ComputePhotometricCorrections.cpp
@@ -34,7 +34,7 @@ elements_add_executable(PhosphorosComputeModelSed src/program/ComputeModelSed.cp
 elements_add_executable(PhosphorosBuildReferenceSample src/program/BuildReferenceSample.cpp
                      LINK_LIBRARIES ElementsKernel PhzExecutables)
 elements_add_executable(PhosphorosComputeGalacticAbsorptionCoefficientGrid src/program/ComputeGalacticAbsorptionCoefficientGrid.cpp
-                     LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling PhzGalacticCorrection)
+                     LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling PhzGalacticCorrection PhzExecutables)
 elements_add_executable(PhosphorosComputeFilterVariationCoefficientGrid src/program/ComputeFilterVariationCoefficientGrid.cpp
                      LINK_LIBRARIES ElementsKernel Boost PhzConfiguration PhzDataModel PhzModeling PhzFilterVariation)
 elements_add_executable(PhzModelGrid2Fits src/program/PhzModelGrid2Fits.cpp

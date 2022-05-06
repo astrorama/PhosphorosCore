@@ -23,6 +23,7 @@
 #include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzModeling/NormalizationFunctorFactory.h"
+#include "PhzExecutables/ProgressReporter.h"
 
 
 using std::map;
@@ -37,31 +38,6 @@ static Elements::Logging logger = Elements::Logging::getLogger("ComputeGalacticA
 
 static long config_manager_id = getUniqueManagerId();
 
-class ProgressReporter {
-
-public:
-
-  ProgressReporter(const Elements::Logging& arg_logger) : m_logger{arg_logger} {
-  }
-
-  void operator()(size_t step, size_t total) {
-    int percentage_done = 100. * step / total;
-    auto now_time = std::chrono::system_clock::now();
-    auto time_diff = now_time - m_last_time;
-    if (percentage_done > m_last_progress || std::chrono::duration_cast<std::chrono::seconds>(time_diff).count() >= 5) {
-      m_last_progress = percentage_done;
-      m_last_time = now_time;
-      m_logger.info() << "Parameter space progress: " << percentage_done << " % ";
-    }
-  }
-
-private:
-
-  int m_last_progress = -1;
-  std::chrono::time_point<std::chrono::system_clock> m_last_time = std::chrono::system_clock::now();
-  Elements::Logging m_logger;
-
-};
 
 
 
@@ -133,7 +109,7 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
       normalizer_functor,
       miky_way_reddening_curve
     };
-    ProgressReporter progress_listener{logger};
+    Euclid::PhzExecutables::ProgressReporter progress_listener{logger, false};
     size_t already_done = 0;
     for (auto& grid_pair : model_phot_grid.region_axes_map) {
       logger.info() << "Correction computation for region '" << grid_pair.first << "'";
