@@ -53,7 +53,7 @@ ProgressReporter::ProgressReporter(const Elements::Logging& arg_logger, bool dis
 		}
 
 		m_last_done = step;
-		m_logger.info() << "Parameter space progress: " << percentage_done << " %" << std::fixed << std::setprecision(2)
+		m_logger.info() << "Parameter space progress: " << percentage_done << " % (" << std::fixed << std::setprecision(2)
 		    	                       << obj_per_sec << " cells/sec)";
       } else {
     	  m_logger.info() << "Parameter space progress: " << percentage_done << " %";
