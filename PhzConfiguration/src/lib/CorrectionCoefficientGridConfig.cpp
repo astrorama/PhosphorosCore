@@ -137,7 +137,6 @@ void CorrectionCoefficientGridConfig::initialize(const UserValues& args) {
             throw Elements::Exception() << "Filter " << f << " missing from the model grid";
           }
         }
-        throw Elements::Exception() << "Filter order on the correction grid does not match the model grid";
       }
     }
   }
