@@ -248,7 +248,7 @@ void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(const SourceCatalo
 
     // loggerPhz.info() << "Add info to index file ";
     std::string samp_file_name = getFileName(m_current_file_id);
-    m_index_row_list.push_back({{id, samp_file_name}, m_index_column_info});
+    m_index_row_list.push_back({{completeString(id, 30), samp_file_name}, m_index_column_info});
 
     ++m_counter;
 
