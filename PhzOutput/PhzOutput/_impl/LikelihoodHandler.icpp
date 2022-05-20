@@ -14,6 +14,8 @@
 #include <CCfits/CCfits>
 #include <random>
 #include <vector>
+#include <sstream>
+#include <iomanip>
 
 namespace fs = boost::filesystem;
 
@@ -180,6 +182,12 @@ void LikelihoodHandler<GridType, Sampler>::exportFullGrid(const SourceCatalog::S
   loggerPhz.debug() << "Created file " << filename << " for source " << id;
 }
 
+std::string completeString(std::string& in, int size) {
+	std::stringstream ss;
+	ss << std::setw(size) << in;
+	return ss.str();
+}
+
 template <PhzDataModel::RegionResultType GridType, typename Sampler>
 std::vector<Table::Row>
 LikelihoodHandler<GridType, Sampler>::drawSample(std::string source_id, const std::map<std::string, double>& region_volume,
@@ -188,12 +196,13 @@ LikelihoodHandler<GridType, Sampler>::drawSample(std::string source_id, const st
   std::mt19937       gen(rd());  // Standard mersenne_twister_engine seeded with rd()
   auto               sample = m_grid_sampler.drawSample(m_sample_number, region_volume, result_map, gen);
 
-  loggerPhz.debug() << "Add data to the sampling file ";
+  loggerPhz.debug() << "Add data to the sampling file " << source_id;
   std::vector<Table::Row> sampling_row_list;
   sampling_row_list.reserve(sample.size());
   for (auto& s : sample) {
     const auto&                        sed_qualified = s.sed.qualifiedName();
-    std::vector<Table::Row::cell_type> values{source_id, s.region_index, s.sed_index, s.z, s.red_index, s.ebv, s.alpha};
+
+    std::vector<Table::Row::cell_type> values{completeString(source_id, 30), s.region_index, s.sed_index, s.z, s.red_index, s.ebv, s.alpha};
     for (auto& param : m_param_config) {
       float param_value =
           float(std::get<0>(param.second.at(sed_qualified)) * s.alpha + std::get<1>(param.second.at(sed_qualified)));
