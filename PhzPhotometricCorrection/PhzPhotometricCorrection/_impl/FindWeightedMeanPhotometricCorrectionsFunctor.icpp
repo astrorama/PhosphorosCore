@@ -56,7 +56,7 @@ template <typename SourceIter>
   }
   for (auto& pair : result) {
     if ( total_weights[pair.first] == 0) {
-      weightedMeanlogger.warn()<< "The photometry band " << pair.first << " has no reliable source. Set the correction to 1";
+      weightedMeanlogger.warn()<< "The photometry band " << pair.first << " has no reliable source. It will not be fitted.";
       pair.second = 1.0;
     } else {
       pair.second /= total_weights[pair.first];
