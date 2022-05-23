@@ -55,12 +55,13 @@ private:
   Sampler                                    m_grid_sampler;
 
   std::string getFileName(int file_id);
+  void        createColumnsLists(const SourceCatalog::Source& first_source);
   void        createAndOpenSampleFile();
   void        closeSampleFile();
 
   void exportFullGrid(const SourceCatalog::Source& source, const PhzDataModel::SourceResults& results);
 
-  std::vector<Table::Row> drawSample(std::string source_id, const std::map<std::string, double>& region_volume,
+  std::vector<Table::Row> drawSample(SourceCatalog::Source::id_type source_id, const std::map<std::string, double>& region_volume,
                                      const std::map<std::string, PhzDataModel::RegionResults>& result_map);
 };
 
