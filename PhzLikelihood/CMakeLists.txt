@@ -23,12 +23,11 @@ elements_add_unit_test(ScaleFactorFunctor_test tests/src/ScaleFactorFunctor_test
                      LINK_LIBRARIES GMock PhzLikelihood
                      INCLUDE_DIRS GMock
                      TYPE Boost)
-
-elements_add_unit_test(ChiSquareLikelihoodLogarithm_test tests/src/ChiSquareLikelihoodLogarithm_test.cpp 
+elements_add_unit_test(ChiSquareLikelihoodLogarithm_test tests/src/ChiSquareLikelihoodLogarithm_test.cpp
                      LINK_LIBRARIES GMock PhzLikelihood
                      INCLUDE_DIRS GMock
                      TYPE Boost)
-elements_add_unit_test(LikelihoodAlgorithm_test tests/src/LikelihoodAlgorithm_test.cpp 
+elements_add_unit_test(LikelihoodAlgorithm_test tests/src/LikelihoodAlgorithm_test.cpp
                      LINK_LIBRARIES GMock PhzLikelihood
                      INCLUDE_DIRS GMock
                      TYPE Boost)
@@ -76,7 +75,11 @@ elements_add_unit_test(FixRedshiftProcessModelGridFunctor_test tests/src/FixReds
 elements_add_unit_test(GalacticAbsorptionProcessModelGridFunctor_test tests/src/GalacticAbsorptionProcessModelGridFunctor_test.cpp 
                      LINK_LIBRARIES PhzLikelihood
                      TYPE Boost)
-                                          
+
+elements_add_unit_test(FilterShiftProcessModelGridFunctor_test tests/src/FilterShiftProcessModelGridFunctor_test.cpp
+                     LINK_LIBRARIES PhzLikelihood
+                     TYPE Boost)
+
                      
 
 
