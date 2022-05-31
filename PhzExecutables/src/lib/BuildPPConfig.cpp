@@ -104,8 +104,8 @@ void BuildPPConfig::run(Euclid::Configuration::ConfigManager &config_manager) {
       if (added_seds.find(sed_iter) == added_seds.end()) {
         auto string_params = sed_provider_ptr->getParameter(sed_iter, keyword);
         auto param_map     = getParamMap(string_params);
-        std::string current_units = "";
         for (const std::string& pp : pp_list) {
+          std::string current_units = "";
           if (param_map.find(pp) == param_map.end()) {
             throw Elements::Exception() << "Parameter " << pp << " is not defined for the SED " << sed_iter.qualifiedName();
           }
