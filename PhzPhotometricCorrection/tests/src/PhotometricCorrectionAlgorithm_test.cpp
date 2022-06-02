@@ -24,7 +24,7 @@ using namespace Euclid::SourceCatalog;
 struct PhotometricCorrectionAlgorithm_Fixture {
   
   double tolerance {1E-10};
-      
+  // The last sources has photometry which are flagged and must not be take into account for the computation
   vector<Source> sources {
     {1, {shared_ptr<Attribute>{new Photometry{make_shared<vector<string>>(
         initializer_list<string>{"Filter1", "Filter2"}),
@@ -37,14 +37,18 @@ struct PhotometricCorrectionAlgorithm_Fixture {
         vector<FluxErrorPair>{   {4.1, 0.1}, {4.2, 0.2}}}}}},
     {4, {shared_ptr<Attribute>{new Photometry{make_shared<vector<string>>(
         initializer_list<string>{"Filter1", "Filter2"}),
-        vector<FluxErrorPair>{   {3.1, 0.1}, {3.2, 0.2}}}}}}
+        vector<FluxErrorPair>{   {3.1, 0.1}, {3.2, 0.2}}}}}},
+    {5, {shared_ptr<Attribute>{new Photometry{make_shared<vector<string>>(
+	        initializer_list<string>{"Filter1", "Filter2"}),
+	        vector<FluxErrorPair>{   {-99, 0.1, true, false}, {200, -0.2, false, true}}}}}}
   };
   
   map<Source::id_type, double> scale_factors {
     {1, 1.5},
     {2, 2.5},
     {3, 4.5},
-    {4, 3.5}
+    {4, 3.5},
+    {5, 1.0}
   };
   
   map<Source::id_type, Photometry> models {
@@ -59,7 +63,10 @@ struct PhotometricCorrectionAlgorithm_Fixture {
         vector<FluxErrorPair>{   {.41, 0.},  {.42, 0.}}}},
     {4, Photometry{make_shared<vector<string>>(
         initializer_list<string>{"Filter1", "Filter2"}),
-        vector<FluxErrorPair>{   {.31, 0.},  {.32, 0.}}}}
+        vector<FluxErrorPair>{   {.31, 0.},  {.32, 0.}}}},
+    {5, Photometry{make_shared<vector<string>>(
+		initializer_list<string>{"Filter1", "Filter2"}),
+		vector<FluxErrorPair>{   {.51, 0.},  {.52, 0.}}}}
   };
   
 };
