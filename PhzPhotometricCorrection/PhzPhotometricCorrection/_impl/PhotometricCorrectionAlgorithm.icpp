@@ -19,8 +19,6 @@ namespace Euclid {
 namespace PhzPhotometricCorrection {
 
 
-static Elements::Logging log = Elements::Logging::getLogger("PhotometricCorrectionAlgoIcpp");
-
 template <typename SourceIter, typename ModelPhot>
 static std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type,
                 PhzDataModel::PhotometricCorrectionMap>
@@ -79,12 +77,9 @@ createSourcePhotCorrMap(
       auto model_ptr = model_photometry.find(source_iter.filterName());
       // Skip photometries which are upper limit or missing
       if (!source_iter->missing_photometry_flag && !source_iter->upper_limit_flag) {
-
-      	log.info()<< "Valid Original:" <<(*source_iter).flux <<" fitted:" << scale->second * model_ptr->flux ;
         source_phot_corr[source_iter.filterName()] =
             scale->second * model_ptr->flux / (*source_iter).flux;
       } else {
-    	log.info()<< "Invalid missing:"<<model_ptr->missing_photometry_flag << " upper:"<<model_ptr->upper_limit_flag;
         source_phot_corr[source_iter.filterName()] = NAN;
       }
     }
