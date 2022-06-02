@@ -94,7 +94,7 @@ auto NzPriorConfig::getProgramOptions() -> std::map<std::string, OptionDescripti
            "Value for the Z0 param for T1 region (Default=0.431)"},
     {NZ_PRIOR_Z0T2.c_str(), po::value<double>()->default_value(0.390),
           "Value for the Z0 param for T2 region (Default=0.390)"},
-    {NZ_PRIOR_Z0T3.c_str(), po::value<double>()->default_value(0.431),
+    {NZ_PRIOR_Z0T3.c_str(), po::value<double>()->default_value(0.300),
            "Value for the Z0 param for T3 region (Default=0.300)"},
 
     {NZ_PRIOR_KMT1.c_str(), po::value<double>()->default_value(0.091),
