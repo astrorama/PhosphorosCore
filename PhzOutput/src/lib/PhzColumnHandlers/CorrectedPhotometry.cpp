@@ -95,7 +95,7 @@ std::vector<double> CorrectedPhotometry::computeCorrectionFactorForModel (
 	auto photometry = source.getAttribute<SourceCatalog::Photometry>();
 //	auto observation_condition_ptr = source.getAttribute<PhzDataModel::ObservationCondition>();
 	std::vector<double> full_correction(photometry->size(), 1.0);
-/*
+
 	// Filter shift
     if (m_correct_filter) {
 		auto filter_map_iter = m_filter_shift_coef_grid.cbegin();
@@ -113,9 +113,9 @@ std::vector<double> CorrectedPhotometry::computeCorrectionFactorForModel (
 			++coef_iter;
 		}
     }
-*/
+
 	// Galactic reddening
-  /*  if (m_correct_galactic) {
+    if (m_correct_galactic) {
 		auto gal_map_iter = m_galactic_correction_coef_grid.cbegin();
 		for (size_t i=0; i<region_index; ++i) {
 			++gal_map_iter;
@@ -131,7 +131,7 @@ std::vector<double> CorrectedPhotometry::computeCorrectionFactorForModel (
 			++gal_coef_iter;
 		}
     }
-*/
+
 	return full_correction;
 }
 
@@ -153,7 +153,6 @@ std::vector<Table::Row::cell_type> CorrectedPhotometry::convertResults(
 
 	  correction = computeCorrectionFactorForModel(source, region_index, best_fit_model);
   }
-
 
   auto corr_iter = correction.begin();
   for (auto iter = photometry->begin(); iter != photometry->end(); ++iter) {
