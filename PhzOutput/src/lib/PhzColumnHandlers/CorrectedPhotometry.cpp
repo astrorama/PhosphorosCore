@@ -93,9 +93,9 @@ std::vector<double> CorrectedPhotometry::computeCorrectionFactorForModel (
                                        size_t region_index,
 		                               const PhzDataModel::PhotometryGrid::const_iterator model) const {
 	auto photometry = source.getAttribute<SourceCatalog::Photometry>();
-	auto observation_condition_ptr = source.getAttribute<PhzDataModel::ObservationCondition>();
+//	auto observation_condition_ptr = source.getAttribute<PhzDataModel::ObservationCondition>();
 	std::vector<double> full_correction(photometry->size(), 1.0);
-
+/*
 	// Filter shift
     if (m_correct_filter) {
 		auto filter_map_iter = m_filter_shift_coef_grid.cbegin();
@@ -113,9 +113,9 @@ std::vector<double> CorrectedPhotometry::computeCorrectionFactorForModel (
 			++coef_iter;
 		}
     }
-
+*/
 	// Galactic reddening
-    if (m_correct_galactic) {
+  /*  if (m_correct_galactic) {
 		auto gal_map_iter = m_galactic_correction_coef_grid.cbegin();
 		for (size_t i=0; i<region_index; ++i) {
 			++gal_map_iter;
@@ -131,7 +131,7 @@ std::vector<double> CorrectedPhotometry::computeCorrectionFactorForModel (
 			++gal_coef_iter;
 		}
     }
-
+*/
 	return full_correction;
 }
 
@@ -144,17 +144,20 @@ std::vector<Table::Row::cell_type> CorrectedPhotometry::convertResults(
   std::vector<Table::Row::cell_type> result {};
 
   std::vector<double> correction(photometry->size(), 1);
+
+  if (m_do_marginalize) {
+	  // todo
+  } else {
+	  PhzDataModel::PhotometryGrid::const_iterator best_fit_model = sourceResult.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
+	  size_t region_index = sourceResult.get<PhzDataModel::SourceResultType::BEST_REGION>();
+
+	  correction = computeCorrectionFactorForModel(source, region_index, best_fit_model);
+  }
+
+
   auto corr_iter = correction.begin();
   for (auto iter = photometry->begin(); iter != photometry->end(); ++iter) {
 	  SourceCatalog::FluxErrorPair new_flux_error {*iter};
-	  if (m_do_marginalize) {
-		  // todo
-	  } else {
-		  PhzDataModel::PhotometryGrid::const_iterator best_fit_model = sourceResult.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
-		  size_t region_index = sourceResult.get<PhzDataModel::SourceResultType::BEST_REGION>();
-
-		  correction = computeCorrectionFactorForModel(source, region_index, best_fit_model);
-	  }
 	  if (!new_flux_error.missing_photometry_flag){
 		  new_flux_error.flux *= *corr_iter;
 		  if (new_flux_error.upper_limit_flag){
