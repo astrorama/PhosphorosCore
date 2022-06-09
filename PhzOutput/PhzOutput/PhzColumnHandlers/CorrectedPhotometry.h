@@ -64,6 +64,10 @@ public:
 		                                              size_t region_index,
 		                                              const PhzDataModel::PhotometryGrid::const_iterator model) const;
 
+  static std::vector<double> sumVector(double m1, std::vector<double> v1,  double m2, std::vector<double> v2);
+
+  static std::vector<double> multVector(double m1, std::vector<double> v1);
+
 private:
   std::vector<Table::ColumnInfo::info_type> m_columnInfo {};
   std::vector<std::size_t> m_indices {};

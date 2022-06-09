@@ -93,7 +93,7 @@ std::vector<double> CorrectedPhotometry::computeCorrectionFactorForModel (
                                        size_t region_index,
 		                               const PhzDataModel::PhotometryGrid::const_iterator model) const {
 	auto photometry = source.getAttribute<SourceCatalog::Photometry>();
-//	auto observation_condition_ptr = source.getAttribute<PhzDataModel::ObservationCondition>();
+	auto observation_condition_ptr = source.getAttribute<PhzDataModel::ObservationCondition>();
 	std::vector<double> full_correction(photometry->size(), 1.0);
 
 	// Filter shift
@@ -135,22 +135,56 @@ std::vector<double> CorrectedPhotometry::computeCorrectionFactorForModel (
 	return full_correction;
 }
 
+std::vector<double> CorrectedPhotometry::sumVector(double m1, std::vector<double> v1,  double m2, std::vector<double> v2) {
+	std::vector<double> result{};
+	for (size_t index = 0; index < v1.size(); ++index) {
+		result.push_back(m1*v1[index] + m2*v2[index] );
+	}
+
+	return result;
+}
+
+
+std::vector<double> CorrectedPhotometry::multVector(double m1, std::vector<double> v1) {
+	std::vector<double> result{};
+	for (size_t index = 0; index < v1.size(); ++index) {
+		result.push_back(m1*v1[index]);
+	}
+
+	return result;
+}
+
 std::vector<Table::Row::cell_type> CorrectedPhotometry::convertResults(
                   const SourceCatalog::Source& source,
                   const PhzDataModel::SourceResults& sourceResult) const {
   
   auto photometry =	source.getAttribute<SourceCatalog::Photometry>();
-
   std::vector<Table::Row::cell_type> result {};
-
   std::vector<double> correction(photometry->size(), 1);
 
   if (m_do_marginalize) {
-	  // todo
+	  double normalization=0;
+	  std::vector<double> summed(photometry->size(), 1);
+	  auto& result_map = sourceResult.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>();
+
+	  size_t region_index=0;
+	  for(auto& region_result : result_map){
+		  auto& posterior_grid = region_result.second.get<PhzDataModel::RegionResultType::POSTERIOR_GRID>();
+		  auto posterior_iter = posterior_grid.begin();
+		  auto model_iter = region_result.second.get<PhzDataModel::RegionResultType::MODEL_GRID_REFERENCE>().get().begin();
+		  while (posterior_iter!=posterior_grid.end()){
+			  auto model_correction =  computeCorrectionFactorForModel(source, region_index, model_iter);
+			  normalization += (*posterior_iter);
+			  summed = sumVector(1.0, summed, *posterior_iter, model_correction);
+			  ++posterior_iter;
+			  ++model_iter;
+		  }
+		  ++region_index;
+	  }
+	  correction = multVector(1.0/normalization, summed);
   } else {
 	  PhzDataModel::PhotometryGrid::const_iterator best_fit_model = sourceResult.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
 	  size_t region_index = sourceResult.get<PhzDataModel::SourceResultType::BEST_REGION>();
-
 	  correction = computeCorrectionFactorForModel(source, region_index, best_fit_model);
   }
 
