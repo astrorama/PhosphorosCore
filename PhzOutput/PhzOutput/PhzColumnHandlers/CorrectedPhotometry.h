@@ -70,8 +70,6 @@ public:
 
 private:
   std::vector<Table::ColumnInfo::info_type> m_columnInfo {};
-  std::vector<std::size_t> m_indices {};
-  std::vector<std::string> m_filters {};
   bool m_do_marginalize;
   bool m_correct_filter;
   bool m_correct_galactic;
