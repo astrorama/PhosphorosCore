@@ -62,19 +62,15 @@ CorrectedPhotometry::CorrectedPhotometry(
     auto info = Table::ColumnInfo::info_type(map_filter.second.first+"_Corrected", typeid(double));
 
     m_columnInfo.push_back(info);
-    m_indices.push_back(*index);
     // error
      index = column_info.find(map_filter.second.second);
     if (index == nullptr) {
       throw Elements::Exception() << "Input catalog does not contain the column " << map_filter.second.second;
     }
 
-    info = info = Table::ColumnInfo::info_type(map_filter.second.second+"_Corrected", typeid(double));
+    info = Table::ColumnInfo::info_type(map_filter.second.second+"_Corrected", typeid(double));
 
     m_columnInfo.push_back(info);
-    m_indices.push_back(*index);
-    // Filter
-    m_filters.push_back(map_filter.first);
   }
 
   logger.info() << "Output corrected photometry = " << m_do_marginalize

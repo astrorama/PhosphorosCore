@@ -61,7 +61,7 @@ auto CorrectedPhotometryConfig::getProgramOptions() -> std::map<std::string, Opt
   return {{"Output options", {
     {ENABLE_CORRECTED_PHOTOMETRY.c_str(), po::value<std::string>()->default_value("NO"),
         "Output the corrected photometry. Possible values are 'NO' - Do not output photometry, "
-        "'BESTFIT' - Correct using SED of the best fit model, 'POSTERIOR' marginalize on the full posterior. Default:NO"}
+        "'BESTFIT' - Correct using SED of the best fit model, 'POSTERIOR' marginalize on the full posterior (slower). Default:NO"}
   }}};
 }
 
