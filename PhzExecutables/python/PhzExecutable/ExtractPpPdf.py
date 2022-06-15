@@ -134,7 +134,7 @@ def parsePdfRange(pp, min_data, max_data, input):
 def getPP(res_dir, pp_conf_file):
     pp_config_table = Table.read(join(res_dir, pp_conf_file), format='fits')
     pp=[]
-    for fl in pp_conf_file['PARAM_NAME']:
+    for fl in pp_config_table['PARAM_NAME']:
         if not fl.strip() in pp:
             pp.append(fl.strip())
     return pp
@@ -176,42 +176,44 @@ def outputRange(range_file, min_data, max_data):
     outTable['PP'] = list(min_data.keys())
     outTable['MIN'] = list(min_data.values())
     outTable['MAX'] = list(max_data.values())
-    outTable.write(range_file)
+    outTable.write(range_file, overwrite=True)
 
 #-------------------------- 
 def computeHisto1d(pp, samples, pdf_range, pdf_bin):
     histo = {}
-    for param in pp:
-        histo[param]=[]
-    all_object_id = list(samples[pp[0]].keys())
-    for obj_id in all_object_id:
+    if len(pp)>0:
         for param in pp:
-            curr_samples = samples[param][obj_id]
-            min_v = pdf_range[param][0]
-            max_v = pdf_range[param][1]
-            hist, bin_edges = np.histogram(curr_samples,bins= pdf_bin[param],range=(min_v,max_v), density=True)
-            histo[param].append(hist)
+            histo[param]=[]
+        all_object_id = list(samples[pp[0]].keys())
+        for obj_id in all_object_id:
+            for param in pp:
+                curr_samples = samples[param][obj_id]
+                min_v = pdf_range[param][0]
+                max_v = pdf_range[param][1]
+                hist, bin_edges = np.histogram(curr_samples,bins= pdf_bin[param],range=(min_v,max_v), density=True)
+                histo[param].append(hist)
     return histo
     
 #-------------------------- 
 def computeHisto2d(pdf_2d, samples, pdf_range, pdf_bin):
     histo = {}
-    for param in pdf_2d:
-        histo[param[0]+'_'+param[1]]=[]
-    all_object_id = list(samples[pdf_2d[0][0]].keys())
-    for obj_id in all_object_id:
+    if len(pdf_2d)>0:
         for param in pdf_2d:
-            key = param[0]+'_'+param[1]
-            curr_samples_x = samples[param[0]][obj_id]
-            curr_samples_y = samples[param[1]][obj_id]
-            min_v_x = pdf_range[param[0]][0]
-            max_v_x = pdf_range[param[0]][1]
-            min_v_y = pdf_range[param[1]][0]
-            max_v_y = pdf_range[param[1]][1]
-            bin_x = pdf_bin[param[0]]
-            bin_y = pdf_bin[param[1]]
-            hist, bin_edges_x, bin_edges_y = np.histogram2d(curr_samples_x, curr_samples_y, bins=[bin_x,bin_y], range=[[min_v_x, max_v_x],[min_v_y, max_v_y]], density=True)
-            histo[key].append(hist)
+            histo[param[0]+'_'+param[1]]=[]
+        all_object_id = list(samples[pdf_2d[0][0]].keys())
+        for obj_id in all_object_id:
+            for param in pdf_2d:
+                key = param[0]+'_'+param[1]
+                curr_samples_x = samples[param[0]][obj_id]
+                curr_samples_y = samples[param[1]][obj_id]
+                min_v_x = pdf_range[param[0]][0]
+                max_v_x = pdf_range[param[0]][1]
+                min_v_y = pdf_range[param[1]][0]
+                max_v_y = pdf_range[param[1]][1]
+                bin_x = pdf_bin[param[0]]
+                bin_y = pdf_bin[param[1]]
+                hist, bin_edges_x, bin_edges_y = np.histogram2d(curr_samples_x, curr_samples_y, bins=[bin_x,bin_y], range=[[min_v_x, max_v_x],[min_v_y, max_v_y]], density=True)
+                histo[key].append(hist)
     return histo
     
 #-------------------------- 
@@ -257,14 +259,14 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
     
 #-------------------------- 
 def mainMethod(args):# Read and check input
-    pp = getPP(args.result_dir, args.hysical_parameter_config)
+    pp = getPP(args.result_dir, args.physical_parameter_config)
     pdf_1d, pdf_2d = parsePdfList(pp, args.pdf_list)
     pdf_bin = parsePdfBin(pp, args.pdf_bin)
     
     file_list = getSampleFileList(args.result_dir, args.posterior_folder, args.index_file)
     
     do_get_sample = args.output_pdf_file != ''    
-    samples, min_data, max_data = getData(pp, filelist, args.result_dir, args.posterior_folder, do_get_sample)
+    samples, min_data, max_data = getData(pp, file_list, args.result_dir, args.posterior_folder, do_get_sample)
 
     if args.output_range_file != '':
         outputRange(args.output_range_file, min_data, max_data)

@@ -399,6 +399,8 @@ class TestExtractPpPdf(object):
         assert histo['PP1'][0][7] == 0.1
         assert histo['PP1'][0][8] == 0.1
         assert histo['PP1'][0][9] == 0
+        
+        histo = worker.computeHisto1d([], samples, pdf_range, pdf_bin)
        
          
     def test_computeHisto2d(self):
@@ -415,6 +417,9 @@ class TestExtractPpPdf(object):
         assert histo['PP1_PP2'][0][0,0] == 0
         np.testing.assert_almost_equal(histo['PP1_PP2'][0][1,0], 0.12)
         np.testing.assert_almost_equal(histo['PP1_PP2'][0][4,4], 0.36)
+        
+        
+        histo = worker.computeHisto2d([], samples, pdf_range, pdf_bin)
         
         
     def test_outputPDF(self):
