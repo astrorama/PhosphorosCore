@@ -99,16 +99,15 @@ def parsePdfBin(pp, input):
         for el in raw.split(','):
             pieces = el.split(':')
             if len(pieces) == 2 and pieces[1].isdigit():
-                elem[pieces[0]]= pieces[1]
+                elem[pieces[0]]= int(pieces[1])
     for param in pp:
         if not param in elem.keys():
-           logger.info('')
            elem[param] = 50
     unknow = []       
     for param in elem.keys():
-        if not param in pp.keys():
+        if not param in pp:
             unknow.append(param)
-    for param in inknow:
+    for param in unknow:
         del elem[param]
     return elem
     
@@ -119,16 +118,15 @@ def parsePdfRange(pp, min_data, max_data, input):
         for el in raw.split(','):
             pieces = el.split(':')
             if len(pieces) == 3 and pieces[1].isdigit() and pieces[2].isdigit():
-                elem[pieces[0]]= [pieces[1], pieces[2]]
+                elem[pieces[0]]= [float(pieces[1]), float(pieces[2])]
     for param in pp:
         if not param in elem.keys():
-           logger.info('')
            elem[param] = [min_data[param], max_data[param]]
     unknow = []       
     for param in elem.keys():
-        if not param in pp.keys():
+        if not param in pp:
             unknow.append(param)
-    for param in inknow:
+    for param in unknow:
         del elem[param]
     return elem
     
@@ -145,6 +143,7 @@ def getPP(res_dir, pp_conf_file):
 def getSampleFileList(res_dir, sample_folder, index_file):
     index_file = join(res_dir, sample_folder, index_file)
     filelist=[]
+    ref_index = Table.read(index_file)
     for fl in ref_index['FILE_NAME']:
         if not fl.strip() in filelist:
             filelist.append(fl.strip())
@@ -165,7 +164,7 @@ def getData(pp, filelist, res_dir, sample_folder, get_sample):
         object_unique_id = np.unique(sampling_table['OBJECT_ID'])
         for param in pp:
             if (get_sample):
-                for dat, idx in zip(np.split(sampling_table[param], object_unique_id), object_unique_id):
+                for dat, idx in zip(np.split(sampling_table[param], np.where(np.diff(sampling_table['OBJECT_ID']))[0]+1), object_unique_id):
                     samples[param][idx]=np.array(dat)
             min_data[param] = min(np.min(sampling_table[param]),min_data[param]) 
             max_data[param] = max(np.max(sampling_table[param]),max_data[param]) 
@@ -174,13 +173,13 @@ def getData(pp, filelist, res_dir, sample_folder, get_sample):
 #-------------------------- 
 def outputRange(range_file, min_data, max_data):
     outTable = Table()
-    outTable['PP'] = min_data.keys()
-    outTable['MIN'] = min_data.values()
-    outTable['MAX'] = max_data.values()
+    outTable['PP'] = list(min_data.keys())
+    outTable['MIN'] = list(min_data.values())
+    outTable['MAX'] = list(max_data.values())
     outTable.write(range_file)
 
 #-------------------------- 
-def computeHisto1d(pp, samples, pdf_range):
+def computeHisto1d(pp, samples, pdf_range, pdf_bin):
     histo = {}
     for param in pp:
         histo[param]=[]
@@ -190,16 +189,16 @@ def computeHisto1d(pp, samples, pdf_range):
             curr_samples = samples[param][obj_id]
             min_v = pdf_range[param][0]
             max_v = pdf_range[param][1]
-            hist, bin_edges = np.histogram(curr_samples,bins= pp_bin[param],range=(min_v,max_v), density=True)
+            hist, bin_edges = np.histogram(curr_samples,bins= pdf_bin[param],range=(min_v,max_v), density=True)
             histo[param].append(hist)
     return histo
     
 #-------------------------- 
-def computeHisto2d(pdf_2d, samples, pdf_range):
+def computeHisto2d(pdf_2d, samples, pdf_range, pdf_bin):
     histo = {}
     for param in pdf_2d:
         histo[param[0]+'_'+param[1]]=[]
-    all_object_id = list(samples[pp[0]].keys())
+    all_object_id = list(samples[pdf_2d[0][0]].keys())
     for obj_id in all_object_id:
         for param in pdf_2d:
             key = param[0]+'_'+param[1]
@@ -209,15 +208,19 @@ def computeHisto2d(pdf_2d, samples, pdf_range):
             max_v_x = pdf_range[param[0]][1]
             min_v_y = pdf_range[param[1]][0]
             max_v_y = pdf_range[param[1]][1]
-            bin_x = pp_bin[param[0]]
-            bin_y = pp_bin[param[1]]
+            bin_x = pdf_bin[param[0]]
+            bin_y = pdf_bin[param[1]]
             hist, bin_edges_x, bin_edges_y = np.histogram2d(curr_samples_x, curr_samples_y, bins=[bin_x,bin_y], range=[[min_v_x, max_v_x],[min_v_y, max_v_y]], density=True)
             histo[key].append(hist)
     return histo
     
 #-------------------------- 
 def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf_bin, out_file):
-    all_object_id = list(samples[pdf_1d[0]].keys())
+    all_object_id=[]
+    if len(pdf_1d)>0:
+        all_object_id = list(samples[pdf_1d[0]].keys())
+    elif len(pdf_2d)>0:
+        all_object_id = list(samples[pdf_2d[0][0]].keys())
     outTable = Table()
     outTable['OBJECT_ID'] = all_object_id
     for param in pdf_1d:
@@ -225,9 +228,14 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
 
     for param in pdf_2d:
         key = param[0]+'_'+param[1]
-        outTable[key] = np.reshape(histo2d[key], (histo2d[key].shape()[0] * histo2d[key].shape()[1], 1)) 
-    table_hdu = fits.TableHDU(data=outTable)
-    hdul = fits.HDUList([table_hdu])
+        np_array = np.array(histo2d[key])
+        print( np.reshape(np_array,  (np_array.shape[0] * np_array.shape[1])) )
+        outTable[key] = np.reshape(np_array, (1, (np_array.shape[0] * np_array.shape[1]))) 
+    
+    outTable.write(out_file)
+    hdul = fits.open(out_file)
+    
+  
     full_pp = pdf_1d.copy()
     for param in pdf_2d:
         if not param[0] in full_pp:
@@ -242,9 +250,10 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
         nodes_str= [str(node) for node in nodes]
         nodes_str = ",".join(nodes_str)
         nodes_str = '['+nodes_str+']'
-        hdulist[1].header['SAMPLING_'+param] = nodes_str
+        hdul[1].header['SAMPLING_'+param] = nodes_str
     
-    hdulist.writeto(out_file, overwrite=True)
+    hdul.writeto(out_file, overwrite=True)
+
     
 #-------------------------- 
 def mainMethod(args):# Read and check input
@@ -262,8 +271,8 @@ def mainMethod(args):# Read and check input
     
     if do_get_sample:
         pdf_range = parsePdfRange(pp, min_data, max_data, args.pdf_range)
-        histo1d = computeHisto1d(pdf_1d, samples, pdf_range)
-        histo2d = computeHisto2d(pdf_2d, samples, pdf_range)
+        histo1d = computeHisto1d(pdf_1d, samples, pdf_range, pdf_bin)
+        histo2d = computeHisto2d(pdf_2d, samples, pdf_range, pdf_bin)
         outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf_bin, args.output_pdf_file)
     
     
