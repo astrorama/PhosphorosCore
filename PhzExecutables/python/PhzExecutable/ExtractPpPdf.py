@@ -234,7 +234,7 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
         print( np.reshape(np_array,  (np_array.shape[0] * np_array.shape[1])) )
         outTable[key] = np.reshape(np_array, (1, (np_array.shape[0] * np_array.shape[1]))) 
     
-    outTable.write(out_file)
+    outTable.write(out_file, overwrite=True)
     hdul = fits.open(out_file)
     
   
@@ -252,7 +252,8 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
         nodes_str= [str(node) for node in nodes]
         nodes_str = ",".join(nodes_str)
         nodes_str = '['+nodes_str+']'
-        hdul[1].header['SAMPLING_'+param] = nodes_str
+        name = ('S_'+param)[:8]
+        hdul[1].header[name] = nodes_str
     
     hdul.writeto(out_file, overwrite=True)
 
