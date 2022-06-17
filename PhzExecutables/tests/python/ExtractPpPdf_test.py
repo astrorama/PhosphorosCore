@@ -124,6 +124,8 @@ class TestExtractPpPdf(object):
         assert pdf_2d[0][1]=='PP2'  
                 
         # REDSHIFT case
+        
+        pp=['PP1','PP2','REDSHIFT']   
         pdf_1d, pdf_2d = worker.parsePdfList(pp, ['PP1_REDSHIFT,REDSHIFT'])
         assert len(pdf_1d)==1 
         assert pdf_1d[0]=='REDSHIFT'
@@ -429,7 +431,7 @@ class TestExtractPpPdf(object):
         pdf_1d = ['PP1']
         
         histo2d = {}
-        histo2d['PP1_PP2']=[[0.0,0.1,0.1,0.1,0.3],[0.1,0.0,0.0,0.0,0.2]]
+        histo2d['PP1_PP2']=[[[0.0,0.1,0.1,0.1,0.3],[0.1,0.0,0.0,0.0,0.2]]]
         pdf_2d = [['PP1','PP2']]
         
         min_data={'PP1':0,'PP2':0}
@@ -467,8 +469,8 @@ class TestExtractPpPdf(object):
         assert t_read[ 'PP1_PP2'][0][9] == 0.2
 
   
-        assert hdul[1].header['SAMPLING_PP1'] == '[0.0,1.25,2.5,3.75,5.0]'
-        assert hdul[1].header['SAMPLING_PP2'] == '[0.0,2.0]'
+        assert hdul[1].header['S_PP1'] == '[0.0,1.25,2.5,3.75,5.0]'
+        assert hdul[1].header['S_PP2'] == '[0.0,2.0]'
         
         
         
@@ -481,8 +483,8 @@ class TestExtractPpPdf(object):
         assert 'OBJECT_ID' in t_read.colnames
         assert 'PP1' in t_read.colnames
         assert len(t_read) == 1
-        assert hdul[1].header['SAMPLING_PP1'] == '[0.0,1.25,2.5,3.75,5.0]'
-        assert not 'SAMPLING_PP2' in hdul[1].header.keys() 
+        assert hdul[1].header['S_PP1'] == '[0.0,1.25,2.5,3.75,5.0]'
+        assert not 'S_PP2' in hdul[1].header.keys() 
     
         # only 2d
         with TempDir() as idx_d:
@@ -493,8 +495,8 @@ class TestExtractPpPdf(object):
         assert 'OBJECT_ID' in t_read.colnames
         assert 'PP1_PP2' in t_read.colnames
         assert len(t_read) == 1          
-        assert hdul[1].header['SAMPLING_PP1'] == '[0.0,1.25,2.5,3.75,5.0]'
-        assert hdul[1].header['SAMPLING_PP2'] == '[0.0,2.0]'
+        assert hdul[1].header['S_PP1'] == '[0.0,1.25,2.5,3.75,5.0]'
+        assert hdul[1].header['S_PP2'] == '[0.0,2.0]'
          
          
          

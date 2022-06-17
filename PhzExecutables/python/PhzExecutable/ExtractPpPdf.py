@@ -46,15 +46,17 @@ def defineSpecificProgramOptions():
                         help='Name of the file containing the Physical Parameter config (default="PhysicalParameterConfig.fits")')
     parser.add_argument('-pf','--posterior-folder', type=str, default='posteriors',
                         help='Name of the folder containing the sampling (default="posteriors")')
+    parser.add_argument('-z','--add-redshift', type=str, default='',
+                        help='If set add the redshift to the PP')
     parser.add_argument('-if','--index-file', type=str, default='Index_File_posterior.fits',
                         help='Name of the sampling\'s index file (default="Index_File_posterior.fits")')   
     parser.add_argument('-orf','--output-range-file', type=str, default='',
                         help='Path to the file containing the ranges of the PP, if not set the file is not produced')                 
-    parser.add_argument('-pb','--pdf-bin', nargs='+', action='append', default=[],
+    parser.add_argument('-pb','--pdf-bin', action='append', default=[],
                         help='Number of bin for each PP, use the  syntax <ppname>:<number>,<ppname>:<number>,...,<ppname>:<number>. If a pp is not provided the default value is 50')
-    parser.add_argument('-pr','--pdf-range', nargs='+', action='append', default=[],  
+    parser.add_argument('-pr','--pdf-range', action='append', default=[],  
                         help='Range for the binning of the PP, use the syntax <ppname>:<min>:<max>,<ppname>:<min>:<max>,...,<ppname>:<min>:<max>. If a pp is not provided the default value is the extremal range of this pp') 
-    parser.add_argument('-pl','--pdf-list', nargs='+', action='append', default=[],  
+    parser.add_argument('-pl','--pdf-list', action='append', default=[],  
                         help='list of 1d or 2d pdf to be produced, syntax is <pp1>,<pp1>_<pp2>,... where pp can be any of the physical paramater or the redshift (REDSHIFT), if not provided the tool produce 1d pdf for each pp. ')   
     parser.add_argument('-opf','--output-pdf-file', type=str, default='',
                         help='Path to the file containing the PP\'s pdf, if not set the file is not produced')
@@ -63,7 +65,6 @@ def defineSpecificProgramOptions():
     
 def parsePdfList(pp, input): 
     full_list = pp[:] 
-    full_list.append('REDSHIFT')  
     pdf_1d = []
     pdf_2d = []
     for raw in input:
@@ -137,6 +138,8 @@ def getPP(res_dir, pp_conf_file):
     for fl in pp_config_table['PARAM_NAME']:
         if not fl.strip() in pp:
             pp.append(fl.strip())
+    if not 'REDSHIFT' in pp:
+        pp.append('REDSHIFT')  
     return pp
         
 #-------------------------- 
@@ -158,8 +161,10 @@ def getData(pp, filelist, res_dir, sample_folder, get_sample):
         samples[param]={}
         min_data[param]=1e99
         max_data[param]=-1e99
-        
+     
+    f_index=1    
     for fl in filelist:
+        logger.info('Processing sampling file '+str(f_index)+' of '+str(len(filelist)))
         sampling_table = Table.read(join(res_dir,sample_folder,str(fl)))
         object_unique_id = np.unique(sampling_table['OBJECT_ID'])
         for param in pp:
@@ -168,6 +173,7 @@ def getData(pp, filelist, res_dir, sample_folder, get_sample):
                     samples[param][idx]=np.array(dat)
             min_data[param] = min(np.min(sampling_table[param]),min_data[param]) 
             max_data[param] = max(np.max(sampling_table[param]),max_data[param]) 
+        f_index+=1;
     return samples, min_data, max_data
 
 #-------------------------- 
@@ -231,8 +237,8 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
     for param in pdf_2d:
         key = param[0]+'_'+param[1]
         np_array = np.array(histo2d[key])
-        print( np.reshape(np_array,  (np_array.shape[0] * np_array.shape[1])) )
-        outTable[key] = np.reshape(np_array, (1, (np_array.shape[0] * np_array.shape[1]))) 
+        # print(np_array.shape)
+        outTable[key] = np.reshape(np_array, (np_array.shape[0], (np_array.shape[1] * np_array.shape[2]))) 
     
     outTable.write(out_file, overwrite=True)
     hdul = fits.open(out_file)
@@ -267,6 +273,8 @@ def mainMethod(args):# Read and check input
     file_list = getSampleFileList(args.result_dir, args.posterior_folder, args.index_file)
     
     do_get_sample = args.output_pdf_file != ''    
+    if len(args.add_redshift)>0 and not 'REDSHIFT' in pp:
+        pp.append('REDSHIFT')
     samples, min_data, max_data = getData(pp, file_list, args.result_dir, args.posterior_folder, do_get_sample)
 
     if args.output_range_file != '':
