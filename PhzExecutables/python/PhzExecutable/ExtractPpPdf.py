@@ -133,7 +133,7 @@ def parsePdfRange(pp, min_data, max_data, input):
     
 #-------------------------- 
 def getPP(res_dir, pp_conf_file):
-    pp_config_table = Table.read(join(res_dir, pp_conf_file), format='fits')
+    pp_config_table = Table.read(join(res_dir, pp_conf_file))
     pp=[]
     units = {}
     for index in range(len(pp_config_table)):
