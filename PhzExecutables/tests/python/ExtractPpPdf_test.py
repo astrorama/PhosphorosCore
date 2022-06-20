@@ -281,12 +281,18 @@ class TestExtractPpPdf(object):
         
         with TempFile() as pp_f:
             t_PP.write(pp_f.path())
-            pp_read = worker.getPP('', pp_f.path())
+            pp_read, units_read = worker.getPP('', pp_f.path())
             
         assert len(pp_read) == 3 
         assert 'PP1' in pp_read
         assert 'PP2' in pp_read
         assert 'PP3' in pp_read
+        
+        assert len(units_read) == 3 
+        assert 'U_PP1' in units_read
+        assert 'U_PP2' in units_read
+        assert 'U_PP3' in units_read
+        assert False
          
     def test_getSampleFileList(self):
         t_sample = Table()
@@ -363,22 +369,27 @@ class TestExtractPpPdf(object):
     def test_outputRange(self):
         min_data={'PP1':0,'PP2':10,'PP3':-10}
         max_data={'PP1':100,'PP2':110,'PP3':90}
+        units={'PP1':"U_PP1",'PP2':"U_PP2",'PP3':"U_PP3"}
         with TempDir() as idx_d:
-            worker.outputRange(idx_d.path()+'/test.fits', min_data, max_data) 
+            worker.outputRange(idx_d.path()+'/test.fits', min_data, max_data, units) 
             t_read = Table.read(idx_d.path()+'/test.fits')
         assert len(t_read) == 3
         assert 'PP' in t_read.colnames
         assert 'MIN' in t_read.colnames
         assert 'MAX' in t_read.colnames
+        assert 'UNITS' in t_read.colnames
         assert t_read[0]['PP'] == 'PP1'
         assert t_read[0]['MIN'] == 0
         assert t_read[0]['MAX'] == 100
+        assert t_read[0]['UNITS'] == 'U_PP1'
         assert t_read[1]['PP'] == 'PP2'
         assert t_read[1]['MIN'] == 10
         assert t_read[1]['MAX'] == 110
+        assert t_read[1]['UNITS'] == 'U_PP2'
         assert t_read[2]['PP'] == 'PP3'
         assert t_read[2]['MIN'] == -10
         assert t_read[2]['MAX'] == 90
+        assert t_read[2]['UNITS'] == 'U_PP3'
          
     def test_computeHisto1d(self):
         pp=['PP1'] 
@@ -438,12 +449,13 @@ class TestExtractPpPdf(object):
         max_data={'PP1':5,'PP2':2}
         
         pdf_bin={'PP1':5,'PP2':2}
+        units={'PP1':"U_PP1",'PP2':"U_PP1"}
         
         samples = {'PP1':{'obj_1':[1.5,2.5,3.5,4.5,4.5,4.5,5.5,6.5,7.5,8.5]},'PP2':{'obj_1':[1.5,2.5,3.5,4.5,4.5,4.5,5.5,6.5,7.5,8.5]}}
         
         # Mixed case (both 1d and 2d)
         with TempDir() as idx_d:
-            worker.outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf_bin, idx_d.path()+'/test.fits')
+            worker.outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf_bin, units, idx_d.path()+'/test.fits')
             t_read = Table.read(idx_d.path()+'/test.fits')
             hdul = fits.open(idx_d.path()+'/test.fits')
           
@@ -475,8 +487,9 @@ class TestExtractPpPdf(object):
         
         
         # only 1d
+        units={'PP1':"U_PP1"}
         with TempDir() as idx_d:
-            worker.outputPDF(pdf_1d, [], samples, histo1d, {}, min_data, max_data, pdf_bin, idx_d.path()+'/test.fits')
+            worker.outputPDF(pdf_1d, [], samples, histo1d, {}, min_data, max_data, pdf_bin, units, idx_d.path()+'/test.fits')
             t_read = Table.read(idx_d.path()+'/test.fits')
             hdul = fits.open(idx_d.path()+'/test.fits')
           
@@ -487,8 +500,9 @@ class TestExtractPpPdf(object):
         assert not 'S_PP2' in hdul[1].header.keys() 
     
         # only 2d
+        units={'PP1':"U_PP1",'PP2':"U_PP1"}
         with TempDir() as idx_d:
-            worker.outputPDF([], pdf_2d, samples, {}, histo2d, min_data, max_data, pdf_bin, idx_d.path()+'/test.fits')
+            worker.outputPDF([], pdf_2d, samples, {}, histo2d, min_data, max_data, pdf_bin, units, idx_d.path()+'/test.fits')
             t_read = Table.read(idx_d.path()+'/test.fits')
             hdul = fits.open(idx_d.path()+'/test.fits')
           

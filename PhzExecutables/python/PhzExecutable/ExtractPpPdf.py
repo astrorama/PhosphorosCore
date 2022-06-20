@@ -135,12 +135,16 @@ def parsePdfRange(pp, min_data, max_data, input):
 def getPP(res_dir, pp_conf_file):
     pp_config_table = Table.read(join(res_dir, pp_conf_file), format='fits')
     pp=[]
-    for fl in pp_config_table['PARAM_NAME']:
+    units = {}
+    for index in range(len(pp_config_table)):
+        fl = pp_config_table['PARAM_NAME'][index]
         if not fl.strip() in pp:
             pp.append(fl.strip())
+            units[fl.strip()] = pp_config_table['UNITS'][index];
     if not 'REDSHIFT' in pp:
         pp.append('REDSHIFT')  
-    return pp
+        units['REDSHIFT'] = '';
+    return pp, units
         
 #-------------------------- 
 def getSampleFileList(res_dir, sample_folder, index_file):
@@ -177,11 +181,12 @@ def getData(pp, filelist, res_dir, sample_folder, get_sample):
     return samples, min_data, max_data
 
 #-------------------------- 
-def outputRange(range_file, min_data, max_data):
+def outputRange(range_file, min_data, max_data, units):
     outTable = Table()
     outTable['PP'] = list(min_data.keys())
     outTable['MIN'] = list(min_data.values())
     outTable['MAX'] = list(max_data.values())
+    outTable['UNITS'] = list(units.values())
     outTable.write(range_file, overwrite=True)
 
 #-------------------------- 
@@ -223,7 +228,7 @@ def computeHisto2d(pdf_2d, samples, pdf_range, pdf_bin):
     return histo
     
 #-------------------------- 
-def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf_bin, out_file):
+def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf_bin, units, out_file):
     all_object_id=[]
     if len(pdf_1d)>0:
         all_object_id = list(samples[pdf_1d[0]].keys())
@@ -260,13 +265,16 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
         nodes_str = '['+nodes_str+']'
         name = ('S_'+param)[:8]
         hdul[1].header[name] = nodes_str
+        
+        name = ('U_'+param)[:8]
+        hdul[1].header[name] = units[param]
     
     hdul.writeto(out_file, overwrite=True)
 
     
 #-------------------------- 
 def mainMethod(args):# Read and check input
-    pp = getPP(args.result_dir, args.physical_parameter_config)
+    pp, units = getPP(args.result_dir, args.physical_parameter_config)
     pdf_1d, pdf_2d = parsePdfList(pp, args.pdf_list)
     pdf_bin = parsePdfBin(pp, args.pdf_bin)
     
@@ -278,13 +286,13 @@ def mainMethod(args):# Read and check input
     samples, min_data, max_data = getData(pp, file_list, args.result_dir, args.posterior_folder, do_get_sample)
 
     if args.output_range_file != '':
-        outputRange(args.output_range_file, min_data, max_data)
+        outputRange(args.output_range_file, min_data, max_data, units)
     
     if do_get_sample:
         pdf_range = parsePdfRange(pp, min_data, max_data, args.pdf_range)
         histo1d = computeHisto1d(pdf_1d, samples, pdf_range, pdf_bin)
         histo2d = computeHisto2d(pdf_2d, samples, pdf_range, pdf_bin)
-        outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf_bin, args.output_pdf_file)
+        outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf_bin, units, args.output_pdf_file)
     
     
     
