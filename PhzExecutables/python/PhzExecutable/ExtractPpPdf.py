@@ -170,11 +170,11 @@ def getData(pp, filelist, res_dir, sample_folder, get_sample):
     for fl in filelist:
         logger.info('Processing sampling file '+str(f_index)+' of '+str(len(filelist)))
         sampling_table = Table.read(join(res_dir,sample_folder,str(fl)))
-        object_unique_id = np.unique(sampling_table['OBJECT_ID'])
         for param in pp:
             if (get_sample):
-                for dat, idx in zip(np.split(sampling_table[param], np.where(np.diff(sampling_table['OBJECT_ID']))[0]+1), object_unique_id):
-                    samples[param][idx]=np.array(dat)
+                for dat, idx in zip(np.split(sampling_table[param], np.where(np.diff(sampling_table['OBJECT_ID']))[0]+1), 
+                                    np.split(sampling_table['OBJECT_ID'], np.where(np.diff(sampling_table['OBJECT_ID']))[0]+1)):
+                    samples[param][idx[0]]=np.array(dat)
             min_data[param] = min(np.min(sampling_table[param]),min_data[param]) 
             max_data[param] = max(np.max(sampling_table[param]),max_data[param]) 
         f_index+=1;
