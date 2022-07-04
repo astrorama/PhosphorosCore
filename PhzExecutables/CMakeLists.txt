@@ -53,6 +53,19 @@ elements_add_unit_test(BuildPPConfig_test tests/src/BuildPPConfig_test.cpp
                      LINK_LIBRARIES PhzExecutables
                      TYPE Boost)
                      
-
+#===============================================================================
+# Use the following macro for python modules, scripts and aux files:
+#  elements_install_python_modules()
+#  elements_install_scripts()
+#===============================================================================
+elements_install_python_modules()    
+                
+#===============================================================================
+# Declare the Python programs here
+# Examples :
+# elements_add_python_program(PythonProgramExample
+#                             ElementsExamples.PythonProgramExample)
+#===============================================================================
+elements_add_python_program(PhosphorosExtractPpPdf PhzExecutable.ExtractPpPdf)
 
 elements_install_conf_files()
