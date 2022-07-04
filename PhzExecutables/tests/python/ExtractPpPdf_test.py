@@ -297,7 +297,7 @@ class TestExtractPpPdf(object):
     def test_getSampleFileList(self):
         t_sample = Table()
         t_sample['OBJECT_ID']=[1,2,3,4,5,6,7,8,9]  
-        t_sample['FILE_NAME']=['file_1.fits','file_1.fits','file_1.fits','file_1.fits','file_1.fits','file_1.fits','file_1.fits','file_2.fits','file_2.fits']  
+        t_sample['FILE_NAME']=[' file_1.fits ','file_1.fits','file_1.fits','file_1.fits','file_1.fits','file_1.fits','file_1.fits','file_2.fits','file_2.fits']  
         with TempDir() as idx_d:
             os.mkdir(idx_d.path()+'/toto')
             t_sample.write(idx_d.path()+ '/toto/index.fits')

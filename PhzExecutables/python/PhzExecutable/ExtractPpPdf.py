@@ -211,11 +211,9 @@ def getSampleFileList(res_dir, sample_folder, index_file):
                     filelist (array): list of files containing full pdf sampling.
     '''
     index_file = join(res_dir, sample_folder, index_file)
-    filelist=[]
     ref_index = Table.read(index_file)
-    for fl in set(ref_index['FILE_NAME']):
-        if not fl.strip() in filelist:
-            filelist.append(fl.strip())
+    filelist = set(map(str.strip, ref_index['FILE_NAME']))
+    
     return filelist
 
 #-------------------------- 
@@ -246,12 +244,17 @@ def getData(pp, filelist, res_dir, sample_folder, get_sample):
      
     f_index=1    
     for fl in filelist:
-        logger.info('Processing sampling file '+str(f_index)+' of '+str(len(filelist)))
+        logger.info('Processing sampling file %d of %d', f_index, len(filelist))
         sampling_table = Table.read(join(res_dir,sample_folder,str(fl)))
         for param in pp:
             if (get_sample):
-                for dat, idx in zip(np.split(sampling_table[param], np.where(np.diff(sampling_table['OBJECT_ID']))[0]+1), 
-                                    np.split(sampling_table['OBJECT_ID'], np.where(np.diff(sampling_table['OBJECT_ID']))[0]+1)):
+                ''' 
+                The sampling files contains a column "OBJECT_ID". In this columns we have a repetition 
+                (one for each sample of the source). Looking for the position of the change in this column
+                we can split the table in subset: one for each object.
+                '''
+                indexes = np.where(np.diff(sampling_table['OBJECT_ID']))[0]+1
+                for dat, idx in zip(np.split(sampling_table[param], indexes), np.split(sampling_table['OBJECT_ID'], indexes)):
                     samples[param][idx[0]]=np.array(dat)
             min_data[param] = min(np.min(sampling_table[param]),min_data[param]) 
             max_data[param] = max(np.max(sampling_table[param]),max_data[param]) 
@@ -370,10 +373,8 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
         # print(np_array.shape)
         outTable[key] = np.reshape(np_array, (np_array.shape[0], (np_array.shape[1] * np_array.shape[2]))) 
     
-    outTable.write(out_file, overwrite=True)
-    hdul = fits.open(out_file)
-    
-  
+    hdul = fits.HDUList(hdus=[fits.BinTableHDU(outTable)])
+
     full_pp = pdf_1d.copy()
     for param in pdf_2d:
         if not param[0] in full_pp:
