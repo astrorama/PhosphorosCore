@@ -373,7 +373,7 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
         # print(np_array.shape)
         outTable[key] = np.reshape(np_array, (np_array.shape[0], (np_array.shape[1] * np_array.shape[2]))) 
     
-    hdul = fits.HDUList(hdus=[fits.BinTableHDU(outTable)])
+    hdul = fits.HDUList(hdus=[fits.PrimaryHDU(), fits.BinTableHDU(outTable)])
 
     full_pp = pdf_1d.copy()
     for param in pdf_2d:
