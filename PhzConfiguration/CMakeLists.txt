@@ -155,7 +155,14 @@ elements_add_unit_test(BuildPPConfigConfig_test tests/src/BuildPPConfigConfig_te
 elements_add_unit_test(PhysicalParametersConfig_test tests/src/PhysicalParametersConfig_test.cpp
                      EXECUTABLE PhzConfiguration_PhysicalParametersConfig_test
                      LINK_LIBRARIES PhzConfiguration
-                     TYPE Boost)                                  
+                     TYPE Boost) 
+elements_add_unit_test(CorrectedPhotometryConfig_test tests/src/CorrectedPhotometryConfig_test.cpp
+                     EXECUTABLE PhzConfiguration_CorrectedPhotometryConfig_test
+                     LINK_LIBRARIES PhzConfiguration
+                     TYPE Boost)  
+                      
+                     
+                                                     
 
 # Install auxiliary files
 elements_install_aux_files()

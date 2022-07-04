@@ -26,3 +26,8 @@ elements_add_unit_test(ColumnHandlers_Id_test tests/src/ColumnHandlers_Id_test.c
 elements_add_unit_test(ColumnHandlers_Flag_test tests/src/ColumnHandlers_Flag_test.cpp 
                      LINK_LIBRARIES PhzOutput
                      TYPE Boost)
+elements_add_unit_test(CorrectedPhotometry_test tests/src/CorrectedPhotometry_test.cpp 
+                     LINK_LIBRARIES PhzOutput
+                     TYPE Boost)
+                     
+                     

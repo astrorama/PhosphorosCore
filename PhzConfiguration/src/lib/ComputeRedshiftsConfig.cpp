@@ -57,6 +57,7 @@
 #include "PhzConfiguration/PdfOutputConfig.h"
 #include "PhzConfiguration/OutputStatisticsConfig.h"
 #include "PhzConfiguration/CopyColumnsConfig.h"
+#include "PhzConfiguration/CorrectedPhotometryConfig.h"
 
 #include "PhzConfiguration/ObservationConditionColumnConfig.h"
 #include "PhzConfiguration/CorrectionCoefficientGridConfig.h"
@@ -133,6 +134,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<PdfOutputConfig>();
   declareDependency<OutputStatisticsConfig>();
   declareDependency<CopyColumnsConfig>();
+  declareDependency<CorrectedPhotometryConfig>();
   declareDependency<ErrorAdjustmentConfig>();
 
   declareDependency<ObservationConditionColumnConfig>();
