@@ -28,7 +28,7 @@ import sys
 import argparse
 import ElementsKernel.Logging as log
 import numpy as np
-from astropy.table import Table
+from astropy.table import Table, Column
 from astropy.io import fits
 from os.path import exists
 from os.path import join
@@ -363,18 +363,20 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
     elif len(pdf_2d)>0:
         all_object_id = list(samples[pdf_2d[0][0]].keys())
     outTable = Table()
-    outTable['OBJECT_ID'] = all_object_id
+    outTable['ID'] = all_object_id
     for param in pdf_1d:
-        outTable[param] = histo1d[param]  
+        outTable['MC_' + param.upper()] = histo1d[param]  
 
     for param in pdf_2d:
-        key = param[0]+'_'+param[1]
+        key = param[0] + '_' + param[1]
+        out_key = 'MC_'+ param[0].upper() + '_' + param[1].upper()
         np_array = np.array(histo2d[key])
         # print(np_array.shape)
-        outTable[key] = np.reshape(np_array, (np_array.shape[0], (np_array.shape[1] * np_array.shape[2]))) 
+        outTable[out_key] = np.reshape(np_array, (np_array.shape[0], (np_array.shape[1] * np_array.shape[2]))) 
     
     hdul = fits.HDUList(hdus=[fits.PrimaryHDU(), fits.BinTableHDU(outTable)])
-
+    hdul[1].name = 'PDFs'
+    
     full_pp = pdf_1d.copy()
     for param in pdf_2d:
         if not param[0] in full_pp:
@@ -386,16 +388,15 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
         max_v = max_data[param]
         number = pdf_bin[param]
         nodes = [min_v + i*(max_v - min_v)/(number-1) for i in range(number)]
-        nodes_str= [str(node) for node in nodes]
-        nodes_str = ",".join(nodes_str)
-        nodes_str = '['+nodes_str+']'
-        name = ('S_'+param)[:8]
-        hdul[1].header[name] = nodes_str
-        
-        name = ('U_'+param)[:8]
-        hdul[1].header[name] = units[param]
+        name = ('BINS_MC_PDF_'+param.upper())
+        bins_table = Table()
+        bins_table['BINS'] = Column(data=nodes, unit=units[param])
+        hdul.append(fits.BinTableHDU(bins_table))
+        hdul[len(hdul)-1].name = name
+   
     
     hdul.writeto(out_file, overwrite=True)
+    hdul.writeto('/home/dubathf/test.fits', overwrite=True)
 
     
 #-------------------------- 

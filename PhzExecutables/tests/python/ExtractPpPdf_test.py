@@ -437,80 +437,90 @@ class TestExtractPpPdf(object):
         
     def test_outputPDF(self):
         histo1d = {}
-        histo1d['PP1']=[]
-        histo1d['PP1'].append([0.1,0.1,0.1,0.1,0.5])
-        pdf_1d = ['PP1']
+        histo1d['pp1']=[]
+        histo1d['pp1'].append([0.1,0.1,0.1,0.1,0.5])
+        pdf_1d = ['pp1']
         
         histo2d = {}
-        histo2d['PP1_PP2']=[[[0.0,0.1,0.1,0.1,0.3],[0.1,0.0,0.0,0.0,0.2]]]
-        pdf_2d = [['PP1','PP2']]
+        histo2d['pp1_PP2']=[[[0.0,0.1,0.1,0.1,0.3],[0.1,0.0,0.0,0.0,0.2]]]
+        pdf_2d = [['pp1','PP2']]
         
-        min_data={'PP1':0,'PP2':0}
-        max_data={'PP1':5,'PP2':2}
+        min_data={'pp1':0,'PP2':0}
+        max_data={'pp1':5,'PP2':2}
         
-        pdf_bin={'PP1':5,'PP2':2}
-        units={'PP1':"U_PP1",'PP2':"U_PP1"}
+        pdf_bin={'pp1':5,'PP2':2}
+        units={'pp1':"U_PP1",'PP2':"U_PP2"}
         
-        samples = {'PP1':{'obj_1':[1.5,2.5,3.5,4.5,4.5,4.5,5.5,6.5,7.5,8.5]},'PP2':{'obj_1':[1.5,2.5,3.5,4.5,4.5,4.5,5.5,6.5,7.5,8.5]}}
+        samples = {'pp1':{'obj_1':[1.5,2.5,3.5,4.5,4.5,4.5,5.5,6.5,7.5,8.5]},'PP2':{'obj_1':[1.5,2.5,3.5,4.5,4.5,4.5,5.5,6.5,7.5,8.5]}}
         
         # Mixed case (both 1d and 2d)
         with TempDir() as idx_d:
             worker.outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf_bin, units, idx_d.path()+'/test.fits')
-            t_read = Table.read(idx_d.path()+'/test.fits')
+            t_read = Table.read(idx_d.path()+'/test.fits',  hdu=1)
             hdul = fits.open(idx_d.path()+'/test.fits')
           
-        assert 'OBJECT_ID' in t_read.colnames
-        assert 'PP1' in t_read.colnames
-        assert 'PP1_PP2' in t_read.colnames
+        assert 'ID' in t_read.colnames
+        assert 'MC_PP1' in t_read.colnames
+        assert 'MC_PP1_PP2' in t_read.colnames
         assert len(t_read) == 1
-        assert t_read[ 'OBJECT_ID'][0] == 'obj_1'
-        assert t_read[ 'PP1'][0][0] == 0.1
-        assert t_read[ 'PP1'][0][1] == 0.1
-        assert t_read[ 'PP1'][0][2] == 0.1
-        assert t_read[ 'PP1'][0][3] == 0.1
-        assert t_read[ 'PP1'][0][4] == 0.5
-        assert t_read[ 'PP1_PP2'][0][0] == 0.0
-        assert t_read[ 'PP1_PP2'][0][1] == 0.1
-        assert t_read[ 'PP1_PP2'][0][2] == 0.1
-        assert t_read[ 'PP1_PP2'][0][3] == 0.1
-        assert t_read[ 'PP1_PP2'][0][4] == 0.3
-        assert t_read[ 'PP1_PP2'][0][5] == 0.1
-        assert t_read[ 'PP1_PP2'][0][6] == 0.0
-        assert t_read[ 'PP1_PP2'][0][7] == 0.0
-        assert t_read[ 'PP1_PP2'][0][8] == 0.0
-        assert t_read[ 'PP1_PP2'][0][9] == 0.2
+        assert t_read[ 'ID'][0] == 'obj_1'
+        assert t_read[ 'MC_PP1'][0][0] == 0.1
+        assert t_read[ 'MC_PP1'][0][1] == 0.1
+        assert t_read[ 'MC_PP1'][0][2] == 0.1
+        assert t_read[ 'MC_PP1'][0][3] == 0.1
+        assert t_read[ 'MC_PP1'][0][4] == 0.5
+        assert t_read[ 'MC_PP1_PP2'][0][0] == 0.0
+        assert t_read[ 'MC_PP1_PP2'][0][1] == 0.1
+        assert t_read[ 'MC_PP1_PP2'][0][2] == 0.1
+        assert t_read[ 'MC_PP1_PP2'][0][3] == 0.1
+        assert t_read[ 'MC_PP1_PP2'][0][4] == 0.3
+        assert t_read[ 'MC_PP1_PP2'][0][5] == 0.1
+        assert t_read[ 'MC_PP1_PP2'][0][6] == 0.0
+        assert t_read[ 'MC_PP1_PP2'][0][7] == 0.0
+        assert t_read[ 'MC_PP1_PP2'][0][8] == 0.0
+        assert t_read[ 'MC_PP1_PP2'][0][9] == 0.2
 
   
-        assert hdul[1].header['S_PP1'] == '[0.0,1.25,2.5,3.75,5.0]'
-        assert hdul[1].header['S_PP2'] == '[0.0,2.0]'
+        assert len(hdul) == 4
+        assert hdul[1].name =='PDFS' 
+        assert hdul[2].name =='BINS_MC_PDF_PP1' 
+        assert hdul[3].name =='BINS_MC_PDF_PP2' 
         
+     
+        assert len(hdul[2].data['BINS']) == 5
+        assert hdul[2].data['BINS'][0] == 0.0
+        assert hdul[2].data['BINS'][1] == 1.25
+        assert hdul[2].data['BINS'][2] == 2.5
+        assert hdul[2].data['BINS'][3] == 3.75
+        assert hdul[2].data['BINS'][4] == 5.0
+        assert hdul[2].data.columns['BINS'].unit == "U_PP1"
         
-        
+        assert len(hdul[3].data['BINS']) == 2
+        assert hdul[3].data['BINS'][0] == 0.0
+        assert hdul[3].data['BINS'][1] == 2.0
+        assert hdul[3].data.columns['BINS'].unit == "U_PP2"
+
+
         # only 1d
-        units={'PP1':"U_PP1"}
+        units={'pp1':"U_PP1"}
         with TempDir() as idx_d:
             worker.outputPDF(pdf_1d, [], samples, histo1d, {}, min_data, max_data, pdf_bin, units, idx_d.path()+'/test.fits')
-            t_read = Table.read(idx_d.path()+'/test.fits')
+            t_read = Table.read(idx_d.path()+'/test.fits',  hdu=1)
             hdul = fits.open(idx_d.path()+'/test.fits')
           
-        assert 'OBJECT_ID' in t_read.colnames
-        assert 'PP1' in t_read.colnames
+        assert 'ID' in t_read.colnames
+        assert 'MC_PP1' in t_read.colnames
         assert len(t_read) == 1
-        assert hdul[1].header['S_PP1'] == '[0.0,1.25,2.5,3.75,5.0]'
-        assert not 'S_PP2' in hdul[1].header.keys() 
     
         # only 2d
-        units={'PP1':"U_PP1",'PP2':"U_PP1"}
+        units={'pp1':"U_PP1",'PP2':"U_PP2"}
         with TempDir() as idx_d:
             worker.outputPDF([], pdf_2d, samples, {}, histo2d, min_data, max_data, pdf_bin, units, idx_d.path()+'/test.fits')
             t_read = Table.read(idx_d.path()+'/test.fits')
             hdul = fits.open(idx_d.path()+'/test.fits')
           
-        assert 'OBJECT_ID' in t_read.colnames
-        assert 'PP1_PP2' in t_read.colnames
-        assert len(t_read) == 1          
-        assert hdul[1].header['S_PP1'] == '[0.0,1.25,2.5,3.75,5.0]'
-        assert hdul[1].header['S_PP2'] == '[0.0,2.0]'
+        assert 'ID' in t_read.colnames
+        assert 'MC_PP1_PP2' in t_read.colnames
          
          
          
