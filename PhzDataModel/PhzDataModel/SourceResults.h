@@ -25,15 +25,14 @@
 #ifndef _PHZDATAMODEL_SOURCERESULTS_H
 #define _PHZDATAMODEL_SOURCERESULTS_H
 
+#include <boost/any.hpp>
 #include <functional>
 #include <map>
-#include <boost/any.hpp>
 
 #include "PhzDataModel/TypedEnumMap.h"
 
 namespace Euclid {
 namespace PhzDataModel {
-
 
 /// An enumeration representing the available PHZ source results
 enum class SourceResultType {

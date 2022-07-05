@@ -69,18 +69,20 @@ void ComputeRedshifts::run(Configuration::ConfigManager& config_manager) {
 template <typename CatalogHandler>
 void ComputeRedshifts::doRun(ConfigManager& config_manager) {
 
-  auto&  model_phot_grid           = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
-  auto&  marginalization_func_list = config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
-  auto&  likelihood_grid_func      = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
-  auto&  phot_corr_map             = config_manager.getConfiguration<PhotometricCorrectionConfig>().getPhotometricCorrectionMap();
-  auto&  adjust_error_param_map    = config_manager.getConfiguration<ErrorAdjustmentConfig>().getAdjustErrorParamMap();
-  auto&  priors                    = config_manager.getConfiguration<PriorConfig>().getPriors();
-  auto&  model_func_list           = config_manager.getConfiguration<ModelGridModificationConfig>().getProcessModelGridFunctors();
-  bool   do_normalize_pdf          = config_manager.getConfiguration<PdfOutputConfig>().doNormalizePDFs();
-  double sampling_sigma_range      = config_manager.getConfiguration<ScaleFactorMarginalizationConfig>().getSampleNumber();
+  auto& model_phot_grid = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
+  auto& marginalization_func_list =
+      config_manager.getConfiguration<MarginalizationConfig>().getMarginalizationFuncList();
+  auto&  likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
+  auto&  phot_corr_map = config_manager.getConfiguration<PhotometricCorrectionConfig>().getPhotometricCorrectionMap();
+  auto&  adjust_error_param_map = config_manager.getConfiguration<ErrorAdjustmentConfig>().getAdjustErrorParamMap();
+  auto&  priors                 = config_manager.getConfiguration<PriorConfig>().getPriors();
+  auto&  model_func_list = config_manager.getConfiguration<ModelGridModificationConfig>().getProcessModelGridFunctors();
+  bool   do_normalize_pdf     = config_manager.getConfiguration<PdfOutputConfig>().doNormalizePDFs();
+  double sampling_sigma_range = config_manager.getConfiguration<ScaleFactorMarginalizationConfig>().getSampleNumber();
 
-  CatalogHandler handler{phot_corr_map, adjust_error_param_map,    model_phot_grid, likelihood_grid_func, sampling_sigma_range,
-                         priors,        marginalization_func_list, model_func_list, do_normalize_pdf};
+  CatalogHandler handler{
+      phot_corr_map, adjust_error_param_map,    model_phot_grid, likelihood_grid_func, sampling_sigma_range,
+      priors,        marginalization_func_list, model_func_list, do_normalize_pdf};
 
   auto table_reader      = config_manager.getConfiguration<CatalogConfig>().getTableReader();
   auto catalog_converter = config_manager.getConfiguration<CatalogConfig>().getTableToCatalogConverter();

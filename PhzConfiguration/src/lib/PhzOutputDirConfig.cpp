@@ -22,10 +22,10 @@
  * @author nikoapos
  */
 
-#include "Configuration/CatalogConfig.h"
 #include "PhzConfiguration/PhzOutputDirConfig.h"
-#include "PhzConfiguration/ResultsDirConfig.h"
+#include "Configuration/CatalogConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
+#include "PhzConfiguration/ResultsDirConfig.h"
 #include "PhzUtils/FileUtils.h"
 
 namespace po = boost::program_options;
@@ -34,7 +34,7 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string PHZ_OUTPUT_DIR {"phz-output-dir"};
+static const std::string PHZ_OUTPUT_DIR{"phz-output-dir"};
 
 PhzOutputDirConfig::PhzOutputDirConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<ResultsDirConfig>();
@@ -43,20 +43,18 @@ PhzOutputDirConfig::PhzOutputDirConfig(long manager_id) : Configuration(manager_
 }
 
 auto PhzOutputDirConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Output options", {
-    {PHZ_OUTPUT_DIR.c_str(), po::value<std::string>(),
-        "The output directory of the PHZ results"}
-  }}};
+  return {{"Output options",
+           {{PHZ_OUTPUT_DIR.c_str(), po::value<std::string>(), "The output directory of the PHZ results"}}}};
 }
 
 void PhzOutputDirConfig::initialize(const UserValues& args) {
 
-  auto& results_dir = getDependency<ResultsDirConfig>().getResultsDir();
-  auto& catalog_type = getDependency<CatalogTypeConfig>().getCatalogType();
+  auto& results_dir        = getDependency<ResultsDirConfig>().getResultsDir();
+  auto& catalog_type       = getDependency<CatalogTypeConfig>().getCatalogType();
   auto& input_catalog_name = getDependency<Euclid::Configuration::CatalogConfig>().getFilename();
 
   auto input_filename = input_catalog_name.filename().stem();
-  m_phz_output_dir = results_dir / catalog_type / input_filename;
+  m_phz_output_dir    = results_dir / catalog_type / input_filename;
   if (args.count(PHZ_OUTPUT_DIR) > 0) {
     fs::path path = args.find(PHZ_OUTPUT_DIR)->second.as<std::string>();
     if (path.is_absolute()) {
@@ -68,19 +66,14 @@ void PhzOutputDirConfig::initialize(const UserValues& args) {
 
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryOnly(m_phz_output_dir.string());
-
 }
 
 const boost::filesystem::path& PhzOutputDirConfig::getPhzOutputDir() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
-    throw Elements::Exception()
-        << "Call to getPhzOutputDir() on a not initialized instance.";
+    throw Elements::Exception() << "Call to getPhzOutputDir() on a not initialized instance.";
   }
   return m_phz_output_dir;
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

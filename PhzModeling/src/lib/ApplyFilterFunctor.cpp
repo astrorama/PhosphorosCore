@@ -33,7 +33,8 @@ namespace Euclid {
 namespace PhzModeling {
 
 static std::vector<double> getInterpolationGrid(const MathUtils::PiecewiseBase*  model,
-                                                const std::pair<double, double>& filter_range, const MathUtils::Function& filter) {
+                                                const std::pair<double, double>& filter_range,
+                                                const MathUtils::Function&       filter) {
   std::vector<double> grid;
 
   // Add the knots from the model within the filter range
@@ -65,13 +66,13 @@ static std::vector<double> getInterpolationGrid(const MathUtils::PiecewiseBase* 
 XYDataset::XYDataset ApplyFilterFunctor::operator()(const XYDataset::XYDataset&      model,
                                                     const std::pair<double, double>& filter_range,
                                                     const MathUtils::Function&       filter) const {
-  auto model_interp = MathUtils::interpolate(model, MathUtils::InterpolationType::LINEAR, false);
+  auto         model_interp = MathUtils::interpolate(model, MathUtils::InterpolationType::LINEAR, false);
   return this->operator()(*model_interp, filter_range, filter);
 }
 
-XYDataset::XYDataset ApplyFilterFunctor::operator()(const MathUtils::Function& model,
+XYDataset::XYDataset ApplyFilterFunctor::operator()(const MathUtils::Function&       model,
                                                     const std::pair<double, double>& filter_range,
-                                                    const MathUtils::Function& filter) const {
+                                                    const MathUtils::Function&       filter) const {
   auto model_interpolated = dynamic_cast<const MathUtils::PiecewiseBase*>(&model);
 
   std::vector<double> grid = getInterpolationGrid(model_interpolated, filter_range, filter);

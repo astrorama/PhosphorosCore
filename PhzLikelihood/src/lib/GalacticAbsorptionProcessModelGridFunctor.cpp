@@ -49,8 +49,8 @@ static void computeCorrectedPhotometry(SourceCatalog::Photometry::const_iterator
                                        SourceCatalog::Photometry::iterator out_begin) {
   constexpr double l10 = 2.302585092994046;  // std::log(10.);
   while (model_begin != model_end) {
-    //out_begin->flux = (*model_begin).flux * std::pow(10.0, -0.4 * (*corr_begin).flux * dust_density);
-    // pow(x, y) = exp(y * log(x))
+    // out_begin->flux = (*model_begin).flux * std::pow(10.0, -0.4 * (*corr_begin).flux * dust_density);
+    //  pow(x, y) = exp(y * log(x))
     out_begin->flux  = (*model_begin).flux * std::exp(l10 * -0.4 * (*corr_begin).flux * dust_density);
     out_begin->error = 0.;
     ++model_begin;
@@ -65,7 +65,8 @@ GalacticAbsorptionProcessModelGridFunctor::GalacticAbsorptionProcessModelGridFun
   logger.debug() << "A GalacticAbsorptionProcessModelGridFunctor has been instantiated";
 }
 
-void GalacticAbsorptionProcessModelGridFunctor::operator()(const std::string& region_name, const SourceCatalog::Source& source,
+void GalacticAbsorptionProcessModelGridFunctor::operator()(const std::string&            region_name,
+                                                           const SourceCatalog::Source&  source,
                                                            PhzDataModel::PhotometryGrid& model_grid) const {
   auto dust_ebv_ptr = source.getAttribute<PhzDataModel::ObservationCondition>();
 

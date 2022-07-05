@@ -27,12 +27,12 @@
 #include "NdArray/NdArray.h"
 #include "XYDataset/XYDataset.h"
 
-#include <fstream>
 #include <boost/filesystem/path.hpp>
+#include <fstream>
 
-#  include <sys/types.h>
+#include <sys/types.h>
 #if defined(__APPLE__)
-#  include <sys/dtrace.h>
+#include <sys/dtrace.h>
 #endif
 
 namespace Euclid {
@@ -46,7 +46,6 @@ namespace ReferenceSample {
 class PdzDataProvider {
 
 public:
-
   /**
    * @brief Destructor
    */
@@ -61,13 +60,12 @@ public:
    * @throw Elements::Exception
    *    On failure to read the PDZ bins (only if the file is not empty)
    */
-  PdzDataProvider(const boost::filesystem::path& path,
-                  std::size_t max_size = 1 << 30);
+  PdzDataProvider(const boost::filesystem::path& path, std::size_t max_size = 1 << 30);
 
   /**
    * Move constructor.
    */
-  PdzDataProvider(PdzDataProvider &&) = default;
+  PdzDataProvider(PdzDataProvider&&) = default;
 
   /**
    * Get the PDZ stored on the given file position.
@@ -98,7 +96,7 @@ public:
    *    do not match the stored bins, or, only for the first stored pdz, if the
    *    bins are not in ascending order.
    */
-  int64_t addPdz(const XYDataset::XYDataset &data);
+  int64_t addPdz(const XYDataset::XYDataset& data);
 
   /**
    * Modify a PDZ entry.
@@ -107,21 +105,21 @@ public:
    * @param data
    *    PDZ data. The X axis contains the bins, and the Y axis the values.
    */
-  void setPdz(int64_t position, const XYDataset::XYDataset &data);
+  void setPdz(int64_t position, const XYDataset::XYDataset& data);
 
 private:
-  boost::filesystem::path m_data_path;
-  size_t m_max_size;
+  boost::filesystem::path                  m_data_path;
+  size_t                                   m_max_size;
   std::unique_ptr<NdArray::NdArray<float>> m_array;
 
   std::vector<float> m_bins;
 
-  void setBins(const std::vector<float> &bins);
+  void setBins(const std::vector<float>& bins);
 
-  void validateBins(const std::vector<float> &bins) const;
+  void validateBins(const std::vector<float>& bins) const;
 };  // End of PdzDataProvider class
 
-}  // namespace PhzReferenceSample
+}  // namespace ReferenceSample
 }  // namespace Euclid
 
 #endif

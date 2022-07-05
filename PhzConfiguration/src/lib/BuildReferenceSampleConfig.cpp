@@ -53,10 +53,12 @@ BuildReferenceSampleConfig::BuildReferenceSampleConfig(long manager_id)
 
 auto BuildReferenceSampleConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Build NNPZ reference sample",
-           {{REFSAMPLE_DIR.c_str(), po::value<std::string>()->required(), "The directory of the reference sample to create"},
+           {{REFSAMPLE_DIR.c_str(), po::value<std::string>()->required(),
+             "The directory of the reference sample to create"},
             {REFSAMPLE_OVERWRITE.c_str(), po::bool_switch(), "Overwrite the reference sample"},
             {REFSAMPLE_MAXSIZE.c_str(), po::value<size_t>()->default_value(1000000000), "Maximum file size"},
-            {PHOSPHOROS_CATALOG.c_str(), po::value<std::string>()->default_value(""), "Filename of the Phosphoros output catalog"},
+            {PHOSPHOROS_CATALOG.c_str(), po::value<std::string>()->default_value(""),
+             "Filename of the Phosphoros output catalog"},
             {PHOSPHOROS_CATALOG_LIST.c_str(), po::value<std::string>()->default_value(""),
              "Filename with the list of Phosphoros output catalog"},
             {PHOSPHOROS_CATALOG_FORMAT.c_str(), po::value<std::string>()->default_value("FITS"),
@@ -66,7 +68,8 @@ auto BuildReferenceSampleConfig::getProgramOptions() -> std::map<std::string, Op
 void BuildReferenceSampleConfig::preInitialize(const Euclid::Configuration::Configuration::UserValues& args) {
   auto phosphoros_format = args.at(PHOSPHOROS_CATALOG_FORMAT).as<std::string>();
   if (phosphoros_format != "ASCII" && phosphoros_format != "FITS") {
-    throw Elements::Exception() << "Invalid value for option " << PHOSPHOROS_CATALOG_FORMAT << ": " << phosphoros_format;
+    throw Elements::Exception() << "Invalid value for option " << PHOSPHOROS_CATALOG_FORMAT << ": "
+                                << phosphoros_format;
   }
   auto phosphoros_catalog      = args.at(PHOSPHOROS_CATALOG).as<std::string>();
   auto phosphoros_catalog_list = args.at(PHOSPHOROS_CATALOG_LIST).as<std::string>();

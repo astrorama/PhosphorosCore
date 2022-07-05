@@ -24,26 +24,31 @@ PhotometryCellManager::PhotometryCellManager(const PhotometryCellManager& other)
 namespace GridContainer {
 
 std::unique_ptr<PhzDataModel::PhotometryCellManager>
-GridCellManagerTraits<PhzDataModel::PhotometryCellManager>::factory(size_t size, std::vector<std::string> filter_names) {
+GridCellManagerTraits<PhzDataModel::PhotometryCellManager>::factory(size_t                   size,
+                                                                    std::vector<std::string> filter_names) {
   return make_unique<PhzDataModel::PhotometryCellManager>(size, filter_names);
 }
 
 std::unique_ptr<PhzDataModel::PhotometryCellManager>
-GridCellManagerTraits<PhzDataModel::PhotometryCellManager>::factory(size_t                                size,
-                                                                    std::vector<XYDataset::QualifiedName> filter_names) {
+GridCellManagerTraits<PhzDataModel::PhotometryCellManager>::factory(
+    size_t size, std::vector<XYDataset::QualifiedName> filter_names) {
   std::vector<std::string> str_filter_names(filter_names.size());
   std::transform(filter_names.begin(), filter_names.end(), str_filter_names.begin(),
-                 [](const XYDataset::QualifiedName& q) { return q.qualifiedName(); });
+                 [](const XYDataset::QualifiedName& q) {
+                   return q.qualifiedName();
+                 });
   return factory(size, str_filter_names);
 }
 
 std::unique_ptr<PhzDataModel::PhotometryCellManager>
-GridCellManagerTraits<PhzDataModel::PhotometryCellManager>::factory(size_t size, const PhzDataModel::PhotometryCellManager& other) {
+GridCellManagerTraits<PhzDataModel::PhotometryCellManager>::factory(size_t                                     size,
+                                                                    const PhzDataModel::PhotometryCellManager& other) {
   assert(size == other.size());
   return make_unique<PhzDataModel::PhotometryCellManager>(other);
 }
 
-size_t GridCellManagerTraits<PhzDataModel::PhotometryCellManager>::size(const PhzDataModel::PhotometryCellManager& manager) {
+size_t
+GridCellManagerTraits<PhzDataModel::PhotometryCellManager>::size(const PhzDataModel::PhotometryCellManager& manager) {
   return manager.size();
 }
 

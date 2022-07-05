@@ -25,16 +25,15 @@ namespace PhzDataModel {
  * Contains information about the contents of a PhotometryGrid
  */
 class PhotometryGridInfo {
- public:
+public:
   PhotometryGridInfo() = default;
 
-  PhotometryGridInfo(const std::map<std::string, PhotometryGrid>& grid_map,
-                     std::string arg_igm_method,
-                     XYDataset::QualifiedName arg_luminosity_filter_name,
+  PhotometryGridInfo(const std::map<std::string, PhotometryGrid>& grid_map, std::string arg_igm_method,
+                     XYDataset::QualifiedName              arg_luminosity_filter_name,
                      std::vector<XYDataset::QualifiedName> arg_filter_names)
-      : igm_method{std::move(arg_igm_method)},
-        luminosity_filter_name{std::move(arg_luminosity_filter_name)},
-        filter_names{std::move(arg_filter_names)} {
+      : igm_method{std::move(arg_igm_method)}
+      , luminosity_filter_name{std::move(arg_luminosity_filter_name)}
+      , filter_names{std::move(arg_filter_names)} {
     for (auto& pair : grid_map) {
       region_axes_map.emplace(pair.first, pair.second.getAxesTuple());
     }

@@ -23,15 +23,14 @@
  */
 
 #ifndef PHZCONFIGURATION_REDSHIFTFUNCTORCONFIG_H
-#define	PHZCONFIGURATION_REDSHIFTFUNCTORCONFIG_H
+#define PHZCONFIGURATION_REDSHIFTFUNCTORCONFIG_H
 
-#include <cstdlib>
-#include <string>
-#include "XYDataset/QualifiedName.h"
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzModeling/RedshiftFunctor.h"
-
+#include "XYDataset/QualifiedName.h"
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
+#include <string>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -66,9 +65,7 @@ public:
 
 }; /* End of FilterConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_REDSHIFTFUNCTORCONFIG_H */
-
+#endif /* PHZCONFIGURATION_REDSHIFTFUNCTORCONFIG_H */

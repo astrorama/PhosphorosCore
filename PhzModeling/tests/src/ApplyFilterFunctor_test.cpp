@@ -86,15 +86,19 @@ BOOST_FIXTURE_TEST_CASE(values_test, ApplyFilterFunctor_Fixture) {
   BOOST_CHECK(Elements::isEqual(0., output_model.front().second));
 
   // second value must be multiplied by 1/4
-  auto second = std::find_if(output_model.begin(), output_model.end(),
-                             [input_iterator](const std::pair<double, double>& v) { return v.first == input_iterator->first; });
+  auto second =
+      std::find_if(output_model.begin(), output_model.end(), [input_iterator](const std::pair<double, double>& v) {
+        return v.first == input_iterator->first;
+      });
   BOOST_CHECK(Elements::isEqual(input_iterator->first, second->first));
   BOOST_CHECK(Elements::isEqual(input_iterator->second / 4., second->second));
   ++input_iterator;
 
   // third value must be multiplied by 3/4
-  auto third = std::find_if(output_model.begin(), output_model.end(),
-                            [input_iterator](const std::pair<double, double>& v) { return v.first == input_iterator->first; });
+  auto third =
+      std::find_if(output_model.begin(), output_model.end(), [input_iterator](const std::pair<double, double>& v) {
+        return v.first == input_iterator->first;
+      });
   BOOST_CHECK(Elements::isEqual(input_iterator->first, third->first));
   BOOST_CHECK(Elements::isEqual(input_iterator->second * 3. / 4., third->second));
 
@@ -130,7 +134,8 @@ BOOST_FIXTURE_TEST_CASE(border_test, ApplyFilterFunctor_Fixture) {
 BOOST_FIXTURE_TEST_CASE(adaptive_resolution_test, ApplyFilterFunctor_Fixture) {
   auto peaky_filter =
       Euclid::XYDataset::XYDataset::factory(std::vector<double>{9000., 9500., 10000.}, std::vector<double>{0., 1., 0.});
-  auto peaky_filter_f = Euclid::MathUtils::interpolate(peaky_filter, Euclid::MathUtils::InterpolationType::LINEAR, false);
+  auto peaky_filter_f =
+      Euclid::MathUtils::interpolate(peaky_filter, Euclid::MathUtils::InterpolationType::LINEAR, false);
 
   auto output_model = functor(input_model, std::make_pair(9000., 10000.), *peaky_filter_f);
 

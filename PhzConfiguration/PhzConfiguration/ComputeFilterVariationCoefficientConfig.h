@@ -23,12 +23,12 @@
  */
 
 #ifndef PHZCONFIGURATION_COMPUTEFILTERVARIATIONCOEFFICIENTSCONFIG_H
-#define	PHZCONFIGURATION_COMPUTEFILTERVARIATIONCOEFFICIENTSCONFIG_H
+#define PHZCONFIGURATION_COMPUTEFILTERVARIATIONCOEFFICIENTSCONFIG_H
 
+#include "Configuration/Configuration.h"
+#include <boost/filesystem/operations.hpp>
 #include <cstdlib>
 #include <string>
-#include <boost/filesystem/operations.hpp>
-#include "Configuration/Configuration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -40,7 +40,6 @@ namespace PhzConfiguration {
 class ComputeFilterVariationCoefficientConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief constructor
    * Add the specific parameters
@@ -51,14 +50,9 @@ public:
    * @brief Destructor
    */
   virtual ~ComputeFilterVariationCoefficientConfig() = default;
-
-
-
 };
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_COMPUTEFILTERVARIATIONCOEFFICIENTSCONFIG_H */
-
+#endif /* PHZCONFIGURATION_COMPUTEFILTERVARIATIONCOEFFICIENTSCONFIG_H */

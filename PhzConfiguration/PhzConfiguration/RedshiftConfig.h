@@ -23,14 +23,14 @@
  */
 
 #ifndef PHZCONFIGURATION_REDSHIFTCONFIG_H
-#define	PHZCONFIGURATION_REDSHIFTCONFIG_H
+#define PHZCONFIGURATION_REDSHIFTCONFIG_H
 
-#include <cstdlib>
-#include <string>
-#include <map>
-#include <vector>
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
+#include <map>
+#include <string>
+#include <vector>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -43,7 +43,6 @@ namespace PhzConfiguration {
 class RedshiftConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief Destructor
    */
@@ -98,14 +97,11 @@ public:
   const std::map<std::string, std::vector<double>>& getZList();
 
 private:
-
   std::map<std::string, std::vector<double>> m_z_list;
 
 }; /* End of AuxDataDirConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_REDSHIFTCONFIG_H */
-
+#endif /* PHZCONFIGURATION_REDSHIFTCONFIG_H */

@@ -22,14 +22,13 @@
  * @author Florian Dubath
  */
 
-#include <cstdlib>
-#include <boost/filesystem/operations.hpp>
-#include "XYDataset/FileParser.h"
-#include "XYDataset/FileSystemProvider.h"
-#include "XYDataset/AsciiParser.h"
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/AuxDataDirConfig.h"
-
+#include "XYDataset/AsciiParser.h"
+#include "XYDataset/FileParser.h"
+#include "XYDataset/FileSystemProvider.h"
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -42,21 +41,18 @@ ReddeningProviderConfig::ReddeningProviderConfig(long manager_id) : Configuratio
 }
 
 void ReddeningProviderConfig::initialize(const UserValues&) {
-  fs::path result = getDependency<AuxDataDirConfig>().getAuxDataDir() / "ReddeningCurves";
-  std::unique_ptr<XYDataset::FileParser> file_parser {new XYDataset::AsciiParser{}};
-  m_reddening_provider = std::shared_ptr<XYDataset::XYDatasetProvider> {
-    new XYDataset::FileSystemProvider{result.string(), std::move(file_parser)}};
+  fs::path                               result = getDependency<AuxDataDirConfig>().getAuxDataDir() / "ReddeningCurves";
+  std::unique_ptr<XYDataset::FileParser> file_parser{new XYDataset::AsciiParser{}};
+  m_reddening_provider = std::shared_ptr<XYDataset::XYDatasetProvider>{
+      new XYDataset::FileSystemProvider{result.string(), std::move(file_parser)}};
 }
 
 const std::shared_ptr<XYDataset::XYDatasetProvider> ReddeningProviderConfig::getReddeningDatasetProvider() {
-  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-        throw Elements::Exception() << "Call to getReddeningDatasetProvider() on a not initialized instance.";
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getReddeningDatasetProvider() on a not initialized instance.";
   }
   return m_reddening_provider;
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

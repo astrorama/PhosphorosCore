@@ -22,24 +22,23 @@
  * @author Florian Dubath
  */
 
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <cstdlib>
-#include <boost/archive/text_oarchive.hpp>
+#include "PhzConfiguration/ModelGridOutputConfig.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzConfiguration/ModelGridOutputConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
-#include "PhzConfiguration/IntermediateDirConfig.h"
-#include "PhzConfiguration/IgmConfig.h"
-#include "PhzUtils/FileUtils.h"
-#include "PhzDataModel/PhotometryGridInfo.h"
-#include "PhzDataModel/ArchiveFormat.h"
-#include "PhzDataModel/serialization/PhotometryGridInfo.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/GridFileHelper.h"
-
+#include "PhzConfiguration/IgmConfig.h"
+#include "PhzConfiguration/IntermediateDirConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
+#include "PhzDataModel/ArchiveFormat.h"
+#include "PhzDataModel/PhotometryGridInfo.h"
+#include "PhzDataModel/serialization/PhotometryGridInfo.h"
+#include "PhzUtils/FileUtils.h"
+#include <boost/archive/text_oarchive.hpp>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -47,7 +46,7 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string OUTPUT_MODEL_GRID {"output-model-grid"};
+static const std::string OUTPUT_MODEL_GRID{"output-model-grid"};
 static const std::string OUTPUT_MODEL_GRID_FORMAT{"output-model-grid-format"};
 
 static Elements::Logging logger = Elements::Logging::getLogger("ModelGridOutputConfig");
@@ -60,18 +59,15 @@ ModelGridOutputConfig::ModelGridOutputConfig(long manager_id) : Configuration(ma
 }
 
 auto ModelGridOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Compute Model Grid options", {
-    {OUTPUT_MODEL_GRID.c_str(), boost::program_options::value<std::string>(),
-        "The filename of the file to export in binary format the model grid"},
-    {OUTPUT_MODEL_GRID_FORMAT.c_str(), boost::program_options::value<std::string>()->default_value("BINARY"),
-        "The output format for the model grid. Possible values: BINARY, TEXT"}
-  }}};
+  return {{"Compute Model Grid options",
+           {{OUTPUT_MODEL_GRID.c_str(), boost::program_options::value<std::string>(),
+             "The filename of the file to export in binary format the model grid"},
+            {OUTPUT_MODEL_GRID_FORMAT.c_str(), boost::program_options::value<std::string>()->default_value("BINARY"),
+             "The output format for the model grid. Possible values: BINARY, TEXT"}}}};
 }
 
-
 static std::string getFilenameFromOptions(const std::map<std::string, po::variable_value>& options,
-                                          const fs::path& intermediate_dir,
-                                          const std::string& catalog_type,
+                                          const fs::path& intermediate_dir, const std::string& catalog_type,
                                           const std::string& grid_type) {
   fs::path result = intermediate_dir / catalog_type / grid_type / "model_grid.dat";
   if (options.count(OUTPUT_MODEL_GRID) > 0) {
@@ -87,16 +83,15 @@ static std::string getFilenameFromOptions(const std::map<std::string, po::variab
 
 void ModelGridOutputConfig::initialize(const UserValues& args) {
   // Extract file option
-  std::string filename = getFilenameFromOptions(args,
-                                                getDependency<IntermediateDirConfig>().getIntermediateDir(),
-                                                getDependency<CatalogTypeConfig>().getCatalogType(),
-                                                m_grid_type);
+  std::string filename = getFilenameFromOptions(args, getDependency<IntermediateDirConfig>().getIntermediateDir(),
+                                                getDependency<CatalogTypeConfig>().getCatalogType(), m_grid_type);
 
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
   typedef std::function<void(const std::string&, IgmConfig&, XYDataset::QualifiedName&,
-                             const std::map<std::string, PhzDataModel::PhotometryGrid>&)> InnerOutputFunction;
+                             const std::map<std::string, PhzDataModel::PhotometryGrid>&)>
+      InnerOutputFunction;
 
   InnerOutputFunction inner_output_function;
 
@@ -107,38 +102,35 @@ void ModelGridOutputConfig::initialize(const UserValues& args) {
 
   auto output_format = PhzDataModel::archiveFormatFromString(output_format_str);
   switch (output_format) {
-    case PhzDataModel::ArchiveFormat::BINARY:
-      inner_output_function = &outputFunction<boost::archive::binary_oarchive>;
-      break;
-    case PhzDataModel::ArchiveFormat::TEXT:
-      inner_output_function = &outputFunction<boost::archive::text_oarchive>;
-      break;
-    default:
-      throw Elements::Exception() << "Invalid output format " << output_format_str;
+  case PhzDataModel::ArchiveFormat::BINARY:
+    inner_output_function = &outputFunction<boost::archive::binary_oarchive>;
+    break;
+  case PhzDataModel::ArchiveFormat::TEXT:
+    inner_output_function = &outputFunction<boost::archive::text_oarchive>;
+    break;
+  default:
+    throw Elements::Exception() << "Invalid output format " << output_format_str;
   }
 
-  m_output_function = [this, filename, inner_output_function](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
+  m_output_function = [this, filename,
+                       inner_output_function](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
     auto igm_config = getDependency<IgmConfig>();
     auto lum_filter = getDependency<ModelNormalizationConfig>().getNormalizationFilter();
     inner_output_function(filename, igm_config, lum_filter, grid_map);
   };
 }
 
-
-void ModelGridOutputConfig::changeDefaultSubdir(std::string subdir){
-  m_grid_type=subdir;
+void ModelGridOutputConfig::changeDefaultSubdir(std::string subdir) {
+  m_grid_type = subdir;
 }
 
- const ModelGridOutputConfig::OutputFunction & ModelGridOutputConfig::getOutputFunction() {
-  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-      throw Elements::Exception() << "Call to getOutputFunction() on a not initialized instance.";
+const ModelGridOutputConfig::OutputFunction& ModelGridOutputConfig::getOutputFunction() {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getOutputFunction() on a not initialized instance.";
   }
 
   return m_output_function;
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

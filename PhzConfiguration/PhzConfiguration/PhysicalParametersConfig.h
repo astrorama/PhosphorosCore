@@ -23,16 +23,15 @@
  */
 
 #ifndef PHZCONFIGURATION_PHYSICALPARAMETER_H
-#define	PHZCONFIGURATION_PHYSICALPARAMETER_H
+#define PHZCONFIGURATION_PHYSICALPARAMETER_H
 
-#include <cstdlib>
-#include <string>
-#include <map>
-#include <tuple>
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzOutput/PhzColumnHandlers/PhysicalParameter.h"
-
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
+#include <map>
+#include <string>
+#include <tuple>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -47,11 +46,9 @@ namespace PhzConfiguration {
  *
 .
  */
-class
-PhysicalParametersConfig : public Configuration::Configuration {
+class PhysicalParametersConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief constructor
    */
@@ -60,33 +57,26 @@ public:
   /**
    * @brief Destructor
    */
-  virtual ~
-  PhysicalParametersConfig() = default;
-
+  virtual ~PhysicalParametersConfig() = default;
 
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
-
   void initialize(const UserValues& args) override;
 
-
   const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& getParamConfig() const;
-
 
   std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter> getLikelihoodOutputHandler() const;
   std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter> getPosteriorOutputHandler() const;
 
-  std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> readConfig(boost::filesystem::path path) const;
+  std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>
+  readConfig(boost::filesystem::path path) const;
 
 private:
-
   std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> m_param_config = {};
 
 }; /* End of AuxDataDirConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_PHYSICALPARAMETER_H */
-
+#endif /* PHZCONFIGURATION_PHYSICALPARAMETER_H */

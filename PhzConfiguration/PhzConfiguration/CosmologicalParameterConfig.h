@@ -23,14 +23,13 @@
  */
 
 #ifndef PHZCONFIGURATION_COSMOLOGICALPARAMETERCONFIG_H
-#define	PHZCONFIGURATION_COSMOLOGICALPARAMETERCONFIG_H
+#define PHZCONFIGURATION_COSMOLOGICALPARAMETERCONFIG_H
 
-#include <cstdlib>
-#include <string>
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhysicsUtils/CosmologicalParameters.h"
-
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
+#include <string>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -45,7 +44,6 @@ namespace PhzConfiguration {
 class CosmologicalParameterConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief constructor
    */
@@ -81,14 +79,11 @@ public:
   const PhysicsUtils::CosmologicalParameters& getCosmologicalParam();
 
 private:
-
   PhysicsUtils::CosmologicalParameters m_cosmological_param;
 
 }; /* End of CosmologicalParameterConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_COSMOLOGICALPARAMETERCONFIG_H */
-
+#endif /* PHZCONFIGURATION_COSMOLOGICALPARAMETERCONFIG_H */

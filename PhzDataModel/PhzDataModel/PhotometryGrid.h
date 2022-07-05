@@ -341,10 +341,11 @@ struct GridCellManagerTraits<PhzDataModel::PhotometryCellManager> {
    * A unique_ptr on the new PhotometryCellManager.
    *
    */
-  static std::unique_ptr<PhzDataModel::PhotometryCellManager> factory(size_t size, std::vector<std::string> filter_names);
+  static std::unique_ptr<PhzDataModel::PhotometryCellManager> factory(size_t                   size,
+                                                                      std::vector<std::string> filter_names);
 
-  static std::unique_ptr<PhzDataModel::PhotometryCellManager> factory(size_t                                size,
-                                                                      std::vector<XYDataset::QualifiedName> filter_names);
+  static std::unique_ptr<PhzDataModel::PhotometryCellManager>
+  factory(size_t size, std::vector<XYDataset::QualifiedName> filter_names);
 
   /**
    * @brief Initialize from another PhotometryCellManager

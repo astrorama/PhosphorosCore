@@ -25,11 +25,11 @@
 #ifndef _PHZCONFIGURATION_FILTERVARIATIONCOEFFICIENTCONFIG_H
 #define _PHZCONFIGURATION_FILTERVARIATIONCOEFFICIENTCONFIG_H
 
-#include <map>
-#include <string>
+#include "Configuration/Configuration.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
-#include "Configuration/Configuration.h"
+#include <map>
+#include <string>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -43,7 +43,6 @@ namespace PhzConfiguration {
 class FilterVariationCoefficientGridConfig : public Configuration::Configuration {
 
 public:
-
   /// Constructs a new FilterVariationCoefficientGridConfig object
   FilterVariationCoefficientGridConfig(long manager_id);
 
@@ -73,7 +72,8 @@ public:
    * @details
    * If the correction-coefficient-grid-file path is relative, it is relative to the directory
    * INTERMEDIATE_DIR/CATALOG_TYPE/GalacticCorrectionCoefficientGrids. It it is missing completely the
-   * default is INTERMEDIATE_DIR/CATALOG_TYPE/GalacticCorrectionCoefficientGrids/galactic_correction_coefficient_grid.dat.
+   * default is
+   * INTERMEDIATE_DIR/CATALOG_TYPE/GalacticCorrectionCoefficientGrids/galactic_correction_coefficient_grid.dat.
    *
    * @param args
    *    The user parameters
@@ -104,14 +104,12 @@ public:
   const std::map<std::string, PhzDataModel::PhotometryGrid>& getFilterVariationCoefficientGrid();
 
 private:
-
-  PhzDataModel::PhotometryGridInfo m_info;
+  PhzDataModel::PhotometryGridInfo                    m_info;
   std::map<std::string, PhzDataModel::PhotometryGrid> m_grids;
 
 }; /* End of FilterVariationCoefficientGridConfig class */
 
 } /* namespace PhzConfiguration */
 } /* namespace Euclid */
-
 
 #endif

@@ -23,11 +23,11 @@
  */
 
 #ifndef PHZCONFIGURATION_SEDPROVIDERCONFIG_H
-#define	PHZCONFIGURATION_SEDPROVIDERCONFIG_H
+#define PHZCONFIGURATION_SEDPROVIDERCONFIG_H
 
-#include <memory>
 #include "Configuration/Configuration.h"
 #include "XYDataset/XYDatasetProvider.h"
+#include <memory>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -38,7 +38,6 @@ namespace PhzConfiguration {
 class SedProviderConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief Constructor
    */
@@ -63,17 +62,14 @@ public:
    * @return
    * A shared pointer of XYDatasetProvider type
    */
-  const std::shared_ptr<XYDataset::XYDatasetProvider>  getSedDatasetProvider();
+  const std::shared_ptr<XYDataset::XYDatasetProvider> getSedDatasetProvider();
 
 private:
-
   std::shared_ptr<XYDataset::XYDatasetProvider> m_sed_provider = nullptr;
 
 }; /* End of AuxDataDirConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_SEDPROVIDERCONFIG_H */
-
+#endif /* PHZCONFIGURATION_SEDPROVIDERCONFIG_H */

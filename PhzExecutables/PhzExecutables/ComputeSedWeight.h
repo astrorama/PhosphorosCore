@@ -25,16 +25,15 @@
 #ifndef _PHZEXECUTABLES_COMPUTESEDWEIGHT_H
 #define _PHZEXECUTABLES_COMPUTESEDWEIGHT_H
 
-#include <utility>
-#include <set>
-#include <vector>
-#include <string>
 #include "Configuration/ConfigManager.h"
+#include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzLikelihood/ParallelCatalogHandler.h"
 #include "XYDataset/QualifiedName.h"
 #include "XYDataset/XYDatasetProvider.h"
-#include "PhzLikelihood/ParallelCatalogHandler.h"
-#include "PhzDataModel/PhotometryGridInfo.h"
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace Euclid {
 namespace PhzExecutables {
@@ -47,30 +46,25 @@ namespace PhzExecutables {
 class ComputeSedWeight {
 
 public:
-
   using ProgressListener = PhzLikelihood::ParallelCatalogHandler::ProgressListener;
 
   ComputeSedWeight(long sampling_number = 100000);
 
   ComputeSedWeight(ProgressListener progress_listener, long sampling_number = 100000);
 
-
-
   void run(Configuration::ConfigManager& config_manager);
-
-
 
   //------------- Ordering filter and computing colors -------------------------
 
-  std::vector<std::pair<XYDataset::QualifiedName, double>> orderFilters(
-      const std::vector<XYDataset::QualifiedName> & filter_list,
-      const std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider) const;
+  std::vector<std::pair<XYDataset::QualifiedName, double>>
+  orderFilters(const std::vector<XYDataset::QualifiedName>&        filter_list,
+               const std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider) const;
 
-  std::vector<std::vector<double>> computeSedColors(
-      const std::vector<std::pair<XYDataset::QualifiedName, double>>& ordered_filters,
-      const std::set<XYDataset::QualifiedName>& sed_list,
-      const std::shared_ptr<XYDataset::XYDatasetProvider> sed_provider,
-      const std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider) const;
+  std::vector<std::vector<double>>
+  computeSedColors(const std::vector<std::pair<XYDataset::QualifiedName, double>>& ordered_filters,
+                   const std::set<XYDataset::QualifiedName>&                       sed_list,
+                   const std::shared_ptr<XYDataset::XYDatasetProvider>             sed_provider,
+                   const std::shared_ptr<XYDataset::XYDatasetProvider>             filter_provider) const;
 
   //------------- Computing the distance between the SED and the Groups --------
 
@@ -83,13 +77,12 @@ public:
 
   double maxGap(const std::vector<std::vector<double>>& sed_distances) const;
 
-
   //------------- Computing the weights ----------------------------------------
 
   std::vector<double> getWeights(const std::vector<std::vector<double>>& seds_colors, double radius) const;
 
   //------------- handle the different set of SED ----------------------------------------
-  std::string getCellKey(double z_value, double ebv_value, const XYDataset::QualifiedName& curve_value) const ;
+  std::string getCellKey(double z_value, double ebv_value, const XYDataset::QualifiedName& curve_value) const;
 
   std::pair<std::map<std::string, std::set<XYDataset::QualifiedName>>, long>
   getSedCollection(const Euclid::PhzDataModel::PhotometryGridInfo& grid_info) const;
@@ -99,14 +92,12 @@ public:
    */
   virtual ~ComputeSedWeight() = default;
 
-
 private:
-  long m_sampling_number;
+  long             m_sampling_number;
   ProgressListener m_progress_listener;
 }; /* End of ComputeSedWeight class */
 
 } /* namespace PhzExecutables */
 } /* namespace Euclid */
 
-
-#endif // end _PHZEXECUTABLES_COMPUTESEDWEIGHT_H
+#endif  // end _PHZEXECUTABLES_COMPUTESEDWEIGHT_H

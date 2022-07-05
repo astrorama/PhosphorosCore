@@ -22,13 +22,13 @@
  * @author Florian Dubath
  */
 
-#include <boost/test/unit_test.hpp>
 #include "ElementsKernel/Temporary.h"
-#include <iostream>
+#include <boost/test/unit_test.hpp>
 #include <fstream>
+#include <iostream>
 
-#include "PhzConfiguration/SedConfig.h"
 #include "ConfigManager_fixture.h"
+#include "PhzConfiguration/SedConfig.h"
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
@@ -36,11 +36,11 @@ namespace fs = boost::filesystem;
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (SedConfig_test)
+BOOST_AUTO_TEST_SUITE(SedConfig_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, ConfigManager_fixture) {
 
   // Given
   config_manager.registerConfiguration<SedConfig>();
@@ -54,9 +54,7 @@ BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
   BOOST_CHECK_NO_THROW(options.find("sed-exclude", false));
 }
 
-
-
-BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(NotInitializedGetter_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<SedConfig>();
   config_manager.closeRegistration();
@@ -73,12 +71,12 @@ BOOST_FIXTURE_TEST_CASE(getSedList_function_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<SedConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map { };
+  std::map<std::string, po::variable_value> options_map{};
 
-  std::string aux_data_dir { "aux-data-dir" };
+  std::string       aux_data_dir{"aux-data-dir"};
   Elements::TempDir temp_dir;
-  fs::path base_directory { temp_dir.path() / "euclid" / "" };
-  fs::path mer_directory = base_directory / "SEDs" / "MER";
+  fs::path          base_directory{temp_dir.path() / "euclid" / ""};
+  fs::path          mer_directory = base_directory / "SEDs" / "MER";
 
   fs::create_directories(base_directory);
   fs::create_directories(mer_directory);
@@ -98,18 +96,17 @@ BOOST_FIXTURE_TEST_CASE(getSedList_function_test, ConfigManager_fixture) {
   file2_mer << "222.2 222.2\n";
   file2_mer.close();
 
-
-  std::string group { "MER" };
+  std::string              group{"MER"};
   std::vector<std::string> group_vector;
   group_vector.push_back(group);
   // Fill up options
   options_map["aux-data-dir"].value() = boost::any(base_directory.string());
-  options_map["sed-group"].value() = boost::any(group_vector);
+  options_map["sed-group"].value()    = boost::any(group_vector);
 
   // When
   config_manager.initialize(options_map);
   auto result = config_manager.getConfiguration<SedConfig>().getSedList();
-  auto list = result.at("");
+  auto list   = result.at("");
 
   // Then
   BOOST_CHECK_EQUAL(list[0].datasetName(), "Dataset_name_for_file1");
@@ -122,57 +119,54 @@ BOOST_FIXTURE_TEST_CASE(getSedList_function_test, ConfigManager_fixture) {
 
 BOOST_FIXTURE_TEST_CASE(getSedList_exclude_function_test, ConfigManager_fixture) {
   // Given
-   config_manager.registerConfiguration<SedConfig>();
-   config_manager.closeRegistration();
-   std::map<std::string, po::variable_value> options_map { };
+  config_manager.registerConfiguration<SedConfig>();
+  config_manager.closeRegistration();
+  std::map<std::string, po::variable_value> options_map{};
 
-   std::string aux_data_dir { "aux-data-dir" };
-   Elements::TempDir temp_dir;
-   fs::path base_directory { temp_dir.path() / "euclid" / "" };
-   fs::path mer_directory = base_directory / "SEDs" / "MER";
+  std::string       aux_data_dir{"aux-data-dir"};
+  Elements::TempDir temp_dir;
+  fs::path          base_directory{temp_dir.path() / "euclid" / ""};
+  fs::path          mer_directory = base_directory / "SEDs" / "MER";
 
-   fs::create_directories(base_directory);
-   fs::create_directories(mer_directory);
+  fs::create_directories(base_directory);
+  fs::create_directories(mer_directory);
 
+  // Create files
+  std::ofstream file1_mer((mer_directory / "file1.txt").string());
+  std::ofstream file2_mer((mer_directory / "file2.txt").string());
 
+  // Fill up file
+  file1_mer << "\n";
+  file1_mer << "# Dataset_name_for_file1\n";
+  file1_mer << "1234. 569.6\n";
+  file1_mer.close();
+  // Fill up 2nd file
+  file2_mer << "\n";
+  file2_mer << "111.1 111.1\n";
+  file2_mer << "222.2 222.2\n";
+  file2_mer.close();
 
-   // Create files
-   std::ofstream file1_mer((mer_directory / "file1.txt").string());
-   std::ofstream file2_mer((mer_directory / "file2.txt").string());
+  std::string              group{"MER"};
+  std::vector<std::string> group_vector;
+  group_vector.push_back(group);
+  // Fill up options
+  options_map["aux-data-dir"].value() = boost::any(base_directory.string());
+  options_map["sed-group"].value()    = boost::any(group_vector);
 
-   // Fill up file
-   file1_mer << "\n";
-   file1_mer << "# Dataset_name_for_file1\n";
-   file1_mer << "1234. 569.6\n";
-   file1_mer.close();
-   // Fill up 2nd file
-   file2_mer << "\n";
-   file2_mer << "111.1 111.1\n";
-   file2_mer << "222.2 222.2\n";
-   file2_mer.close();
+  std::vector<std::string> exclude_vector;
+  // Sed to be excluded and a non existant sed
+  exclude_vector.push_back((fs::path("MER") / "file2").string());
+  exclude_vector.push_back((fs::path("MER") / "FILE_DOES_NOT_EXIST").string());
+  options_map["sed-exclude"].value() = boost::any(exclude_vector);
 
-   std::string group { "MER" };
-   std::vector<std::string> group_vector;
-   group_vector.push_back(group);
-   // Fill up options
-   options_map["aux-data-dir"].value() = boost::any(base_directory.string());
-   options_map["sed-group"].value() = boost::any(group_vector);
+  // When
+  config_manager.initialize(options_map);
+  auto result = config_manager.getConfiguration<SedConfig>().getSedList();
+  auto list   = result.at("");
 
-
-   std::vector<std::string> exclude_vector;
-   // Sed to be excluded and a non existant sed
-   exclude_vector.push_back((fs::path("MER") / "file2").string());
-   exclude_vector.push_back((fs::path("MER") / "FILE_DOES_NOT_EXIST").string());
-   options_map["sed-exclude"].value() = boost::any(exclude_vector);
-
-   // When
-   config_manager.initialize(options_map);
-   auto result = config_manager.getConfiguration<SedConfig>().getSedList();
-   auto list = result.at("");
-
-   // Then
-   BOOST_CHECK_EQUAL(list.size(), 1);
-   BOOST_CHECK_EQUAL(list[0].qualifiedName(), (fs::path("MER") / "Dataset_name_for_file1").string());
+  // Then
+  BOOST_CHECK_EQUAL(list.size(), 1);
+  BOOST_CHECK_EQUAL(list[0].qualifiedName(), (fs::path("MER") / "Dataset_name_for_file1").string());
 }
 
 //-----------------------------------------------------------------------------
@@ -184,13 +178,13 @@ BOOST_FIXTURE_TEST_CASE(getSedList_add_function_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<SedConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map { };
+  std::map<std::string, po::variable_value> options_map{};
 
-  std::string aux_data_dir { "aux-data-dir" };
+  std::string       aux_data_dir{"aux-data-dir"};
   Elements::TempDir temp_dir;
-  fs::path base_directory { temp_dir.path() / "euclid" / "" };
-  fs::path mer_directory = base_directory / "SEDs" / "MER";
-  fs::path cosmos_directory = base_directory / "SEDs" / "COSMOS";
+  fs::path          base_directory{temp_dir.path() / "euclid" / ""};
+  fs::path          mer_directory    = base_directory / "SEDs" / "MER";
+  fs::path          cosmos_directory = base_directory / "SEDs" / "COSMOS";
 
   fs::create_directories(base_directory);
   fs::create_directories(mer_directory);
@@ -217,28 +211,26 @@ BOOST_FIXTURE_TEST_CASE(getSedList_add_function_test, ConfigManager_fixture) {
   file3_cos << "333.3 333.3\n";
   file3_cos.close();
 
-  std::string group { "MER" };
+  std::string              group{"MER"};
   std::vector<std::string> group_vector;
   group_vector.push_back(group);
   // Fill up options
   options_map["aux-data-dir"].value() = boost::any(base_directory.string());
-  options_map["sed-group"].value() = boost::any(group_vector);
+  options_map["sed-group"].value()    = boost::any(group_vector);
 
   std::vector<std::string> add_vector;
   // Sed to be added
-  add_vector.push_back(
-      (fs::path("COSMOS") / "Dataset_name_for_file3").string());
+  add_vector.push_back((fs::path("COSMOS") / "Dataset_name_for_file3").string());
   options_map["sed-name"].value() = boost::any(add_vector);
 
   // When
   config_manager.initialize(options_map);
   auto result = config_manager.getConfiguration<SedConfig>().getSedList();
-  auto list = result.at("");
+  auto list   = result.at("");
 
   // Then
   BOOST_CHECK_EQUAL(list.size(), 3);
-  BOOST_CHECK_EQUAL(list[2].qualifiedName(),
-      (fs::path("COSMOS") / "Dataset_name_for_file3").string());
+  BOOST_CHECK_EQUAL(list[2].qualifiedName(), (fs::path("COSMOS") / "Dataset_name_for_file3").string());
 }
 
 //-----------------------------------------------------------------------------
@@ -249,12 +241,12 @@ BOOST_FIXTURE_TEST_CASE(getSedList_add_twice_function_test, ConfigManager_fixtur
   // Given
   config_manager.registerConfiguration<SedConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map { };
+  std::map<std::string, po::variable_value> options_map{};
 
-  std::string aux_data_dir { "aux-data-dir" };
+  std::string       aux_data_dir{"aux-data-dir"};
   Elements::TempDir temp_dir;
-  fs::path base_directory { temp_dir.path() / "euclid" / "" };
-  fs::path mer_directory = base_directory / "SEDs" / "MER";
+  fs::path          base_directory{temp_dir.path() / "euclid" / ""};
+  fs::path          mer_directory = base_directory / "SEDs" / "MER";
 
   fs::create_directories(base_directory);
   fs::create_directories(mer_directory);
@@ -274,12 +266,12 @@ BOOST_FIXTURE_TEST_CASE(getSedList_add_twice_function_test, ConfigManager_fixtur
   file2_mer << "222.2 222.2\n";
   file2_mer.close();
 
-  std::string group { "MER" };
+  std::string              group{"MER"};
   std::vector<std::string> group_vector;
   group_vector.push_back(group);
   // Fill up options
   options_map["aux-data-dir"].value() = boost::any(base_directory.string());
-  options_map["sed-group"].value() = boost::any(group_vector);
+  options_map["sed-group"].value()    = boost::any(group_vector);
 
   std::vector<std::string> add_vector;
   // Add twice the same sed
@@ -289,16 +281,13 @@ BOOST_FIXTURE_TEST_CASE(getSedList_add_twice_function_test, ConfigManager_fixtur
   // When
   config_manager.initialize(options_map);
   auto result = config_manager.getConfiguration<SedConfig>().getSedList();
-  auto list = result.at("");
+  auto list   = result.at("");
 
   // Then
   BOOST_CHECK_EQUAL(list.size(), 2);
-  BOOST_CHECK_EQUAL(list[0].qualifiedName(),
-      (fs::path("MER") / "Dataset_name_for_file1").string());
+  BOOST_CHECK_EQUAL(list[0].qualifiedName(), (fs::path("MER") / "Dataset_name_for_file1").string());
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

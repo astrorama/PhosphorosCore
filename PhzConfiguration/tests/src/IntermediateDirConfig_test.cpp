@@ -24,8 +24,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "PhzConfiguration/IntermediateDirConfig.h"
 #include "ConfigManager_fixture.h"
+#include "PhzConfiguration/IntermediateDirConfig.h"
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
@@ -33,11 +33,11 @@ namespace fs = boost::filesystem;
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (IntermediateDirConfig_test)
+BOOST_AUTO_TEST_SUITE(IntermediateDirConfig_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, ConfigManager_fixture) {
 
   // Given
   config_manager.registerConfiguration<IntermediateDirConfig>();
@@ -47,10 +47,9 @@ BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
 
   // Then
   BOOST_CHECK_NO_THROW(options.find("intermediate-products-dir", false));
-
 }
 
-BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(NotInitializedGetter_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<IntermediateDirConfig>();
   config_manager.closeRegistration();
@@ -68,8 +67,8 @@ BOOST_FIXTURE_TEST_CASE(IntermediateDirAbsolute_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<IntermediateDirConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
-  fs::path absolute_path {"/an/absolute/path"};
+  std::map<std::string, po::variable_value> options_map{};
+  fs::path                                  absolute_path{"/an/absolute/path"};
   options_map["intermediate-products-dir"].value() = boost::any(absolute_path.string());
 
   // When
@@ -79,7 +78,6 @@ BOOST_FIXTURE_TEST_CASE(IntermediateDirAbsolute_test, ConfigManager_fixture) {
   // Then
   BOOST_CHECK(result.is_absolute());
   BOOST_CHECK_EQUAL(result, absolute_path);
-
 }
 
 //-----------------------------------------------------------------------------
@@ -92,8 +90,8 @@ BOOST_FIXTURE_TEST_CASE(IntermediateDirRelative_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<IntermediateDirConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
-  fs::path relative_path {"a/relative/path"};
+  std::map<std::string, po::variable_value> options_map{};
+  fs::path                                  relative_path{"a/relative/path"};
   options_map["intermediate-products-dir"].value() = boost::any(relative_path.string());
 
   // When
@@ -103,7 +101,6 @@ BOOST_FIXTURE_TEST_CASE(IntermediateDirRelative_test, ConfigManager_fixture) {
   // Then
   BOOST_CHECK(result.is_absolute());
   BOOST_CHECK_EQUAL(result, fs::current_path() / relative_path);
-
 }
 
 //-----------------------------------------------------------------------------
@@ -115,9 +112,9 @@ BOOST_FIXTURE_TEST_CASE(IntermediateDirDefault_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<IntermediateDirConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
+  std::map<std::string, po::variable_value> options_map{};
 
-  fs::path absolute_path {"/an/absolute/path"};
+  fs::path absolute_path{"/an/absolute/path"};
   options_map["phosphoros-root"].value() = boost::any(absolute_path.string());
 
   // When
@@ -127,11 +124,8 @@ BOOST_FIXTURE_TEST_CASE(IntermediateDirDefault_test, ConfigManager_fixture) {
   // Then
   BOOST_CHECK(result.is_absolute());
   BOOST_CHECK_EQUAL(result, absolute_path / "IntermediateProducts");
-
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

@@ -5,13 +5,13 @@
  */
 
 #ifndef PHZDATAMODEL_SERIALIZATION_QUALIFIEDNAME_H
-#define	PHZDATAMODEL_SERIALIZATION_QUALIFIEDNAME_H
+#define PHZDATAMODEL_SERIALIZATION_QUALIFIEDNAME_H
 
-#include <string>
-#include <vector>
+#include "XYDataset/QualifiedName.h"
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
-#include "XYDataset/QualifiedName.h"
+#include <string>
+#include <vector>
 
 namespace boost {
 namespace serialization {
@@ -23,7 +23,7 @@ namespace serialization {
  * Everything is done in the constructor. Nothing here.
  *
  */
-template<typename Archive>
+template <typename Archive>
 void serialize(Archive&, Euclid::XYDataset::QualifiedName&, const unsigned int) {
   // Nothing here. Everything is done in the constructor
 }
@@ -35,7 +35,7 @@ void serialize(Archive&, Euclid::XYDataset::QualifiedName&, const unsigned int) 
  * Stores the Groups vector then the (unqualified)name.
  *
  */
-template<typename Archive>
+template <typename Archive>
 void save_construct_data(Archive& ar, const Euclid::XYDataset::QualifiedName* t, const unsigned int) {
   std::vector<std::string> groups = t->groups();
   ar << groups;
@@ -50,17 +50,16 @@ void save_construct_data(Archive& ar, const Euclid::XYDataset::QualifiedName* t,
  * Reads the Groups vector then the (unqualified)name.
  *
  */
-template<typename Archive>
+template <typename Archive>
 void load_construct_data(Archive& ar, Euclid::XYDataset::QualifiedName* t, const unsigned int) {
   std::vector<std::string> groups;
   ar >> groups;
   std::string name;
   ar >> name;
-  ::new(t) Euclid::XYDataset::QualifiedName(std::move(groups), std::move(name));
+  ::new (t) Euclid::XYDataset::QualifiedName(std::move(groups), std::move(name));
 }
 
-} // end of namespace serialization
-} // end of namespace boost
+}  // end of namespace serialization
+}  // end of namespace boost
 
-#endif	/* PHZDATAMODEL_SERIALIZATION_QUALIFIEDNAME_H */
-
+#endif /* PHZDATAMODEL_SERIALIZATION_QUALIFIEDNAME_H */

@@ -55,7 +55,9 @@ static const std::string SED_DATA_NAME_PATTERN{"sed_data_%1%.npy"};
 static const std::string PDZ_DATA_NAME_PATTERN{"pdz_data_%1%.npy"};
 
 ReferenceSample::ReferenceSample(const boost::filesystem::path& path, size_t max_file_size)
-    : m_root_path{path}, m_max_file_size(max_file_size), m_index{std::make_shared<IndexProvider>(path / INDEX_FILE_NAME)} {
+    : m_root_path{path}
+    , m_max_file_size(max_file_size)
+    , m_index{std::make_shared<IndexProvider>(path / INDEX_FILE_NAME)} {
   initSedProviders();
   initPdzProviders();
 }
@@ -67,7 +69,8 @@ ReferenceSample ReferenceSample::create(const boost::filesystem::path& path, siz
   return {path, max_file_size};
 }
 
-ReferenceSample::ReferenceSample(boost::filesystem::path root_path, size_t max_file_size, std::shared_ptr<IndexProvider> index)
+ReferenceSample::ReferenceSample(boost::filesystem::path root_path, size_t max_file_size,
+                                 std::shared_ptr<IndexProvider> index)
     : m_root_path(std::move(root_path)), m_max_file_size(max_file_size), m_index(std::move(index)) {
   initSedProviders();
   initPdzProviders();
@@ -183,7 +186,8 @@ void ReferenceSample::addPdzData(int64_t id, const XYDataset::XYDataset& data) {
     y_axis.push_back(p.second);
   }
 
-  double integral = MathUtils::integrate(*MathUtils::interpolate(data, MathUtils::InterpolationType::LINEAR), x_min, x_max);
+  double integral =
+      MathUtils::integrate(*MathUtils::interpolate(data, MathUtils::InterpolationType::LINEAR), x_min, x_max);
 
   for (auto& y : y_axis) {
     y /= integral;

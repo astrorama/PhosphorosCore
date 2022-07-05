@@ -23,14 +23,13 @@
  */
 
 #ifndef PHZCONFIGURATION_FILTERCONFIG_H
-#define	PHZCONFIGURATION_FILTERCONFIG_H
+#define PHZCONFIGURATION_FILTERCONFIG_H
 
-#include <cstdlib>
-#include <string>
+#include "Configuration/Configuration.h"
 #include "XYDataset/QualifiedName.h"
 #include <boost/filesystem/operations.hpp>
-#include "Configuration/Configuration.h"
-
+#include <cstdlib>
+#include <string>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -82,17 +81,14 @@ public:
    * @return
    * A vector of QualifiedName type
    */
-  const std::vector<XYDataset::QualifiedName> & getFilterList();
+  const std::vector<XYDataset::QualifiedName>& getFilterList();
 
 private:
-
   std::vector<XYDataset::QualifiedName> m_filter_list;
 
 }; /* End of FilterConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_FILTERCONFIG_H */
-
+#endif /* PHZCONFIGURATION_FILTERCONFIG_H */

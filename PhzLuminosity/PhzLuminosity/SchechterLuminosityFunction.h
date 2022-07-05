@@ -8,11 +8,10 @@
 #ifndef PHZLUMINOSITY_PHZLUMINOSITY_SCHECHTERLUMINOSITYFUNCTION_H_
 #define PHZLUMINOSITY_PHZLUMINOSITY_SCHECHTERLUMINOSITYFUNCTION_H_
 
+#include "MathUtils/function/Integrable.h"
+#include "XYDataset/QualifiedName.h"
 #include <cmath>
 #include <vector>
-#include "XYDataset/QualifiedName.h"
-#include "MathUtils/function/Integrable.h"
-
 
 namespace Euclid {
 namespace PhzLuminosity {
@@ -39,16 +38,16 @@ public:
    * @param inMag
    * Switch between the Magnitude or the flux version of the function
    */
-  SchechterLuminosityFunction(double phi_star, double mag_L_star ,double alpha,bool inMag=true);
+  SchechterLuminosityFunction(double phi_star, double mag_L_star, double alpha, bool inMag = true);
 
   /**
-    * @brief Functional call.
-    *
-    * @param luminosity
-    * The Absolute Magnitude/Flux in the appropriated filter
-    *
-    * @return The density of galaxy by computing the Schechter function.
-    */
+   * @brief Functional call.
+   *
+   * @param luminosity
+   * The Absolute Magnitude/Flux in the appropriated filter
+   *
+   * @return The density of galaxy by computing the Schechter function.
+   */
   double operator()(const double luminosity) const override;
 
   void operator()(const std::vector<double>& xs, std::vector<double>& output) const override;
@@ -63,16 +62,14 @@ public:
 
   std::unique_ptr<MathUtils::Function> clone() const override;
 
-
 private:
   double m_phi_star;
   double m_mag_L_star;
   double m_alpha;
-  bool m_in_mag;
+  bool   m_in_mag;
 };
 
-}
-}
-
+}  // namespace PhzLuminosity
+}  // namespace Euclid
 
 #endif /* PHZLUMINOSITY_PHZLUMINOSITY_SCHECHTERLUMINOSITYFUNCTION_H_ */

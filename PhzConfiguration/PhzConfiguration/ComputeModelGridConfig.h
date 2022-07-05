@@ -23,13 +23,12 @@
  */
 
 #ifndef PHZCONFIGURATION_COMPUTEMODELGRIDCONFIG_H
-#define	PHZCONFIGURATION_COMPUTEMODELGRIDCONFIG_H
+#define PHZCONFIGURATION_COMPUTEMODELGRIDCONFIG_H
 
+#include "Configuration/Configuration.h"
+#include <boost/filesystem/operations.hpp>
 #include <cstdlib>
 #include <string>
-#include <boost/filesystem/operations.hpp>
-#include "Configuration/Configuration.h"
-
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -44,7 +43,6 @@ namespace PhzConfiguration {
 class ComputeModelGridConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief Constructor
    */
@@ -61,12 +59,9 @@ public:
    */
   void preInitialize(const UserValues& args) override;
 
-
 }; /* End of ComputeModelGridConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_COMPUTEMODELGRIDCONFIG_H */
-
+#endif /* PHZCONFIGURATION_COMPUTEMODELGRIDCONFIG_H */

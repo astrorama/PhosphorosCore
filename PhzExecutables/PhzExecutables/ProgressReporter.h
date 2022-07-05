@@ -26,16 +26,16 @@
 #ifndef _PHZEXECUTABLES_PROGRESSREPORTER_H
 #define _PHZEXECUTABLES_PROGRESSREPORTER_H
 
-#include <chrono>
 #include "ElementsKernel/Logging.h"
+#include <chrono>
 
 namespace Euclid {
 namespace PhzExecutables {
 
-
 /**
  * @class ProgressReporter
- * @brief Format and display the progress of the computation using a Logger, if requested output the speed of the computation
+ * @brief Format and display the progress of the computation using a Logger, if requested output the speed of the
+ * computation
  */
 class ProgressReporter {
 
@@ -62,18 +62,14 @@ public:
    */
   void operator()(size_t step, size_t total);
 
-
 private:
-  bool	m_display_perf;
-  int    m_last_progress = -1, m_last_done = 0;
+  bool                                               m_display_perf;
+  int                                                m_last_progress = -1, m_last_done = 0;
   std::chrono::time_point<std::chrono::system_clock> m_last_time = std::chrono::system_clock::now();
-  Elements::Logging m_logger;
+  Elements::Logging                                  m_logger;
 };
 
 }  // namespace PhzExecutables
 }  // namespace Euclid
 
-#endif // _PHZEXECUTABLES_PROGRESSREPORTER_H
-
-
-
+#endif  // _PHZEXECUTABLES_PROGRESSREPORTER_H

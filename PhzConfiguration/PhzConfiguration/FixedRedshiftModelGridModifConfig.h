@@ -33,7 +33,6 @@ namespace PhzConfiguration {
 class FixedRedshiftModelGridModifConfig : public Configuration::Configuration {
 
 public:
-
   FixedRedshiftModelGridModifConfig(long manager_id);
 
   /**
@@ -41,13 +40,10 @@ public:
    */
   virtual ~FixedRedshiftModelGridModifConfig() = default;
 
-
   void postInitialize(const UserValues& args) override;
-
 };
 
 } /* namespace PhzConfiguration */
 } /* namespace Euclid */
-
 
 #endif

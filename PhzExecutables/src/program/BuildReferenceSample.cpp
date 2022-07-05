@@ -26,22 +26,22 @@
 #include <map>
 #include <string>
 
-#include <boost/program_options.hpp>
+#include <ElementsKernel/ProgramHeaders.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
-#include <ElementsKernel/ProgramHeaders.h>
+#include <boost/program_options.hpp>
 
 #include "MathUtils/interpolation/interpolation.h"
 
 #include "PhzModeling/ExtinctionFunctor.h"
 #include "PhzModeling/RedshiftFunctor.h"
 
+#include "Configuration/Utils.h"
 #include "PhzConfiguration/BuildReferenceSampleConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
 #include "PhzReferenceSample/ReferenceSample.h"
-#include "Configuration/Utils.h"
 
 #include "PhzExecutables/BuildReferenceSample.h"
 
@@ -54,10 +54,8 @@ static Elements::Logging logger = Elements::Logging::getLogger("BuildReferenceSa
 
 static long config_manager_id = getUniqueManagerId();
 
-
 class BuildReferenceSample : public Elements::Program {
 public:
-
   po::options_description defineSpecificProgramOptions() override {
     auto& config_manager = ConfigManager::getInstance(config_manager_id);
     config_manager.registerConfiguration<BuildReferenceSampleConfig>();
@@ -72,7 +70,6 @@ public:
 
     return Elements::ExitCode::OK;
   }
-
 };
 
 MAIN_FOR(BuildReferenceSample)

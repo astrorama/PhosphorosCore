@@ -25,13 +25,13 @@
 #ifndef PHZMODELING_APPLYFILTERFUNCTOR_H
 #define PHZMODELING_APPLYFILTERFUNCTOR_H
 
-#include <utility>
 #include "MathUtils/function/Function.h"
+#include <utility>
 
 namespace Euclid {
 
 namespace XYDataset {
-  class XYDataset;
+class XYDataset;
 }
 
 namespace PhzModeling {
@@ -47,7 +47,6 @@ namespace PhzModeling {
 class ApplyFilterFunctor {
 
 public:
-
   /**
    * @brief Function Call Operator
    * @details
@@ -70,26 +69,19 @@ public:
    * @return
    * A XYDataset representing the filtered Model.
    */
-  XYDataset::XYDataset operator()(
-    const XYDataset::XYDataset& model,
-    const std::pair<double,double>& filter_range,
-    const MathUtils::Function& filter
-  ) const;
+  XYDataset::XYDataset operator()(const XYDataset::XYDataset& model, const std::pair<double, double>& filter_range,
+                                  const MathUtils::Function& filter) const;
 
   /**
    * @brief Function Call Operator
    * @details
    * Works like the operator over a XYDataset, but allows the caller to do the interpolation only once for the model
    */
-  XYDataset::XYDataset operator()(
-      const MathUtils::Function& model,
-      const std::pair<double,double>& filter_range,
-      const MathUtils::Function& filter
-  ) const;
-
+  XYDataset::XYDataset operator()(const MathUtils::Function& model, const std::pair<double, double>& filter_range,
+                                  const MathUtils::Function& filter) const;
 };
 
-} // end of namespace PhzModeling
-} // end of namespace Euclid
+}  // end of namespace PhzModeling
+}  // end of namespace Euclid
 
-#endif    /* PHZMODELING_APPLYFILTERFUNCTOR_H */
+#endif /* PHZMODELING_APPLYFILTERFUNCTOR_H */

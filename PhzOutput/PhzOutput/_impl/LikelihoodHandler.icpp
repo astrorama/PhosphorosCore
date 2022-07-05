@@ -243,7 +243,7 @@ void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(const SourceCatalo
     if (!m_current_file_has_comment) {
       m_current_file_has_comment = true;
       auto comment               = Sampler::createComment(results);
-      m_sample_fits_writer->addComment(comment.str());
+      m_sample_fits_writer->addComment(comment);
       loggerPhz.info() << "Add comment to the sample file ";
     }
     m_sample_fits_writer->addData(Table::Table{sampling_row_list});

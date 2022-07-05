@@ -1,19 +1,19 @@
-/*  
- * Copyright (C) 2012-2020 Euclid Science Ground Segment    
- *  
+/*
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ *
  * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 3.0 of the License, or (at your option)  
- * any later version.  
- *  
- * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
- * details.  
- *  
- * You should have received a copy of the GNU Lesser General Public License 
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 /**
@@ -25,11 +25,11 @@
 #ifndef _PHZCONFIGURATION_ERRORADJUSTMENTCONFIG_H
 #define _PHZCONFIGURATION_ERRORADJUSTMENTCONFIG_H
 
-#include <string>
-#include <vector>
-#include <map>
 #include "Configuration/Configuration.h"
 #include "PhzDataModel/AdjustErrorParamMap.h"
+#include <map>
+#include <string>
+#include <vector>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -40,16 +40,15 @@ namespace PhzConfiguration {
  * @brief Class to provide the map of Error adjustment parameter
  *
  */
-class ErrorAdjustmentConfig: public Configuration::Configuration {
+class ErrorAdjustmentConfig : public Configuration::Configuration {
 
 public:
-
-  ErrorAdjustmentConfig (long manager_id);
+  ErrorAdjustmentConfig(long manager_id);
 
   /**
    * @brief Destructor
    */
-  virtual ~ErrorAdjustmentConfig () = default;
+  virtual ~ErrorAdjustmentConfig() = default;
 
   /**
    * Two program options are specified through this method
@@ -58,7 +57,7 @@ public:
    * - enable-error-adjustment : Use or not the error adjustment: YES or NO (default)
    *
    */
-  std::map<std::string, OptionDescriptionList> getProgramOptions () override;
+  std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
   /**
    * Check that the enable-error-adjustment provided is either YES ot NO and
@@ -69,7 +68,7 @@ public:
    *
    * @throw ElementException if enable-error-adjustment is different than YES/NO
    */
-  void preInitialize (const UserValues& args) override;
+  void preInitialize(const UserValues& args) override;
 
   /**
    * If enable-error-adjustment is YES: It reads the error adjustment param
@@ -85,18 +84,16 @@ public:
    * @param args
    *  Map of all program options provided
    */
-  void initialize (const UserValues& args) override;
+  void initialize(const UserValues& args) override;
 
   /**
    *
    * @return The AdjustErrorParamMap
    */
-  const PhzDataModel::AdjustErrorParamMap& getAdjustErrorParamMap ();
+  const PhzDataModel::AdjustErrorParamMap& getAdjustErrorParamMap();
 
 private:
-
   PhzDataModel::AdjustErrorParamMap m_adjust_error_param_map;
-
 };
 /* End of ErrorAdjustementConfig class */
 

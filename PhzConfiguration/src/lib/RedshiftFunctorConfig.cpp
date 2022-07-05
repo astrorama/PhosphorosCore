@@ -22,16 +22,15 @@
  * @author Florian Dubath
  */
 
-#include <cstdlib>
-#include <unordered_set>
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
+#include <cstdlib>
+#include <unordered_set>
 
-#include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhysicsUtils/CosmologicalParameters.h"
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
 
 #include "PhzConfiguration/RedshiftFunctorConfig.h"
-
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -45,19 +44,13 @@ RedshiftFunctorConfig::RedshiftFunctorConfig(long manager_id) : Configuration(ma
   declareDependency<CosmologicalParameterConfig>();
 }
 
-
 const PhzModeling::RedshiftFunctor RedshiftFunctorConfig::getRedshiftFunctor() {
-  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-       throw Elements::Exception() << "Call to getRedshiftFunctor() on a not initialized instance.";
-   }
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getRedshiftFunctor() on a not initialized instance.";
+  }
   auto param = getDependency<CosmologicalParameterConfig>().getCosmologicalParam();
   return PhzModeling::RedshiftFunctor{param};
-
 }
 
-
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

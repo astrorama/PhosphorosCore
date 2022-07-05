@@ -1,20 +1,20 @@
-/*  
- * Copyright (C) 2012-2020 Euclid Science Ground Segment    
- *  
+/*
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ *
  * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 3.0 of the License, or (at your option)  
- * any later version.  
- *  
- * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
- * details.  
- *  
- * You should have received a copy of the GNU Lesser General Public License 
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
- */  
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 /**
  * @file src/lib/FixedRedshiftConfig.cpp
@@ -31,25 +31,24 @@ namespace po = boost::program_options;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string FIXED_REDSHIFT_COLUMN {"fixed-redshift-column"};
+static const std::string FIXED_REDSHIFT_COLUMN{"fixed-redshift-column"};
 
 FixedRedshiftConfig::FixedRedshiftConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<Euclid::Configuration::CatalogConfig>();
 }
 
-auto FixedRedshiftConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList>{
-  return {{"Input catalog options", {
-    {FIXED_REDSHIFT_COLUMN.c_str(), po::value<std::string>(),
-        "If given, it fixes the redshift of the source to this column"}
-  }}};
+auto FixedRedshiftConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
+  return {{"Input catalog options",
+           {{FIXED_REDSHIFT_COLUMN.c_str(), po::value<std::string>(),
+             "If given, it fixes the redshift of the source to this column"}}}};
 }
 
 void FixedRedshiftConfig::initialize(const UserValues& args) {
   if (args.find(FIXED_REDSHIFT_COLUMN) != args.end()) {
-    auto& catalog_conf = getDependency<Euclid::Configuration::CatalogConfig>();
-    auto column_info = catalog_conf.getColumnInfo();
-    auto fixed_z_column = args.at(FIXED_REDSHIFT_COLUMN).as<std::string>();
-    auto handler = std::make_shared<PhzDataModel::FixedRedshiftFromRow>(column_info, fixed_z_column);
+    auto& catalog_conf   = getDependency<Euclid::Configuration::CatalogConfig>();
+    auto  column_info    = catalog_conf.getColumnInfo();
+    auto  fixed_z_column = args.at(FIXED_REDSHIFT_COLUMN).as<std::string>();
+    auto  handler        = std::make_shared<PhzDataModel::FixedRedshiftFromRow>(column_info, fixed_z_column);
     catalog_conf.addAttributeHandler(handler);
     m_do_fix_redshift = true;
   }
@@ -57,13 +56,10 @@ void FixedRedshiftConfig::initialize(const UserValues& args) {
 
 bool FixedRedshiftConfig::isRedshiftFixed() {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
-        throw Elements::Exception() << "Call to isRedshiftFixed() on a not initialized instance.";
+    throw Elements::Exception() << "Call to isRedshiftFixed() on a not initialized instance.";
   }
   return m_do_fix_redshift;
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

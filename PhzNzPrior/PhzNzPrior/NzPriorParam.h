@@ -17,7 +17,8 @@ namespace PhzNzPrior {
 class NzPriorParam {
 public:
   NzPriorParam(double z0t1, double kmt1, double alphat1, double kt1, double ft1, double cst1, double z0t2, double kmt2,
-               double alphat2, double kt2, double ft2, double cst2, double z0t3, double kmt3, double alphat3, double cst3);
+               double alphat2, double kt2, double ft2, double cst2, double z0t3, double kmt3, double alphat3,
+               double cst3);
 
   static NzPriorParam defaultParam();
 

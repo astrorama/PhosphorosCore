@@ -25,20 +25,20 @@
 #ifndef PHZMODELING_MODELFLUXALGORITHM_H
 #define PHZMODELING_MODELFLUXALGORITHM_H
 
-#include <functional>
 #include "MathUtils/function/Function.h"
 #include "PhzModeling/IntegrateLambdaTimeDatasetFunctor.h"
+#include <functional>
 
 namespace Euclid {
 
 namespace XYDataset {
-  class XYDataset;
+class XYDataset;
 }
 
 namespace PhzModeling {
 
 /**
-* @class PhzModeling::ModelFluxAlgorithm
+ * @class PhzModeling::ModelFluxAlgorithm
  * @brief
  * Compute the Fluxes of a model relative to a set of filters.
  * @details
@@ -49,20 +49,16 @@ namespace PhzModeling {
  */
 class ModelFluxAlgorithm {
 
-
 public:
-  
   /// Signature of the functions which is used for applying the filter
-  typedef std::function<XYDataset::XYDataset (const XYDataset::XYDataset& dataset,
-                                              const std::pair<double,double>& range,
-                                              const MathUtils::Function& filter)
-                       > ApplyFilterFunction;
-  
+  typedef std::function<XYDataset::XYDataset(const XYDataset::XYDataset&      dataset,
+                                             const std::pair<double, double>& range, const MathUtils::Function& filter)>
+      ApplyFilterFunction;
+
   /// Signature of the function which is used for integrating the model dataset
-  typedef std::function<double (const XYDataset::XYDataset& dataset,
-                                std::pair<double, double> range)
-                       > IntegrateDatasetFunction;
-  
+  typedef std::function<double(const XYDataset::XYDataset& dataset, std::pair<double, double> range)>
+      IntegrateDatasetFunction;
+
   /**
    * @brief constructor
    *
@@ -77,8 +73,9 @@ public:
    * linear interpolation integration.
    *
    */
-  ModelFluxAlgorithm(ApplyFilterFunction apply_filter_function,
-      IntegrateDatasetFunction integrate_dataset_function=IntegrateLambdaTimeDatasetFunctor{MathUtils::InterpolationType::LINEAR});
+  ModelFluxAlgorithm(ApplyFilterFunction      apply_filter_function,
+                     IntegrateDatasetFunction integrate_dataset_function = IntegrateLambdaTimeDatasetFunctor{
+                         MathUtils::InterpolationType::LINEAR});
 
   /**
    * @brief  Function Call Operator
@@ -99,21 +96,18 @@ public:
    * An iterator over a FluxErrorPair on which the computed total fluxes have to be stored.
    *
    */
-  template<typename FilterIterator,typename FluxIterator>
-  void operator()(const XYDataset::XYDataset& model,
-                  FilterIterator filter_iterator_begin,
-                  FilterIterator filter_iterator_end,
-                  FluxIterator flux_iterator) const;
+  template <typename FilterIterator, typename FluxIterator>
+  void operator()(const XYDataset::XYDataset& model, FilterIterator filter_iterator_begin,
+                  FilterIterator filter_iterator_end, FluxIterator flux_iterator) const;
 
 private:
-  ApplyFilterFunction m_apply_filter_function;
+  ApplyFilterFunction      m_apply_filter_function;
   IntegrateDatasetFunction m_integrate_dataset_function;
 };
 
-
-} // end of namespace PhzModeling
-} // end of namespace Euclid
+}  // end of namespace PhzModeling
+}  // end of namespace Euclid
 
 #include "PhzModeling/_impl/ModelFluxAlgorithm.icpp"
 
-#endif    /* PHZMODELING_MODELFLUXALGORITHM_H */
+#endif /* PHZMODELING_MODELFLUXALGORITHM_H */

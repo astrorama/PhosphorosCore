@@ -81,9 +81,9 @@ public:
 
   BuildPhotometryJob(std::shared_ptr<ColumnInfo> col_info, const std::vector<QualifiedName>& filter_list,
                      const std::vector<FilterInfo>&              filter_transmissions,
-                     const std::vector<std::vector<FilterInfo>>& filter_shifted, const std::vector<double>& filter_var_sampling,
-                     const XYDataset& reddening_curve, std::unique_ptr<ReferenceSample> ref_sample, id_iterator_t start,
-                     id_iterator_t end)
+                     const std::vector<std::vector<FilterInfo>>& filter_shifted,
+                     const std::vector<double>& filter_var_sampling, const XYDataset& reddening_curve,
+                     std::unique_ptr<ReferenceSample> ref_sample, id_iterator_t start, id_iterator_t end)
       : m_col_info(std::move(col_info))
       , m_filter_list(filter_list)
       , m_filters_trans(filter_transmissions)
@@ -106,7 +106,8 @@ public:
     IntegrateLambdaTimeDatasetFunctor integrate_lambda_time_functor(Euclid::MathUtils::InterpolationType::LINEAR);
 
     ModelFluxAlgorithm           model_flux(apply_filter_functor);
-    GalacticCorrectionCalculator gal_ebv_corr_calc(m_filters_trans, apply_filter_functor, integrate_functor, m_reddening_curve);
+    GalacticCorrectionCalculator gal_ebv_corr_calc(m_filters_trans, apply_filter_functor, integrate_functor,
+                                                   m_reddening_curve);
 
     std::vector<Row>           results;
     std::vector<FluxErrorPair> fluxes(m_filter_list.size(), {0., 0.});
@@ -126,10 +127,10 @@ public:
         values.emplace_back(static_cast<float>(fluxes[j].flux));
         values.emplace_back(static_cast<float>(gal_ebv_corr[j]));
 
-        auto filter_var_corr = FilterVariationSingleGridCreator::compute_tild_coef(sed, m_filters_trans[j], m_filters_shifted[j],
-                                                                                   m_filter_var_sampling, apply_filter_functor,
-                                                                                   integrate_lambda_time_functor);
-        auto coef            = Euclid::MathUtils::linearRegression(m_filter_var_sampling, filter_var_corr);
+        auto filter_var_corr = FilterVariationSingleGridCreator::compute_tild_coef(
+            sed, m_filters_trans[j], m_filters_shifted[j], m_filter_var_sampling, apply_filter_functor,
+            integrate_lambda_time_functor);
+        auto coef = Euclid::MathUtils::linearRegression(m_filter_var_sampling, filter_var_corr);
         values.emplace_back(std::vector<float>{static_cast<float>(coef.first), static_cast<float>(coef.second)});
       }
 
@@ -163,11 +164,12 @@ static void appendTransmissionHDUs(const std::vector<QualifiedName>& filter_list
 
     std::vector<Row> rows;
     rows.reserve(filter_transmissions[i].size());
-    std::transform(
-        filter_transmissions[i].begin(), filter_transmissions[i].end(), std::back_inserter(rows),
-        [column_info](const std::pair<double, double>& pair) {
-          return Row(std::vector<Row::cell_type>{static_cast<float>(pair.first), static_cast<float>(pair.second)}, column_info);
-        });
+    std::transform(filter_transmissions[i].begin(), filter_transmissions[i].end(), std::back_inserter(rows),
+                   [column_info](const std::pair<double, double>& pair) {
+                     return Row(
+                         std::vector<Row::cell_type>{static_cast<float>(pair.first), static_cast<float>(pair.second)},
+                         column_info);
+                   });
 
     FitsWriter writer(output_path.native(), false);
     writer.setHduName(filter_list[i].qualifiedName());
@@ -216,16 +218,17 @@ public:
     auto& config_manager = ConfigManager::getInstance(config_manager_id);
     config_manager.initialize(args);
 
-    auto     output_path               = config_manager.getConfiguration<BuildPhotometryConfig>().getOutputPath();
-    auto     chunk_size                = config_manager.getConfiguration<BuildPhotometryConfig>().getChunkSize();
-    auto     input_size                = config_manager.getConfiguration<BuildPhotometryConfig>().getInputSize();
-    auto&    reference_sample          = config_manager.getConfiguration<BuildPhotometryConfig>().getReferenceSample();
-    auto     filter_provider           = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
-    auto     filter_list               = config_manager.getConfiguration<FilterConfig>().getFilterList();
-    auto     filter_var_sampling       = config_manager.getConfiguration<FilterVariationConfig>().getSampling();
-    auto&    reddening_provider        = config_manager.getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider();
-    auto     milky_way_reddening_curve = config_manager.getConfiguration<MilkyWayReddeningConfig>().getMilkyWayReddeningCurve();
-    unsigned nthreads                  = getThreadNumber();
+    auto  output_path         = config_manager.getConfiguration<BuildPhotometryConfig>().getOutputPath();
+    auto  chunk_size          = config_manager.getConfiguration<BuildPhotometryConfig>().getChunkSize();
+    auto  input_size          = config_manager.getConfiguration<BuildPhotometryConfig>().getInputSize();
+    auto& reference_sample    = config_manager.getConfiguration<BuildPhotometryConfig>().getReferenceSample();
+    auto  filter_provider     = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
+    auto  filter_list         = config_manager.getConfiguration<FilterConfig>().getFilterList();
+    auto  filter_var_sampling = config_manager.getConfiguration<FilterVariationConfig>().getSampling();
+    auto& reddening_provider = config_manager.getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider();
+    auto  milky_way_reddening_curve =
+        config_manager.getConfiguration<MilkyWayReddeningConfig>().getMilkyWayReddeningCurve();
+    unsigned nthreads = getThreadNumber();
 
     auto reddening_curve = reddening_provider->getDataset(milky_way_reddening_curve);
 
@@ -233,7 +236,9 @@ public:
     std::vector<XYDataset> filter_transmissions;
     filter_transmissions.reserve(filter_list.size());
     std::transform(filter_list.begin(), filter_list.end(), std::back_inserter(filter_transmissions),
-                   [&filter_provider](const QualifiedName& filter) { return std::move(*filter_provider->getDataset(filter)); });
+                   [&filter_provider](const QualifiedName& filter) {
+                     return std::move(*filter_provider->getDataset(filter));
+                   });
 
     auto                    shifted_filters = computeShiftedFilters(filter_transmissions, filter_var_sampling);
     std::vector<FilterInfo> filters_info;
@@ -257,9 +262,10 @@ public:
       std::vector<std::future<std::vector<Row>>> futures;
       for (size_t thread = 0; thread < nthreads && start < ids.end(); ++thread) {
         size_t current_chunk_size = std::min(chunk_size, static_cast<size_t>(ids.end() - start));
-        futures.push_back(std::async(
-            std::launch::async, BuildPhotometryJob(col_info, filter_list, filters_info, shifted_filters, filter_var_sampling,
-                                                   *reddening_curve, reference_sample.clone(), start, start + current_chunk_size)));
+        futures.push_back(std::async(std::launch::async,
+                                     BuildPhotometryJob(col_info, filter_list, filters_info, shifted_filters,
+                                                        filter_var_sampling, *reddening_curve, reference_sample.clone(),
+                                                        start, start + current_chunk_size)));
         std::advance(start, chunk_size);
       }
 

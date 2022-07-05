@@ -38,10 +38,10 @@ static Euclid::XYDataset::XYDataset expDataSet(Euclid::XYDataset::XYDataset cons
   return Euclid::XYDataset::XYDataset(std::move(result));
 }
 
-GalacticCorrectionCalculator::GalacticCorrectionCalculator(const std::vector<PhzDataModel::FilterInfo>& filter_info_vector,
-                                                           PhzModeling::ApplyFilterFunctor const&       filter_functor,
-                                                           PhzModeling::IntegrateDatasetFunctor const&  integrate_functor,
-                                                           XYDataset::XYDataset const&                  red_dataset)
+GalacticCorrectionCalculator::GalacticCorrectionCalculator(
+    const std::vector<PhzDataModel::FilterInfo>& filter_info_vector,
+    PhzModeling::ApplyFilterFunctor const&       filter_functor,
+    PhzModeling::IntegrateDatasetFunctor const& integrate_functor, XYDataset::XYDataset const& red_dataset)
     : m_filter_info(filter_info_vector)
     , m_filter_functor(filter_functor)
     , m_integrate_functor(integrate_functor)
@@ -64,11 +64,13 @@ void GalacticCorrectionCalculator::operator()(const XYDataset::XYDataset& model,
     if (flux_obs > 0 && flux_int > 0) {
       a_sed_x = -5. * std::log10(flux_obs / flux_int) / 0.6;
     } else {
-      logger.debug() << "A correction coefficient where not computed and set to 0. "
-                     << "This can be due to SED fully outside of the filter range or may point to negative values in the filter "
-                        "transmissions.";
+      logger.debug()
+          << "A correction coefficient where not computed and set to 0. "
+          << "This can be due to SED fully outside of the filter range or may point to negative values in the filter "
+             "transmissions.";
       if (flux_obs < 0 || flux_int < 0) {
-        logger.info() << "A computed flux is negative: check your filter transmission for un-physical negatives values! ";
+        logger.info()
+            << "A computed flux is negative: check your filter transmission for un-physical negatives values! ";
       }
     }
     *corr_iter = a_sed_x;

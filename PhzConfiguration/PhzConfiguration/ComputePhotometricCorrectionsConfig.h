@@ -1,20 +1,20 @@
-/*  
- * Copyright (C) 2012-2020 Euclid Science Ground Segment    
- *  
+/*
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ *
  * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 3.0 of the License, or (at your option)  
- * any later version.  
- *  
- * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
- * details.  
- *  
- * You should have received a copy of the GNU Lesser General Public License 
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
- */  
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 /**
  * @file PhzConfiguration/ComputePhotometricCorrectionsConfig.h
@@ -39,22 +39,21 @@ namespace PhzConfiguration {
 
 /**
  * @class ComputePhotometricCorrectionsConfig
- * 
+ *
  * @brief
  * The configuration class for the ComputePhotometricCorrections executable
  */
 class ComputePhotometricCorrectionsConfig : public Configuration::Configuration {
 
 public:
-
   /// The type of the function which handles the output of the photometric
   /// correction map
   using OutputFunction = std::function<void(const PhzDataModel::PhotometricCorrectionMap&)>;
-  
+
   // The type of the method which selects the photometric correction
-  using PhotCorrSelectorType = PhzPhotometricCorrection::PhotometricCorrectionAlgorithm::
-                                  PhotometricCorrectionSelector<SourceCatalog::Catalog::const_iterator>;
-  
+  using PhotCorrSelectorType = PhzPhotometricCorrection::PhotometricCorrectionAlgorithm::PhotometricCorrectionSelector<
+      SourceCatalog::Catalog::const_iterator>;
+
   ComputePhotometricCorrectionsConfig(long manager_id);
 
   /**
@@ -79,7 +78,7 @@ public:
    *                                One of MEDIAN (default), WEIGHTED_MEDIAN, MEAN, WEIGHTED_MEAN
    *
    * All options are in a group called "Compute Photometric Corrections options".
-   * 
+   *
    * @return The map with the option descriptions
    */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
@@ -90,13 +89,13 @@ public:
   /**
    * @brief
    * Initializes the ComputePhotometricCorrectionsConfig instance
-   * 
+   *
    * @details
    * If the option output-phot-corr-file is a relative path, it is relative to
    * the INTERMEDIATE_DIR/CATALOG_TYPE directory. If it is missing completely,
    * the default INTERMEDIATE_DIR/CATALOG_TYPE/photometric_corrections.txt is
    * used.
-   * 
+   *
    * @param args
    *    The user parameters
    * @throws ElementsException
@@ -120,15 +119,13 @@ public:
   const PhotCorrSelectorType& getPhotometricCorrectionSelector();
 
 private:
-  
-  OutputFunction m_output_function;
+  OutputFunction                                                                  m_output_function;
   PhzPhotometricCorrection::PhotometricCorrectionCalculator::StopCriteriaFunction m_stop_criteria;
-  PhotCorrSelectorType m_phot_corr_selector;
+  PhotCorrSelectorType                                                            m_phot_corr_selector;
 
 }; /* End of ComputePhotometricCorrectionsConfig class */
 
 } /* namespace PhzConfiguration */
 } /* namespace Euclid */
-
 
 #endif

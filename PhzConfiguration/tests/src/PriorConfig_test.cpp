@@ -24,25 +24,24 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "PhzConfiguration/PriorConfig.h"
 #include "ConfigManager_fixture.h"
+#include "PhzConfiguration/PriorConfig.h"
 #include "PhzDataModel/RegionResults.h"
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-
-struct DummyPrior{
-  void operator()(Euclid::PhzDataModel::RegionResults&) {};
+struct DummyPrior {
+  void operator()(Euclid::PhzDataModel::RegionResults&){};
 };
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (PriorConfig_test)
+BOOST_AUTO_TEST_SUITE(PriorConfig_test)
 
 //-----------------------------------------------------------------------------
-BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(NotInitializedGetter_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<PriorConfig>();
   config_manager.closeRegistration();
@@ -59,7 +58,7 @@ BOOST_FIXTURE_TEST_CASE(no_prior_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<PriorConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
+  std::map<std::string, po::variable_value> options_map{};
 
   // When
   config_manager.initialize(options_map);
@@ -74,7 +73,7 @@ BOOST_FIXTURE_TEST_CASE(one_prior_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<PriorConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
+  std::map<std::string, po::variable_value> options_map{};
 
   // When
   config_manager.initialize(options_map);
@@ -88,6 +87,4 @@ BOOST_FIXTURE_TEST_CASE(one_prior_test, ConfigManager_fixture) {
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

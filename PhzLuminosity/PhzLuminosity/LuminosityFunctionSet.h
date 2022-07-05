@@ -7,11 +7,10 @@
 #ifndef PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYFUNCTIONSET_H_
 #define PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYFUNCTIONSET_H_
 
+#include "MathUtils/function/Function.h"
+#include "PhzLuminosity/LuminosityFunctionValidityDomain.h"
 #include <cmath>
 #include <map>
-#include "PhzLuminosity/LuminosityFunctionValidityDomain.h"
-#include "MathUtils/function/Function.h"
-
 
 namespace Euclid {
 namespace PhzLuminosity {
@@ -32,8 +31,8 @@ public:
    * @param luminosityFunctions A vector of pair which key is the Validity domain
    * and the value the luminosity function for this domain.
    */
-  LuminosityFunctionSet(std::vector<std::pair<LuminosityFunctionValidityDomain,
-                        std::unique_ptr<MathUtils::Function>>> luminosityFunctions);
+  LuminosityFunctionSet(std::vector<std::pair<LuminosityFunctionValidityDomain, std::unique_ptr<MathUtils::Function>>>
+                            luminosityFunctions);
 
   /**
    * @brief Search for the validity domain the coordinate sedGroup, redshift
@@ -44,22 +43,19 @@ public:
    * @param z The redshift the caller want the Luninosity function for.
    */
   const std::pair<LuminosityFunctionValidityDomain, std::unique_ptr<MathUtils::Function>>&
-  getLuminosityFunction(const std::string& sedGroup, double z) const ;
+  getLuminosityFunction(const std::string& sedGroup, double z) const;
 
   /**
    * @brief Expose the content of the LuminosityFunctionSet.
    */
-  const std::vector<std::pair<LuminosityFunctionValidityDomain,
-  std::unique_ptr<MathUtils::Function>>> & getFunctions() const;
-
+  const std::vector<std::pair<LuminosityFunctionValidityDomain, std::unique_ptr<MathUtils::Function>>>&
+  getFunctions() const;
 
 private:
-  std::vector<std::pair<LuminosityFunctionValidityDomain,
-                        std::unique_ptr<MathUtils::Function>>> m_luminosity_functions;
+  std::vector<std::pair<LuminosityFunctionValidityDomain, std::unique_ptr<MathUtils::Function>>> m_luminosity_functions;
 };
 
-}
-}
-
+}  // namespace PhzLuminosity
+}  // namespace Euclid
 
 #endif /* PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYFUNCTIONSET_H_ */

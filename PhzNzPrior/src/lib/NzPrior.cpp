@@ -19,8 +19,8 @@ static Elements::Logging logger = Elements::Logging::getLogger("NzPrior");
 
 static const std::string MISSING_FLUX_FOR_NZ_FLAG{"MISSING_FLUX_FOR_NZ_FLAG"};
 
-NzPrior::NzPrior(const PhzDataModel::QualifiedNameGroupManager& sedGroupManager, const XYDataset::QualifiedName& i_filter_name,
-                 const NzPriorParam& prior_param, double effectiveness)
+NzPrior::NzPrior(const PhzDataModel::QualifiedNameGroupManager& sedGroupManager,
+                 const XYDataset::QualifiedName& i_filter_name, const NzPriorParam& prior_param, double effectiveness)
     : m_sedGroupManager{sedGroupManager}
     , m_i_filter_name{i_filter_name}
     , m_prior_param{prior_param}
@@ -94,7 +94,8 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
   auto& photometry = results.get<PhzDataModel::RegionResultType::SOURCE_PHOTOMETRY_REFERENCE>();
   auto  flux_ptr   = photometry.get().find(m_i_filter_name.qualifiedName());
   if (flux_ptr == nullptr) {
-    throw Elements::Exception() << "NzPrior: Missing filter:" << m_i_filter_name.qualifiedName() << " in the source Photometry";
+    throw Elements::Exception() << "NzPrior: Missing filter:" << m_i_filter_name.qualifiedName()
+                                << " in the source Photometry";
   }
 
   auto& posterior_grid = results.get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
@@ -146,8 +147,9 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
     }
 
     // Apply the effectiveness to the prior.
-    std::transform(prior_grid.begin(), prior_grid.end(), prior_grid.begin(),
-                   [this](double v) { return (1 - m_effectiveness) + m_effectiveness * v; });
+    std::transform(prior_grid.begin(), prior_grid.end(), prior_grid.begin(), [this](double v) {
+      return (1 - m_effectiveness) + m_effectiveness * v;
+    });
   } else {
     // The flux needed for computing the N(Z) prior is missing => use a flat prior and flag the source
     results.get<PhzDataModel::RegionResultType::FLAGS>().insert({MISSING_FLUX_FOR_NZ_FLAG, true});

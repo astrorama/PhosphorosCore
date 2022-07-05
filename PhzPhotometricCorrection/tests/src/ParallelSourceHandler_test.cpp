@@ -28,22 +28,22 @@ struct Functor {
 
 struct ParallelFixture {
   static constexpr unsigned n_threads = 5;
-  Euclid::ThreadPool thread_pool{n_threads};
+  Euclid::ThreadPool        thread_pool{n_threads};
 };
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (ParallelSourceHandler_test)
+BOOST_AUTO_TEST_SUITE(ParallelSourceHandler_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE (ExactChunkSize_test, ParallelFixture) {
+BOOST_FIXTURE_TEST_CASE(ExactChunkSize_test, ParallelFixture) {
   // Send a number of sources that can be divided exactly by the number of threads
   std::vector<int> sources(100);
   std::iota(sources.begin(), sources.end(), 0);
 
   ParallelIteratorHandler<Functor> handler{n_threads, thread_pool};
-  auto results = handler(sources.begin(), sources.end(), 4);
+  auto                             results = handler(sources.begin(), sources.end(), 4);
 
   for (size_t i = 0; i < sources.size(); ++i) {
     BOOST_CHECK_EQUAL(results[i], sources[i] * 4);
@@ -52,13 +52,13 @@ BOOST_FIXTURE_TEST_CASE (ExactChunkSize_test, ParallelFixture) {
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE (RemainderChunk_test, ParallelFixture) {
+BOOST_FIXTURE_TEST_CASE(RemainderChunk_test, ParallelFixture) {
   // Send a number of sources that can NOT be divided exactly by the number of threads
   std::vector<int> sources(103);
   std::iota(sources.begin(), sources.end(), 0);
 
   ParallelIteratorHandler<Functor> handler{n_threads, thread_pool};
-  auto results = handler(sources.begin(), sources.end(), 4);
+  auto                             results = handler(sources.begin(), sources.end(), 4);
 
   for (size_t i = 0; i < sources.size(); ++i) {
     BOOST_CHECK_EQUAL(results[i], sources[i] * 4);
@@ -67,13 +67,13 @@ BOOST_FIXTURE_TEST_CASE (RemainderChunk_test, ParallelFixture) {
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE (LessSourcesThanThreads_test, ParallelFixture) {
+BOOST_FIXTURE_TEST_CASE(LessSourcesThanThreads_test, ParallelFixture) {
   // Send less sources than threads
   std::vector<int> sources(2);
   std::iota(sources.begin(), sources.end(), 0);
 
   ParallelIteratorHandler<Functor> handler{n_threads, thread_pool};
-  auto results = handler(sources.begin(), sources.end(), 4);
+  auto                             results = handler(sources.begin(), sources.end(), 4);
 
   for (size_t i = 0; i < sources.size(); ++i) {
     BOOST_CHECK_EQUAL(results[i], sources[i] * 4);
@@ -82,6 +82,6 @@ BOOST_FIXTURE_TEST_CASE (LessSourcesThanThreads_test, ParallelFixture) {
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
+BOOST_AUTO_TEST_SUITE_END()
 
 //-----------------------------------------------------------------------------

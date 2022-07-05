@@ -25,12 +25,12 @@
 #ifndef _PHZDATAMODEL_CATALOGATTRIBUTES_OBSERVATIONCONDITION_H
 #define _PHZDATAMODEL_CATALOGATTRIBUTES_OBSERVATIONCONDITION_H
 
-#include <vector>
-#include <map>
 #include "ElementsKernel/Exception.h"
-#include "Table/Table.h"
 #include "SourceCatalog/Attribute.h"
 #include "SourceCatalog/AttributeFromRow.h"
+#include "Table/Table.h"
+#include <map>
+#include <vector>
 
 namespace Euclid {
 namespace PhzDataModel {
@@ -43,7 +43,6 @@ namespace PhzDataModel {
 class ObservationCondition : public SourceCatalog::Attribute {
 
 public:
-
   ObservationCondition(std::vector<double> filter_shifts, double dust_column_density);
 
   /**
@@ -51,35 +50,29 @@ public:
    */
   virtual ~ObservationCondition() = default;
 
-  double getDustColumnDensity() const;
-  const std::vector<double>&  getFilterShifts() const;
+  double                     getDustColumnDensity() const;
+  const std::vector<double>& getFilterShifts() const;
 
 private:
-
-  std::vector<double>   m_filter_shifts {};
-  double m_dust_column_density {};
+  std::vector<double> m_filter_shifts{};
+  double              m_dust_column_density{};
 
 }; /* End of ObservationCondition class */
-
 
 class ObservationConditionFromRow : public SourceCatalog::AttributeFromRow {
 
 public:
-
-  ObservationConditionFromRow(
-      std::shared_ptr<Table::ColumnInfo> column_info,
-      const std::string& dust_column_density_col_name,
-      const std::vector<std::pair<std::string, std::string>>& filter_shift_col_names);
+  ObservationConditionFromRow(std::shared_ptr<Table::ColumnInfo>                      column_info,
+                              const std::string&                                      dust_column_density_col_name,
+                              const std::vector<std::pair<std::string, std::string>>& filter_shift_col_names);
 
   virtual ~ObservationConditionFromRow() = default;
 
   std::unique_ptr<SourceCatalog::Attribute> createAttribute(const Table::Row& row) override;
 
 private:
-
-  int m_dust_column_index;
-  std::vector<int> m_filter_shift_column_indexes {};
-
+  int              m_dust_column_index;
+  std::vector<int> m_filter_shift_column_indexes{};
 };
 
 } /* namespace PhzDataModel */

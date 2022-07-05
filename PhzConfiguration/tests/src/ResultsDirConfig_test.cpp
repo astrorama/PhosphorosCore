@@ -24,8 +24,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "PhzConfiguration/ResultsDirConfig.h"
 #include "ConfigManager_fixture.h"
+#include "PhzConfiguration/ResultsDirConfig.h"
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
@@ -33,11 +33,11 @@ namespace fs = boost::filesystem;
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (ResultsDirConfig_test)
+BOOST_AUTO_TEST_SUITE(ResultsDirConfig_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, ConfigManager_fixture) {
 
   // Given
   config_manager.registerConfiguration<ResultsDirConfig>();
@@ -49,8 +49,7 @@ BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
   BOOST_CHECK_NO_THROW(options.find("results-dir", false));
 }
 
-
-BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(NotInitializedGetter_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<ResultsDirConfig>();
   config_manager.closeRegistration();
@@ -67,15 +66,14 @@ BOOST_FIXTURE_TEST_CASE(ResultsDirAbsolute_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<ResultsDirConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map { };
+  std::map<std::string, po::variable_value> options_map{};
 
-  fs::path absolute_path { "/an/absolute/path" };
+  fs::path absolute_path{"/an/absolute/path"};
   options_map["results-dir"].value() = boost::any(absolute_path.string());
 
   // When
   config_manager.initialize(options_map);
-  auto result =
-      config_manager.getConfiguration<ResultsDirConfig>().getResultsDir();
+  auto result = config_manager.getConfiguration<ResultsDirConfig>().getResultsDir();
 
   // Then
   BOOST_CHECK(result.is_absolute());
@@ -91,14 +89,13 @@ BOOST_FIXTURE_TEST_CASE(ResultsDirRelative_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<ResultsDirConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map { };
-  fs::path relative_path { "a/relative/path" };
+  std::map<std::string, po::variable_value> options_map{};
+  fs::path                                  relative_path{"a/relative/path"};
   options_map["results-dir"].value() = boost::any(relative_path.string());
 
   // When
   config_manager.initialize(options_map);
-  auto result =
-      config_manager.getConfiguration<ResultsDirConfig>().getResultsDir();
+  auto result = config_manager.getConfiguration<ResultsDirConfig>().getResultsDir();
 
   // Then
   BOOST_CHECK(result.is_absolute());
@@ -113,15 +110,14 @@ BOOST_FIXTURE_TEST_CASE(ResultsDirDefault_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<ResultsDirConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map { };
+  std::map<std::string, po::variable_value> options_map{};
 
-  fs::path absolute_path { "/an/absolute/path" };
+  fs::path absolute_path{"/an/absolute/path"};
   options_map["phosphoros-root"].value() = boost::any(absolute_path.string());
 
   // When
   config_manager.initialize(options_map);
-  auto result =
-      config_manager.getConfiguration<ResultsDirConfig>().getResultsDir();
+  auto result = config_manager.getConfiguration<ResultsDirConfig>().getResultsDir();
 
   // Then
   BOOST_CHECK(result.is_absolute());
@@ -130,6 +126,4 @@ BOOST_FIXTURE_TEST_CASE(ResultsDirDefault_test, ConfigManager_fixture) {
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

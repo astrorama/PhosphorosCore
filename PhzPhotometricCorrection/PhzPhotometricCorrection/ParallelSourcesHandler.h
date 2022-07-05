@@ -37,10 +37,9 @@ namespace PhzPhotometricCorrection {
  * @tparam WrappedFunctor
  *  Type of the functor being wrapped
  */
-template<typename WrappedFunctor>
+template <typename WrappedFunctor>
 class ParallelIteratorHandler {
 public:
-
   /** Copy constructor */
   ParallelIteratorHandler(const ParallelIteratorHandler&) = default;
 
@@ -57,8 +56,8 @@ public:
    * @param thread_pool
    *    Thread pool. Note that it is received as a parameter to make instances of this class copyable
    */
-  ParallelIteratorHandler(unsigned thread_count, ThreadPool& thread_pool) : m_thread_count(thread_count),
-                                                                            m_thread_pool(thread_pool), m_wrapped() {}
+  ParallelIteratorHandler(unsigned thread_count, ThreadPool& thread_pool)
+      : m_thread_count(thread_count), m_thread_pool(thread_pool), m_wrapped() {}
 
   /**
    * Constructor
@@ -71,11 +70,9 @@ public:
    * @param args
    *    Parameters to forward to the constructor of the wrapped functor
    */
-  template<typename ...Args>
-  ParallelIteratorHandler(unsigned thread_count, ThreadPool& thread_pool, Args&& ...args)
-    : m_thread_count(thread_count), m_thread_pool(thread_pool),
-      m_wrapped(std::forward<Args>(args)...) {
-  }
+  template <typename... Args>
+  ParallelIteratorHandler(unsigned thread_count, ThreadPool& thread_pool, Args&&... args)
+      : m_thread_count(thread_count), m_thread_pool(thread_pool), m_wrapped(std::forward<Args>(args)...) {}
 
   /**
    * Wrapping of the operator ()
@@ -92,21 +89,21 @@ public:
    * @return
    *    Same type as the wrapped functor
    */
-  template<typename Iter, typename ...Args>
-  typename std::result_of<WrappedFunctor(Iter, Iter, Args&& ...)>::type
-  operator()(Iter begin, Iter end, Args&& ... args) {
-    typedef typename std::result_of<WrappedFunctor(Iter, Iter, Args&& ...)>::type result_t;
+  template <typename Iter, typename... Args>
+  typename std::result_of<WrappedFunctor(Iter, Iter, Args&&...)>::type operator()(Iter begin, Iter end,
+                                                                                  Args&&... args) {
+    typedef typename std::result_of<WrappedFunctor(Iter, Iter, Args && ...)>::type result_t;
 
-    size_t size = end - begin;
+    size_t size       = end - begin;
     size_t chunk_size = static_cast<size_t>(std::ceil(size / static_cast<float>(m_thread_count)));
-    size_t nchunks = static_cast<size_t>(std::ceil(size / static_cast<float>(chunk_size)));
+    size_t nchunks    = static_cast<size_t>(std::ceil(size / static_cast<float>(chunk_size)));
 
     // Each position of this vector is used by a single thread, so we do not need locking
     std::vector<result_t> intermediate_results(nchunks);
 
     for (size_t i = 0; i < nchunks; ++i) {
       Iter this_begin = begin + chunk_size * i;
-      Iter this_end = this_begin + chunk_size;
+      Iter this_end   = this_begin + chunk_size;
       if (this_end > end) {
         this_end = end;
       }
@@ -137,12 +134,12 @@ public:
   }
 
 private:
-  unsigned m_thread_count;
-  ThreadPool& m_thread_pool;
+  unsigned             m_thread_count;
+  ThreadPool&          m_thread_pool;
   const WrappedFunctor m_wrapped;
 };
 
 } /* namespace PhzPhotometricCorrection */
 } /* namespace Euclid */
 
-#endif // PHOTOMETRICCORRECTION_PARALLELSOURCESHANDLER_H
+#endif  // PHOTOMETRICCORRECTION_PARALLELSOURCESHANDLER_H

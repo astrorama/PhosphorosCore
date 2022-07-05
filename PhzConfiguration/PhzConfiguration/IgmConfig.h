@@ -23,17 +23,16 @@
  */
 
 #ifndef PHZCONFIGURATION_IGMCONFIG_H
-#define	PHZCONFIGURATION_IGMCONFIG_H
+#define PHZCONFIGURATION_IGMCONFIG_H
 
-#include <cstdlib>
-#include <string>
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzModeling/PhotometryGridCreator.h"
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
+#include <string>
 
 namespace Euclid {
 namespace PhzConfiguration {
-
 
 class IgmConfig : public Configuration::Configuration {
 
@@ -73,23 +72,20 @@ public:
   /**
    * @brief Return the IgmAbsorptionFunction
    */
-  const PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction & getIgmAbsorptionFunction();
+  const PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction& getIgmAbsorptionFunction();
 
   /**
    * @brief Return the Igm Absorption type
    */
-  const std::string &  getIgmAbsorptionType();
+  const std::string& getIgmAbsorptionType();
 
 private:
-
   PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction m_absorption_function;
-  std::string m_absorption_type;
+  std::string                                               m_absorption_type;
 
 }; /* End of IgmConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_IGMCONFIG_H */
-
+#endif /* PHZCONFIGURATION_IGMCONFIG_H */

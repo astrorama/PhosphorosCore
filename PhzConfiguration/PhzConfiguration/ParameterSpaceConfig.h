@@ -23,14 +23,14 @@
  */
 
 #ifndef PHZCONFIGURATION_PARAMETERSPACECONFIG_H
-#define	PHZCONFIGURATION_PARAMETERSPACECONFIG_H
+#define PHZCONFIGURATION_PARAMETERSPACECONFIG_H
 
+#include "Configuration/Configuration.h"
+#include "PhzDataModel/PhzModel.h"
+#include <boost/filesystem/operations.hpp>
 #include <cstdlib>
 #include <map>
 #include <string>
-#include <boost/filesystem/operations.hpp>
-#include "Configuration/Configuration.h"
-#include "PhzDataModel/PhzModel.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -62,17 +62,14 @@ public:
   /**
    * @brief Return the Parameter Space Regions map
    */
-  const std::map<std::string, PhzDataModel::ModelAxesTuple> & getParameterSpaceRegions();
+  const std::map<std::string, PhzDataModel::ModelAxesTuple>& getParameterSpaceRegions();
 
 private:
-
   std::map<std::string, PhzDataModel::ModelAxesTuple> m_parameter_space;
 
 }; /* End of ParameterSpaceConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_PARAMETERSPACECONFIG_H */
-
+#endif /* PHZCONFIGURATION_PARAMETERSPACECONFIG_H */

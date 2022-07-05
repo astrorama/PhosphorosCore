@@ -46,7 +46,8 @@ public:
   static void computeCorrectedPhotometry(SourceCatalog::Photometry::const_iterator model_begin,
                                          SourceCatalog::Photometry::const_iterator model_end,
                                          SourceCatalog::Photometry::const_iterator corr_begin,
-                                         const std::vector<double>& filter_shift, SourceCatalog::Photometry::iterator out_begin);
+                                         const std::vector<double>&                filter_shift,
+                                         SourceCatalog::Photometry::iterator       out_begin);
 
 protected:
   const std::map<std::string, PhzDataModel::PhotometryGrid>& m_coefficient_grid;

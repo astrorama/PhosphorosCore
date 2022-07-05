@@ -46,7 +46,7 @@ void SedProviderConfig::initialize(const UserValues&) {
   fs::path result      = getDependency<AuxDataDirConfig>().getAuxDataDir() / "SEDs";
   auto     file_parser = Euclid::make_unique<XYDataset::AsciiParser>();
   auto     fs_provider = Euclid::make_unique<XYDataset::FileSystemProvider>(result.string(), std::move(file_parser));
-  m_sed_provider = Euclid::make_unique<XYDataset::CachedProvider>(std::move(fs_provider));
+  m_sed_provider       = Euclid::make_unique<XYDataset::CachedProvider>(std::move(fs_provider));
 }
 
 const std::shared_ptr<XYDataset::XYDatasetProvider> SedProviderConfig::getSedDatasetProvider() {

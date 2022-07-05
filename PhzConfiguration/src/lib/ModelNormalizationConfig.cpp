@@ -22,16 +22,16 @@
  * @author Florian Dubath
  */
 
-#include "ElementsKernel/Logging.h"
-#include "ElementsKernel/Exception.h"
-#include "Configuration/ConfigManager.h"
 #include "PhzConfiguration/ModelNormalizationConfig.h"
+#include "Configuration/ConfigManager.h"
+#include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
-#include "XYDataset/QualifiedName.h"
 #include "PhzModeling/NormalizationFunctor.h"
 #include "PhzModeling/NormalizationFunctorFactory.h"
+#include "XYDataset/QualifiedName.h"
 
 using namespace Euclid::Configuration;
 namespace fs = boost::filesystem;
@@ -42,7 +42,7 @@ namespace PhzConfiguration {
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
-static const std::string NORMALIZATION_FILTER {"normalization-filter"};
+static const std::string NORMALIZATION_FILTER{"normalization-filter"};
 static const std::string NORMALIZATION_SED{"normalization-solar-sed"};
 
 ModelNormalizationConfig::ModelNormalizationConfig(long manager_id) : Configuration(manager_id) {
@@ -52,15 +52,11 @@ ModelNormalizationConfig::ModelNormalizationConfig(long manager_id) : Configurat
 }
 
 auto ModelNormalizationConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Model normalization options", {
-    {NORMALIZATION_FILTER.c_str(), po::value<std::string>(),
-        "The Filter for which the normalization is done"}
-    ,{NORMALIZATION_SED.c_str(), po::value<std::string>(),
-      "Solar SED @10pc used as a reference for Models normalization"}
-    }
-  }};
+  return {{"Model normalization options",
+           {{NORMALIZATION_FILTER.c_str(), po::value<std::string>(), "The Filter for which the normalization is done"},
+            {NORMALIZATION_SED.c_str(), po::value<std::string>(),
+             "Solar SED @10pc used as a reference for Models normalization"}}}};
 }
-
 
 void ModelNormalizationConfig::initialize(const UserValues& args) {
   if (args.count(NORMALIZATION_FILTER) > 0) {
@@ -74,53 +70,44 @@ void ModelNormalizationConfig::initialize(const UserValues& args) {
     if (solar_sed_str.empty()) {
       throw Elements::Exception() << "Empty reference solar SED";
     }
-    m_solar_sed =  XYDataset::QualifiedName(solar_sed_str);
+    m_solar_sed = XYDataset::QualifiedName(solar_sed_str);
   } else {
     throw Elements::Exception() << "Missing " << NORMALIZATION_SED << " option ";
   }
 
-
-  auto filter_provider = getDependency<FilterProviderConfig>().getFilterDatasetProvider();
+  auto filter_provider  = getDependency<FilterProviderConfig>().getFilterDatasetProvider();
   auto sun_sed_provider = getDependency<SedProviderConfig>().getSedDatasetProvider();
 
   PhzModeling::NormalizationFunctor normalizer_functor =
-      PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(filter_provider,
-      m_band,
-      sun_sed_provider,
-      m_solar_sed);
+      PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(filter_provider, m_band,
+                                                                                        sun_sed_provider, m_solar_sed);
   auto flux = normalizer_functor.getReferenceFlux();
 
   m_solar_MAG_AB = -2.5 * log10(flux / 3.631E9);
 }
 
 // Returns the band of the luminosity normalization
- const XYDataset::QualifiedName& ModelNormalizationConfig::getNormalizationFilter() const {
-   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
-      throw Elements::Exception()
-          << "Call to getNormalizationFilter() on a not initialized instance.";
-    }
-    return m_band;
- }
-
- // Returns the band of the luminosity normalization
-  const XYDataset::QualifiedName& ModelNormalizationConfig::getReferenceSolarSed() const {
-    if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
-       throw Elements::Exception()
-           << "Call to getReferenceSolarSed() on a not initialized instance.";
-     }
-     return m_solar_sed;
+const XYDataset::QualifiedName& ModelNormalizationConfig::getNormalizationFilter() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getNormalizationFilter() on a not initialized instance.";
   }
+  return m_band;
+}
 
-  double ModelNormalizationConfig::getSolarMagAB() const {
-    if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
-          throw Elements::Exception()
-              << "Call to getSolarMagAB() on a not initialized instance.";
-        }
-    return m_solar_MAG_AB;
+// Returns the band of the luminosity normalization
+const XYDataset::QualifiedName& ModelNormalizationConfig::getReferenceSolarSed() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getReferenceSolarSed() on a not initialized instance.";
   }
+  return m_solar_sed;
+}
 
-} // PhzConfiguration namespace
-} // Euclid namespace
+double ModelNormalizationConfig::getSolarMagAB() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getSolarMagAB() on a not initialized instance.";
+  }
+  return m_solar_MAG_AB;
+}
 
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

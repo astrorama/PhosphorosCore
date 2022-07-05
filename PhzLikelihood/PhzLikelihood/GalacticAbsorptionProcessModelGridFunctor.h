@@ -37,7 +37,7 @@ namespace PhzLikelihood {
 class GalacticAbsorptionProcessModelGridFunctor : public ProcessModelGridFunctor {
 public:
   GalacticAbsorptionProcessModelGridFunctor(const std::map<std::string, PhzDataModel::PhotometryGrid>& coefficient_grid,
-                                            double                                                     dust_map_sed_bpc);
+                                            double dust_map_sed_bpc);
   ~GalacticAbsorptionProcessModelGridFunctor(){};
 
   void operator()(const std::string& region_name, const SourceCatalog::Source& source,

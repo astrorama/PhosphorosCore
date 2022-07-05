@@ -33,7 +33,8 @@ using NdArray::createMmapNpy;
 using NdArray::mmapNpy;
 using NdArray::NdArray;
 
-PdzDataProvider::PdzDataProvider(const boost::filesystem::path& path, size_t max_size) : m_data_path{path}, m_max_size{max_size} {
+PdzDataProvider::PdzDataProvider(const boost::filesystem::path& path, size_t max_size)
+    : m_data_path{path}, m_max_size{max_size} {
   if (boost::filesystem::exists(m_data_path)) {
     m_array = Euclid::make_unique<NdArray<float>>(
         mmapNpy<float>(m_data_path, boost::iostreams::mapped_file_base::readwrite, m_max_size + 1024));
@@ -107,8 +108,9 @@ void PdzDataProvider::setBins(const std::vector<float>& bins) {
   }
 
   try {
-    m_bins  = bins;
-    m_array = Euclid::make_unique<NdArray<float>>(createMmapNpy<float>(m_data_path, {1, bins.size()}, m_max_size + 1024));
+    m_bins = bins;
+    m_array =
+        Euclid::make_unique<NdArray<float>>(createMmapNpy<float>(m_data_path, {1, bins.size()}, m_max_size + 1024));
 
     std::copy(bins.begin(), bins.end(), m_array->begin());
   } catch (const std::exception& e) {

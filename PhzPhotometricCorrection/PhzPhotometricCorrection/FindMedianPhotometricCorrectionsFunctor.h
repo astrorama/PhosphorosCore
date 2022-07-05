@@ -8,14 +8,12 @@
 #ifndef FINDMEDIANPHOTOMETRICCORRECTIONSFUNCTOR_H_
 #define FINDMEDIANPHOTOMETRICCORRECTIONSFUNCTOR_H_
 
-#include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzUtils/SourceTraits.h"
+#include "SourceCatalog/SourceAttributes/Photometry.h"
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
-
-
 
 /**
  * @class FindMedianPhotometricCorrectionsFunctor
@@ -24,34 +22,30 @@ namespace PhzPhotometricCorrection {
  * This functor extract the median values for the Photometric Corrections
  * (one for each filter) based on the individual source's corrections.
  */
-class FindMedianPhotometricCorrectionsFunctor{
+class FindMedianPhotometricCorrectionsFunctor {
 public:
-
   /**
-    * @brief Compute the global photometric corrections by taking the median over the sources.
-    *
-    * @tparam SourceIter The type of the iterator over the source objects
-    *
-    * @param source_phot_corr_map A map associating the source id to the photometric
-    * correction map for this source.
-    *
-    * @param source_begin An iterator to the first of the sources
-    * @param source_end An iterator to one after the last of the sources
-    *
-    * @return The calcualted photometric corrections
-    */
+   * @brief Compute the global photometric corrections by taking the median over the sources.
+   *
+   * @tparam SourceIter The type of the iterator over the source objects
+   *
+   * @param source_phot_corr_map A map associating the source id to the photometric
+   * correction map for this source.
+   *
+   * @param source_begin An iterator to the first of the sources
+   * @param source_end An iterator to one after the last of the sources
+   *
+   * @return The calcualted photometric corrections
+   */
   template <typename SourceIter>
-  PhzDataModel::PhotometricCorrectionMap operator()(
-      const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
-      SourceIter source_begin,
-      SourceIter source_end
-  );
+  PhzDataModel::PhotometricCorrectionMap
+  operator()(const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type,
+                            PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
+             SourceIter source_begin, SourceIter source_end);
 };
 
-
-} // end of namespace PhzPhotometricCorrection
-} // end of namespace Euclid
-
+}  // end of namespace PhzPhotometricCorrection
+}  // end of namespace Euclid
 
 #include "PhzPhotometricCorrection/_impl/FindMedianPhotometricCorrectionsFunctor.icpp"
 

@@ -7,31 +7,30 @@
 #ifndef _PHZLIKELIHOOD_GROUPEDAXISCORRECTION_H
 #define _PHZLIKELIHOOD_GROUPEDAXISCORRECTION_H
 
-#include "PhzDataModel/QualifiedNameGroupManager.h"
 #include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/QualifiedNameGroupManager.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
 
 /**
  * @class GroupedAxisCorrection
- * 
+ *
  * @brief
  * Class which corrects a likelihood grid for a grouped axis marginalization
- * 
+ *
  * @details
  * The grouping is done by the argument o the constructor, which defines the
  * groups. The correction of the likelihood grid is done by diving every cell
  * with the size of its group.
- * 
+ *
  * @tparam I
  *    The index of the axis which is corrected for the grouping
  */
-template <int I> 
+template <int I>
 class GroupedAxisCorrection {
 
 public:
-
   /// Constructs a new instance for the given groups
   GroupedAxisCorrection(PhzDataModel::QualifiedNameGroupManager group_manager);
 
@@ -39,7 +38,7 @@ public:
    * @brief Destructor
    */
   virtual ~GroupedAxisCorrection() = default;
-  
+
   /**
    * @brief
    * Applies the correction to the given likelihood grid
@@ -55,13 +54,12 @@ public:
   void operator()(PhzDataModel::DoubleGrid& likelihood_grid);
 
 private:
-  
   PhzDataModel::QualifiedNameGroupManager m_group_manager;
 
 }; /* End of GroupedAxisCorrection class */
 
 } /* namespace PhzLikelihood */
-} // namespace Euclid
+}  // namespace Euclid
 
 #include "PhzLikelihood/_impl/GroupedAxisCorrection.icpp"
 
