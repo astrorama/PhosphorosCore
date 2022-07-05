@@ -90,7 +90,8 @@ void IndexProvider::add(int64_t id, IndexKey key, const ObjectLocation& location
 auto IndexProvider::get(int64_t id, IndexKey key) const -> ObjectLocation {
   auto i = m_index.find(id);
   if (i != m_index.end()) {
-    return ObjectLocation{m_data->at(i->second, to_string(key) + "_file"), m_data->at(i->second, to_string(key) + "_offset")};
+    return ObjectLocation{m_data->at(i->second, to_string(key) + "_file"),
+                          m_data->at(i->second, to_string(key) + "_offset")};
   }
   return {-1, -1};
 }

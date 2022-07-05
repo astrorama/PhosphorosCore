@@ -22,12 +22,11 @@
  * @author Florian Dubath
  */
 
-#include <cstdlib>
+#include "PhzConfiguration/AuxDataDirConfig.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzConfiguration/AuxDataDirConfig.h"
 #include "PhzConfiguration/PhosphorosRootDirConfig.h"
-
+#include <cstdlib>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -35,8 +34,7 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string AUX_DATA_DIR {"aux-data-dir"};
-
+static const std::string AUX_DATA_DIR{"aux-data-dir"};
 
 static Elements::Logging logger = Elements::Logging::getLogger("AuxDataDirConfig");
 
@@ -45,42 +43,35 @@ AuxDataDirConfig::AuxDataDirConfig(long manager_id) : Configuration(manager_id) 
 }
 
 auto AuxDataDirConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Directory options", {
-    {AUX_DATA_DIR.c_str(), po::value<std::string>(),
-        "The directory containing the auxiliary data"}
-  }}};
+  return {{"Directory options",
+           {{AUX_DATA_DIR.c_str(), po::value<std::string>(), "The directory containing the auxiliary data"}}}};
 }
-
-
 
 void AuxDataDirConfig::initialize(const UserValues& args) {
   fs::path result = getDependency<PhosphorosRootDirConfig>().getPhosphorosRootDir() / "AuxiliaryData";
-   if (args.count(AUX_DATA_DIR) > 0) {
-     logger.debug() << "Setting auxiliary data directory from program option " << AUX_DATA_DIR;
-     fs::path option_path {args.find(AUX_DATA_DIR)->second.as<std::string>()};
-     if (option_path.is_absolute()) {
-       result = option_path;
-     } else {
-       result = fs::current_path() / option_path;
-     }
-   } else {
-     logger.debug() << "No " << AUX_DATA_DIR << " program option found. Setting "
+  if (args.count(AUX_DATA_DIR) > 0) {
+    logger.debug() << "Setting auxiliary data directory from program option " << AUX_DATA_DIR;
+    fs::path option_path{args.find(AUX_DATA_DIR)->second.as<std::string>()};
+    if (option_path.is_absolute()) {
+      result = option_path;
+    } else {
+      result = fs::current_path() / option_path;
+    }
+  } else {
+    logger.debug() << "No " << AUX_DATA_DIR << " program option found. Setting "
                    << "auxiliary data directory to default";
-   }
-   logger.debug() << "Using auxiliary data directory " << result;
-   m_aux_dir= result;
+  }
+  logger.debug() << "Using auxiliary data directory " << result;
+  m_aux_dir = result;
 }
 
 const fs::path& AuxDataDirConfig::getAuxDataDir() {
-  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-      throw Elements::Exception() << "Call to getAuxDataDir() on a not initialized instance.";
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getAuxDataDir() on a not initialized instance.";
   }
 
   return m_aux_dir;
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

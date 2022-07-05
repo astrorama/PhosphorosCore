@@ -23,11 +23,11 @@
  */
 
 #ifndef PHZCONFIGURATION_REDDENINGPROVIDERCONFIG_H
-#define	PHZCONFIGURATION_REDDENINGPROVIDERCONFIG_H
+#define PHZCONFIGURATION_REDDENINGPROVIDERCONFIG_H
 
-#include <memory>
 #include "Configuration/Configuration.h"
 #include "XYDataset/XYDatasetProvider.h"
+#include <memory>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -60,17 +60,14 @@ public:
    * @return
    * A shared pointer of XYDatasetProvider type
    */
-  const std::shared_ptr<XYDataset::XYDatasetProvider>  getReddeningDatasetProvider();
+  const std::shared_ptr<XYDataset::XYDatasetProvider> getReddeningDatasetProvider();
 
 private:
-
   std::shared_ptr<XYDataset::XYDatasetProvider> m_reddening_provider = nullptr;
 
 }; /* End of ReddeningProviderConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_REDDENINGPROVIDERCONFIG_H */
-
+#endif /* PHZCONFIGURATION_REDDENINGPROVIDERCONFIG_H */

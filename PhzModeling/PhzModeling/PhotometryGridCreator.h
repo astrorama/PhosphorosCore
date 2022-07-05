@@ -25,13 +25,13 @@
 #ifndef PHZMODELING_PHOTOMETRYGRIDCREATOR_H
 #define PHZMODELING_PHOTOMETRYGRIDCREATOR_H
 
-#include <functional>
 #include "MathUtils/function/Function.h"
-#include "XYDataset/XYDatasetProvider.h"
-#include "PhzDataModel/PhzModel.h"
-#include "PhzDataModel/PhotometryGrid.h"
-#include "PhzModeling/ModelDatasetGrid.h"
 #include "PhysicsUtils/CosmologicalParameters.h"
+#include "PhzDataModel/PhotometryGrid.h"
+#include "PhzDataModel/PhzModel.h"
+#include "PhzModeling/ModelDatasetGrid.h"
+#include "XYDataset/XYDatasetProvider.h"
+#include <functional>
 
 namespace Euclid {
 
@@ -45,19 +45,18 @@ namespace PhzModeling {
  *
  */
 class PhotometryGridCreator {
-  
+
 public:
-  
-  typedef ModelDatasetGrid::IgmAbsorptionFunction IgmAbsorptionFunction;
+  typedef ModelDatasetGrid::IgmAbsorptionFunction      IgmAbsorptionFunction;
   typedef ModelDatasetGenerator::NormalizationFunction NormalizationFunction;
-  
+
   /**
    * Defines the signature of the functions which can be used as listeners for
    * the progress of the photometry grid creation. The first parameter is the
    * number of the current step and the second is the total number of steps.
    */
   typedef std::function<void(size_t step, size_t total)> ProgressListener;
-  
+
   /**
    * @brief constructor
    *
@@ -72,17 +71,15 @@ public:
    *
    * @param filter_provider
    * A shared_ptr<XYDatasetProvider> allowing to access to the Filters
-   * 
+   *
    * @param igm_absorption_function
    * The function to use for applying the IGM absorption to the redshifted SED
    *
    */
-  PhotometryGridCreator(
-      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
-      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
-      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
-      IgmAbsorptionFunction igm_absorption_function,
-      NormalizationFunction normalization_function);
+  PhotometryGridCreator(std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
+                        std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
+                        std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+                        IgmAbsorptionFunction igm_absorption_function, NormalizationFunction normalization_function);
   /**
    * @brief destructor.
    */
@@ -102,29 +99,27 @@ public:
    *
    * @param filter_name_list
    * A vector<QualifiedName> containing the list (and order) of filter for building the photometry.
-   * 
+   *
    * @param progress_listener
    * A function of type ProgressListener which will be updated with the progress
    * of the grid creation. It will be called every 0.1 sec. The default is an
    * empty function, which means no action is taken.
    *
    */
-  PhzDataModel::PhotometryGrid createGrid(const PhzDataModel::ModelAxesTuple& parameter_space,
-              const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
-              const PhysicsUtils::CosmologicalParameters& cosmology,
-              ProgressListener progress_listener=ProgressListener{});
+  PhzDataModel::PhotometryGrid createGrid(const PhzDataModel::ModelAxesTuple&                  parameter_space,
+                                          const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+                                          const PhysicsUtils::CosmologicalParameters&          cosmology,
+                                          ProgressListener progress_listener = ProgressListener{});
 
 private:
-
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_sed_provider;
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
-  IgmAbsorptionFunction m_igm_absorption_function;
-  NormalizationFunction m_normalization_function;
-
+  IgmAbsorptionFunction                                 m_igm_absorption_function;
+  NormalizationFunction                                 m_normalization_function;
 };
 
-}
-}
+}  // namespace PhzModeling
+}  // namespace Euclid
 
-#endif    /* PHZMODELING_PHOTOMETRYGRIDCREATOR_H */
+#endif /* PHZMODELING_PHOTOMETRYGRIDCREATOR_H */

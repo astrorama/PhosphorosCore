@@ -25,13 +25,13 @@
 #ifndef PHZMODELING_SPARSEGRIDCREATOR_H
 #define PHZMODELING_SPARSEGRIDCREATOR_H
 
-#include <functional>
 #include "MathUtils/function/Function.h"
-#include "XYDataset/XYDatasetProvider.h"
-#include "PhzDataModel/PhzModel.h"
-#include "PhzDataModel/PhotometryGrid.h"
-#include "PhzModeling/ModelDatasetGrid.h"
 #include "PhysicsUtils/CosmologicalParameters.h"
+#include "PhzDataModel/PhotometryGrid.h"
+#include "PhzDataModel/PhzModel.h"
+#include "PhzModeling/ModelDatasetGrid.h"
+#include "XYDataset/XYDatasetProvider.h"
+#include <functional>
 
 namespace Euclid {
 
@@ -47,8 +47,7 @@ namespace PhzModeling {
 class SparseGridCreator {
 
 public:
-
-  typedef ModelDatasetGrid::IgmAbsorptionFunction IgmAbsorptionFunction;
+  typedef ModelDatasetGrid::IgmAbsorptionFunction      IgmAbsorptionFunction;
   typedef ModelDatasetGenerator::NormalizationFunction NormalizationFunction;
 
   /**
@@ -77,16 +76,14 @@ public:
    * The function to use for applying the IGM absorption to the redshifted SED
    *
    */
-  SparseGridCreator(
-      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
-      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
-      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
-      IgmAbsorptionFunction igm_absorption_function,
-      NormalizationFunction normalization_function);
+  SparseGridCreator(std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
+                    std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
+                    std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+                    IgmAbsorptionFunction igm_absorption_function, NormalizationFunction normalization_function);
   /**
    * @brief destructor.
    */
-  virtual ~SparseGridCreator()=default;
+  virtual ~SparseGridCreator() = default;
 
   /**
    * @brief Creates a photometry grid
@@ -109,22 +106,21 @@ public:
    * empty function, which means no action is taken.
    *
    */
-  std::map<std::string, PhzDataModel::PhotometryGrid> createGrid(
-              const  std::map<std::string, PhzDataModel::ModelAxesTuple>& parameter_space_map,
-              const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
-              const PhysicsUtils::CosmologicalParameters& cosmology,
-              ProgressListener progress_listener=ProgressListener{});
+  std::map<std::string, PhzDataModel::PhotometryGrid>
+  createGrid(const std::map<std::string, PhzDataModel::ModelAxesTuple>& parameter_space_map,
+             const std::vector<Euclid::XYDataset::QualifiedName>&       filter_name_list,
+             const PhysicsUtils::CosmologicalParameters&                cosmology,
+             ProgressListener                                           progress_listener = ProgressListener{});
 
 private:
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_sed_provider;
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
-  IgmAbsorptionFunction m_igm_absorption_function;
-  NormalizationFunction m_normalization_function;
-
+  IgmAbsorptionFunction                                 m_igm_absorption_function;
+  NormalizationFunction                                 m_normalization_function;
 };
 
-}
-}
+}  // namespace PhzModeling
+}  // namespace Euclid
 
-#endif    /* PHZMODELING_SPARSEGRIDCREATOR_H */
+#endif /* PHZMODELING_SPARSEGRIDCREATOR_H */

@@ -27,20 +27,17 @@
 
 #include "PhzOutput/PhzColumnHandlers/Id.h"
 
-#include "Table/ColumnInfo.h"
-#include "SourceCatalog/Source.h"
 #include "PhzDataModel/SourceResults.h"
+#include "SourceCatalog/Source.h"
 #include "Table/CastVisitor.h"
+#include "Table/ColumnInfo.h"
 
 using namespace Euclid;
 using namespace PhzOutput;
 
-
-
-
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (ColumnHandlers_Id_trest)
+BOOST_AUTO_TEST_SUITE(ColumnHandlers_Id_trest)
 
 //-----------------------------------------------------------------------------
 BOOST_AUTO_TEST_CASE(test_getColumnInfoList) {
@@ -48,12 +45,11 @@ BOOST_AUTO_TEST_CASE(test_getColumnInfoList) {
 
   // when
   auto column_handler = ColumnHandlers::Id(typeid(int64_t), 0);
-  auto column_list = column_handler.getColumnInfoList();
+  auto column_list    = column_handler.getColumnInfoList();
 
   // Then
   BOOST_CHECK_EQUAL(column_list.size(), 1);
   BOOST_CHECK_EQUAL(column_list[0].name, "ID");
-
 }
 
 //-----------------------------------------------------------------------------
@@ -63,7 +59,7 @@ BOOST_AUTO_TEST_CASE(test_convertResults) {
 
   // when
   auto column_handler = ColumnHandlers::Id(typeid(double), 0);
-  auto row = column_handler.convertResults(source, {});
+  auto row            = column_handler.convertResults(source, {});
 
   // Then
   BOOST_CHECK_EQUAL(row.size(), 1);
@@ -71,10 +67,4 @@ BOOST_AUTO_TEST_CASE(test_convertResults) {
   BOOST_CHECK_EQUAL(value, 100);
 }
 
-
-
-BOOST_AUTO_TEST_SUITE_END ()
-
-
-
-
+BOOST_AUTO_TEST_SUITE_END()

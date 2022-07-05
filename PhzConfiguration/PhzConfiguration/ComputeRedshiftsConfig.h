@@ -23,14 +23,14 @@
  */
 
 #ifndef PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIG_H
-#define	PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIG_H
+#define PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIG_H
 
+#include "Configuration/Configuration.h"
+#include "PhzLikelihood/CatalogHandler.h"
+#include "PhzOutput/OutputHandler.h"
+#include <boost/filesystem/operations.hpp>
 #include <cstdlib>
 #include <string>
-#include <boost/filesystem/operations.hpp>
-#include "Configuration/Configuration.h"
-#include "PhzOutput/OutputHandler.h"
-#include "PhzLikelihood/CatalogHandler.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -42,7 +42,6 @@ namespace PhzConfiguration {
 class ComputeRedshiftsConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief constructor
    */
@@ -71,32 +70,29 @@ public:
   void initialize(const UserValues& args) override;
 
   std::unique_ptr<PhzOutput::OutputHandler> getOutputHandler() const;
-  
+
   std::size_t getInputBufferSize() const;
   std::size_t getSkipFirstNumber() const;
   std::size_t getProcessMaxNumber() const;
 
 private:
-
   bool m_cat_flag = false;
 
-  std::size_t m_sampling_number = 1000;
-  std::size_t m_sources_per_file = 10000;
-  bool m_do_sample_full_grids = true;
-  bool m_likelihood_flag = false;
+  std::size_t             m_sampling_number      = 1000;
+  std::size_t             m_sources_per_file     = 10000;
+  bool                    m_do_sample_full_grids = true;
+  bool                    m_likelihood_flag      = false;
   boost::filesystem::path m_out_likelihood_dir;
-  bool m_posterior_flag = false;
+  bool                    m_posterior_flag = false;
   boost::filesystem::path m_out_posterior_dir;
 
   std::size_t m_input_buffer_size = 5000;
-  std::size_t m_input_skip_first = 0;
+  std::size_t m_input_skip_first  = 0;
   std::size_t m_input_process_max = 0;
 
 }; /* End of ComputeRedshiftsConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIG_H */
-
+#endif /* PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIG_H */

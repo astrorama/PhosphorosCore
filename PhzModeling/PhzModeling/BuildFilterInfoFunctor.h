@@ -25,18 +25,18 @@
 #ifndef PHZMODELING_BULDFILTERINFOFUNCTOR_H
 #define PHZMODELING_BULDFILTERINFOFUNCTOR_H
 
-#include <utility>
-#include <memory>
 #include "MathUtils/function/Function.h"
+#include <memory>
+#include <utility>
 
 namespace Euclid {
 
 namespace XYDataset {
-  class XYDataset;
+class XYDataset;
 }
 
-namespace PhzDataModel{
-  class FilterInfo;
+namespace PhzDataModel {
+class FilterInfo;
 }
 
 namespace PhzModeling {
@@ -57,9 +57,9 @@ namespace PhzModeling {
 class BuildFilterInfoFunctor {
 
 public:
- /**
-  * Build the Filter Info.
-  */
+  /**
+   * Build the Filter Info.
+   */
   explicit BuildFilterInfoFunctor(bool is_in_photon = true);
 
   /**
@@ -75,10 +75,9 @@ public:
 
 private:
   bool m_is_in_photon;
-
 };
 
-} // end of namespace PhzModeling
-} // end of namespace Euclid
+}  // end of namespace PhzModeling
+}  // end of namespace Euclid
 
-#endif    /* PHZMODELING_BULDFILTERINFOFUNCTOR_H */
+#endif /* PHZMODELING_BULDFILTERINFOFUNCTOR_H */

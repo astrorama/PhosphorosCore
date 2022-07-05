@@ -85,14 +85,16 @@ size_t SedDataProvider::length() const {
 
 int64_t SedDataProvider::addSed(const XYDataset::XYDataset& data) {
   typedef XYDataset::XYDataset::const_iterator::value_type pair_type;
-  auto cmp_bin_func = [](const pair_type& a, const pair_type& b) { return a.first < b.first; };
+  auto                                                     cmp_bin_func = [](const pair_type& a, const pair_type& b) {
+    return a.first < b.first;
+  };
 
   if (!m_array) {
     create(data.size());
   }
   if (data.size() != m_length) {
-    throw Elements::Exception() << "All SEDs are expected to have the same number of knots (" << data.size() << " vs " << m_length
-                                << ")";
+    throw Elements::Exception() << "All SEDs are expected to have the same number of knots (" << data.size() << " vs "
+                                << m_length << ")";
   }
   if (!std::is_sorted(data.begin(), data.end(), cmp_bin_func)) {
     throw Elements::Exception() << "SED bins not in order";

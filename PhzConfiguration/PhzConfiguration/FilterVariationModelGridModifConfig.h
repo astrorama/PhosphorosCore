@@ -33,7 +33,6 @@ namespace PhzConfiguration {
 class FilterVariationModelGridModifConfig : public Configuration::Configuration {
 
 public:
-
   FilterVariationModelGridModifConfig(long manager_id);
 
   /**
@@ -41,13 +40,10 @@ public:
    */
   virtual ~FilterVariationModelGridModifConfig() = default;
 
-
   void postInitialize(const UserValues& args) override;
-
 };
 
 } /* namespace PhzConfiguration */
 } /* namespace Euclid */
-
 
 #endif  // PHZCONFIGURATION_PHZCONFIGURATION_FILTERVARIATIONMODELGRIDMODIFCONFIG_H_

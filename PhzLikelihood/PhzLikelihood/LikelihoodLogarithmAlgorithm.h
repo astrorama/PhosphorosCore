@@ -5,20 +5,20 @@
  */
 
 #ifndef PHZLIKELIHOOD_LIKELIHOODLOGARITHMALGORITHM_H
-#define	PHZLIKELIHOOD_LIKELIHOODLOGARITHMALGORITHM_H
+#define PHZLIKELIHOOD_LIKELIHOODLOGARITHMALGORITHM_H
 
-#include <functional>
 #include "SourceCatalog/SourceAttributes/Photometry.h"
+#include <functional>
 
 namespace Euclid {
 namespace PhzLikelihood {
 
 /**
  * @class LikelihoodLogarithmAlgorithm
- * 
+ *
  * @brief Calculates the natural logarithm of the likelihood of a source over a
  * set of models
- * 
+ *
  * @details
  * The LikelihoodLogarithmAlgorithm component is an STL-like algorithm
  * responsible for calculating the natural logarithm of the likelihood of a
@@ -27,12 +27,12 @@ namespace PhzLikelihood {
  * the same filters and in the same order. For the source the only restriction
  * is that it contains photometries for all the filters that the models have
  * (order doesn't matter and it might contain extra photometries).
- * 
+ *
  * Note that the magnitude of the source and the models is not taken in
  * consideration. A scale factor is used to scale the model photometries to best
  * fit the given source photometry. The way of calculating this factor is by
  * using a function of type ScaleFactorCalc given at construction time.
- * 
+ *
  * The second way the algorithm can be parameterised is the likelihood logarithm
  * calculation method. For this is used the function LikelihoodLogarithmCalc, as
  * given by the constructor.
@@ -40,7 +40,6 @@ namespace PhzLikelihood {
 class LikelihoodLogarithmAlgorithm {
 
 public:
-
   /**
    * Definition of the function for calculating the factor with which a model
    * photometry must be scaled to best fit the source. It is a function which
@@ -51,8 +50,8 @@ public:
    */
   typedef std::function<double(SourceCatalog::Photometry::const_iterator source_begin,
                                SourceCatalog::Photometry::const_iterator source_end,
-                               SourceCatalog::Photometry::const_iterator model_begin)
-                       > ScaleFactorCalc;
+                               SourceCatalog::Photometry::const_iterator model_begin)>
+      ScaleFactorCalc;
 
   /**
    * Definition of the function for calculating the natural logarithm of the
@@ -64,19 +63,17 @@ public:
    */
   typedef std::function<double(SourceCatalog::Photometry::const_iterator source_begin,
                                SourceCatalog::Photometry::const_iterator source_end,
-                               SourceCatalog::Photometry::const_iterator model_begin,
-                               double scale_factor)
-                       > LikelihoodLogarithmCalc;
+                               SourceCatalog::Photometry::const_iterator model_begin, double scale_factor)>
+      LikelihoodLogarithmCalc;
 
   /**
    * Constructs a new instance of LikelihoodLogarithmAlgorithm.
    * @param scale_factor_calc The function to use for calculating the scale
-   *        factor of each model 
+   *        factor of each model
    * @param likelihood_log_calc The function to use for calculating the natural
    *        logarithm of the likelihood of a source to fit a model
    */
-  LikelihoodLogarithmAlgorithm(ScaleFactorCalc scale_factor_calc,
-                               LikelihoodLogarithmCalc likelihood_log_calc);
+  LikelihoodLogarithmAlgorithm(ScaleFactorCalc scale_factor_calc, LikelihoodLogarithmCalc likelihood_log_calc);
 
   /**
    * Calculates the natural logarithm of the likelihood of a given source to fit
@@ -86,7 +83,7 @@ public:
    * filters (but the order does not matter and there might be extra filters).
    * The output likelihood logarithm is stored using the likelihood_log_begin
    * iterator.
-   * 
+   *
    * @tparam ModelIter
    *    The type of the iterator over the model photometries. It
    *    must be an iterator over SourceCatalog::Photometry objects.
@@ -98,7 +95,7 @@ public:
    *    The type of the iterator which is used for returning
    *    the scale factor values. It must be an iterator over a collection of
    *    doubles, which has the same size as the number of models.
-   * @param source_photometry 
+   * @param source_photometry
    *    The photometry of the source to calculate the likelihood for
    * @param model_begin
    *    The iterator pointing at the first of the models
@@ -111,30 +108,26 @@ public:
    *    The iterator pointing at the first element of the collection which will
    *    be used as the scale factor output
    */
-  template<typename ModelIter, typename LikelihoodLogIter, typename ScaleFactorIter>
-  void operator()(const SourceCatalog::Photometry& source_photometry,
-                  ModelIter model_begin, ModelIter model_end,
-                  LikelihoodLogIter likelihood_begin,
-                  ScaleFactorIter scale_factor_begin) const;
+  template <typename ModelIter, typename LikelihoodLogIter, typename ScaleFactorIter>
+  void operator()(const SourceCatalog::Photometry& source_photometry, ModelIter model_begin, ModelIter model_end,
+                  LikelihoodLogIter likelihood_begin, ScaleFactorIter scale_factor_begin) const;
 
 private:
   /**
-    * @brief
-    * The Scale Factor function.
-    */
+   * @brief
+   * The Scale Factor function.
+   */
   ScaleFactorCalc m_scale_factor_calc;
   /**
-    * @brief
-    * The Likelihood logarithm function.
-    */
+   * @brief
+   * The Likelihood logarithm function.
+   */
   LikelihoodLogarithmCalc m_likelihood_log_calc;
-
 };
 
-} // end of namespace PhzLikelihood
-} // end of namespace Euclid
+}  // end of namespace PhzLikelihood
+}  // end of namespace Euclid
 
 #include "PhzLikelihood/_impl/LikelihoodLogarithmAlgorithm.icpp"
 
-#endif	/* PHZLIKELIHOOD_LIKELIHOODLOGARITHMALGORITHM_H */
-
+#endif /* PHZLIKELIHOOD_LIKELIHOODLOGARITHMALGORITHM_H */

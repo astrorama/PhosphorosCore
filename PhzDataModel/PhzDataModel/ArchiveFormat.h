@@ -35,14 +35,12 @@ namespace PhzDataModel {
  *      This type helps handling types that can be archived - using boost archive -
  *      in multiple formats.
  */
-enum class ArchiveFormat {
-  BINARY, TEXT, UNKNOWN
-};
+enum class ArchiveFormat { BINARY, TEXT, UNKNOWN };
 
 /**
  * Convert a string representation to the enum
  */
-ArchiveFormat archiveFormatFromString(const std::string &str);
+ArchiveFormat archiveFormatFromString(const std::string& str);
 
 /**
  * Guess the format of a given archive
@@ -52,9 +50,9 @@ ArchiveFormat guessArchiveFormat(std::ifstream& in);
 /**
  * Write to an output stream a string representation of the enum
  */
-std::ostream& operator << (std::ostream& out, const ArchiveFormat& fmt);
+std::ostream& operator<<(std::ostream& out, const ArchiveFormat& fmt);
 
-} // end namespace PhzDataModel
-} // end namespace Euclid
+}  // end namespace PhzDataModel
+}  // end namespace Euclid
 
-#endif // PHZDATAMODEL_ARCHIVEFORMAT_H
+#endif  // PHZDATAMODEL_ARCHIVEFORMAT_H

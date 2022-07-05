@@ -23,35 +23,33 @@
  */
 
 #ifndef PHZCONFIGURATION_CORRECTIONCOEFFICIENTGRIDOUTPUTCONFIG_H
-#define	PHZCONFIGURATION_CORRECTIONCOEFFICIENTGRIDOUTPUTCONFIG_H
+#define PHZCONFIGURATION_CORRECTIONCOEFFICIENTGRIDOUTPUTCONFIG_H
 
-#include <cstdlib>
-#include <string>
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzModeling/PhotometryGridCreator.h"
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
+#include <string>
 
 namespace Euclid {
 namespace PhzConfiguration {
 
-
 /**
  * @class CorrectionCoefficientGridOutputConfig
  * @brief
- * This class defines the Correction Coefficient grid parameter option used by the ComputeModelGalacticCorrectionCoefficient
- * executable
+ * This class defines the Correction Coefficient grid parameter option used by the
+ * ComputeModelGalacticCorrectionCoefficient executable
  */
 class CorrectionCoefficientGridOutputConfig : public Configuration::Configuration {
 
 public:
-
- typedef std::function<void(const std::map<std::string, PhzDataModel::PhotometryGrid>&)> OutputFunction;
+  typedef std::function<void(const std::map<std::string, PhzDataModel::PhotometryGrid>&)> OutputFunction;
 
   /**
    * @brief Constructor
    */
- CorrectionCoefficientGridOutputConfig(long manager_id);
+  CorrectionCoefficientGridOutputConfig(long manager_id);
 
   /**
    * @brief Destructor
@@ -60,7 +58,8 @@ public:
 
   /**
    * @details
-   * Add the "output-galactic-correction-coefficient-grid" option to the "Compute Galactic Correction Coefficient Grid options" group
+   * Add the "output-galactic-correction-coefficient-grid" option to the "Compute Galactic Correction Coefficient Grid
+   * options" group
    */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
@@ -93,17 +92,13 @@ public:
    * @return
    * A function to be used for outputing the PhotometryGrid
    */
-  const OutputFunction & getOutputFunction();
+  const OutputFunction& getOutputFunction();
 
 private:
-
   OutputFunction m_output_function;
-
 };
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_CORRECTIONCOEFFICIENTGRIDOUTPUTCONFIG_H */
-
+#endif /* PHZCONFIGURATION_CORRECTIONCOEFFICIENTGRIDOUTPUTCONFIG_H */

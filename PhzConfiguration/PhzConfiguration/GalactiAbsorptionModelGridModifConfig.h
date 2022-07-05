@@ -35,7 +35,6 @@ namespace PhzConfiguration {
 class GalactiAbsorptionModelGridModifConfig : public Configuration::Configuration {
 
 public:
-
   GalactiAbsorptionModelGridModifConfig(long manager_id);
 
   /**
@@ -43,18 +42,15 @@ public:
    */
   virtual ~GalactiAbsorptionModelGridModifConfig() = default;
 
-
   void postInitialize(const UserValues& args) override;
 
-
   static bool areGridsCompatible(const PhzDataModel::PhotometryGridInfo& first_grid,
-      const PhzDataModel::PhotometryGridInfo second_grid);
-
+                                 const PhzDataModel::PhotometryGridInfo  second_grid);
 
   template <int I>
   static bool checkAxis(const PhzDataModel::ModelAxesTuple& first_grid_info,
-                 const PhzDataModel::ModelAxesTuple& second_grid_info) {
-    auto first_items = std::get<I>(first_grid_info);
+                        const PhzDataModel::ModelAxesTuple& second_grid_info) {
+    auto first_items  = std::get<I>(first_grid_info);
     auto second_items = std::get<I>(second_grid_info);
 
     if (first_items.size() != second_items.size()) {
@@ -62,19 +58,16 @@ public:
     }
 
     for (auto& first_item : first_items) {
-      if (std::find(second_items.begin(), second_items.end(), first_item) ==
-          second_items.end()) {
+      if (std::find(second_items.begin(), second_items.end(), first_item) == second_items.end()) {
         return false;
       }
     }
 
     return true;
   }
-
 };
 
 } /* namespace PhzConfiguration */
 } /* namespace Euclid */
-
 
 #endif  // PHZCONFIGURATION_PHZCONFIGURATION_GALACTIABSORPTIONMODELGRIDMODIFICATIONCONFIG_H

@@ -22,24 +22,24 @@
  * @author nikoapos
  */
 
-#include <sstream>
-#include "Configuration/PhotometryCatalogConfig.h"
 #include "PhzConfiguration/PdfOutputConfig.h"
+#include "Configuration/PhotometryCatalogConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
-#include "PhzConfiguration/PhzOutputDirConfig.h"
-#include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PdfOutputFlagsConfig.h"
-#include "PhzOutput/PhzColumnHandlers/Pdf.h"
-#include "PhzOutput/PhzColumnHandlers/Flags.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
+#include "PhzConfiguration/PhzOutputDirConfig.h"
 #include "PhzOutput/PdfOutput.h"
+#include "PhzOutput/PhzColumnHandlers/Flags.h"
+#include "PhzOutput/PhzColumnHandlers/Pdf.h"
+#include <sstream>
 
 namespace po = boost::program_options;
 
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string OUTPUT_PDF_FORMAT {"output-pdf-format"};
-static const std::string OUTPUT_PDF_NORMALIZED {"output-pdf-normalized"};
+static const std::string OUTPUT_PDF_FORMAT{"output-pdf-format"};
+static const std::string OUTPUT_PDF_NORMALIZED{"output-pdf-normalized"};
 
 PdfOutputConfig::PdfOutputConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PhzOutputDirConfig>();
@@ -50,94 +50,78 @@ PdfOutputConfig::PdfOutputConfig(long manager_id) : Configuration(manager_id) {
 }
 
 auto PdfOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Output options", {
-    {OUTPUT_PDF_FORMAT.c_str(), po::value<std::string>()->default_value("VECTOR-COLUMN"),
-        "The format of the 1D PDF. One of VECTOR-COLUMN (default) or INDIVIDUAL-HDUS"},
-    {OUTPUT_PDF_NORMALIZED.c_str(), po::value<std::string>()->default_value("YES"),
-        "Flag allowing to turn off the 1D PDF normalization (YES/NO, default: YES)"}
-  }}};
+  return {{"Output options",
+           {{OUTPUT_PDF_FORMAT.c_str(), po::value<std::string>()->default_value("VECTOR-COLUMN"),
+             "The format of the 1D PDF. One of VECTOR-COLUMN (default) or INDIVIDUAL-HDUS"},
+            {OUTPUT_PDF_NORMALIZED.c_str(), po::value<std::string>()->default_value("YES"),
+             "Flag allowing to turn off the 1D PDF normalization (YES/NO, default: YES)"}}}};
 }
 
 void PdfOutputConfig::preInitialize(const UserValues& args) {
 
   if (args.at(OUTPUT_PDF_FORMAT).as<std::string>() != "VECTOR-COLUMN" &&
       args.at(OUTPUT_PDF_FORMAT).as<std::string>() != "INDIVIDUAL-HDUS") {
-    throw Elements::Exception() << "Invalid value for option " << OUTPUT_PDF_FORMAT
-        << ": " << args.at(OUTPUT_PDF_FORMAT).as<std::string>();
+    throw Elements::Exception() << "Invalid value for option " << OUTPUT_PDF_FORMAT << ": "
+                                << args.at(OUTPUT_PDF_FORMAT).as<std::string>();
   }
 
-  if (args.at(OUTPUT_PDF_NORMALIZED).as<std::string>() != "NO"
-       && args.at(OUTPUT_PDF_NORMALIZED).as<std::string>() != "YES") {
-     throw Elements::Exception() << "Invalid " + OUTPUT_PDF_NORMALIZED + " value: "
-         << args.at(OUTPUT_PDF_NORMALIZED).as<std::string>() << " (allowed values: YES, NO)";
-   }
-
+  if (args.at(OUTPUT_PDF_NORMALIZED).as<std::string>() != "NO" &&
+      args.at(OUTPUT_PDF_NORMALIZED).as<std::string>() != "YES") {
+    throw Elements::Exception() << "Invalid " + OUTPUT_PDF_NORMALIZED + " value: "
+                                << args.at(OUTPUT_PDF_NORMALIZED).as<std::string>() << " (allowed values: YES, NO)";
+  }
 }
 
 void PdfOutputConfig::initialize(const UserValues& args) {
 
   auto& flags = getDependency<PdfOutputFlagsConfig>();
-  m_format = args.at(OUTPUT_PDF_FORMAT).as<std::string>();
+  m_format    = args.at(OUTPUT_PDF_FORMAT).as<std::string>();
 
   if (m_format == "VECTOR-COLUMN") {
     if (flags.pdfSedFlag()) {
-      getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler> {new PhzOutput::ColumnHandlers::Pdf<
-                      PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::SED>{}}
-      );
+      getDependency<OutputCatalogConfig>().addColumnHandler(std::unique_ptr<PhzOutput::ColumnHandler>{
+          new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::SED>{}});
     }
     if (flags.pdfRedCurveFlag()) {
-      getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
-                      PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::REDDENING_CURVE>{}}
-      );
+      getDependency<OutputCatalogConfig>().addColumnHandler(std::unique_ptr<PhzOutput::ColumnHandler>{
+          new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::GridType::POSTERIOR,
+                                             PhzDataModel::ModelParameter::REDDENING_CURVE>{}});
     }
     if (flags.pdfEbvFlag()) {
-      getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
-                      PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::EBV>{}}
-      );
+      getDependency<OutputCatalogConfig>().addColumnHandler(std::unique_ptr<PhzOutput::ColumnHandler>{
+          new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::EBV>{}});
     }
     if (flags.pdfZFlag()) {
-      getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
-                      PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::Z>{}}
-      );
+      getDependency<OutputCatalogConfig>().addColumnHandler(std::unique_ptr<PhzOutput::ColumnHandler>{
+          new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::Z>{}});
     }
 
     if (flags.likelihoodPdfSedFlag()) {
-      getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
-                      PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::SED>{}}
-      );
+      getDependency<OutputCatalogConfig>().addColumnHandler(std::unique_ptr<PhzOutput::ColumnHandler>{
+          new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::SED>{}});
     }
     if (flags.likelihoodPdfRedCurveFlag()) {
-      getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
-                      PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::REDDENING_CURVE>{}}
-      );
+      getDependency<OutputCatalogConfig>().addColumnHandler(std::unique_ptr<PhzOutput::ColumnHandler>{
+          new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::GridType::LIKELIHOOD,
+                                             PhzDataModel::ModelParameter::REDDENING_CURVE>{}});
     }
     if (flags.likelihoodPdfEbvFlag()) {
-      getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
-                      PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::EBV>{}}
-      );
+      getDependency<OutputCatalogConfig>().addColumnHandler(std::unique_ptr<PhzOutput::ColumnHandler>{
+          new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::EBV>{}});
     }
     if (flags.likelihoodPdfZFlag()) {
-      getDependency<OutputCatalogConfig>().addColumnHandler(
-          std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Pdf<
-                      PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::Z>{}}
-      );
+      getDependency<OutputCatalogConfig>().addColumnHandler(std::unique_ptr<PhzOutput::ColumnHandler>{
+          new PhzOutput::ColumnHandlers::Pdf<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::Z>{}});
     }
   }
 
-  bool missing_photometry = getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isMissingPhotometryEnabled();
+  bool missing_photometry =
+      getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isMissingPhotometryEnabled();
   bool upper_limit = getDependency<Euclid::Configuration::PhotometryCatalogConfig>().isUpperLimitEnabled();
 
-  if ( missing_photometry || upper_limit) {
-        getDependency<OutputCatalogConfig>().addColumnHandler(
-            std::unique_ptr<PhzOutput::ColumnHandler>{new PhzOutput::ColumnHandlers::Flags{ missing_photometry,upper_limit}}
-        );
+  if (missing_photometry || upper_limit) {
+    getDependency<OutputCatalogConfig>().addColumnHandler(std::unique_ptr<PhzOutput::ColumnHandler>{
+        new PhzOutput::ColumnHandlers::Flags{missing_photometry, upper_limit}});
   }
 
   if (m_format == "INDIVIDUAL-HDUS") {
@@ -145,70 +129,71 @@ void PdfOutputConfig::initialize(const UserValues& args) {
   }
 
   auto normalized_flag = args.at(OUTPUT_PDF_NORMALIZED).as<std::string>();
-  m_pdf_normalized = normalized_flag == "YES";
-
+  m_pdf_normalized     = normalized_flag == "YES";
 }
 
 bool PdfOutputConfig::doNormalizePDFs() const {
   if (getCurrentState() < Configuration::Configuration::State::FINAL) {
-    throw Elements::Exception()
-        << "Call to doNormalizePDFs() on a not initialized instance.";
+    throw Elements::Exception() << "Call to doNormalizePDFs() on a not initialized instance.";
   }
   return m_pdf_normalized;
 }
 
 std::vector<std::unique_ptr<PhzOutput::OutputHandler>> PdfOutputConfig::getOutputHandlers() const {
   if (getCurrentState() < Configuration::Configuration::State::FINAL) {
-    throw Elements::Exception()
-        << "Call to getOutputHandler() on a not initialized instance.";
+    throw Elements::Exception() << "Call to getOutputHandler() on a not initialized instance.";
   }
 
-  std::vector<std::unique_ptr<PhzOutput::OutputHandler>> handlers {};
-  
+  std::vector<std::unique_ptr<PhzOutput::OutputHandler>> handlers{};
+
   if (m_format == "INDIVIDUAL-HDUS") {
-    auto flush_size = getDependency<OutputCatalogConfig>().getFlushSize();
-    auto& flags = getDependency<PdfOutputFlagsConfig>();
+    auto  flush_size = getDependency<OutputCatalogConfig>().getFlushSize();
+    auto& flags      = getDependency<PdfOutputFlagsConfig>();
     if (flags.pdfSedFlag()) {
-      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::SED> {m_out_pdf_dir, flush_size}});
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler>{
+          new PhzOutput::PdfOutput<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::SED>{m_out_pdf_dir,
+                                                                                                         flush_size}});
     }
     if (flags.pdfRedCurveFlag()) {
-      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::REDDENING_CURVE> {m_out_pdf_dir, flush_size}});
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler>{
+          new PhzOutput::PdfOutput<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::REDDENING_CURVE>{
+              m_out_pdf_dir, flush_size}});
     }
     if (flags.pdfEbvFlag()) {
-      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::EBV> {m_out_pdf_dir, flush_size}});
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler>{
+          new PhzOutput::PdfOutput<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::EBV>{m_out_pdf_dir,
+                                                                                                         flush_size}});
     }
     if (flags.pdfZFlag()) {
-      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::Z> {m_out_pdf_dir, flush_size}});
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler>{
+          new PhzOutput::PdfOutput<PhzDataModel::GridType::POSTERIOR, PhzDataModel::ModelParameter::Z>{m_out_pdf_dir,
+                                                                                                       flush_size}});
     }
 
     if (flags.likelihoodPdfSedFlag()) {
-      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::SED> {m_out_pdf_dir, flush_size}});
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler>{
+          new PhzOutput::PdfOutput<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::SED>{m_out_pdf_dir,
+                                                                                                          flush_size}});
     }
     if (flags.likelihoodPdfRedCurveFlag()) {
-      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::REDDENING_CURVE> {m_out_pdf_dir, flush_size}});
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler>{
+          new PhzOutput::PdfOutput<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::REDDENING_CURVE>{
+              m_out_pdf_dir, flush_size}});
     }
     if (flags.likelihoodPdfEbvFlag()) {
-      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::EBV> {m_out_pdf_dir, flush_size}});
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler>{
+          new PhzOutput::PdfOutput<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::EBV>{m_out_pdf_dir,
+                                                                                                          flush_size}});
     }
     if (flags.likelihoodPdfZFlag()) {
-      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler> {
-        new PhzOutput::PdfOutput<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::Z> {m_out_pdf_dir, flush_size}});
+      handlers.emplace_back(std::unique_ptr<PhzOutput::OutputHandler>{
+          new PhzOutput::PdfOutput<PhzDataModel::GridType::LIKELIHOOD, PhzDataModel::ModelParameter::Z>{m_out_pdf_dir,
+                                                                                                        flush_size}});
     }
-
   }
-  
+
   return handlers;
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

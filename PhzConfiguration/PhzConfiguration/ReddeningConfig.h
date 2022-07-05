@@ -23,15 +23,14 @@
  */
 
 #ifndef PHZCONFIGURATION_REDDENINGCONFIG_H
-#define	PHZCONFIGURATION_REDDENINGCONFIG_H
+#define PHZCONFIGURATION_REDDENINGCONFIG_H
 
-#include <string>
-#include <vector>
-#include <map>
+#include "Configuration/Configuration.h"
 #include "XYDataset/XYDatasetProvider.h"
 #include <boost/filesystem/operations.hpp>
-#include "Configuration/Configuration.h"
-
+#include <map>
+#include <string>
+#include <vector>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -91,32 +90,29 @@ public:
     * @return
     * A vector of QualifiedName types
     */
-   const std::map<std::string, std::vector<XYDataset::QualifiedName>>& getReddeningCurveList();
+  const std::map<std::string, std::vector<XYDataset::QualifiedName>>& getReddeningCurveList();
 
-   /**
-    * @brief
-    * This function provides an E(B-V) list as a vector of doubles
-    * @details
-    * A regex is applied for the ebv-range and another for the ebv-value
-    * in order to make sure the string given got valid characters.
-    * - regex for the ebv-range : `(((\\d+(\\.\\d*)?)|(\\.\\d+))($|\\s+)){3}`
-    * - regex for the ebv-value : `((\\d+(\\.\\d*)?)|(\\.\\d+))($|\\s+)`
-    *
-    * @return
-    * A vector of doubles
-    */
-    const std::map<std::string, std::vector<double>>& getEbvList();
+  /**
+   * @brief
+   * This function provides an E(B-V) list as a vector of doubles
+   * @details
+   * A regex is applied for the ebv-range and another for the ebv-value
+   * in order to make sure the string given got valid characters.
+   * - regex for the ebv-range : `(((\\d+(\\.\\d*)?)|(\\.\\d+))($|\\s+)){3}`
+   * - regex for the ebv-value : `((\\d+(\\.\\d*)?)|(\\.\\d+))($|\\s+)`
+   *
+   * @return
+   * A vector of doubles
+   */
+  const std::map<std::string, std::vector<double>>& getEbvList();
 
 private:
-
   std::map<std::string, std::vector<XYDataset::QualifiedName>> m_reddening_curve_list;
-  std::map<std::string, std::vector<double>> m_ebv_list;
+  std::map<std::string, std::vector<double>>                   m_ebv_list;
 
 }; /* End of ReddeningConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_REDDENINGCONFIG_H */
-
+#endif /* PHZCONFIGURATION_REDDENINGCONFIG_H */

@@ -93,7 +93,8 @@ static std::vector<double> getPdzBins(std::string comment) {
 
 BuildReferenceSample::BuildReferenceSample() : BuildReferenceSample(DefaultProgressListener()) {}
 
-BuildReferenceSample::BuildReferenceSample(ProgressListener progress_listener) : m_progress_listener(progress_listener) {}
+BuildReferenceSample::BuildReferenceSample(ProgressListener progress_listener)
+    : m_progress_listener(progress_listener) {}
 
 void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_manager) {
   using PhzModeling::NormalizationFunctorFactory;
@@ -150,8 +151,8 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_mana
   for (auto& reader : phosphoros_readers) {
     logger.info() << "Processing input catalog with " << reader->rowsLeft() << " sources";
 
-    processCatalog(*reader, ref_sample, igm_function, normalizer_functor, reddening_provider, sed_provider, redshiftFunctor,
-                   pdz_bins, total, i);
+    processCatalog(*reader, ref_sample, igm_function, normalizer_functor, reddening_provider, sed_provider,
+                   redshiftFunctor, pdz_bins, total, i);
   }
 
   logger.info() << "Optimizing the reference sample index";
@@ -162,8 +163,9 @@ void BuildReferenceSample::processCatalog(Table::TableReader& reader, ReferenceS
                                           const PhotometryGridCreator::IgmAbsorptionFunction& igm_function,
                                           const NormalizationFunction&                        normalizer_functor,
                                           XYDataset::XYDatasetProvider&                       reddening_provider,
-                                          XYDataset::XYDatasetProvider& sed_provider, const RedshiftFunctor& redshiftFunctor,
-                                          const std::vector<double>& pdz_bins, size_t total, int64_t& i) {
+                                          XYDataset::XYDatasetProvider&                       sed_provider,
+                                          const RedshiftFunctor& redshiftFunctor, const std::vector<double>& pdz_bins,
+                                          size_t total, int64_t& i) {
   while (reader.hasMoreRows()) {
     auto phosphoros_table = reader.read(10000);
     logger.info() << phosphoros_table.size() << " entries loaded";
@@ -190,11 +192,13 @@ void BuildReferenceSample::processCatalog(Table::TableReader& reader, ReferenceS
         throw Elements::Exception() << "Could not load the reddening curve " << red_curve_name;
       }
 
-      reddening_curve_map.emplace(std::make_pair(red_curve_name, interpolatedReddeningCurve(red_curve_name, *red_curve)));
+      reddening_curve_map.emplace(
+          std::make_pair(red_curve_name, interpolatedReddeningCurve(red_curve_name, *red_curve)));
 
       ModelAxesTuple   grid_axes{createAxesTuple({z}, {ebv}, {red_curve_name}, {sed_name})};
-      ModelDatasetGrid grid{grid_axes,    std::move(sed_map), std::move(reddening_curve_map), ExtinctionFunctor{}, redshiftFunctor,
-                            igm_function, normalizer_functor};
+      ModelDatasetGrid grid{grid_axes,           std::move(sed_map), std::move(reddening_curve_map),
+                            ExtinctionFunctor{}, redshiftFunctor,    igm_function,
+                            normalizer_functor};
 
       for (auto& cell : grid) {
         std::vector<std::pair<double, double>> scaled_data{};
@@ -221,7 +225,8 @@ BuildReferenceSample::interpolatedReddeningCurve(const Euclid::XYDataset::Qualif
                                                  const Euclid::XYDataset::XYDataset&     curve_data) {
   auto i = m_reddening_cache.find(curve_name);
   if (i == m_reddening_cache.end()) {
-    i = m_reddening_cache.emplace(curve_name, std::move(interpolate(curve_data, MathUtils::InterpolationType::LINEAR))).first;
+    i = m_reddening_cache.emplace(curve_name, std::move(interpolate(curve_data, MathUtils::InterpolationType::LINEAR)))
+            .first;
   }
   return i->second->clone();
 }

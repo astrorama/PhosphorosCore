@@ -4,19 +4,17 @@
  * @author Florian Dubath
  */
 
-#include <cmath>
 #include "PhzLuminosity/LuminosityFunctionValidityDomain.h"
+#include <cmath>
 
 namespace Euclid {
 namespace PhzLuminosity {
 
-LuminosityFunctionValidityDomain::LuminosityFunctionValidityDomain(
-    const std::string& sed_group_name, double z_min, double z_max) :
-    m_sed_group_name { sed_group_name }, m_z_min { z_min }, m_z_max { z_max } {
-}
+LuminosityFunctionValidityDomain::LuminosityFunctionValidityDomain(const std::string& sed_group_name, double z_min,
+                                                                   double z_max)
+    : m_sed_group_name{sed_group_name}, m_z_min{z_min}, m_z_max{z_max} {}
 
-bool LuminosityFunctionValidityDomain::doesApply(
-    const std::string& sed_group_name, double z) const {
+bool LuminosityFunctionValidityDomain::doesApply(const std::string& sed_group_name, double z) const {
   if (sed_group_name != m_sed_group_name) {
     return false;
   }
@@ -44,5 +42,5 @@ double LuminosityFunctionValidityDomain::getMinZ() const {
   return m_z_min;
 }
 
-}
-}
+}  // namespace PhzLuminosity
+}  // namespace Euclid

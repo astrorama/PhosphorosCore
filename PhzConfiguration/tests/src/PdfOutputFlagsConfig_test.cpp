@@ -24,29 +24,27 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "PhzConfiguration/PdfOutputFlagsConfig.h"
 #include "ConfigManager_fixture.h"
+#include "PhzConfiguration/PdfOutputFlagsConfig.h"
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
 
 struct PdfOutputFlagsConfig_fixture : public ConfigManager_fixture {
-  
-  const std::string CREATE_OUTPUT_PDF {"create-output-pdf"};
-  
-  std::map<std::string, po::variable_value> options_map {};
-  
+
+  const std::string CREATE_OUTPUT_PDF{"create-output-pdf"};
+
+  std::map<std::string, po::variable_value> options_map{};
+
   PdfOutputFlagsConfig_fixture() {
-    
+
     options_map = registerConfigAndGetDefaultOptionsMap<PdfOutputFlagsConfig>();
-    
   }
-  
 };
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (PdfOutputFlagsConfig_test)
+BOOST_AUTO_TEST_SUITE(PdfOutputFlagsConfig_test)
 
 //-----------------------------------------------------------------------------
 
@@ -54,7 +52,7 @@ BOOST_FIXTURE_TEST_CASE(NoFlags_test, PdfOutputFlagsConfig_fixture) {
 
   // Given
   config_manager.closeRegistration();
-  
+
   // When
   config_manager.initialize(options_map);
   auto& result = config_manager.getConfiguration<PdfOutputFlagsConfig>();
@@ -64,7 +62,6 @@ BOOST_FIXTURE_TEST_CASE(NoFlags_test, PdfOutputFlagsConfig_fixture) {
   BOOST_CHECK(!result.pdfRedCurveFlag());
   BOOST_CHECK(!result.pdfEbvFlag());
   BOOST_CHECK(!result.pdfZFlag());
-  
 }
 
 //-----------------------------------------------------------------------------
@@ -74,7 +71,7 @@ BOOST_FIXTURE_TEST_CASE(SedFlag_test, PdfOutputFlagsConfig_fixture) {
   // Given
   config_manager.closeRegistration();
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("SED");
-  
+
   // When
   config_manager.initialize(options_map);
   auto& result = config_manager.getConfiguration<PdfOutputFlagsConfig>();
@@ -84,7 +81,6 @@ BOOST_FIXTURE_TEST_CASE(SedFlag_test, PdfOutputFlagsConfig_fixture) {
   BOOST_CHECK(!result.pdfRedCurveFlag());
   BOOST_CHECK(!result.pdfEbvFlag());
   BOOST_CHECK(!result.pdfZFlag());
-  
 }
 
 //-----------------------------------------------------------------------------
@@ -94,7 +90,7 @@ BOOST_FIXTURE_TEST_CASE(RedCurveFlag_test, PdfOutputFlagsConfig_fixture) {
   // Given
   config_manager.closeRegistration();
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("REDDENING-CURVE");
-  
+
   // When
   config_manager.initialize(options_map);
   auto& result = config_manager.getConfiguration<PdfOutputFlagsConfig>();
@@ -104,7 +100,6 @@ BOOST_FIXTURE_TEST_CASE(RedCurveFlag_test, PdfOutputFlagsConfig_fixture) {
   BOOST_CHECK(result.pdfRedCurveFlag());
   BOOST_CHECK(!result.pdfEbvFlag());
   BOOST_CHECK(!result.pdfZFlag());
-  
 }
 
 //-----------------------------------------------------------------------------
@@ -114,7 +109,7 @@ BOOST_FIXTURE_TEST_CASE(EbvFlag_test, PdfOutputFlagsConfig_fixture) {
   // Given
   config_manager.closeRegistration();
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("EBV");
-  
+
   // When
   config_manager.initialize(options_map);
   auto& result = config_manager.getConfiguration<PdfOutputFlagsConfig>();
@@ -124,7 +119,6 @@ BOOST_FIXTURE_TEST_CASE(EbvFlag_test, PdfOutputFlagsConfig_fixture) {
   BOOST_CHECK(!result.pdfRedCurveFlag());
   BOOST_CHECK(result.pdfEbvFlag());
   BOOST_CHECK(!result.pdfZFlag());
-  
 }
 
 //-----------------------------------------------------------------------------
@@ -134,7 +128,7 @@ BOOST_FIXTURE_TEST_CASE(ZFlag_test, PdfOutputFlagsConfig_fixture) {
   // Given
   config_manager.closeRegistration();
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("Z");
-  
+
   // When
   config_manager.initialize(options_map);
   auto& result = config_manager.getConfiguration<PdfOutputFlagsConfig>();
@@ -144,7 +138,6 @@ BOOST_FIXTURE_TEST_CASE(ZFlag_test, PdfOutputFlagsConfig_fixture) {
   BOOST_CHECK(!result.pdfRedCurveFlag());
   BOOST_CHECK(!result.pdfEbvFlag());
   BOOST_CHECK(result.pdfZFlag());
-  
 }
 
 //-----------------------------------------------------------------------------
@@ -155,7 +148,7 @@ BOOST_FIXTURE_TEST_CASE(SedEbvFlag_test, PdfOutputFlagsConfig_fixture) {
   config_manager.closeRegistration();
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("SED");
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("EBV");
-  
+
   // When
   config_manager.initialize(options_map);
   auto& result = config_manager.getConfiguration<PdfOutputFlagsConfig>();
@@ -165,7 +158,6 @@ BOOST_FIXTURE_TEST_CASE(SedEbvFlag_test, PdfOutputFlagsConfig_fixture) {
   BOOST_CHECK(!result.pdfRedCurveFlag());
   BOOST_CHECK(result.pdfEbvFlag());
   BOOST_CHECK(!result.pdfZFlag());
-  
 }
 
 //-----------------------------------------------------------------------------
@@ -176,7 +168,7 @@ BOOST_FIXTURE_TEST_CASE(RedCurveZ_test, PdfOutputFlagsConfig_fixture) {
   config_manager.closeRegistration();
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("REDDENING-CURVE");
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("Z");
-  
+
   // When
   config_manager.initialize(options_map);
   auto& result = config_manager.getConfiguration<PdfOutputFlagsConfig>();
@@ -186,7 +178,6 @@ BOOST_FIXTURE_TEST_CASE(RedCurveZ_test, PdfOutputFlagsConfig_fixture) {
   BOOST_CHECK(result.pdfRedCurveFlag());
   BOOST_CHECK(!result.pdfEbvFlag());
   BOOST_CHECK(result.pdfZFlag());
-  
 }
 
 //-----------------------------------------------------------------------------
@@ -199,7 +190,7 @@ BOOST_FIXTURE_TEST_CASE(AllFlags_test, PdfOutputFlagsConfig_fixture) {
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("REDDENING-CURVE");
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("EBV");
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("Z");
-  
+
   // When
   config_manager.initialize(options_map);
   auto& result = config_manager.getConfiguration<PdfOutputFlagsConfig>();
@@ -209,7 +200,6 @@ BOOST_FIXTURE_TEST_CASE(AllFlags_test, PdfOutputFlagsConfig_fixture) {
   BOOST_CHECK(result.pdfRedCurveFlag());
   BOOST_CHECK(result.pdfEbvFlag());
   BOOST_CHECK(result.pdfZFlag());
-  
 }
 
 //-----------------------------------------------------------------------------
@@ -221,17 +211,14 @@ BOOST_FIXTURE_TEST_CASE(InvalidValue_test, PdfOutputFlagsConfig_fixture) {
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("SED");
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("EBV");
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("Z");
-  
+
   // When
   options_map.at(CREATE_OUTPUT_PDF).as<std::vector<std::string>>().emplace_back("INVALID");
-  
+
   // Then
   BOOST_CHECK_THROW(config_manager.initialize(options_map), Elements::Exception);
-  
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

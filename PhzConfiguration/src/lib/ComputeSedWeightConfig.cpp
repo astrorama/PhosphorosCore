@@ -22,19 +22,17 @@
  * @author Florian Dubath
  */
 
-#include <cstdlib>
+#include "PhzConfiguration/ComputeSedWeightConfig.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzConfiguration/ComputeSedWeightConfig.h"
-#include "PhzConfiguration/FilterConfig.h"
-#include "PhzConfiguration/SedConfig.h"
 #include "PhzConfiguration/AuxDataDirConfig.h"
-#include <boost/filesystem/operations.hpp>
-#include "PhzConfiguration/SedProviderConfig.h"
+#include "PhzConfiguration/FilterConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
-
-
+#include "PhzConfiguration/SedConfig.h"
+#include "PhzConfiguration/SedProviderConfig.h"
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -42,8 +40,7 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
-
-static const std::string SED_WEIGHT_OUTPUT {"SED-Weight-Output"};
+static const std::string SED_WEIGHT_OUTPUT{"SED-Weight-Output"};
 
 ComputeSedWeightConfig::ComputeSedWeightConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<AuxDataDirConfig>();
@@ -53,17 +50,16 @@ ComputeSedWeightConfig::ComputeSedWeightConfig(long manager_id) : Configuration(
   declareDependency<FilterProviderConfig>();
 }
 
-
-
 auto ComputeSedWeightConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Compute SED Weight options", {
+  return {{"Compute SED Weight options",
+           {
 
-    {SED_WEIGHT_OUTPUT.c_str(), po::value<std::string>()->default_value("SedWeight.ascii"),
-          "Path of the file into which output the SED weights. Relative path are relative to <AuxDataDir>/GenericPriors/SedWeight/"}
+               {SED_WEIGHT_OUTPUT.c_str(), po::value<std::string>()->default_value("SedWeight.ascii"),
+                "Path of the file into which output the SED weights. Relative path are relative to "
+                "<AuxDataDir>/GenericPriors/SedWeight/"}
 
-  }}};
+           }}};
 }
-
 
 void ComputeSedWeightConfig::initialize(const UserValues& args) {
   auto file_name = args.find(SED_WEIGHT_OUTPUT)->second.as<std::string>();
@@ -73,26 +69,19 @@ void ComputeSedWeightConfig::initialize(const UserValues& args) {
     m_output_file = file_name;
   } else {
     // relative to
-    boost::filesystem::path dir(getDependency<AuxDataDirConfig>().getAuxDataDir() / "GenericPriors"/"SedWeight");
+    boost::filesystem::path dir(getDependency<AuxDataDirConfig>().getAuxDataDir() / "GenericPriors" / "SedWeight");
     boost::filesystem::create_directory(dir);
-    fs::path result = getDependency<AuxDataDirConfig>().getAuxDataDir() / "GenericPriors"/"SedWeight"/file_name;
-    m_output_file = result.string();
+    fs::path result = getDependency<AuxDataDirConfig>().getAuxDataDir() / "GenericPriors" / "SedWeight" / file_name;
+    m_output_file   = result.string();
   }
-
-
 }
 
 const std::string& ComputeSedWeightConfig::getOutputFile() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
-     throw Elements::Exception()
-         << "Call to getOutputFile() on a not initialized instance.";
-   }
+    throw Elements::Exception() << "Call to getOutputFile() on a not initialized instance.";
+  }
   return m_output_file;
 }
 
-
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

@@ -23,12 +23,12 @@
  */
 
 #ifndef PHZCONFIGURATION_COMPUTEMODELGALACTICCORRECTIONCOEFFICIENTSCONFIG_H
-#define	PHZCONFIGURATION_COMPUTEMODELGALACTICCORRECTIONCOEFFICIENTSCONFIG_H
+#define PHZCONFIGURATION_COMPUTEMODELGALACTICCORRECTIONCOEFFICIENTSCONFIG_H
 
+#include "Configuration/Configuration.h"
+#include <boost/filesystem/operations.hpp>
 #include <cstdlib>
 #include <string>
-#include <boost/filesystem/operations.hpp>
-#include "Configuration/Configuration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -40,7 +40,6 @@ namespace PhzConfiguration {
 class ComputeModelGalacticCorrectionCoefficientConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief constructor
    * Add the dust map SED band pass correction
@@ -51,14 +50,9 @@ public:
    * @brief Destructor
    */
   virtual ~ComputeModelGalacticCorrectionCoefficientConfig() = default;
-
-
-
 };
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_COMPUTEMODELGALACTICCORRECTIONCOEFFICIENTSCONFIG_H */
-
+#endif /* PHZCONFIGURATION_COMPUTEMODELGALACTICCORRECTIONCOEFFICIENTSCONFIG_H */

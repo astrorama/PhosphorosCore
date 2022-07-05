@@ -25,26 +25,24 @@
 #ifndef PHZLIKELIHOOD_FIXREDSHIFTPROCESSMODELGRIDFUNCTOR_H
 #define PHZLIKELIHOOD_FIXREDSHIFTPROCESSMODELGRIDFUNCTOR_H
 
-#include <map>
-#include <string>
-#include "SourceCatalog/Source.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzLikelihood/ProcessModelGridFunctor.h"
+#include "SourceCatalog/Source.h"
+#include <map>
+#include <string>
 
 namespace Euclid {
 namespace PhzLikelihood {
 
-class FixRedshiftProcessModelGridFunctor : public ProcessModelGridFunctor{
-  public:
+class FixRedshiftProcessModelGridFunctor : public ProcessModelGridFunctor {
+public:
   ~FixRedshiftProcessModelGridFunctor(){};
 
   void operator()(const std::string& region_name, const SourceCatalog::Source& source,
                   PhzDataModel::PhotometryGrid& model_grid) const override;
 };
 
+}  // end of namespace PhzLikelihood
+}  // end of namespace Euclid
 
-
-} // end of namespace PhzLikelihood
-} // end of namespace Euclid
-
-#endif  /* PHZLIKELIHOOD_FIXREDSHIFTPROCESSMODELGRIDFUNCTOR_H */
+#endif /* PHZLIKELIHOOD_FIXREDSHIFTPROCESSMODELGRIDFUNCTOR_H */

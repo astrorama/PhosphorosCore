@@ -23,15 +23,14 @@
  */
 
 #ifndef PHZMODELING_REDSHIFTFUNCTOR_H
-#define	PHZMODELING_REDSHIFTFUNCTOR_H
+#define PHZMODELING_REDSHIFTFUNCTOR_H
 
 #include "PhysicsUtils/CosmologicalParameters.h"
 
 namespace Euclid {
 namespace XYDataset {
-  class XYDataset;
+class XYDataset;
 }
-
 
 namespace PhzModeling {
 
@@ -51,28 +50,27 @@ class RedshiftFunctor {
 public:
   RedshiftFunctor(Euclid::PhysicsUtils::CosmologicalParameters cosmology);
 
-	/**
-		* @brief Function Call Operator
-		* @details
-		* Execute the redshifting of a SED
-		*
-	    * @param sed
-		* A XYDataset representing the SED to be redshifted.
-		*
-		* @param z
-		* The redshift to be applied as a double.
-		*
-		* @return
-		* A XYDataset representing the redshifted SED.
-		*/
-	Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed,
-	    double z) const;
+  /**
+   * @brief Function Call Operator
+   * @details
+   * Execute the redshifting of a SED
+   *
+   * @param sed
+   * A XYDataset representing the SED to be redshifted.
+   *
+   * @param z
+   * The redshift to be applied as a double.
+   *
+   * @return
+   * A XYDataset representing the redshifted SED.
+   */
+  Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed, double z) const;
 
 private:
-	Euclid::PhysicsUtils::CosmologicalParameters m_cosmology;
+  Euclid::PhysicsUtils::CosmologicalParameters m_cosmology;
 };
 
-} // end of namespace PhzModeling
-} // end of namespace Euclid
+}  // end of namespace PhzModeling
+}  // end of namespace Euclid
 
-#endif	/* PHZMODELING_REDSHIFTFUNCTOR_H */
+#endif /* PHZMODELING_REDSHIFTFUNCTOR_H */

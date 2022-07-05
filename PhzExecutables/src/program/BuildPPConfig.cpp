@@ -26,14 +26,14 @@
 #include <map>
 #include <string>
 
-#include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/program_options.hpp>
 
 #include <ElementsKernel/ProgramHeaders.h>
 
 #include "Configuration/Utils.h"
-#include "PhzExecutables/BuildPPConfig.h"
 #include "PhzConfiguration/BuildPPConfigConfig.h"
+#include "PhzExecutables/BuildPPConfig.h"
 
 using namespace Euclid;
 using namespace Euclid::Configuration;
@@ -44,10 +44,8 @@ static Elements::Logging logger = Elements::Logging::getLogger("BuildPPCOnfig");
 
 static long config_manager_id = getUniqueManagerId();
 
-
 class BuildPPConfig : public Elements::Program {
 public:
-
   po::options_description defineSpecificProgramOptions() override {
     auto& config_manager = ConfigManager::getInstance(config_manager_id);
     config_manager.registerConfiguration<BuildPPConfigConfig>();
@@ -62,7 +60,6 @@ public:
 
     return Elements::ExitCode::OK;
   }
-
 };
 
 MAIN_FOR(BuildPPConfig)

@@ -4,23 +4,23 @@
  * @author Nikolaos Apostolakos
  */
 
-#include <iostream>
-#include <chrono>
-#include "ElementsKernel/ProgramHeaders.h"
 #include "Configuration/ConfigManager.h"
+#include "ElementsKernel/ProgramHeaders.h"
+#include <chrono>
+#include <iostream>
 
-#include "PhzDataModel/PhzModel.h"
-#include "PhzModeling/ModelDatasetGrid.h"
-#include "PhzModeling/ExtinctionFunctor.h"
-#include "PhzModeling/RedshiftFunctor.h"
-#include "PhzConfiguration/IgmConfig.h"
-#include "PhzConfiguration/SedProviderConfig.h"
-#include "PhzConfiguration/FilterProviderConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
-#include "PhzConfiguration/ComputeModelSedConfig.h"
 #include "Configuration/Utils.h"
+#include "PhzConfiguration/ComputeModelSedConfig.h"
+#include "PhzConfiguration/FilterProviderConfig.h"
+#include "PhzConfiguration/IgmConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/RedshiftFunctorConfig.h"
+#include "PhzConfiguration/SedProviderConfig.h"
+#include "PhzDataModel/PhzModel.h"
+#include "PhzModeling/ExtinctionFunctor.h"
+#include "PhzModeling/ModelDatasetGrid.h"
 #include "PhzModeling/NormalizationFunctorFactory.h"
+#include "PhzModeling/RedshiftFunctor.h"
 
 using std::cout;
 using std::map;
@@ -45,38 +45,36 @@ class ComputeModelSed : public Elements::Program {
   }
 
   Elements::ExitCode mainMethod(map<string, po::variable_value>& args) override {
-    
+
     auto& config_manager = ConfigManager::getInstance(config_manager_id);
     config_manager.initialize(args);
-    
+
     auto& grid_axes = config_manager.getConfiguration<ComputeModelSedConfig>().getGridAxes();
-    std::map<QualifiedName, XYDataset> sed_map {};
+    std::map<QualifiedName, XYDataset> sed_map{};
     for (auto& pair : config_manager.getConfiguration<ComputeModelSedConfig>().getSedMap()) {
-      std::vector<std::pair<double, double>> values {pair.second.begin(), pair.second.end()};
+      std::vector<std::pair<double, double>> values{pair.second.begin(), pair.second.end()};
       sed_map.emplace(pair.first, values);
     }
-    std::map<QualifiedName, std::unique_ptr<Function>> red_curve_map {};
+    std::map<QualifiedName, std::unique_ptr<Function>> red_curve_map{};
     for (auto& pair : config_manager.getConfiguration<ComputeModelSedConfig>().getReddeningCurveMap()) {
       red_curve_map.emplace(pair.first, pair.second->clone());
     }
     auto& igm_function = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
 
-
     auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
-    auto sun_sed_name = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
+    auto sun_sed_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
 
-
-    auto filter_provider = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
+    auto filter_provider  = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
     auto sun_sed_provider = config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider();
     auto normalizer_functor =
-        Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, sun_sed_provider, sun_sed_name);
+        Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
+            filter_provider, lum_filter_name, sun_sed_provider, sun_sed_name);
 
+    auto             redshiftFunctor = config_manager.getConfiguration<RedshiftFunctorConfig>().getRedshiftFunctor();
+    ModelDatasetGrid grid{grid_axes,       std::move(sed_map), std::move(red_curve_map), ExtinctionFunctor{},
+                          redshiftFunctor, igm_function,       normalizer_functor};
 
-    auto redshiftFunctor = config_manager.getConfiguration<RedshiftFunctorConfig>().getRedshiftFunctor();
-    ModelDatasetGrid grid {grid_axes, std::move(sed_map), std::move(red_curve_map),
-                               ExtinctionFunctor{}, redshiftFunctor, igm_function, normalizer_functor};
-
-    for (auto iter=grid.begin(); iter!=grid.end(); ++iter) {
+    for (auto iter = grid.begin(); iter != grid.end(); ++iter) {
       cout << "\nDataset for model with:\n";
       cout << "SED      " << iter.axisValue<ModelParameter::SED>().qualifiedName() << '\n';
       cout << "REDCURVE " << iter.axisValue<ModelParameter::REDDENING_CURVE>().qualifiedName() << '\n';
@@ -92,7 +90,6 @@ class ComputeModelSed : public Elements::Program {
 
     return Elements::ExitCode::OK;
   }
-
 };
 
 MAIN_FOR(ComputeModelSed)

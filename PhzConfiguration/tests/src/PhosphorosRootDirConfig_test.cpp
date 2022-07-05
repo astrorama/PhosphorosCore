@@ -24,8 +24,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "PhzConfiguration/PhosphorosRootDirConfig.h"
 #include "ConfigManager_fixture.h"
+#include "PhzConfiguration/PhosphorosRootDirConfig.h"
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
@@ -33,11 +33,11 @@ namespace fs = boost::filesystem;
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (PhosphorosRootDirConfig_test)
+BOOST_AUTO_TEST_SUITE(PhosphorosRootDirConfig_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, ConfigManager_fixture) {
 
   // Given
   config_manager.registerConfiguration<PhosphorosRootDirConfig>();
@@ -47,7 +47,6 @@ BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
 
   // Then
   BOOST_CHECK_NO_THROW(options.find("phosphoros-root", false));
-
 }
 
 //-----------------------------------------------------------------------------
@@ -55,11 +54,11 @@ BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
 // PHOSPHOROS_ROOT is a relative path, an exception is thrown
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( RelativeRootEnv_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(RelativeRootEnv_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<PhosphorosRootDirConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
+  std::map<std::string, po::variable_value> options_map{};
 
   std::string env_value = "PHOSPHOROS_ROOT=a/relative/path";
 
@@ -70,14 +69,14 @@ BOOST_FIXTURE_TEST_CASE( RelativeRootEnv_test, ConfigManager_fixture ) {
   BOOST_CHECK_THROW(config_manager.initialize(options_map), Elements::Exception);
 }
 
-
-BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(NotInitializedGetter_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<PhosphorosRootDirConfig>();
   config_manager.closeRegistration();
 
   // Then
-  BOOST_CHECK_THROW(config_manager.getConfiguration<PhosphorosRootDirConfig>().getPhosphorosRootDir(), Elements::Exception);
+  BOOST_CHECK_THROW(config_manager.getConfiguration<PhosphorosRootDirConfig>().getPhosphorosRootDir(),
+                    Elements::Exception);
 }
 
 //-----------------------------------------------------------------------------
@@ -85,14 +84,14 @@ BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
 // it is used as is
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( RootPathProgramOptionAbsolute_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(RootPathProgramOptionAbsolute_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<PhosphorosRootDirConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
-  std::string expected ="/an/absolute/path";
-  options_map["phosphoros-root"].value() = boost::any(expected);
-  std::string env_value = "PHOSPHOROS_ROOT=a/relative/path";
+  std::map<std::string, po::variable_value> options_map{};
+  std::string                               expected = "/an/absolute/path";
+  options_map["phosphoros-root"].value()             = boost::any(expected);
+  std::string env_value                              = "PHOSPHOROS_ROOT=a/relative/path";
 
   // When
   config_manager.initialize(options_map);
@@ -112,9 +111,9 @@ BOOST_FIXTURE_TEST_CASE(RootPathProgramOptionRelative_test, ConfigManager_fixtur
   // Given
   config_manager.registerConfiguration<PhosphorosRootDirConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
-  std::string expected ="a/relative/path";
-  options_map["phosphoros-root"].value() = boost::any(expected);
+  std::map<std::string, po::variable_value> options_map{};
+  std::string                               expected = "a/relative/path";
+  options_map["phosphoros-root"].value()             = boost::any(expected);
 
   // When
   config_manager.initialize(options_map);
@@ -124,9 +123,7 @@ BOOST_FIXTURE_TEST_CASE(RootPathProgramOptionRelative_test, ConfigManager_fixtur
 
   BOOST_CHECK(result.is_absolute());
   BOOST_CHECK_EQUAL(result, fs::current_path() / fs::path{"a/relative/path"});
-
 }
-
 
 //-----------------------------------------------------------------------------
 // Test that if the phosphoros-root program option is not given and the
@@ -137,8 +134,8 @@ BOOST_FIXTURE_TEST_CASE(RootPathEnvironmentVariable_test, ConfigManager_fixture)
   // Given
   config_manager.registerConfiguration<PhosphorosRootDirConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
-  std::string env_value = "PHOSPHOROS_ROOT=/an/absolute/path";
+  std::map<std::string, po::variable_value> options_map{};
+  std::string                               env_value = "PHOSPHOROS_ROOT=/an/absolute/path";
   putenv(const_cast<char*>(env_value.c_str()));
 
   // When
@@ -147,8 +144,7 @@ BOOST_FIXTURE_TEST_CASE(RootPathEnvironmentVariable_test, ConfigManager_fixture)
 
   // Then
   BOOST_CHECK(result.is_absolute());
-  BOOST_CHECK_EQUAL(result,  fs::path{"/an/absolute/path"});
-
+  BOOST_CHECK_EQUAL(result, fs::path{"/an/absolute/path"});
 }
 
 //-----------------------------------------------------------------------------
@@ -160,7 +156,7 @@ BOOST_FIXTURE_TEST_CASE(RootPathDefault_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<PhosphorosRootDirConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
+  std::map<std::string, po::variable_value> options_map{};
   putenv((char*)"PHOSPHOROS_ROOT");
   fs::path default_path = fs::path(std::getenv("HOME")) / "Phosphoros";
 
@@ -171,11 +167,8 @@ BOOST_FIXTURE_TEST_CASE(RootPathDefault_test, ConfigManager_fixture) {
   // Then
   BOOST_CHECK(result.is_absolute());
   BOOST_CHECK_EQUAL(result, default_path);
-
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

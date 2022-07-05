@@ -12,8 +12,8 @@
 #include "PhzOutput/OutputHandler.h"
 #include <boost/filesystem.hpp>
 #include <map>
-#include <tuple>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -24,16 +24,17 @@ template <PhzDataModel::RegionResultType GridType, typename Sampler>
 class LikelihoodHandler : public OutputHandler {
 
 public:
-  LikelihoodHandler(boost::filesystem::path                                                        out_dir,
-                    const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& param_config, bool do_sample,
-                    size_t sample_number = 1000, size_t chunk_size = 10000);
+  LikelihoodHandler(
+      boost::filesystem::path                                                                      out_dir,
+      const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& param_config,
+      bool do_sample, size_t sample_number = 1000, size_t chunk_size = 10000);
 
   virtual ~LikelihoodHandler();
 
   void handleSourceOutput(const SourceCatalog::Source& source, const PhzDataModel::SourceResults& results) override;
 
 private:
-  boost::filesystem::path                                                        m_out_dir;
+  boost::filesystem::path                                                                      m_out_dir;
   const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& m_param_config;
 
   bool   m_do_sample;
@@ -61,7 +62,8 @@ private:
 
   void exportFullGrid(const SourceCatalog::Source& source, const PhzDataModel::SourceResults& results);
 
-  std::vector<Table::Row> drawSample(SourceCatalog::Source::id_type source_id, const std::map<std::string, double>& region_volume,
+  std::vector<Table::Row> drawSample(SourceCatalog::Source::id_type                            source_id,
+                                     const std::map<std::string, double>&                      region_volume,
                                      const std::map<std::string, PhzDataModel::RegionResults>& result_map);
 };
 

@@ -23,7 +23,7 @@
  */
 
 #ifndef PHZCONFIGURATION_OBSERVATIONCONDITIONCOLUMNCONFIG_H
-#define	PHZCONFIGURATION_OBSERVATIONCONDITIONCOLUMNCONFIG_H
+#define PHZCONFIGURATION_OBSERVATIONCONDITIONCOLUMNCONFIG_H
 
 #include "Configuration/Configuration.h"
 
@@ -56,22 +56,19 @@ public:
    */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
-  void initialize(const UserValues& args) override;
-  bool isGalacticCorrectionEnabled();
-  bool isFilterVariationEnabled();
+  void   initialize(const UserValues& args) override;
+  bool   isGalacticCorrectionEnabled();
+  bool   isFilterVariationEnabled();
   double getDustMapSedBpc() const;
 
 private:
-
-  bool m_galactic_correction_enabled = false;
-  bool m_filter_variation_enabled = false;
-  double m_dust_map_sed_bpc=1.;
+  bool   m_galactic_correction_enabled = false;
+  bool   m_filter_variation_enabled    = false;
+  double m_dust_map_sed_bpc            = 1.;
 
 }; /* End of DustColumnDensityColumnConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_OBSERVATIONCONDITIONCOLUMNCONFIG_H */
-
+#endif /* PHZCONFIGURATION_OBSERVATIONCONDITIONCOLUMNCONFIG_H */

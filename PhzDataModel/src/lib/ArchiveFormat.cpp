@@ -23,14 +23,14 @@
  */
 
 #include "PhzDataModel/ArchiveFormat.h"
-#include <iostream>
-#include <fstream>
 #include <cstring>
+#include <fstream>
+#include <iostream>
 
 namespace Euclid {
 namespace PhzDataModel {
 
-ArchiveFormat archiveFormatFromString(const std::string &str) {
+ArchiveFormat archiveFormatFromString(const std::string& str) {
   if (str == "TEXT")
     return ArchiveFormat::TEXT;
   else if (str == "BINARY")
@@ -41,7 +41,7 @@ ArchiveFormat archiveFormatFromString(const std::string &str) {
 ArchiveFormat guessArchiveFormat(std::ifstream& in) {
   ArchiveFormat format = ArchiveFormat::BINARY;
 
-  auto pos = in.tellg();
+  auto pos        = in.tellg();
   char buffer[64] = {0};
   in.read(buffer, sizeof(buffer));
 
@@ -53,19 +53,19 @@ ArchiveFormat guessArchiveFormat(std::ifstream& in) {
   return format;
 }
 
-std::ostream& operator << (std::ostream& out, const ArchiveFormat& fmt) {
+std::ostream& operator<<(std::ostream& out, const ArchiveFormat& fmt) {
   switch (fmt) {
-    case ArchiveFormat::TEXT:
-      out << "TEXT";
-      break;
-    case ArchiveFormat::BINARY:
-      out << "BINARY";
-      break;
-    default:
-      out << "UNKNOWN";
+  case ArchiveFormat::TEXT:
+    out << "TEXT";
+    break;
+  case ArchiveFormat::BINARY:
+    out << "BINARY";
+    break;
+  default:
+    out << "UNKNOWN";
   }
   return out;
 }
 
-} // end namespace PhzDataModel
-} // end namespace Euclid
+}  // end namespace PhzDataModel
+}  // end namespace Euclid

@@ -1,11 +1,11 @@
-/** 
+/**
  * @file DefaultStopCriteria.h
  * @date January 20, 2015
  * @author Nikolaos Apostolakos
  */
 
 #ifndef PHZPHOTOMETRICCORRECTION_DEFAULTSTOPCRITERIA_H
-#define	PHZPHOTOMETRICCORRECTION_DEFAULTSTOPCRITERIA_H
+#define PHZPHOTOMETRICCORRECTION_DEFAULTSTOPCRITERIA_H
 
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 
@@ -14,20 +14,19 @@ namespace PhzPhotometricCorrection {
 
 /**
  * @class DefaultStopCriteria
- * 
+ *
  * @brief
  * Class which provides the default behavior for stopping the loop of the
  * photometric correction calculation
- * 
+ *
  * @details
  * This class will stop the loop after a specific number of iterations or when
  * all the photometric corrections have been modified less than a specific
  * tolerance, whicherver is first.
  */
 class DefaultStopCriteria {
-  
-public:
 
+public:
   /**
    * @brief Constructs a new DefaultStopCriteria with the given parameters
    * @param max_iter the maximum number of iterations (negative number means unlimited)
@@ -47,18 +46,15 @@ public:
    * @return true if the loop should be stoped, true if not
    */
   bool operator()(const PhzDataModel::PhotometricCorrectionMap& phot_corr);
-  
+
 private:
-  
-  int m_max_iter;
-  double m_tolerance;
-  int m_current_iter {0};
-  PhzDataModel::PhotometricCorrectionMap m_previous {};
-  
+  int                                    m_max_iter;
+  double                                 m_tolerance;
+  int                                    m_current_iter{0};
+  PhzDataModel::PhotometricCorrectionMap m_previous{};
 };
 
-} // end of namespace PhzPhotometricCorrection
-} // end of namespace Euclid
+}  // end of namespace PhzPhotometricCorrection
+}  // end of namespace Euclid
 
-#endif	/* PHZPHOTOMETRICCORRECTION_DEFAULTSTOPCRITERIA_H */
-
+#endif /* PHZPHOTOMETRICCORRECTION_DEFAULTSTOPCRITERIA_H */

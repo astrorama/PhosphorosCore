@@ -23,17 +23,17 @@
  */
 
 #ifndef PHZMODELING_NORMALIZATIONFUNCTOR_H
-#define	PHZMODELING_NORMALIZATIONFUNCTOR_H
+#define PHZMODELING_NORMALIZATIONFUNCTOR_H
 
-#include <memory>
-#include <cmath>
 #include "MathUtils/function/Function.h"
 #include "PhzDataModel/FilterInfo.h"
+#include <cmath>
+#include <memory>
 
 namespace Euclid {
 
 namespace XYDataset {
-  class XYDataset;
+class XYDataset;
 }
 namespace PhzModeling {
 /**
@@ -48,7 +48,6 @@ namespace PhzModeling {
 class NormalizationFunctor {
 
 public:
-
   /**
    * @brief Constructor
    * @details
@@ -57,28 +56,26 @@ public:
   NormalizationFunctor(PhzDataModel::FilterInfo filter_info, double integrated_flux);
 
   /**
-  * @brief Function Call Operator
-  * @details
-  * Apply Normalization on the SED
-  *
-  * @param sed
-  * A XYDataset representing the SED to be normalized.
-  *
-  * @return
-  * A XYDataset representing the normalized SED.
-  */
+   * @brief Function Call Operator
+   * @details
+   * Apply Normalization on the SED
+   *
+   * @param sed
+   * A XYDataset representing the SED to be normalized.
+   *
+   * @return
+   * A XYDataset representing the normalized SED.
+   */
   Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed) const;
 
   double getReferenceFlux() const;
 
 private:
   std::vector<PhzDataModel::FilterInfo> m_filter_info;
-  double m_integrated_flux;
-
+  double                                m_integrated_flux;
 };
 
-} // end of namespace PhzModeling
-} // end of namespace Euclid
+}  // end of namespace PhzModeling
+}  // end of namespace Euclid
 
-#endif	/* PHZMODELING_NORMALIZATIONFUNCTOR_H */
-
+#endif /* PHZMODELING_NORMALIZATIONFUNCTOR_H */

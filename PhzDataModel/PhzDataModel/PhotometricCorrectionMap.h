@@ -5,10 +5,10 @@
  */
 
 #ifndef PHZDATAMODEL_PHOTOMETRICCORRECTIONMAP_H
-#define	PHZDATAMODEL_PHOTOMETRICCORRECTIONMAP_H
+#define PHZDATAMODEL_PHOTOMETRICCORRECTIONMAP_H
 
-#include <map>
 #include "XYDataset/QualifiedName.h"
+#include <map>
 
 namespace Euclid {
 namespace PhzDataModel {
@@ -40,7 +40,7 @@ void writePhotometricCorrectionMap(std::ostream& out, const PhotometricCorrectio
  * with 2 columns (Filter <string>,Correction<double>).
  * The Filter column contains the full (also with groups)
  * filter name.
- * 
+ *
  * Example file:
  * \code
  * #             Filter Correction
@@ -71,8 +71,7 @@ void writePhotometricCorrectionMap(std::ostream& out, const PhotometricCorrectio
  */
 PhotometricCorrectionMap readPhotometricCorrectionMap(std::istream& in);
 
-} // end of namespace PhzDataModel
-} // end of namespace Euclid
+}  // end of namespace PhzDataModel
+}  // end of namespace Euclid
 
-#endif	/* PHZDATAMODEL_PHOTOMETRICCORRECTIONMAP_H */
-
+#endif /* PHZDATAMODEL_PHOTOMETRICCORRECTIONMAP_H */

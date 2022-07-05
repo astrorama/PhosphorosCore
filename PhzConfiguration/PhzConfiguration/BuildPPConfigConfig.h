@@ -26,10 +26,10 @@
 
 #ifndef _PHZCONFIGURATION_BUILDPPCONFIGCONFIG_H
 #define _PHZCONFIGURATION_BUILDPPCONFIGCONFIG_H
-#include <vector>
-#include <string>
 #include "Configuration/Configuration.h"
 #include <boost/filesystem.hpp>
+#include <string>
+#include <vector>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -39,10 +39,9 @@ namespace PhzConfiguration {
  * @brief
  *
  */
-class BuildPPConfigConfig: public Configuration::Configuration {
+class BuildPPConfigConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief Destructor
    */
@@ -59,8 +58,8 @@ public:
   const std::vector<std::string>& getParamList(void) const;
 
 private:
-  boost::filesystem::path m_output_file;
-  std::vector<std::string> m_param_list {};
+  boost::filesystem::path  m_output_file;
+  std::vector<std::string> m_param_list{};
 };  // End of BuildPPConfigConfig class
 
 }  // namespace PhzConfiguration

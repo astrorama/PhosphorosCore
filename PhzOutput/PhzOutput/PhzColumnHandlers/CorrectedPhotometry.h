@@ -23,10 +23,10 @@
 #ifndef _PHZOUTPUT_PHZCOLUMNHANDLERS_CORRECTEDPHOTOMETRY_H
 #define _PHZOUTPUT_PHZCOLUMNHANDLERS_CORRECTEDPHOTOMETRY_H
 
-#include <string>
-#include "PhzOutput/PhzColumnHandlers/ColumnHandler.h"
 #include "Configuration/PhotometricBandMappingConfig.h"
 #include "PhzDataModel/PhotometryGrid.h"
+#include "PhzOutput/PhzColumnHandlers/ColumnHandler.h"
+#include <string>
 
 namespace Euclid {
 namespace PhzOutput {
@@ -40,15 +40,11 @@ namespace ColumnHandlers {
 class CorrectedPhotometry : public ColumnHandler {
 
 public:
-  CorrectedPhotometry(const Table::ColumnInfo& column_info,
-                      const Configuration::PhotometricBandMappingConfig::MappingMap& mapping,
-					  bool do_marginalize,
-					  bool correct_filter,
-					  bool correct_galactic,
-					  double dust_map_sed_bpc,
-					  const std::map<std::string, PhzDataModel::PhotometryGrid>& filter_shift_coef_grid,
-					  const std::map<std::string, PhzDataModel::PhotometryGrid>& galactic_correction_coef_grid
-					 );
+  CorrectedPhotometry(const Table::ColumnInfo&                                       column_info,
+                      const Configuration::PhotometricBandMappingConfig::MappingMap& mapping, bool do_marginalize,
+                      bool correct_filter, bool correct_galactic, double dust_map_sed_bpc,
+                      const std::map<std::string, PhzDataModel::PhotometryGrid>& filter_shift_coef_grid,
+                      const std::map<std::string, PhzDataModel::PhotometryGrid>& galactic_correction_coef_grid);
 
   /**
    * @brief Destructor
@@ -60,25 +56,24 @@ public:
   std::vector<Table::Row::cell_type> convertResults(const SourceCatalog::Source&       source,
                                                     const PhzDataModel::SourceResults& sourceResult) const override;
 
-  std::vector<double> computeCorrectionFactorForModel(const SourceCatalog::Source& source,
-		                                              size_t region_index,
-		                                              const PhzDataModel::PhotometryGrid::const_iterator model) const;
+  std::vector<double> computeCorrectionFactorForModel(const SourceCatalog::Source& source, size_t region_index,
+                                                      const PhzDataModel::PhotometryGrid::const_iterator model) const;
 
-  static std::vector<double> sumVector(double m1, std::vector<double> v1,  double m2, std::vector<double> v2);
+  static std::vector<double> sumVector(double m1, std::vector<double> v1, double m2, std::vector<double> v2);
 
   static std::vector<double> multVector(double m1, std::vector<double> v1);
 
 private:
-  std::vector<Table::ColumnInfo::info_type> m_columnInfo {};
-  bool m_do_marginalize;
-  bool m_correct_filter;
-  bool m_correct_galactic;
-  double m_dust_map_sed_bpc;
+  std::vector<Table::ColumnInfo::info_type>                  m_columnInfo{};
+  bool                                                       m_do_marginalize;
+  bool                                                       m_correct_filter;
+  bool                                                       m_correct_galactic;
+  double                                                     m_dust_map_sed_bpc;
   const std::map<std::string, PhzDataModel::PhotometryGrid>& m_filter_shift_coef_grid;
   const std::map<std::string, PhzDataModel::PhotometryGrid>& m_galactic_correction_coef_grid;
 
   static constexpr double l10 = 2.302585092994046;  // std::log(10.);
-}; /* End of Id class */
+};                                                  /* End of Id class */
 
 } /* namespace ColumnHandlers */
 } /* namespace PhzOutput */

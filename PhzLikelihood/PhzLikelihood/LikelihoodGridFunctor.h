@@ -5,13 +5,13 @@
  */
 
 #ifndef PHZLIKELIHOOD_LIKELIHOODGRIDFUNCTOR_H
-#define	PHZLIKELIHOOD_LIKELIHOODGRIDFUNCTOR_H
+#define PHZLIKELIHOOD_LIKELIHOODGRIDFUNCTOR_H
 
-#include <tuple>
-#include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/RegionResults.h"
+#include "SourceCatalog/SourceAttributes/Photometry.h"
+#include <tuple>
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -26,7 +26,6 @@ namespace PhzLikelihood {
 class LikelihoodGridFunctor {
 
 public:
-
   /**
    * Definition of the STL-like algorithm for calculating the grid containing
    * the natural logarithm of the likelihood. It is a function which gets a
@@ -34,12 +33,11 @@ public:
    * the likelihood logarithm and scale factor results, using a likelihood
    * iterator and a scale factor iterator.
    */
-  typedef std::function<void(const SourceCatalog::Photometry& source_photometry,
-                             PhzDataModel::PhotometryGrid::const_iterator model_begin,
-                             PhzDataModel::PhotometryGrid::const_iterator model_end,
-                             PhzDataModel::DoubleGrid::iterator likelihood_log_begin,
-                             PhzDataModel::DoubleGrid::iterator scale_factor_begin)
-                       > LikelihoodLogarithmFunction;
+  typedef std::function<void(
+      const SourceCatalog::Photometry& source_photometry, PhzDataModel::PhotometryGrid::const_iterator model_begin,
+      PhzDataModel::PhotometryGrid::const_iterator model_end, PhzDataModel::DoubleGrid::iterator likelihood_log_begin,
+      PhzDataModel::DoubleGrid::iterator scale_factor_begin)>
+      LikelihoodLogarithmFunction;
 
   /**
    * Constructs a new LikelihoodGridFunctor instance.
@@ -59,13 +57,10 @@ public:
   void operator()(PhzDataModel::RegionResults& results);
 
 private:
-
   LikelihoodLogarithmFunction m_likelihood_log_func;
-
 };
 
-} // end of namespace PhzLikelihood
-} // end of namespace Euclid
+}  // end of namespace PhzLikelihood
+}  // end of namespace Euclid
 
-#endif	/* PHZLIKELIHOOD_LIKELIHOODGRIDFUNCTOR_H */
-
+#endif /* PHZLIKELIHOOD_LIKELIHOODGRIDFUNCTOR_H */

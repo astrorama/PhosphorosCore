@@ -23,46 +23,38 @@
  */
 
 #ifndef PHZMODELING_NORMALIZATIONFUNCTORFACTORY_H
-#define	PHZMODELING_NORMALIZATIONFUNCTORFACTORY_H
+#define PHZMODELING_NORMALIZATIONFUNCTORFACTORY_H
 
-#include <memory>
-#include <cmath>
 #include "MathUtils/function/Function.h"
 #include "PhzDataModel/FilterInfo.h"
+#include "PhzModeling/ModelDatasetGenerator.h"
+#include "PhzModeling/NormalizationFunctor.h"
 #include "XYDataset/QualifiedName.h"
 #include "XYDataset/XYDatasetProvider.h"
-#include "PhzModeling/NormalizationFunctor.h"
-#include "PhzModeling/ModelDatasetGenerator.h"
-
+#include <cmath>
+#include <memory>
 
 namespace Euclid {
 
 namespace PhzModeling {
-
 
 typedef ModelDatasetGenerator::NormalizationFunction NormalizationFunction;
 
 class NormalizationFunctorFactory {
 
 public:
-  static NormalizationFunctor GetFunctor(
-        std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
-        XYDataset::QualifiedName filter_name,
-        std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
-        XYDataset::QualifiedName solar_sed_name);
+  static NormalizationFunctor GetFunctor(std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+                                         XYDataset::QualifiedName                              filter_name,
+                                         std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
+                                         XYDataset::QualifiedName                              solar_sed_name);
 
-  static NormalizationFunction GetFunction(
-      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
-      XYDataset::QualifiedName filter_name,
-      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
-      XYDataset::QualifiedName solar_sed_name);
-
-
-
+  static NormalizationFunction GetFunction(std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+                                           XYDataset::QualifiedName                              filter_name,
+                                           std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
+                                           XYDataset::QualifiedName                              solar_sed_name);
 };
 
-} // end of namespace PhzModeling
-} // end of namespace Euclid
+}  // end of namespace PhzModeling
+}  // end of namespace Euclid
 
-#endif	/* PHZMODELING_NORMALIZATIONFUNCTORFACTORY_H */
-
+#endif /* PHZMODELING_NORMALIZATIONFUNCTORFACTORY_H */

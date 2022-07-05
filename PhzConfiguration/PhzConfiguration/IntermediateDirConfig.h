@@ -23,12 +23,12 @@
  */
 
 #ifndef PHZCONFIGURATION_INTERMEDIATEDIRCONFIG_H
-#define	PHZCONFIGURATION_INTERMEDIATEDIRCONFIG_H
+#define PHZCONFIGURATION_INTERMEDIATEDIRCONFIG_H
 
+#include "Configuration/Configuration.h"
+#include <boost/filesystem/operations.hpp>
 #include <cstdlib>
 #include <string>
-#include <boost/filesystem/operations.hpp>
-#include "Configuration/Configuration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -47,7 +47,6 @@ namespace PhzConfiguration {
 class IntermediateDirConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief constructor
    */
@@ -86,14 +85,11 @@ public:
   const boost::filesystem::path& getIntermediateDir();
 
 private:
-
   boost::filesystem::path m_intermediate_dir;
 
 }; /* End of IntermediateDirConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_INTERMEDIATEDIRCONFIG_H */
-
+#endif /* PHZCONFIGURATION_INTERMEDIATEDIRCONFIG_H */

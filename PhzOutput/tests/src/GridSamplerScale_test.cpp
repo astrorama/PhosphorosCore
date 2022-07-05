@@ -68,18 +68,19 @@ BOOST_FIXTURE_TEST_CASE(test_creatComment, GridSamplerScale_fixture) {
   PhzDataModel::SourceResults results{};
   results.set<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>(std::move(result_map));
 
-  auto comment = PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>::createComment(results);
+  auto comment =
+      PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>::createComment(results);
 
   // then
-  const std::string expected(
-      "MODEL-GRID : {\"Test_Region\": "
-      "{\"REGION_INDEX\":0,\"REDDENING_CURVE\":{\"0\":\"Curve1\",\"1\":\"Curve_2\"},\"SED\":{\"0\":\"SED_1\",\"1\":\"SED_2\"}}}");
+  const std::string expected("MODEL-GRID : {\"Test_Region\": "
+                             "{\"REGION_INDEX\":0,\"REDDENING_CURVE\":{\"0\":\"Curve1\",\"1\":\"Curve_2\"},\"SED\":{"
+                             "\"0\":\"SED_1\",\"1\":\"SED_2\"}}}");
   BOOST_CHECK_EQUAL(comment.str(), expected);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getLuminosity, GridSamplerScale_fixture) {
   // Given
-  auto                handler = PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>{};
+  auto handler = PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>{};
   std::vector<double> alphas{0, 1, 1, 1, 1, 1};
   std::vector<double> sigmas{1, 1, 0.5, 1, 1, 1};
   std::vector<double> indexes{0, 0, 0, 1, 2, 0.7};

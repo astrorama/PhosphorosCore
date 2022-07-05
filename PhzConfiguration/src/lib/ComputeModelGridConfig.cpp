@@ -22,17 +22,16 @@
  * @author Florian Dubath
  */
 
-#include <cstdlib>
+#include "PhzConfiguration/ComputeModelGridConfig.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzConfiguration/ComputeModelGridConfig.h"
-#include "PhzConfiguration/ModelGridOutputConfig.h"
-#include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/FilterConfig.h"
-#include "PhzConfiguration/ParameterSpaceConfig.h"
-#include "PhzConfiguration/MultithreadConfig.h"
+#include "PhzConfiguration/IgmConfig.h"
+#include "PhzConfiguration/ModelGridOutputConfig.h"
 #include "PhzConfiguration/ModelNormalizationConfig.h"
-
+#include "PhzConfiguration/MultithreadConfig.h"
+#include "PhzConfiguration/ParameterSpaceConfig.h"
+#include <cstdlib>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -49,12 +48,9 @@ ComputeModelGridConfig::ComputeModelGridConfig(long manager_id) : Configuration(
   declareDependency<ModelNormalizationConfig>();
 }
 
-void ComputeModelGridConfig::preInitialize(const UserValues&){
+void ComputeModelGridConfig::preInitialize(const UserValues&) {
   getDependency<ModelGridOutputConfig>().changeDefaultSubdir("ModelGrids");
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

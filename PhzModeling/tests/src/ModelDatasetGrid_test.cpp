@@ -22,54 +22,51 @@
  * @author Florian Dubath
  */
 
-#include <string>
-#include <set>
 #include <boost/test/unit_test.hpp>
+#include <set>
+#include <string>
 
-#include "ElementsKernel/Real.h"
 #include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Real.h"
+#include "MathUtils/function/Function.h"
+#include "PhzModeling/ExtinctionFunctor.h"
+#include "PhzModeling/ModelDatasetGrid.h"
+#include "PhzModeling/NoIgmFunctor.h"
 #include "PhzModeling/RedshiftFunctor.h"
 #include "XYDataset/XYDataset.h"
-#include "PhzModeling/ModelDatasetGrid.h"
-#include "MathUtils/function/Function.h"
-#include "PhzModeling/NoIgmFunctor.h"
-#include "PhzModeling/ExtinctionFunctor.h"
 
 struct ModelDatasetGrid_Fixture {
-  class DummyRedshift{
+  class DummyRedshift {
   public:
-
     virtual ~DummyRedshift() = default;
-    Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed, double z) const{
-      std::vector<std::pair<double, double>> redshifted_values {};
+    Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed, double z) const {
+      std::vector<std::pair<double, double>> redshifted_values{};
       for (auto& sed_pair : sed) {
-       redshifted_values.push_back(std::make_pair(sed_pair.first*(1+z),sed_pair.second));
+        redshifted_values.push_back(std::make_pair(sed_pair.first * (1 + z), sed_pair.second));
       }
-      return  Euclid::XYDataset::XYDataset {std::move(redshifted_values)};
+      return Euclid::XYDataset::XYDataset{std::move(redshifted_values)};
     }
   };
 
+  class DummyReddening {
+  public:
+    virtual ~DummyReddening() = default;
+    Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed,
+                                            const Euclid::MathUtils::Function& reddening_curve, double ebv) const {
+      std::vector<std::pair<double, double>> redshifted_values{};
+      for (auto& sed_pair : sed) {
+        redshifted_values.push_back(
+            std::make_pair(sed_pair.first, sed_pair.second * (1 + reddening_curve(sed_pair.first) * ebv)));
+      }
+      return Euclid::XYDataset::XYDataset{std::move(redshifted_values)};
+    }
+  };
 
+  class DummyExtinctionFunction : public Euclid::MathUtils::Function {
+  public:
+    DummyExtinctionFunction() = default;
 
-  class DummyReddening{
-   public:
-
-     virtual ~DummyReddening() = default;
-     Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed,const Euclid::MathUtils::Function& reddening_curve, double ebv) const{
-       std::vector<std::pair<double, double>> redshifted_values {};
-       for (auto& sed_pair : sed) {
-          redshifted_values.push_back(std::make_pair(sed_pair.first,sed_pair.second*(1+reddening_curve(sed_pair.first) * ebv)));
-       }
-        return  Euclid::XYDataset::XYDataset {std::move(redshifted_values)};
-     }
-
-   };
-
-  class DummyExtinctionFunction:public Euclid::MathUtils::Function{
-   public:
-    DummyExtinctionFunction()=default;
-
-    DummyExtinctionFunction(double factor):m_factor{factor}{}
+    DummyExtinctionFunction(double factor) : m_factor{factor} {}
 
     virtual ~DummyExtinctionFunction() = default;
 
@@ -87,77 +84,88 @@ struct ModelDatasetGrid_Fixture {
     using Euclid::MathUtils::Function::operator();
 
     std::unique_ptr<Euclid::MathUtils::Function> clone() const override {
-       return std::unique_ptr<Euclid::MathUtils::Function>{new DummyExtinctionFunction()};
+      return std::unique_ptr<Euclid::MathUtils::Function>{new DummyExtinctionFunction()};
     }
-   private:
-    double m_factor=1.0;
+
+  private:
+    double m_factor = 1.0;
   };
 
+  class DummyNormalizing {
+  public:
+    virtual ~DummyNormalizing() = default;
+    Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed) const {
+      std::vector<std::pair<double, double>> normalized_values{};
+      for (auto& sed_pair : sed) {
+        normalized_values.push_back(std::make_pair(sed_pair.first, sed_pair.second));
+      }
+      return Euclid::XYDataset::XYDataset{std::move(normalized_values)};
+    }
+  };
 
-  class DummyNormalizing{
-     public:
+  std::vector<double> zs{0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+  std::vector<double> ebvs{0.0, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01};
+  std::vector<Euclid::XYDataset::QualifiedName> reddeing_curves{
+      {"reddeningCurves/Curve1"}, {"reddeningCurves/Curve2"}, {"reddeningCurves/Curve3"}};
+  std::vector<Euclid::XYDataset::QualifiedName> seds{{"sed/Curve_1"}, {"sed/Curve_2"}, {"sed/Curve_3"}};
 
-       virtual ~DummyNormalizing() = default;
-       Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed) const{
-         std::vector<std::pair<double, double>> normalized_values {};
-         for (auto& sed_pair : sed) {
-           normalized_values.push_back(std::make_pair(sed_pair.first,sed_pair.second));
-         }
-          return  Euclid::XYDataset::XYDataset {std::move(normalized_values)};
-       }
+  Euclid::PhzDataModel::ModelAxesTuple parameter_space =
+      Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
 
-     };
+  std::map<Euclid::XYDataset::QualifiedName, Euclid::XYDataset::XYDataset>                 m_sed_map;
+  std::map<Euclid::XYDataset::QualifiedName, std::unique_ptr<Euclid::MathUtils::Function>> m_reddening_curve_map;
 
+  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, const Euclid::MathUtils::Function&,
+                                             double)>
+      m_reddening_function = std::function<Euclid::XYDataset::XYDataset(
+          const Euclid::XYDataset::XYDataset&, const Euclid::MathUtils::Function&, double)>(DummyReddening{});
+  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)> m_redshift_function =
+      std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)>(DummyRedshift{});
+  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)> m_igm_function{
+      Euclid::PhzModeling::NoIgmFunctor{}};
+  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)> m_norm_function =
+      std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>(DummyNormalizing{});
 
-  std::vector<double> zs{0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
-  std::vector<double> ebvs{0.0,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,0.01};
-  std::vector<Euclid::XYDataset::QualifiedName> reddeing_curves{{"reddeningCurves/Curve1"},{"reddeningCurves/Curve2"},{"reddeningCurves/Curve3"}};
-  std::vector<Euclid::XYDataset::QualifiedName> seds{{"sed/Curve_1"},{"sed/Curve_2"},{"sed/Curve_3"}};
+  std::vector<std::pair<double, double>> sed1{std::make_pair(10000., 0.004), std::make_pair(12000., 0.002),
+                                              std::make_pair(14000., 0.001)};
+  std::vector<std::pair<double, double>> sed2{std::make_pair(10000., 0.005), std::make_pair(12000., 0.003),
+                                              std::make_pair(14000., 0.002)};
+  std::vector<std::pair<double, double>> sed3{std::make_pair(10000., 0.006), std::make_pair(12000., 0.004),
+                                              std::make_pair(14000., 0.003)};
 
-  Euclid::PhzDataModel::ModelAxesTuple parameter_space= Euclid::PhzDataModel::createAxesTuple(zs,ebvs,reddeing_curves,seds);
+  DummyExtinctionFunction red1 = {1.};
+  DummyExtinctionFunction red2 = {2.};
+  DummyExtinctionFunction red3 = {4.};
 
-  std::map<Euclid::XYDataset::QualifiedName,Euclid::XYDataset::XYDataset> m_sed_map;
-  std::map<Euclid::XYDataset::QualifiedName,std::unique_ptr<Euclid::MathUtils::Function> > m_reddening_curve_map;
+  ModelDatasetGrid_Fixture() {
+    m_sed_map.emplace(Euclid::XYDataset::QualifiedName("sed/Curve_1"), sed1);
+    m_sed_map.emplace(Euclid::XYDataset::QualifiedName("sed/Curve_2"), sed2);
+    m_sed_map.emplace(Euclid::XYDataset::QualifiedName("sed/Curve_3"), sed3);
 
-  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset& ,const Euclid::MathUtils::Function&, double)> m_reddening_function =  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset& ,const Euclid::MathUtils::Function&, double)>(DummyReddening{});
-  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset& , double)> m_redshift_function=std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset& , double)>(DummyRedshift{});
-  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)>  m_igm_function {Euclid::PhzModeling::NoIgmFunctor{}};
-  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>  m_norm_function = std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>(DummyNormalizing{});
-
-
-  std::vector<std::pair<double, double>> sed1 {std::make_pair(10000.,0.004),std::make_pair(12000.,0.002),std::make_pair(14000.,0.001)};
-  std::vector<std::pair<double, double>> sed2 {std::make_pair(10000.,0.005),std::make_pair(12000.,0.003),std::make_pair(14000.,0.002)};
-  std::vector<std::pair<double, double>> sed3 {std::make_pair(10000.,0.006),std::make_pair(12000.,0.004),std::make_pair(14000.,0.003)};
-
-  DummyExtinctionFunction red1={1.};
-  DummyExtinctionFunction red2={2.};
-  DummyExtinctionFunction red3={4.};
-
-  ModelDatasetGrid_Fixture(){
-    m_sed_map.emplace(Euclid::XYDataset::QualifiedName("sed/Curve_1"),sed1);
-    m_sed_map.emplace(Euclid::XYDataset::QualifiedName("sed/Curve_2"),sed2);
-    m_sed_map.emplace(Euclid::XYDataset::QualifiedName("sed/Curve_3"),sed3);
-
-    m_reddening_curve_map.emplace(Euclid::XYDataset::QualifiedName("reddeningCurves/Curve1"),std::unique_ptr<Euclid::MathUtils::Function>(new DummyExtinctionFunction(1.)));
-    m_reddening_curve_map.emplace(Euclid::XYDataset::QualifiedName("reddeningCurves/Curve2"),std::unique_ptr<Euclid::MathUtils::Function>(new DummyExtinctionFunction(2.)));
-    m_reddening_curve_map.emplace(Euclid::XYDataset::QualifiedName("reddeningCurves/Curve3"),std::unique_ptr<Euclid::MathUtils::Function>(new DummyExtinctionFunction(4.)));
+    m_reddening_curve_map.emplace(Euclid::XYDataset::QualifiedName("reddeningCurves/Curve1"),
+                                  std::unique_ptr<Euclid::MathUtils::Function>(new DummyExtinctionFunction(1.)));
+    m_reddening_curve_map.emplace(Euclid::XYDataset::QualifiedName("reddeningCurves/Curve2"),
+                                  std::unique_ptr<Euclid::MathUtils::Function>(new DummyExtinctionFunction(2.)));
+    m_reddening_curve_map.emplace(Euclid::XYDataset::QualifiedName("reddeningCurves/Curve3"),
+                                  std::unique_ptr<Euclid::MathUtils::Function>(new DummyExtinctionFunction(4.)));
   }
 };
 
-
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (ModelDatasetGrid_test)
+BOOST_AUTO_TEST_SUITE(ModelDatasetGrid_test)
 //----------------------------------------------------------------------------
 BOOST_FIXTURE_TEST_CASE(constructor_test, ModelDatasetGrid_Fixture) {
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing constructor");
   BOOST_TEST_MESSAGE(" ");
 
-  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space,std::move(m_sed_map),std::move(m_reddening_curve_map),m_reddening_function,m_redshift_function,m_igm_function,m_norm_function);
+  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space, std::move(m_sed_map),
+                                                   std::move(m_reddening_curve_map), m_reddening_function,
+                                                   m_redshift_function, m_igm_function, m_norm_function);
 
-  BOOST_CHECK_EQUAL(4,model_grid.axisNumber());
-  BOOST_CHECK_EQUAL(990,model_grid.size()); //3*3*11*10
+  BOOST_CHECK_EQUAL(4, model_grid.axisNumber());
+  BOOST_CHECK_EQUAL(990, model_grid.size());  // 3*3*11*10
 }
 
 BOOST_FIXTURE_TEST_CASE(iterator_test, ModelDatasetGrid_Fixture) {
@@ -165,27 +173,28 @@ BOOST_FIXTURE_TEST_CASE(iterator_test, ModelDatasetGrid_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing iterator");
   BOOST_TEST_MESSAGE(" ");
 
-  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space,std::move(m_sed_map),std::move(m_reddening_curve_map),m_reddening_function,m_redshift_function,m_igm_function,m_norm_function);
+  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space, std::move(m_sed_map),
+                                                   std::move(m_reddening_curve_map), m_reddening_function,
+                                                   m_redshift_function, m_igm_function, m_norm_function);
 
   auto iterator = model_grid.begin();
 
-  //check the 0th element
-  auto expected_iterator=sed1.begin();
-  for(auto actual_pair:(*iterator)){
-    BOOST_CHECK(Elements::isEqual(expected_iterator->first,actual_pair.first));
-    BOOST_CHECK(Elements::isEqual(expected_iterator->second,actual_pair.second));
+  // check the 0th element
+  auto expected_iterator = sed1.begin();
+  for (auto actual_pair : (*iterator)) {
+    BOOST_CHECK(Elements::isEqual(expected_iterator->first, actual_pair.first));
+    BOOST_CHECK(Elements::isEqual(expected_iterator->second, actual_pair.second));
     ++expected_iterator;
   }
 
   // check the 1th element (which is redshifted only by z=0.1 using the dummy redshift functor)
   ++iterator;
-  expected_iterator=sed1.begin();
-  for(auto actual_pair:(*iterator)){
-    BOOST_CHECK(Elements::isEqual((1.1)*expected_iterator->first,actual_pair.first));
-    BOOST_CHECK(Elements::isEqual(expected_iterator->second,actual_pair.second));
+  expected_iterator = sed1.begin();
+  for (auto actual_pair : (*iterator)) {
+    BOOST_CHECK(Elements::isEqual((1.1) * expected_iterator->first, actual_pair.first));
+    BOOST_CHECK(Elements::isEqual(expected_iterator->second, actual_pair.second));
     ++expected_iterator;
   }
 }
 
-
-BOOST_AUTO_TEST_SUITE_END ()
+BOOST_AUTO_TEST_SUITE_END()

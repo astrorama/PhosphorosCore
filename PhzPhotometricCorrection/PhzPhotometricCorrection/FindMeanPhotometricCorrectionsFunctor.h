@@ -5,7 +5,7 @@
  */
 
 #ifndef PHOTOMETRICCORRECTION_FINDMEANPHOTOMETRICCORRECTIONSFUNCTOR_H
-#define	PHOTOMETRICCORRECTION_FINDMEANPHOTOMETRICCORRECTIONSFUNCTOR_H
+#define PHOTOMETRICCORRECTION_FINDMEANPHOTOMETRICCORRECTIONSFUNCTOR_H
 
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzUtils/SourceTraits.h"
@@ -23,34 +23,29 @@ namespace PhzPhotometricCorrection {
 class FindMeanPhotometricCorrectionsFunctor {
 
 public:
-
   /**
-     * @brief Compute the global photometric corrections by taking the mean over the sources.
-     *
-     * @tparam SourceIter The type of the iterator over the source objects
-     *
-     * @param source_phot_corr_map A map associating the source id to the photometric
-     * correction map for this source.
-     *
-     * @param source_begin An iterator to the first of the sources
-     * @param source_end An iterator to one after the last of the sources
-     *
-     * @return The calcualted photometric corrections
-     */
+   * @brief Compute the global photometric corrections by taking the mean over the sources.
+   *
+   * @tparam SourceIter The type of the iterator over the source objects
+   *
+   * @param source_phot_corr_map A map associating the source id to the photometric
+   * correction map for this source.
+   *
+   * @param source_begin An iterator to the first of the sources
+   * @param source_end An iterator to one after the last of the sources
+   *
+   * @return The calcualted photometric corrections
+   */
   template <typename SourceIter>
-  PhzDataModel::PhotometricCorrectionMap operator()(
-      const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
-      SourceIter source_begin,
-      SourceIter source_end
-  );
-
+  PhzDataModel::PhotometricCorrectionMap
+  operator()(const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type,
+                            PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
+             SourceIter source_begin, SourceIter source_end);
 };
 
-} // end of namespace PhzPhotometricCorrection
-} // end of namespace Euclid
-
+}  // end of namespace PhzPhotometricCorrection
+}  // end of namespace Euclid
 
 #include "PhzPhotometricCorrection/_impl/FindMeanPhotometricCorrectionsFunctor.icpp"
 
-#endif	/* PHOTOMETRICCORRECTION_FINDMEANPHOTOMETRICCORRECTIONSFUNCTOR_H */
-
+#endif /* PHOTOMETRICCORRECTION_FINDMEANPHOTOMETRICCORRECTIONSFUNCTOR_H */

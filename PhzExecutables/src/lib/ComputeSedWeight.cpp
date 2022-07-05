@@ -124,7 +124,8 @@ ComputeSedWeight::orderFilters(const std::vector<XYDataset::QualifiedName>&     
   }
 
   for (size_t filter_index = 0; filter_index < ordered_filters.size(); ++filter_index) {
-    logger.info() << "Filter =" << ordered_filters[filter_index].first << " lambda =" << ordered_filters[filter_index].second;
+    logger.info() << "Filter =" << ordered_filters[filter_index].first
+                  << " lambda =" << ordered_filters[filter_index].second;
   }
 
   return ordered_filters;
@@ -134,7 +135,7 @@ std::vector<std::vector<double>>
 ComputeSedWeight::computeSedColors(const std::vector<std::pair<XYDataset::QualifiedName, double>>& ordered_filters,
                                    const std::set<XYDataset::QualifiedName>&                       sed_list,
                                    const std::shared_ptr<XYDataset::XYDatasetProvider>             sed_provider,
-                                   const std::shared_ptr<XYDataset::XYDatasetProvider>             filter_provider) const {
+                                   const std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider) const {
   PhzModeling::ApplyFilterFunctor  functor{};
   std::vector<std::vector<double>> fluxes{};
 
@@ -208,7 +209,8 @@ double ComputeSedWeight::distance(const std::vector<double>& colors_1, const std
   return max;
 }
 
-std::vector<std::vector<double>> ComputeSedWeight::computeSedDistance(const std::vector<std::vector<double>>& seds_colors) const {
+std::vector<std::vector<double>>
+ComputeSedWeight::computeSedDistance(const std::vector<std::vector<double>>& seds_colors) const {
   std::vector<std::vector<double>> results{};
   results.reserve(seds_colors.size());
   for (size_t index_i = 0; index_i < seds_colors.size(); ++index_i) {
@@ -295,7 +297,8 @@ double ComputeSedWeight::maxGap(const std::vector<std::vector<double>>& sed_dist
   return groupDistance(sed_groups[0], sed_groups[1], sed_distances);
 }
 
-std::vector<double> ComputeSedWeight::getWeights(const std::vector<std::vector<double>>& seds_colors, double radius) const {
+std::vector<double> ComputeSedWeight::getWeights(const std::vector<std::vector<double>>& seds_colors,
+                                                 double                                  radius) const {
   std::vector<double> weight(seds_colors.size(), 0.);
 
   size_t sed_number   = seds_colors.size();
@@ -345,7 +348,8 @@ std::vector<double> ComputeSedWeight::getWeights(const std::vector<std::vector<d
   return weight;
 }
 
-std::string ComputeSedWeight::getCellKey(double z_value, double ebv_value, const XYDataset::QualifiedName& curve_value) const {
+std::string ComputeSedWeight::getCellKey(double z_value, double ebv_value,
+                                         const XYDataset::QualifiedName& curve_value) const {
   return std::to_string(z_value) + "_" + std::to_string(ebv_value) + "_" + curve_value.qualifiedName();
 }
 
@@ -357,7 +361,8 @@ ComputeSedWeight::getSedCollection(const PhzDataModel::PhotometryGridInfo& grid_
   // iter over the regions
   double total      = 0;
   size_t grid_index = 0;
-  for (auto region_iter = grid_info.region_axes_map.begin(); region_iter != grid_info.region_axes_map.end(); ++region_iter) {
+  for (auto region_iter = grid_info.region_axes_map.begin(); region_iter != grid_info.region_axes_map.end();
+       ++region_iter) {
     // iter over the axis
     auto& z_axis     = std::get<0>((*region_iter).second);
     auto& E_axis     = std::get<1>((*region_iter).second);
@@ -414,7 +419,8 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
   // compute the weight and set them into the grid
   std::map<std::set<XYDataset::QualifiedName>, std::map<XYDataset::QualifiedName, double>> seds_weights_collection{};
   double                                                                                   current = 0;
-  for (auto region_iter = grid_info.region_axes_map.begin(); region_iter != grid_info.region_axes_map.end(); ++region_iter) {
+  for (auto region_iter = grid_info.region_axes_map.begin(); region_iter != grid_info.region_axes_map.end();
+       ++region_iter) {
     auto&                    z_axis     = std::get<0>((*region_iter).second);
     auto&                    E_axis     = std::get<1>((*region_iter).second);
     auto&                    curve_axis = std::get<2>((*region_iter).second);
@@ -456,8 +462,7 @@ void ComputeSedWeight::run(ConfigManager& config_manager) {
 
               // compute weights
               weights = std::move(getWeights(colors, radius));
-            }
-            else {
+            } else {
               logger.info() << "There is a single SED";
               weights.emplace_back(1.);
             }

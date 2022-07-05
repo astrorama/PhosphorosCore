@@ -23,15 +23,14 @@
  */
 
 #ifndef PHZCONFIGURATION_SEDCONFIG_H
-#define	PHZCONFIGURATION_SEDCONFIG_H
+#define PHZCONFIGURATION_SEDCONFIG_H
 
-#include <string>
-#include <vector>
-#include <map>
+#include "Configuration/Configuration.h"
 #include "XYDataset/XYDatasetProvider.h"
 #include <boost/filesystem/operations.hpp>
-#include "Configuration/Configuration.h"
-
+#include <map>
+#include <string>
+#include <vector>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -88,14 +87,11 @@ public:
   const std::map<std::string, std::vector<XYDataset::QualifiedName>>& getSedList();
 
 private:
-
   std::map<std::string, std::vector<XYDataset::QualifiedName>> m_sed_list;
 
 }; /* End of SedConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_SEDCONFIG_H */
-
+#endif /* PHZCONFIGURATION_SEDCONFIG_H */

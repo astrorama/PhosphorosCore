@@ -22,12 +22,12 @@
  * @author Florian Dubath
  */
 
-#include <boost/test/unit_test.hpp>
-#include <iostream>
-#include <fstream>
+#include "ConfigManager_fixture.h"
 #include "ElementsKernel/Temporary.h"
 #include "PhzConfiguration/ReddeningProviderConfig.h"
-#include "ConfigManager_fixture.h"
+#include <boost/test/unit_test.hpp>
+#include <fstream>
+#include <iostream>
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
@@ -35,16 +35,16 @@ namespace fs = boost::filesystem;
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (ReddeningProviderConfig_test)
+BOOST_AUTO_TEST_SUITE(ReddeningProviderConfig_test)
 
-
-BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(NotInitializedGetter_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<ReddeningProviderConfig>();
   config_manager.closeRegistration();
 
   // Then
-  BOOST_CHECK_THROW(config_manager.getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider(), Elements::Exception);
+  BOOST_CHECK_THROW(config_manager.getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider(),
+                    Elements::Exception);
 }
 
 //-----------------------------------------------------------------------------
@@ -55,12 +55,12 @@ BOOST_FIXTURE_TEST_CASE(getSedDatasetProvider_function_test, ConfigManager_fixtu
   // Given
   config_manager.registerConfiguration<ReddeningProviderConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
+  std::map<std::string, po::variable_value> options_map{};
 
-  std::string aux_data_dir {"aux-data-dir"};
+  std::string       aux_data_dir{"aux-data-dir"};
   Elements::TempDir temp_dir;
-  fs::path base_directory { temp_dir.path() / "euclid" / "" };
-  fs::path cal_directory    = base_directory / "ReddeningCurves" / "CAL";
+  fs::path          base_directory{temp_dir.path() / "euclid" / ""};
+  fs::path          cal_directory = base_directory / "ReddeningCurves" / "CAL";
 
   fs::create_directories(base_directory);
   fs::create_directories(cal_directory);
@@ -87,17 +87,15 @@ BOOST_FIXTURE_TEST_CASE(getSedDatasetProvider_function_test, ConfigManager_fixtu
   config_manager.initialize(options_map);
   auto result = config_manager.getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider();
 
-  //Then
+  // Then
   auto vec_fdp = result->listContents("CAL");
 
   BOOST_CHECK_EQUAL(vec_fdp.size(), 2);
-  std::set<Euclid::XYDataset::QualifiedName> set_fdp {vec_fdp.begin(), vec_fdp.end()};
+  std::set<Euclid::XYDataset::QualifiedName> set_fdp{vec_fdp.begin(), vec_fdp.end()};
   BOOST_CHECK_EQUAL(set_fdp.count({(fs::path("CAL") / "calzetti_1").string()}), 1);
   BOOST_CHECK_EQUAL(set_fdp.count({(fs::path("CAL") / "calzetti_2").string()}), 1);
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

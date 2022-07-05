@@ -5,12 +5,12 @@
  */
 
 #ifndef PHZPHOTOMETRICCORRECTION_PHOTOMETRICCORRECTIONALGORITHM_H
-#define	PHZPHOTOMETRICCORRECTION_PHOTOMETRICCORRECTIONALGORITHM_H
+#define PHZPHOTOMETRICCORRECTION_PHOTOMETRICCORRECTIONALGORITHM_H
 
-#include <map>
-#include <functional>
 #include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzPhotometricCorrection/FindMedianPhotometricCorrectionsFunctor.h"
+#include <functional>
+#include <map>
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
@@ -24,10 +24,10 @@ namespace PhzPhotometricCorrection {
 class PhotometricCorrectionAlgorithm {
 
 public:
-
   template <typename SourceIter>
   using PhotometricCorrectionSelector = std::function<PhzDataModel::PhotometricCorrectionMap(
-      const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
+      const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap>&
+                 source_phot_corr_map,
       SourceIter source_begin, SourceIter source_end)>;
 
   /**
@@ -60,18 +60,16 @@ public:
    *    if the model photometry map does not contain photometries for all the sources
    */
   template <typename SourceIter, typename ModelPhot>
-  PhzDataModel::PhotometricCorrectionMap operator()(
-                    SourceIter source_begin, SourceIter source_end,
-                    const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, double>& scale_factor_map,
-                    const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhot>& model_phot_map,
-                    PhotometricCorrectionSelector<SourceIter> selector=FindMedianPhotometricCorrectionsFunctor{}) const;
-                    
+  PhzDataModel::PhotometricCorrectionMap
+  operator()(SourceIter source_begin, SourceIter source_end,
+             const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, double>&    scale_factor_map,
+             const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, ModelPhot>& model_phot_map,
+             PhotometricCorrectionSelector<SourceIter> selector = FindMedianPhotometricCorrectionsFunctor{}) const;
 };
 
-} // end of namespace PhzPhotometricCorrection
-} // end of namespace Euclid
+}  // end of namespace PhzPhotometricCorrection
+}  // end of namespace Euclid
 
 #include "PhzPhotometricCorrection/_impl/PhotometricCorrectionAlgorithm.icpp"
 
-#endif	/* PHZPHOTOMETRICCORRECTION_PHOTOMETRICCORRECTIONALGORITHM_H */
-
+#endif /* PHZPHOTOMETRICCORRECTION_PHOTOMETRICCORRECTIONALGORITHM_H */

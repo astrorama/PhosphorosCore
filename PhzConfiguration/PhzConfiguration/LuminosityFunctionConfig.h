@@ -23,13 +23,13 @@
  */
 
 #ifndef PHZCONFIGURATION_LUMINOSITYFUNCTIONCONFIG_H
-#define	PHZCONFIGURATION_LUMINOSITYFUNCTIONCONFIG_H
+#define PHZCONFIGURATION_LUMINOSITYFUNCTIONCONFIG_H
 
-#include <cstdlib>
-#include <string>
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzLuminosity/LuminosityFunctionSet.h"
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
+#include <string>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -40,11 +40,10 @@ namespace PhzConfiguration {
  * @details
  * This class define the configuration of the luminosity function.
  *
-*/
+ */
 class LuminosityFunctionConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief constructor
    */
@@ -69,12 +68,12 @@ public:
    */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
-/**
- * @brief
- * Check that if the options "luminosity-function-expressed-in-magnitude" and/or
- * "luminosity-function-corrected-for-extinction" are present, their value are
- * as expected ("YES" or "NO") if not throw an exception.
- */
+  /**
+   * @brief
+   * Check that if the options "luminosity-function-expressed-in-magnitude" and/or
+   * "luminosity-function-corrected-for-extinction" are present, their value are
+   * as expected ("YES" or "NO") if not throw an exception.
+   */
   void preInitialize(const UserValues& args) override;
 
   /**
@@ -127,23 +126,19 @@ public:
   /**
    * @brief return the Luminosity Function
    */
-  const PhzLuminosity::LuminosityFunctionSet & getLuminosityFunction();
+  const PhzLuminosity::LuminosityFunctionSet& getLuminosityFunction();
 
   /**
    * @brief return the isExpressedInMagnitude flag
    */
   bool isExpressedInMagnitude();
 
-
 private:
-
   std::unique_ptr<PhzLuminosity::LuminosityFunctionSet> m_luminosity_function;
-  bool m_is_expressed_in_magnitude = false;
+  bool                                                  m_is_expressed_in_magnitude = false;
 }; /* End of LuminosityFunctionConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_LUMINOSITYFUNCTIONCONFIG_H */
-
+#endif /* PHZCONFIGURATION_LUMINOSITYFUNCTIONCONFIG_H */

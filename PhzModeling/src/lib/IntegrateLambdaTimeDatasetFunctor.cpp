@@ -24,26 +24,26 @@
 
 #include <vector>
 
-#include "PhzModeling/IntegrateLambdaTimeDatasetFunctor.h"
-#include "MathUtils/interpolation/interpolation.h"
 #include "MathUtils/function/function_tools.h"
+#include "MathUtils/interpolation/interpolation.h"
+#include "PhzModeling/IntegrateLambdaTimeDatasetFunctor.h"
 #include "XYDataset/XYDataset.h"
 
 namespace Euclid {
 namespace PhzModeling {
 
 IntegrateLambdaTimeDatasetFunctor::IntegrateLambdaTimeDatasetFunctor(MathUtils::InterpolationType type)
-                              : m_type {type} { }
-                              
-double IntegrateLambdaTimeDatasetFunctor::operator ()(const XYDataset::XYDataset& dataset,
-                                            const std::pair<double, double>& range) const {
+    : m_type{type} {}
+
+double IntegrateLambdaTimeDatasetFunctor::operator()(const XYDataset::XYDataset&      dataset,
+                                                     const std::pair<double, double>& range) const {
 
   std::vector<double> x;
   std::vector<double> y;
   x.reserve(dataset.size());
   y.reserve(dataset.size());
 
-  for (auto it = dataset.begin(); it != dataset.end(); ++ it){
+  for (auto it = dataset.begin(); it != dataset.end(); ++it) {
     x.emplace_back(it->first);
     y.emplace_back(it->first * it->second);
   }
@@ -52,5 +52,5 @@ double IntegrateLambdaTimeDatasetFunctor::operator ()(const XYDataset::XYDataset
   return MathUtils::integrate(*dataset_func, range.first, range.second);
 }
 
-} // end of namespace PhzModeling
-} // end of namespace Euclid
+}  // end of namespace PhzModeling
+}  // end of namespace Euclid

@@ -22,22 +22,22 @@
  * @author Florian Dubath
  */
 
-#include <cstdlib>
+#include "PhzConfiguration/ComputeFilterVariationCoefficientConfig.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzUtils/FileUtils.h"
-#include "PhzConfiguration/ComputeFilterVariationCoefficientConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
-#include "PhzConfiguration/ResultsDirConfig.h"
-#include "PhzConfiguration/PhzOutputDirConfig.h"
-#include "PhzConfiguration/PhotometryGridConfig.h"
-#include "PhzConfiguration/SedProviderConfig.h"
-#include "PhzConfiguration/MilkyWayReddeningConfig.h"
-#include "PhzConfiguration/MultithreadConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/FilterVariationCoefficientGridOutputConfig.h"
 #include "PhzConfiguration/FilterVariationConfig.h"
+#include "PhzConfiguration/MilkyWayReddeningConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
+#include "PhzConfiguration/MultithreadConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
+#include "PhzConfiguration/PhzOutputDirConfig.h"
+#include "PhzConfiguration/ResultsDirConfig.h"
+#include "PhzConfiguration/SedProviderConfig.h"
+#include "PhzUtils/FileUtils.h"
+#include <cstdlib>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -45,10 +45,10 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
-
 static Elements::Logging logger = Elements::Logging::getLogger("ComputeFilterVariationCoefficientConfig");
 
-ComputeFilterVariationCoefficientConfig::ComputeFilterVariationCoefficientConfig(long manager_id) : Configuration(manager_id) {
+ComputeFilterVariationCoefficientConfig::ComputeFilterVariationCoefficientConfig(long manager_id)
+    : Configuration(manager_id) {
   declareDependency<ResultsDirConfig>();
   declareDependency<PhotometryGridConfig>();
   declareDependency<CatalogTypeConfig>();
@@ -62,9 +62,5 @@ ComputeFilterVariationCoefficientConfig::ComputeFilterVariationCoefficientConfig
   declareDependency<FilterVariationConfig>();
 }
 
-
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

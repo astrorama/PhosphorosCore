@@ -34,12 +34,13 @@ static const std::string CHUNK_SIZE{"chunk-size"};
 BuildPhotometryConfig::BuildPhotometryConfig(long manager_id) : Configuration::Configuration(manager_id) {}
 
 auto BuildPhotometryConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Build Photometry Config Arguments",
-           {{REFSAMPLE_DIR.c_str(), po::value<std::string>()->required(), "The reference sample directory"},
-            {OUT_FILE.c_str(), po::value<std::string>()->required(), "The output FITS file where to write the photometry"},
-            {OVERWRITE.c_str(), po::bool_switch()->default_value(false), "Overwrite the output file"},
-            {INPUT_SIZE.c_str(), po::value<int>(), "Limit the computation to this many sources"},
-            {CHUNK_SIZE.c_str(), po::value<int>()->default_value(100), "Chunk size"}}}};
+  return {
+      {"Build Photometry Config Arguments",
+       {{REFSAMPLE_DIR.c_str(), po::value<std::string>()->required(), "The reference sample directory"},
+        {OUT_FILE.c_str(), po::value<std::string>()->required(), "The output FITS file where to write the photometry"},
+        {OVERWRITE.c_str(), po::bool_switch()->default_value(false), "Overwrite the output file"},
+        {INPUT_SIZE.c_str(), po::value<int>(), "Limit the computation to this many sources"},
+        {CHUNK_SIZE.c_str(), po::value<int>()->default_value(100), "Chunk size"}}}};
 }
 
 void BuildPhotometryConfig::initialize(const UserValues& args) {

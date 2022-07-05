@@ -54,8 +54,8 @@ namespace PhzGalacticCorrection {
 static Elements::Logging logger = Elements::Logging::getLogger("GalacticCorrectionFactorSingleGridCreator");
 
 template <typename NameIter>
-std::map<XYDataset::QualifiedName, XYDataset::XYDataset> buildMap(XYDataset::XYDatasetProvider& provider, NameIter begin,
-                                                                  NameIter end) {
+std::map<XYDataset::QualifiedName, XYDataset::XYDataset> buildMap(XYDataset::XYDatasetProvider& provider,
+                                                                  NameIter begin, NameIter end) {
   std::map<XYDataset::QualifiedName, XYDataset::XYDataset> result{};
   while (begin != end) {
     auto dataset_ptr = provider.getDataset(*begin);
@@ -78,8 +78,9 @@ convertToFunction(const std::map<XYDataset::QualifiedName, XYDataset::XYDataset>
   return result;
 }
 
-std::vector<PhzDataModel::FilterInfo> manageFilters(const std::vector<XYDataset::QualifiedName>& filter_name_list,
-                                                    const std::map<XYDataset::QualifiedName, XYDataset::XYDataset>& filter_map) {
+std::vector<PhzDataModel::FilterInfo>
+manageFilters(const std::vector<XYDataset::QualifiedName>&                    filter_name_list,
+              const std::map<XYDataset::QualifiedName, XYDataset::XYDataset>& filter_map) {
 
   auto vector = std::vector<PhzDataModel::FilterInfo>();
 
@@ -88,7 +89,8 @@ std::vector<PhzDataModel::FilterInfo> manageFilters(const std::vector<XYDataset:
       const XYDataset::XYDataset& reference_filter = filter_map.at(name);
       vector.push_back(PhzModeling::BuildFilterInfoFunctor{}(reference_filter));
     } catch (std::out_of_range& err) {
-      throw Elements::Exception() << "The The provided filter map do not contains a filter named :" << name.qualifiedName();
+      throw Elements::Exception() << "The The provided filter map do not contains a filter named :"
+                                  << name.qualifiedName();
     }
   }
 
@@ -98,8 +100,9 @@ std::vector<PhzDataModel::FilterInfo> manageFilters(const std::vector<XYDataset:
 GalacticCorrectionSingleGridCreator::GalacticCorrectionSingleGridCreator(
     std::shared_ptr<Euclid::XYDataset::XYDatasetProvider>       sed_provider,
     std::shared_ptr<Euclid::XYDataset::XYDatasetProvider>       reddening_curve_provider,
-    const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider, IgmAbsorptionFunction igm_absorption_function,
-    NormalizationFunction normalization_function, XYDataset::QualifiedName milky_way_reddening)
+    const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+    IgmAbsorptionFunction igm_absorption_function, NormalizationFunction normalization_function,
+    XYDataset::QualifiedName milky_way_reddening)
     : m_sed_provider{sed_provider}
     , m_reddening_curve_provider{reddening_curve_provider}
     , m_filter_provider(filter_provider)
@@ -122,7 +125,8 @@ Euclid::XYDataset::XYDataset expDataSet(const Euclid::XYDataset::XYDataset& inpu
   return Euclid::XYDataset::XYDataset(result);
 }
 
-std::shared_ptr<std::vector<std::string>> createSharedPointer(const std::vector<XYDataset::QualifiedName>& filter_name_list) {
+std::shared_ptr<std::vector<std::string>>
+createSharedPointer(const std::vector<XYDataset::QualifiedName>& filter_name_list) {
   auto ptr = std::make_shared<std::vector<std::string>>();
 
   for (auto& name : filter_name_list) {
@@ -137,9 +141,10 @@ class ParallelJob {
 
 public:
   ParallelJob(std::shared_ptr<std::vector<std::string>> filter_name_shared_ptr,
-              std::vector<PhzDataModel::FilterInfo>& filter_info_vector, PhzModeling::ApplyFilterFunctor& filter_functor,
-              PhzModeling::IntegrateDatasetFunctor& integrate_funct, XYDataset::XYDataset& red_dataset,
-              PhzModeling::ModelDatasetGrid::iterator model_begin, PhzModeling::ModelDatasetGrid::iterator model_end,
+              std::vector<PhzDataModel::FilterInfo>&    filter_info_vector,
+              PhzModeling::ApplyFilterFunctor& filter_functor, PhzModeling::IntegrateDatasetFunctor& integrate_funct,
+              XYDataset::XYDataset& red_dataset, PhzModeling::ModelDatasetGrid::iterator model_begin,
+              PhzModeling::ModelDatasetGrid::iterator         model_end,
               typename PhzDataModel::PhotometryGrid::iterator correction_begin, std::atomic<size_t>& arg_progress,
               std::atomic<size_t>& done_counter)
       : m_filter_name_shared_ptr(filter_name_shared_ptr)
@@ -160,8 +165,9 @@ public:
       m_correction_calculator(*m_model_begin, corr_vector_buffer);
 
       std::vector<SourceCatalog::FluxErrorPair> photometry(corr_vector_buffer.size(), {0., 0.});
-      std::transform(corr_vector_buffer.begin(), corr_vector_buffer.end(), photometry.begin(),
-                     [](double f) { return SourceCatalog::FluxErrorPair(f, 0.); });
+      std::transform(corr_vector_buffer.begin(), corr_vector_buffer.end(), photometry.begin(), [](double f) {
+        return SourceCatalog::FluxErrorPair(f, 0.);
+      });
 
       *m_correction_begin = SourceCatalog::Photometry(m_filter_name_shared_ptr, std::move(photometry));
 
@@ -194,101 +200,86 @@ private:
 };
 ////////////////////////////////////////////////////////////////////////////////
 
-
-PhzDataModel::PhotometryGrid GalacticCorrectionSingleGridCreator::createGrid(
-            const PhzDataModel::ModelAxesTuple& parameter_space,
-            const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
-            const PhysicsUtils::CosmologicalParameters& cosmology,
-            ProgressListener progress_listener) {
+PhzDataModel::PhotometryGrid
+GalacticCorrectionSingleGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&                  parameter_space,
+                                                const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+                                                const PhysicsUtils::CosmologicalParameters&          cosmology,
+                                                ProgressListener progress_listener) {
   // Create the maps
-  auto filter_map = buildMap(*m_filter_provider, filter_name_list.begin(), filter_name_list.end());
+  auto filter_map             = buildMap(*m_filter_provider, filter_name_list.begin(), filter_name_list.end());
   auto filter_name_shared_ptr = createSharedPointer(filter_name_list);
-  auto filter_info_vector = manageFilters(filter_name_list, filter_map);
+  auto filter_info_vector     = manageFilters(filter_name_list, filter_map);
 
   auto sed_name_list = std::get<PhzDataModel::ModelParameter::SED>(parameter_space);
-  auto sed_map = buildMap(*m_sed_provider, sed_name_list.begin(), sed_name_list.end());
-
+  auto sed_map       = buildMap(*m_sed_provider, sed_name_list.begin(), sed_name_list.end());
 
   auto reddening_curve_list = std::get<PhzDataModel::ModelParameter::REDDENING_CURVE>(parameter_space);
-  auto reddening_curve_map = convertToFunction(buildMap(*m_reddening_curve_provider,
-                                            reddening_curve_list.begin(), reddening_curve_list.end()));
-
+  auto reddening_curve_map  = convertToFunction(
+       buildMap(*m_reddening_curve_provider, reddening_curve_list.begin(), reddening_curve_list.end()));
 
   // Define the functions and the algorithms based on the Functors
-  PhzModeling::ModelDatasetGrid::ReddeningFunction reddening_function {PhzModeling::ExtinctionFunctor{}};
-  PhzModeling::ModelDatasetGrid::RedshiftFunction redshift_function {PhzModeling::RedshiftFunctor{cosmology}};
-
+  PhzModeling::ModelDatasetGrid::ReddeningFunction reddening_function{PhzModeling::ExtinctionFunctor{}};
+  PhzModeling::ModelDatasetGrid::RedshiftFunction  redshift_function{PhzModeling::RedshiftFunctor{cosmology}};
 
   // Create the model grid
-  auto model_grid= PhzModeling::ModelDatasetGrid(parameter_space, std::move(sed_map),std::move(reddening_curve_map),
-                                    reddening_function, redshift_function, m_igm_absorption_function, m_normalization_function);
+  auto model_grid = PhzModeling::ModelDatasetGrid(parameter_space, std::move(sed_map), std::move(reddening_curve_map),
+                                                  reddening_function, redshift_function, m_igm_absorption_function,
+                                                  m_normalization_function);
 
   // Create the photometry Grid
   auto correction_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list);
 
-   auto milky_way_reddening = (*m_reddening_curve_provider).getDataset(m_milky_way_reddening);
-   if (nullptr == milky_way_reddening) {
-      throw Elements::Exception()
-          << "The provided Milky Way reddening curve ("<<m_milky_way_reddening.qualifiedName()<<") is not found by the Reddening Curve provider.";
+  auto milky_way_reddening = (*m_reddening_curve_provider).getDataset(m_milky_way_reddening);
+  if (nullptr == milky_way_reddening) {
+    throw Elements::Exception() << "The provided Milky Way reddening curve (" << m_milky_way_reddening.qualifiedName()
+                                << ") is not found by the Reddening Curve provider.";
+  }
+
+  auto filter_functor             = PhzModeling::ApplyFilterFunctor();
+  auto integrate_dataset_function = PhzModeling::IntegrateDatasetFunctor{MathUtils::InterpolationType::LINEAR};
+
+  // Here we keep the futures for the threads we start so we can wait for them
+  std::vector<std::future<void>> futures;
+  std::atomic<size_t>            progress{0};
+  std::atomic<size_t>            done_counter{0};
+  size_t                         threads      = PhzUtils::getThreadNumber();
+  size_t                         total_models = model_grid.size();
+  logger.info() << "Creating Correctiond for " << total_models << " models";
+  if (total_models < threads) {
+    threads = total_models;
+  }
+  logger.info() << "Using " << threads << " threads";
+
+  auto        model_iter      = model_grid.begin();
+  auto        end_model_iter  = model_grid.begin();
+  auto        correction_iter = correction_grid.begin();
+  std::size_t step            = total_models / threads;
+
+  for (size_t i = 0; i < threads; ++i) {
+    std::advance(end_model_iter, step);
+    futures.push_back(
+        std::async(std::launch::async, ParallelJob(filter_name_shared_ptr, filter_info_vector, filter_functor,
+                                                   integrate_dataset_function, *milky_way_reddening, model_iter,
+                                                   end_model_iter, correction_iter, progress, done_counter)));
+    model_iter = end_model_iter;
+    std::advance(correction_iter, step);
+  }
+  futures.push_back(
+      std::async(std::launch::async, ParallelJob(filter_name_shared_ptr, filter_info_vector, filter_functor,
+                                                 integrate_dataset_function, *milky_way_reddening, model_iter,
+                                                 model_grid.end(), correction_iter, progress, done_counter)));
+
+  // If we have a progress listener we create a thread to update it every .1 sec
+  if (progress_listener) {
+    while (done_counter < threads + 1) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      progress_listener(progress, total_models);
     }
-
-   auto filter_functor = PhzModeling::ApplyFilterFunctor();
-   auto integrate_dataset_function = PhzModeling::IntegrateDatasetFunctor{MathUtils::InterpolationType::LINEAR};
-
-   // Here we keep the futures for the threads we start so we can wait for them
-   std::vector<std::future<void>> futures;
-   std::atomic<size_t> progress {0};
-   std::atomic<size_t> done_counter {0};
-   size_t threads = PhzUtils::getThreadNumber();
-   size_t total_models = model_grid.size();
-   logger.info() << "Creating Correctiond for " << total_models << " models";
-   if (total_models < threads) {
-     threads = total_models;
-   }
-   logger.info() << "Using " << threads << " threads";
-
-   auto model_iter = model_grid.begin();
-   auto end_model_iter = model_grid.begin();
-   auto correction_iter = correction_grid.begin();
-   std::size_t step = total_models / threads;
-
-   for (size_t i = 0; i < threads; ++i) {
-     std::advance(end_model_iter, step);
-     futures.push_back(std::async(std::launch::async, ParallelJob (
-       filter_name_shared_ptr,
-       filter_info_vector,
-       filter_functor,
-       integrate_dataset_function,
-       *milky_way_reddening,
-       model_iter, end_model_iter, correction_iter, progress, done_counter
-     )));
-     model_iter = end_model_iter;
-     std::advance(correction_iter, step);
-   }
-   futures.push_back(std::async(std::launch::async, ParallelJob (
-     filter_name_shared_ptr,
-     filter_info_vector,
-     filter_functor,
-     integrate_dataset_function,
-     *milky_way_reddening,
-     model_iter,
-     model_grid.end(),
-     correction_iter,
-     progress,
-     done_counter
-   )));
-
-   // If we have a progress listener we create a thread to update it every .1 sec
-   if (progress_listener) {
-     while (done_counter < threads+1) {
-       std::this_thread::sleep_for(std::chrono::milliseconds(100));
-       progress_listener(progress, total_models);
-     }
-   }
-   // Wait for all threads to finish
-   for (auto& f : futures) {
-     f.get();
-   }
+  }
+  // Wait for all threads to finish
+  for (auto& f : futures) {
+    f.get();
+  }
 
   return correction_grid;
 }

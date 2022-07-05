@@ -5,11 +5,10 @@
  */
 
 #ifndef PHZDATAMODEL_FILTERINFO_H
-#define	PHZDATAMODEL_FILTERINFO_H
+#define PHZDATAMODEL_FILTERINFO_H
 
-
-#include "XYDataset/XYDataset.h"
 #include "MathUtils/function/Function.h"
+#include "XYDataset/XYDataset.h"
 
 namespace Euclid {
 namespace PhzDataModel {
@@ -23,10 +22,9 @@ namespace PhzDataModel {
  * It is a communication object between the different part of the algorithm.
  *
  */
-class FilterInfo{
+class FilterInfo {
 
 public:
-
   /**
    * @brief Constructor.
    *
@@ -41,16 +39,13 @@ public:
    * A double which value is the integral (on the range) of the filter time c/lambda².
    *
    */
-  FilterInfo(
-      const std::pair<double,double>& filter_range,
-      const Euclid::MathUtils::Function& filter,
-      double normalization
-      );
+  FilterInfo(const std::pair<double, double>& filter_range, const Euclid::MathUtils::Function& filter,
+             double normalization);
 
   /**
    * @brief Move Constructor
    */
-  FilterInfo(FilterInfo&&)=default;
+  FilterInfo(FilterInfo&&) = default;
 
   /**
    * @brief Move Operator
@@ -79,7 +74,7 @@ public:
    * A pair<double,double> containing the filter range
    *
    */
-  const std::pair<double,double>& getRange() const;
+  const std::pair<double, double>& getRange() const;
 
   /**
    * @brief Filter getter
@@ -100,12 +95,11 @@ public:
   double getNormalization() const;
 
 private:
-  std::pair<double,double> m_range;
+  std::pair<double, double>                          m_range;
   std::shared_ptr<const Euclid::MathUtils::Function> m_filter;
-  double m_normalization;
+  double                                             m_normalization;
 };
 
-}
-}
-#endif	/* PHZDATAMODEL_FILTERINFO_H */
-
+}  // namespace PhzDataModel
+}  // namespace Euclid
+#endif /* PHZDATAMODEL_FILTERINFO_H */

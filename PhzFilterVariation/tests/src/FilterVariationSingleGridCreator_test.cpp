@@ -55,42 +55,33 @@
 #include "XYDataset/XYDataset.h"
 
 namespace Euclid {
-struct FilterVariationSingleGridCreator_Fixture {
-
-
-};
-
-
-
-
+struct FilterVariationSingleGridCreator_Fixture {};
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (FilterVariationSingleGridCreator_test)
-
+BOOST_AUTO_TEST_SUITE(FilterVariationSingleGridCreator_test)
 
 BOOST_FIXTURE_TEST_CASE(shifFilter_test, FilterVariationSingleGridCreator_Fixture) {
-   std::vector<double> x{1.0, 2.0, 3.0, 4.0};
-   std::vector<double> y{0.1, 0.2, 0.3, 0.4};
-   XYDataset::XYDataset filter = XYDataset::XYDataset::factory(x, y);
+  std::vector<double>  x{1.0, 2.0, 3.0, 4.0};
+  std::vector<double>  y{0.1, 0.2, 0.3, 0.4};
+  XYDataset::XYDataset filter = XYDataset::XYDataset::factory(x, y);
 
-   auto result = PhzFilterVariation::FilterVariationSingleGridCreator::shiftFilter(filter, 0.3);
+  auto result = PhzFilterVariation::FilterVariationSingleGridCreator::shiftFilter(filter, 0.3);
 
-   auto iter = result.begin();
-   for (size_t i = 0; i < x.size(); ++i) {
-     BOOST_CHECK_CLOSE(iter->second, y[i], 0.001);
-     BOOST_CHECK_CLOSE(iter->first, x[i] + 0.3, 0.001);
-     ++iter;
-   }
+  auto iter = result.begin();
+  for (size_t i = 0; i < x.size(); ++i) {
+    BOOST_CHECK_CLOSE(iter->second, y[i], 0.001);
+    BOOST_CHECK_CLOSE(iter->first, x[i] + 0.3, 0.001);
+    ++iter;
+  }
 }
-
 
 BOOST_FIXTURE_TEST_CASE(compute_coef_test, FilterVariationSingleGridCreator_Fixture) {
   std::vector<double> lambda{};
   std::vector<double> sed_val{};
   std::vector<double> filter_val{};
   for (int index = 0; index < 701; ++index) {
-    lambda.push_back(5000+index);
+    lambda.push_back(5000 + index);
     sed_val.push_back(index);
     if (index < 300 || index > 400) {
       filter_val.push_back(0);
@@ -114,15 +105,16 @@ BOOST_FIXTURE_TEST_CASE(compute_coef_test, FilterVariationSingleGridCreator_Fixt
   }
 
   auto filter_functor = PhzModeling::ApplyFilterFunctor();
-  auto integrate_dataset_function = PhzModeling::IntegrateLambdaTimeDatasetFunctor{MathUtils::InterpolationType::LINEAR};
+  auto integrate_dataset_function =
+      PhzModeling::IntegrateLambdaTimeDatasetFunctor{MathUtils::InterpolationType::LINEAR};
 
   std::vector<double> expected{0.68796, 0.96781411, 1, 1.032406, 1.3340858};
 
-  auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_coef(sed,
-      filter, shifted_filter, filter_functor, integrate_dataset_function);
+  auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_coef(
+      sed, filter, shifted_filter, filter_functor, integrate_dataset_function);
 
   for (size_t i = 0; i < expected.size(); ++i) {
-      BOOST_CHECK_CLOSE(res[i], expected[i], 0.001);
+    BOOST_CHECK_CLOSE(res[i], expected[i], 0.001);
   }
 }
 
@@ -131,7 +123,7 @@ BOOST_FIXTURE_TEST_CASE(compute_tilde_coef_test, FilterVariationSingleGridCreato
   std::vector<double> sed_val{};
   std::vector<double> filter_val{};
   for (int index = 0; index < 701; ++index) {
-    lambda.push_back(5000+index);
+    lambda.push_back(5000 + index);
     sed_val.push_back(index);
     if (index < 300 || index > 400) {
       filter_val.push_back(0);
@@ -155,18 +147,19 @@ BOOST_FIXTURE_TEST_CASE(compute_tilde_coef_test, FilterVariationSingleGridCreato
   }
 
   auto filter_functor = PhzModeling::ApplyFilterFunctor();
-  auto integrate_dataset_function = PhzModeling::IntegrateLambdaTimeDatasetFunctor{MathUtils::InterpolationType::LINEAR};
+  auto integrate_dataset_function =
+      PhzModeling::IntegrateLambdaTimeDatasetFunctor{MathUtils::InterpolationType::LINEAR};
 
   std::vector<double> expected{0.003120346, 0.0032185, 0.0032285, 0., 0.0032307, 0.003240640, 0.003340858};
 
-  auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_tild_coef(sed, filter, shifted_filter, delta_lambda,
-                                                                                     filter_functor, integrate_dataset_function);
+  auto res = PhzFilterVariation::FilterVariationSingleGridCreator::compute_tild_coef(
+      sed, filter, shifted_filter, delta_lambda, filter_functor, integrate_dataset_function);
 
   for (size_t i = 0; i < expected.size(); ++i) {
-      BOOST_CHECK_CLOSE(res[i], expected[i], 0.01);
+    BOOST_CHECK_CLOSE(res[i], expected[i], 0.01);
   }
 }
 
-BOOST_AUTO_TEST_SUITE_END ()
+BOOST_AUTO_TEST_SUITE_END()
 
-}
+}  // namespace Euclid

@@ -1,20 +1,20 @@
-/*  
- * Copyright (C) 2012-2020 Euclid Science Ground Segment    
- *  
+/*
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ *
  * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 3.0 of the License, or (at your option)  
- * any later version.  
- *  
- * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
- * details.  
- *  
- * You should have received a copy of the GNU Lesser General Public License 
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
- */  
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 /**
  * @file tests/src/FilterProviderConfig_test.cpp
@@ -23,11 +23,11 @@
  */
 
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
-#include "ElementsKernel/Temporary.h"
 #include "ConfigManager_fixture.h"
+#include "ElementsKernel/Temporary.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
 
 using namespace Euclid::PhzConfiguration;
@@ -37,11 +37,11 @@ namespace fs = boost::filesystem;
 
 struct FilterProviderConfig_fixture : public ConfigManager_fixture {
 
-  std::map<std::string, po::variable_value> options_map {};
+  std::map<std::string, po::variable_value> options_map{};
 
   Elements::TempDir temp_dir;
-  fs::path base_directory { temp_dir.path() / "euclid" };
-  fs::path mer_directory    = base_directory / "Filters" / "MER";
+  fs::path          base_directory{temp_dir.path() / "euclid"};
+  fs::path          mer_directory = base_directory / "Filters" / "MER";
 
   FilterProviderConfig_fixture() {
 
@@ -65,13 +65,11 @@ struct FilterProviderConfig_fixture : public ConfigManager_fixture {
     file2_mer << "111.1 111.1\n";
     file2_mer << "222.2 222.2\n";
     file2_mer.close();
-
   }
-
 };
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (FilterProviderConfig_test)
+BOOST_AUTO_TEST_SUITE(FilterProviderConfig_test)
 
 //-----------------------------------------------------------------------------
 // Test the getSedDatasetProvider function
@@ -94,11 +92,8 @@ BOOST_FIXTURE_TEST_CASE(getFilterDatasetProvider_function_test, FilterProviderCo
   ++iter;
   BOOST_CHECK_EQUAL(222.2, iter->first);
   BOOST_CHECK_EQUAL(222.2, iter->second);
-
 }
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

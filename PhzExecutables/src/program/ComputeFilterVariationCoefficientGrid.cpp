@@ -22,26 +22,25 @@
  * @author FLorian DUbath
  */
 
-#include <tuple>
+#include "Configuration/ConfigManager.h"
+#include "Configuration/Utils.h"
+#include "ElementsKernel/ProgramHeaders.h"
+#include "PhzConfiguration/ComputeFilterVariationCoefficientConfig.h"
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
+#include "PhzConfiguration/FilterProviderConfig.h"
+#include "PhzConfiguration/FilterVariationCoefficientGridOutputConfig.h"
+#include "PhzConfiguration/FilterVariationConfig.h"
+#include "PhzConfiguration/IgmConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
+#include "PhzConfiguration/ReddeningProviderConfig.h"
+#include "PhzConfiguration/SedProviderConfig.h"
+#include "PhzFilterVariation/FilterVariationSingleGridCreator.h"
+#include "PhzModeling/NormalizationFunctorFactory.h"
+#include <chrono>
 #include <map>
 #include <memory>
-#include <chrono>
-#include "ElementsKernel/ProgramHeaders.h"
-#include "Configuration/Utils.h"
-#include "Configuration/ConfigManager.h"
-#include "PhzFilterVariation/FilterVariationSingleGridCreator.h"
-#include "PhzConfiguration/ComputeFilterVariationCoefficientConfig.h"
-#include "PhzConfiguration/PhotometryGridConfig.h"
-#include "PhzConfiguration/FilterVariationCoefficientGridOutputConfig.h"
-#include "PhzConfiguration/SedProviderConfig.h"
-#include "PhzConfiguration/ReddeningProviderConfig.h"
-#include "PhzConfiguration/FilterProviderConfig.h"
-#include "PhzConfiguration/IgmConfig.h"
-#include "PhzConfiguration/CosmologicalParameterConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
-#include "PhzConfiguration/FilterVariationConfig.h"
-#include "PhzModeling/NormalizationFunctorFactory.h"
-
+#include <tuple>
 
 using std::map;
 using namespace Euclid;
@@ -61,8 +60,8 @@ public:
   explicit ProgressReporter(const Elements::Logging& arg_logger) : m_logger{arg_logger} {}
 
   void operator()(size_t step, size_t total) {
-    using std::chrono::duration_cast;
     using std::chrono::duration;
+    using std::chrono::duration_cast;
     using std::chrono::system_clock;
 
     int  percentage_done = 100. * step / total;
@@ -90,12 +89,8 @@ private:
 class SparseProgressReporter {
 
 public:
-
-  SparseProgressReporter(ProgressListener parent_listener,
-                         size_t already_done, size_t total)
-          : m_parent_listener {parent_listener}, m_already_done {already_done},
-            m_total {total} {
-  }
+  SparseProgressReporter(ProgressListener parent_listener, size_t already_done, size_t total)
+      : m_parent_listener{parent_listener}, m_already_done{already_done}, m_total{total} {}
 
   void operator()(size_t step, size_t) {
     m_parent_listener(m_already_done + step, m_total);
@@ -103,11 +98,9 @@ public:
 
 private:
   ProgressListener m_parent_listener;
-  size_t m_already_done;
-  size_t m_total;
-
+  size_t           m_already_done;
+  size_t           m_total;
 };
-
 
 class ComputeFilterVariationCoefficientGrid : public Elements::Program {
 
@@ -121,51 +114,47 @@ class ComputeFilterVariationCoefficientGrid : public Elements::Program {
 
     auto& config_manager = ConfigManager::getInstance(config_manager_id);
 
-    logger.info()<<"Initializing the ConfigManager";
+    logger.info() << "Initializing the ConfigManager";
     config_manager.initialize(args);
 
-    logger.info()<<"ConfigManager initilized";
+    logger.info() << "ConfigManager initilized";
 
     auto& model_phot_grid = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGridInfo();
-    auto& sed_provider = config_manager.template getConfiguration<SedProviderConfig>().getSedDatasetProvider();
-    auto& reddening_provider = config_manager.template getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider();
-    const auto& filter_provider = config_manager.template getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
+    auto& sed_provider    = config_manager.template getConfiguration<SedProviderConfig>().getSedDatasetProvider();
+    auto& reddening_provider =
+        config_manager.template getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider();
+    const auto& filter_provider =
+        config_manager.template getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
     auto& igm_abs_func = config_manager.template getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
-    auto output_function = config_manager.template getConfiguration<FilterVariationCoefficientGridOutputConfig>().getOutputFunction();
+    auto  output_function =
+        config_manager.template getConfiguration<FilterVariationCoefficientGridOutputConfig>().getOutputFunction();
     auto delta_lambda = config_manager.template getConfiguration<FilterVariationConfig>().getSampling();
-    auto cosmology =  config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
+    auto cosmology    = config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
     auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
-    auto sun_sed_name = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
+    auto sun_sed_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
 
     auto normalizer_functor =
-          Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, sed_provider, sun_sed_name);
+        Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
+            filter_provider, lum_filter_name, sed_provider, sun_sed_name);
 
     std::map<std::string, PhzDataModel::PhotometryGrid> result_map{};
 
     // Compute the total number of models
-     size_t total = 0;
-     for (auto& pair : model_phot_grid.region_axes_map) {
-       total += GridContainer::makeGridIndexHelper(pair.second).m_axes_index_factors.back();
-     }
+    size_t total = 0;
+    for (auto& pair : model_phot_grid.region_axes_map) {
+      total += GridContainer::makeGridIndexHelper(pair.second).m_axes_index_factors.back();
+    }
 
-
-     PhzFilterVariation::FilterVariationSingleGridCreator grid_creator{
-      sed_provider,
-      reddening_provider,
-      filter_provider,
-      igm_abs_func,
-      normalizer_functor,
-      delta_lambda
-    };
-    ProgressReporter progress_listener{logger};
-    size_t already_done = 0;
+    PhzFilterVariation::FilterVariationSingleGridCreator grid_creator{sed_provider, reddening_provider, filter_provider,
+                                                                      igm_abs_func, normalizer_functor, delta_lambda};
+    ProgressReporter                                     progress_listener{logger};
+    size_t                                               already_done = 0;
     for (auto& grid_pair : model_phot_grid.region_axes_map) {
       logger.info() << "Filter variation coefficients computation for region '" << grid_pair.first << "'";
-      SparseProgressReporter reporter {progress_listener, already_done, total};
-      result_map.emplace(std::make_pair(grid_pair.first,
-                                        grid_creator.createGrid(grid_pair.second,
-                                                                model_phot_grid.filter_names,
-                                                                cosmology, reporter)));
+      SparseProgressReporter reporter{progress_listener, already_done, total};
+      result_map.emplace(
+          std::make_pair(grid_pair.first,
+                         grid_creator.createGrid(grid_pair.second, model_phot_grid.filter_names, cosmology, reporter)));
     }
     progress_listener(already_done, total);
 
@@ -173,7 +162,6 @@ class ComputeFilterVariationCoefficientGrid : public Elements::Program {
 
     return Elements::ExitCode::OK;
   }
-
 };
 
 MAIN_FOR(ComputeFilterVariationCoefficientGrid)

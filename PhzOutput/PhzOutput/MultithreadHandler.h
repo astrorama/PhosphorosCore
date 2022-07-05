@@ -49,7 +49,7 @@ namespace PhzOutput {
  * handled is guaranteed to respect a given list of source IDs.
  */
 class MultithreadHandler : public OutputHandler {
- public:
+public:
   /**
    * @brief creates a new MultithreadHandler instance
    * @details
@@ -61,9 +61,8 @@ class MultithreadHandler : public OutputHandler {
    * @param progress The variable to increase after a result is handled
    * @param order The order in which the results will be handled
    */
-  MultithreadHandler(
-      PhzOutput::OutputHandler& handler, std::atomic<size_t>& progress,
-      const std::vector<typename SourceCatalog::Source::id_type>& order);
+  MultithreadHandler(PhzOutput::OutputHandler& handler, std::atomic<size_t>& progress,
+                     const std::vector<typename SourceCatalog::Source::id_type>& order);
 
   /**
    * @brief Destructor
@@ -84,26 +83,24 @@ class MultithreadHandler : public OutputHandler {
    * @throws Elements::Exception
    *    if the PhzUtils::getStopThreadsFlag() is set
    */
-  void handleSourceOutput(const SourceCatalog::Source& source,
-                          const PhzDataModel::SourceResults& results) override;
+  void handleSourceOutput(const SourceCatalog::Source& source, const PhzDataModel::SourceResults& results) override;
 
- private:
+private:
   // This is a helper class which is keeping the results for a single source
   struct ResultType {
-    ResultType(const SourceCatalog::Source& arg_source,
-               PhzDataModel::SourceResults arg_results)
+    ResultType(const SourceCatalog::Source& arg_source, PhzDataModel::SourceResults arg_results)
         : source(arg_source), results(std::move(arg_results)) {}
     ResultType(ResultType&&) = default;
     const SourceCatalog::Source& source;
-    PhzDataModel::SourceResults results;
+    PhzDataModel::SourceResults  results;
   };
 
-  PhzOutput::OutputHandler& m_handler;
-  std::atomic<size_t>& m_progress;
-  std::vector<std::unique_ptr<ResultType>> m_result_list{};
+  PhzOutput::OutputHandler&                                      m_handler;
+  std::atomic<size_t>&                                           m_progress;
+  std::vector<std::unique_ptr<ResultType>>                       m_result_list{};
   std::map<typename SourceCatalog::Source::id_type, std::size_t> m_index_map{};
-  std::mutex m_mutex{};
-  std::size_t m_next_to_output_index{0};
+  std::mutex                                                     m_mutex{};
+  std::size_t                                                    m_next_to_output_index{0};
 
 }; /* End of MultithreadHandler class */
 

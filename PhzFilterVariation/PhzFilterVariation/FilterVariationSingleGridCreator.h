@@ -25,20 +25,20 @@
 #ifndef _PHZFILTERVARIATION_GRIDCREATOR_H
 #define _PHZFILTERVARIATION_GRIDCREATOR_H
 
-#include <memory>
-#include <tuple>
-#include <vector>
-#include <functional>
+#include "GridContainer/GridAxis.h"
 #include "MathUtils/function/Function.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
+#include "PhzDataModel/FilterInfo.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzModeling/ApplyFilterFunctor.h"
 #include "PhzModeling/IntegrateLambdaTimeDatasetFunctor.h"
-#include "GridContainer/GridAxis.h"
+#include "PhzModeling/ModelDatasetGrid.h"
 #include "XYDataset/QualifiedName.h"
 #include "XYDataset/XYDatasetProvider.h"
-#include "PhzModeling/ModelDatasetGrid.h"
-#include "PhysicsUtils/CosmologicalParameters.h"
-#include "PhzDataModel/FilterInfo.h"
+#include <functional>
+#include <memory>
+#include <tuple>
+#include <vector>
 
 namespace Euclid {
 namespace PhzFilterVariation {
@@ -48,65 +48,61 @@ namespace PhzFilterVariation {
  * As we need a set of parameters for each model and eacch filters,
  * the parameters are stored in a grid.
  */
-class FilterVariationSingleGridCreator{
+class FilterVariationSingleGridCreator {
 public:
-
-  typedef PhzModeling::ModelDatasetGrid::IgmAbsorptionFunction IgmAbsorptionFunction;
+  typedef PhzModeling::ModelDatasetGrid::IgmAbsorptionFunction      IgmAbsorptionFunction;
   typedef PhzModeling::ModelDatasetGenerator::NormalizationFunction NormalizationFunction;
-  typedef std::function<void(size_t step, size_t total)> ProgressListener;
+  typedef std::function<void(size_t step, size_t total)>            ProgressListener;
 
-  FilterVariationSingleGridCreator(
-       std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
-       std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
-       const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
-       IgmAbsorptionFunction igm_absorption_function,
-       NormalizationFunction normalization_function,
-       std::vector<double> delta_lambda);
+  FilterVariationSingleGridCreator(std::shared_ptr<Euclid::XYDataset::XYDatasetProvider>       sed_provider,
+                                   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider>       reddening_curve_provider,
+                                   const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+                                   IgmAbsorptionFunction                                       igm_absorption_function,
+                                   NormalizationFunction normalization_function, std::vector<double> delta_lambda);
 
   virtual ~FilterVariationSingleGridCreator();
 
+  PhzDataModel::PhotometryGrid createGrid(const PhzDataModel::ModelAxesTuple&                  parameter_space,
+                                          const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+                                          const PhysicsUtils::CosmologicalParameters&          cosmology,
+                                          ProgressListener progress_listener = ProgressListener{});
 
-  PhzDataModel::PhotometryGrid createGrid(
-               const PhzDataModel::ModelAxesTuple& parameter_space,
-               const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
-               const PhysicsUtils::CosmologicalParameters& cosmology,
-               ProgressListener progress_listener = ProgressListener{});
+  /**
+   * Shift the filter of value "shift"
+   */
+  static XYDataset::XYDataset shiftFilter(const XYDataset::XYDataset& filter_dataset, double shift);
 
- /**
-  * Shift the filter of value "shift"
-  */
- static XYDataset::XYDataset shiftFilter(const XYDataset::XYDataset& filter_dataset, double shift);
+  /**
+   * For a given "sed" compute, for each filter, the coefficient Flux_i(d_lambda_i)/Flux_i(No shift)
+   */
+  static std::vector<double> compute_coef(const Euclid::XYDataset::XYDataset&                   sed,
+                                          const PhzDataModel::FilterInfo&                       filter_nominal,
+                                          const std::vector<PhzDataModel::FilterInfo>&          filter_shifted,
+                                          const PhzModeling::ApplyFilterFunctor&                filter_functor,
+                                          const PhzModeling::IntegrateLambdaTimeDatasetFunctor& integrate_funct);
 
- /**
-  * For a given "sed" compute, for each filter, the coefficient Flux_i(d_lambda_i)/Flux_i(No shift)
-  */
- static std::vector<double> compute_coef(const Euclid::XYDataset::XYDataset& sed, const PhzDataModel::FilterInfo& filter_nominal,
-                                         const std::vector<PhzDataModel::FilterInfo>&          filter_shifted,
-                                         const PhzModeling::ApplyFilterFunctor&                filter_functor,
-                                         const PhzModeling::IntegrateLambdaTimeDatasetFunctor& integrate_funct);
+  /**
+   * For a given "sed" compute, for each filter, the reduced coefficient (Flux_i(d_lambda_i)/Flux_i(No shift)-
+   * 1)/d_lambda_i
+   */
+  static std::vector<double> compute_tild_coef(const Euclid::XYDataset::XYDataset&                   sed,
+                                               const PhzDataModel::FilterInfo&                       filter_nominal,
+                                               const std::vector<PhzDataModel::FilterInfo>&          filter_shifted,
+                                               const std::vector<double>&                            d_lambda,
+                                               const PhzModeling::ApplyFilterFunctor&                filter_functor,
+                                               const PhzModeling::IntegrateLambdaTimeDatasetFunctor& integrate_funct);
 
- /**
-  * For a given "sed" compute, for each filter, the reduced coefficient (Flux_i(d_lambda_i)/Flux_i(No shift)- 1)/d_lambda_i
-  */
- static std::vector<double> compute_tild_coef(const Euclid::XYDataset::XYDataset&                   sed,
-                                              const PhzDataModel::FilterInfo&                       filter_nominal,
-                                              const std::vector<PhzDataModel::FilterInfo>&          filter_shifted,
-                                              const std::vector<double>&                            d_lambda,
-                                              const PhzModeling::ApplyFilterFunctor&                filter_functor,
-                                              const PhzModeling::IntegrateLambdaTimeDatasetFunctor& integrate_funct);
-
- private:
+private:
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_sed_provider;
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
-  IgmAbsorptionFunction m_igm_absorption_function;
-  NormalizationFunction m_normalization_function;
+  IgmAbsorptionFunction                                 m_igm_absorption_function;
+  NormalizationFunction                                 m_normalization_function;
 
   std::vector<double> m_delta_lambda;
 };
 
-
-}
-}
+}  // namespace PhzFilterVariation
+}  // namespace Euclid
 
 #endif

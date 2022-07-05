@@ -9,7 +9,6 @@
 
 #include "PhzDataModel/RegionResults.h"
 
-
 namespace Euclid {
 namespace PhzLikelihood {
 
@@ -22,8 +21,8 @@ namespace PhzLikelihood {
  * @tparam Prior The prior to be adapted. It must define a operator() with
  * the same signature as the SharedPriorAdapter.
  */
-template<typename Prior>
-class SharedPriorAdapter{
+template <typename Prior>
+class SharedPriorAdapter {
 public:
   /**
    * @brief Constructor
@@ -31,7 +30,7 @@ public:
    * @param prior a shared_ptr on the prior to be adapted.
    */
   SharedPriorAdapter(std::shared_ptr<Prior> prior);
-  
+
   /// Convenient factory, which creates an instance of the prior to be
   /// addapted by perfect forwarding the given arguments
   template <typename... PriorArgs>
@@ -40,21 +39,21 @@ public:
   /**
    * @brief destructor
    */
-  virtual ~SharedPriorAdapter()=default;
+  virtual ~SharedPriorAdapter() = default;
 
   /**
    * @brief copy constructor
    *
    * @param other The SharedPriorAdapter to be copied.
    */
-  SharedPriorAdapter ( const SharedPriorAdapter & other)=default;
+  SharedPriorAdapter(const SharedPriorAdapter& other) = default;
 
   /**
    * @brief copy assignment operator
    *
    * @param other The SharedPriorAdapter to be assigned.
    */
-  SharedPriorAdapter & operator= ( const SharedPriorAdapter & other)=default;
+  SharedPriorAdapter& operator=(const SharedPriorAdapter& other) = default;
 
   /**
    * @brief function call operator. Has the signature to be used as a PriorFunction.
@@ -65,9 +64,8 @@ private:
   std::shared_ptr<Prior> m_prior;
 };
 
-}
-}
-
+}  // namespace PhzLikelihood
+}  // namespace Euclid
 
 #include "PhzLikelihood/_impl/SharedPriorAdapter.icpp"
 

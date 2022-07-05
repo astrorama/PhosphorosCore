@@ -5,22 +5,22 @@
  */
 
 #ifndef PHZLIKELIHOOD_SOURCEPHZFUNCTOR_H
-#define	PHZLIKELIHOOD_SOURCEPHZFUNCTOR_H
+#define PHZLIKELIHOOD_SOURCEPHZFUNCTOR_H
 
-#include <map>
-#include <string>
-#include <vector>
-#include <memory>
-#include "SourceCatalog/Source.h"
-#include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzDataModel/AdjustErrorParamMap.h"
+#include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzDataModel/SourceResults.h"
 #include "PhzLikelihood/SingleGridPhzFunctor.h"
+#include "SourceCatalog/Source.h"
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
-#include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
-#include "PhzLikelihood/ScaleFactorFunctor.h"
 #include "PhzLikelihood/ChiSquareLikelihoodLogarithm.h"
+#include "PhzLikelihood/LikelihoodLogarithmAlgorithm.h"
 #include "PhzLikelihood/ProcessModelGridFunctor.h"
+#include "PhzLikelihood/ScaleFactorFunctor.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -42,10 +42,9 @@ namespace PhzLikelihood {
 class SourcePhzFunctor {
 
 public:
-
-  using LikelihoodGridFunction = SingleGridPhzFunctor::LikelihoodGridFunction;
+  using LikelihoodGridFunction  = SingleGridPhzFunctor::LikelihoodGridFunction;
   using MarginalizationFunction = SingleGridPhzFunctor::MarginalizationFunction;
-  using PriorFunction = SingleGridPhzFunctor::PriorFunction;
+  using PriorFunction           = SingleGridPhzFunctor::PriorFunction;
 
   /**
    * Constructs a new SourcePhzFunctor instance. It gets as parameters a map
@@ -72,16 +71,14 @@ public:
    * @param marginalization_func_list
    *    The functors to use for performing the PDF marginalizations
    */
-  SourcePhzFunctor(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
-                   PhzDataModel::AdjustErrorParamMap adjust_error_param_map,
-                   const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
-                   LikelihoodGridFunction likelihood_grid_func,
-                   double sampling_sigma_range,
-                   std::vector<PriorFunction> priors = {},
-                   std::vector<MarginalizationFunction> marginalization_func_list = {BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}},
-                   std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list ={},
-                   bool doNormalizePdf = true);
-
+  SourcePhzFunctor(
+      PhzDataModel::PhotometricCorrectionMap phot_corr_map, PhzDataModel::AdjustErrorParamMap adjust_error_param_map,
+      const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
+      LikelihoodGridFunction likelihood_grid_func, double sampling_sigma_range, std::vector<PriorFunction> priors = {},
+      std::vector<MarginalizationFunction> marginalization_func_list =
+          {BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}},
+      std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list = {},
+      bool                                                                 doNormalizePdf   = true);
 
   /**
    * Calculates the PHZ results for the given source photometry. The given
@@ -95,23 +92,21 @@ public:
    * @return
    *    The PHZ results for the given source
    */
-  PhzDataModel::SourceResults operator()(const SourceCatalog::Source & source) const;
+  PhzDataModel::SourceResults operator()(const SourceCatalog::Source& source) const;
 
   double computeMeanScaleFactor(double best_alpha, double n_sigma, const std::vector<double>& scale_sample) const;
 
 private:
-  PhzDataModel::PhotometricCorrectionMap m_phot_corr_map;
-  PhzDataModel::AdjustErrorParamMap m_adjust_error_param_map;
-  const std::map<std::string, PhzDataModel::PhotometryGrid>& m_phot_grid_map;
-  std::map<std::string, SingleGridPhzFunctor> m_single_grid_functor_map {};
-  double m_sampling_sigma_range;
+  PhzDataModel::PhotometricCorrectionMap                               m_phot_corr_map;
+  PhzDataModel::AdjustErrorParamMap                                    m_adjust_error_param_map;
+  const std::map<std::string, PhzDataModel::PhotometryGrid>&           m_phot_grid_map;
+  std::map<std::string, SingleGridPhzFunctor>                          m_single_grid_functor_map{};
+  double                                                               m_sampling_sigma_range;
   std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> m_model_funct_list;
-  bool m_do_normalize_pdf;
-
+  bool                                                                 m_do_normalize_pdf;
 };
 
-} // end of namespace PhzLikelihood
-} // end of namespace Euclid
+}  // end of namespace PhzLikelihood
+}  // end of namespace Euclid
 
-#endif	/* PHZLIKELIHOOD_SOURCEPHZFUNCTOR_H */
-
+#endif /* PHZLIKELIHOOD_SOURCEPHZFUNCTOR_H */

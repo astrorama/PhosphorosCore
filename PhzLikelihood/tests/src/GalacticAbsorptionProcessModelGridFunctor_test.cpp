@@ -49,7 +49,8 @@ struct GalacticAbsorptionProcessModelGridFunctor_Fixture {
   vector<XYDataset::QualifiedName> reddeing_curves{{"reddeningCurves/Curve1"}};
   vector<XYDataset::QualifiedName> seds{{"sed/Curve1"}};
 
-  shared_ptr<vector<string>>           filters = shared_ptr<vector<string>>(new vector<string>{"filter_1", "filter_2", "filter_3"});
+  shared_ptr<vector<string>> filters =
+      shared_ptr<vector<string>>(new vector<string>{"filter_1", "filter_2", "filter_3"});
   vector<SourceCatalog::FluxErrorPair> values{{1.1, 0.}, {1.2, 0.}, {1.3, 0.}};
   vector<SourceCatalog::FluxErrorPair> coeff{{0.1, 0.0}, {0.2, 0.0}, {0.3, 0.0}};  // error is unused
 
@@ -61,8 +62,9 @@ struct GalacticAbsorptionProcessModelGridFunctor_Fixture {
   PhzDataModel::PhotometryGrid corr_grid{axes, *filters};
 
   std::vector<std::shared_ptr<SourceCatalog::Attribute>> attibuteVector_1{};
-  std::vector<std::shared_ptr<SourceCatalog::Attribute>> attibuteVector_2{std::shared_ptr<PhzDataModel::ObservationCondition>(
-      new PhzDataModel::ObservationCondition(std::vector<double>{0, 0, 0}, 0.1))};
+  std::vector<std::shared_ptr<SourceCatalog::Attribute>> attibuteVector_2{
+      std::shared_ptr<PhzDataModel::ObservationCondition>(
+          new PhzDataModel::ObservationCondition(std::vector<double>{0, 0, 0}, 0.1))};
 
   SourceCatalog::Source source_1 = SourceCatalog::Source(1, attibuteVector_1);
   SourceCatalog::Source source_2 = SourceCatalog::Source(2, attibuteVector_2);

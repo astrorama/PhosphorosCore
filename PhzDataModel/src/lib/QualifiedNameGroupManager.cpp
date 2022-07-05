@@ -4,9 +4,9 @@
  * @author Nikolaos Apostolakos
  */
 
-#include <algorithm>
-#include "ElementsKernel/Exception.h"
 #include "PhzDataModel/QualifiedNameGroupManager.h"
+#include "ElementsKernel/Exception.h"
+#include <algorithm>
 
 namespace Euclid {
 namespace PhzDataModel {
@@ -22,16 +22,14 @@ static bool overlapingSets(const std::unordered_set<XYDataset::QualifiedName>& f
   return false;
 }
 
-QualifiedNameGroupManager::QualifiedNameGroupManager(group_list_type groups)
-        : m_groups{std::move(groups)} {
+QualifiedNameGroupManager::QualifiedNameGroupManager(group_list_type groups) : m_groups{std::move(groups)} {
   // Validate that we do not have overlapping groups
   for (auto it1 = m_groups.begin(); it1 != m_groups.end(); ++it1) {
     auto it2 = it1;
     ++it2;
     for (; it2 != m_groups.end(); ++it2) {
       if (overlapingSets(it1->second, it2->second)) {
-        throw Elements::Exception() << "QualifiedName groups " << it1->first
-            << " and " << it2->first << " overlap";
+        throw Elements::Exception() << "QualifiedName groups " << it1->first << " and " << it2->first << " overlap";
       }
     }
 
@@ -50,12 +48,8 @@ auto QualifiedNameGroupManager::findGroupContaining(const XYDataset::QualifiedNa
   if (it != m_reverse_groups.end()) {
     return it->second;
   }
-  throw Elements::Exception() << "Cannot find '" << name.qualifiedName()
-                              << "' in any group";
+  throw Elements::Exception() << "Cannot find '" << name.qualifiedName() << "' in any group";
 }
 
-} // PhzDataModel namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzDataModel
+}  // namespace Euclid

@@ -23,8 +23,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "PhzConfiguration/BuildReferenceSampleConfig.h"
 #include "ConfigManager_fixture.h"
+#include "PhzConfiguration/BuildReferenceSampleConfig.h"
 
 using namespace Euclid::PhzConfiguration;
 
@@ -33,12 +33,11 @@ struct BuildReferenceSampleConfig_fixture : public ConfigManager_fixture {
   const std::string REFSAMPLE_DIR{"reference-sample-dir"};
   const std::string PHOSPHOROS_CATALOG{"phosphoros-catalog"};
   const std::string PHOSPHOROS_CATALOG_FORMAT{"phosphoros-catalog-format"};
-
 };
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (BuildReferenceSampleConfig_test)
+BOOST_AUTO_TEST_SUITE(BuildReferenceSampleConfig_test)
 
 //-----------------------------------------------------------------------------
 
@@ -54,8 +53,7 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, BuildReferenceSampleConfig_fixtu
   BOOST_CHECK_NO_THROW(options.find(REFSAMPLE_DIR, false));
   BOOST_CHECK_NO_THROW(options.find(PHOSPHOROS_CATALOG, false));
   BOOST_CHECK_NO_THROW(options.find(PHOSPHOROS_CATALOG_FORMAT, false));
-
 }
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
+BOOST_AUTO_TEST_SUITE_END()

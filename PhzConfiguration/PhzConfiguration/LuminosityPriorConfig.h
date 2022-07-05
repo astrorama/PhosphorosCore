@@ -23,13 +23,13 @@
  */
 
 #ifndef PHZCONFIGURATION_LUMINOSITYPRIORCONFIG_H
-#define	PHZCONFIGURATION_LUMINOSITYPRIORCONFIG_H
+#define PHZCONFIGURATION_LUMINOSITYPRIORCONFIG_H
 
-#include <cstdlib>
-#include <string>
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzDataModel/PhotometryGrid.h"
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
+#include <string>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -42,7 +42,6 @@ namespace PhzConfiguration {
 class LuminosityPriorConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief constructor
    */
@@ -80,20 +79,17 @@ public:
   /**
    * @brief Return the Luminosity Model Grid.
    */
-  const PhzDataModel::PhotometryGrid & getLuminosityModelGrid();
+  const PhzDataModel::PhotometryGrid& getLuminosityModelGrid();
 
   bool getIsLuminosityPriorEnabled();
 
 private:
-
-  bool m_is_configured=false;
+  bool                                          m_is_configured         = false;
   std::shared_ptr<PhzDataModel::PhotometryGrid> m_luminosity_model_grid = nullptr;
 
 }; /* End of LuminosityPriorConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_LUMINOSITYPRIORCONFIG_H */
-
+#endif /* PHZCONFIGURATION_LUMINOSITYPRIORCONFIG_H */

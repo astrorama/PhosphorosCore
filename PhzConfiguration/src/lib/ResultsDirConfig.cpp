@@ -22,12 +22,11 @@
  * @author Florian Dubath
  */
 
-#include <cstdlib>
+#include "PhzConfiguration/ResultsDirConfig.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzConfiguration/ResultsDirConfig.h"
 #include "PhzConfiguration/PhosphorosRootDirConfig.h"
-
+#include <cstdlib>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -35,8 +34,7 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string RESULTS_DIR {"results-dir"};
-
+static const std::string RESULTS_DIR{"results-dir"};
 
 static Elements::Logging logger = Elements::Logging::getLogger("ResultsDirConfig");
 
@@ -45,19 +43,15 @@ ResultsDirConfig::ResultsDirConfig(long manager_id) : Configuration(manager_id) 
 }
 
 auto ResultsDirConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Directory options", {
-    {RESULTS_DIR.c_str(), po::value<std::string>(),
-        "The directory containing the final PHZ results"}
-  }}};
+  return {{"Directory options",
+           {{RESULTS_DIR.c_str(), po::value<std::string>(), "The directory containing the final PHZ results"}}}};
 }
-
-
 
 void ResultsDirConfig::initialize(const UserValues& args) {
   fs::path result = getDependency<PhosphorosRootDirConfig>().getPhosphorosRootDir() / "Results";
   if (args.count(RESULTS_DIR) > 0) {
     logger.debug() << "Setting results directory from program option " << RESULTS_DIR;
-    fs::path option_path {args.find(RESULTS_DIR)->second.as<std::string>()};
+    fs::path option_path{args.find(RESULTS_DIR)->second.as<std::string>()};
     if (option_path.is_absolute()) {
       result = option_path;
     } else {
@@ -65,23 +59,18 @@ void ResultsDirConfig::initialize(const UserValues& args) {
     }
   } else {
     logger.debug() << "No " << RESULTS_DIR << " program option found. Setting "
-                  << "results directory to default";
+                   << "results directory to default";
   }
   logger.debug() << "Using results directory " << result;
   m_results_dir = result;
-
-
 }
 
 const fs::path& ResultsDirConfig::getResultsDir() {
-  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-       throw Elements::Exception() << "Call to getAuxDataDir() on a not initialized instance.";
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getAuxDataDir() on a not initialized instance.";
   }
   return m_results_dir;
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

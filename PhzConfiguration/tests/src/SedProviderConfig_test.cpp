@@ -22,12 +22,12 @@
  * @author Florian Dubath
  */
 
-#include <boost/test/unit_test.hpp>
-#include <iostream>
-#include <fstream>
+#include "ConfigManager_fixture.h"
 #include "ElementsKernel/Temporary.h"
 #include "PhzConfiguration/SedProviderConfig.h"
-#include "ConfigManager_fixture.h"
+#include <boost/test/unit_test.hpp>
+#include <fstream>
+#include <iostream>
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
@@ -35,10 +35,9 @@ namespace fs = boost::filesystem;
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (SedProviderConfig_test)
+BOOST_AUTO_TEST_SUITE(SedProviderConfig_test)
 
-
-BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(NotInitializedGetter_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<SedProviderConfig>();
   config_manager.closeRegistration();
@@ -55,11 +54,11 @@ BOOST_FIXTURE_TEST_CASE(getSedDatasetProvider_function_test, ConfigManager_fixtu
   // Given
   config_manager.registerConfiguration<SedProviderConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
+  std::map<std::string, po::variable_value> options_map{};
 
   Elements::TempDir temp_dir;
-  fs::path base_directory { temp_dir.path() / "euclid" / "" };
-  fs::path mer_directory    = base_directory / "SEDs" / "MER";
+  fs::path          base_directory{temp_dir.path() / "euclid" / ""};
+  fs::path          mer_directory = base_directory / "SEDs" / "MER";
 
   fs::create_directories(base_directory);
   fs::create_directories(mer_directory);
@@ -85,7 +84,6 @@ BOOST_FIXTURE_TEST_CASE(getSedDatasetProvider_function_test, ConfigManager_fixtu
   config_manager.initialize(options_map);
   auto result = config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider();
 
-
   BOOST_CHECK(result != nullptr);
   auto dataset = result->getDataset({(fs::path("MER") / "file2").string()});
   BOOST_CHECK_EQUAL(2, dataset->size());
@@ -99,6 +97,4 @@ BOOST_FIXTURE_TEST_CASE(getSedDatasetProvider_function_test, ConfigManager_fixtu
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

@@ -25,56 +25,50 @@
 #ifndef _PHZGALACTICCORRECTION_GALACTICCORRECTIONFACTORSINGLEGRIDCREATOR_H
 #define _PHZGALACTICCORRECTION_GALACTICCORRECTIONFACTORSINGLEGRIDCREATOR_H
 
-#include <memory>
-#include <tuple>
-#include <functional>
-#include "MathUtils/function/Function.h"
-#include "PhzDataModel/PhotometryGrid.h"
 #include "GridContainer/GridAxis.h"
+#include "MathUtils/function/Function.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
+#include "PhzDataModel/PhotometryGrid.h"
+#include "PhzModeling/ModelDatasetGrid.h"
 #include "XYDataset/QualifiedName.h"
 #include "XYDataset/XYDatasetProvider.h"
-#include "PhzModeling/ModelDatasetGrid.h"
-#include "PhysicsUtils/CosmologicalParameters.h"
+#include <functional>
+#include <memory>
+#include <tuple>
 
 namespace Euclid {
 namespace PhzGalacticCorrection {
 
-class GalacticCorrectionSingleGridCreator{
+class GalacticCorrectionSingleGridCreator {
 public:
-
-  typedef PhzModeling::ModelDatasetGrid::IgmAbsorptionFunction IgmAbsorptionFunction;
+  typedef PhzModeling::ModelDatasetGrid::IgmAbsorptionFunction      IgmAbsorptionFunction;
   typedef PhzModeling::ModelDatasetGenerator::NormalizationFunction NormalizationFunction;
-  typedef std::function<void(size_t step, size_t total)> ProgressListener;
+  typedef std::function<void(size_t step, size_t total)>            ProgressListener;
 
-  GalacticCorrectionSingleGridCreator(
-       std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
-       std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
-       const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
-       IgmAbsorptionFunction igm_absorption_function,
-       NormalizationFunction normalization_function,
-       XYDataset::QualifiedName milky_way_reddening
-       );
+  GalacticCorrectionSingleGridCreator(std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> sed_provider,
+                                      std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
+                                      const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
+                                      IgmAbsorptionFunction    igm_absorption_function,
+                                      NormalizationFunction    normalization_function,
+                                      XYDataset::QualifiedName milky_way_reddening);
 
   virtual ~GalacticCorrectionSingleGridCreator();
 
-  PhzDataModel::PhotometryGrid createGrid(
-               const PhzDataModel::ModelAxesTuple& parameter_space,
-               const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
-               const PhysicsUtils::CosmologicalParameters& cosmology,
-               ProgressListener progress_listener=ProgressListener{});
+  PhzDataModel::PhotometryGrid createGrid(const PhzDataModel::ModelAxesTuple&                  parameter_space,
+                                          const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+                                          const PhysicsUtils::CosmologicalParameters&          cosmology,
+                                          ProgressListener progress_listener = ProgressListener{});
 
 private:
-  std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_sed_provider;
-  std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_reddening_curve_provider;
+  std::shared_ptr<Euclid::XYDataset::XYDatasetProvider>       m_sed_provider;
+  std::shared_ptr<Euclid::XYDataset::XYDatasetProvider>       m_reddening_curve_provider;
   const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
-  IgmAbsorptionFunction m_igm_absorption_function;
-  NormalizationFunction m_normalization_function;
-  XYDataset::QualifiedName m_milky_way_reddening;
-
+  IgmAbsorptionFunction                                       m_igm_absorption_function;
+  NormalizationFunction                                       m_normalization_function;
+  XYDataset::QualifiedName                                    m_milky_way_reddening;
 };
 
-
-}
-}
+}  // namespace PhzGalacticCorrection
+}  // namespace Euclid
 
 #endif

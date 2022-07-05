@@ -7,9 +7,9 @@
 #ifndef PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYFUNCTIONVALIDITYDOMAIN_H_
 #define PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYFUNCTIONVALIDITYDOMAIN_H_
 
+#include "XYDataset/QualifiedName.h"
 #include <cmath>
 #include <vector>
-#include "XYDataset/QualifiedName.h"
 
 namespace Euclid {
 namespace PhzLuminosity {
@@ -22,7 +22,6 @@ namespace PhzLuminosity {
  */
 class LuminosityFunctionValidityDomain {
 public:
-
   /*
    * @brief Constructor
    *
@@ -38,8 +37,7 @@ public:
    * @throw Elements::Exception if z_min>=z_max
    *
    */
-  LuminosityFunctionValidityDomain(const std::string& sed_group_name,
-      double z_min, double z_max);
+  LuminosityFunctionValidityDomain(const std::string& sed_group_name, double z_min, double z_max);
 
   /**
    * @brief Check if a given coordinate is in this validity domain this is the
@@ -68,14 +66,14 @@ public:
    * @brief Getter on the lower limit of the z interval
    */
   double getMinZ() const;
-private:
 
+private:
   std::string m_sed_group_name;
-  double m_z_min;
-  double m_z_max;
+  double      m_z_min;
+  double      m_z_max;
 };
 
-}
-}
+}  // namespace PhzLuminosity
+}  // namespace Euclid
 
 #endif /* PHZLUMINOSITY_PHZLUMINOSITY_LUMINOSITYFUNCTIONVALIDITYDOMAIN_H_ */

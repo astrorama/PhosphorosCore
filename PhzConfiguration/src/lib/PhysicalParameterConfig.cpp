@@ -22,17 +22,16 @@
  * @author Florian Dubath
  */
 
-#include <cstdlib>
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/PhysicalParametersConfig.h"
+#include <cstdlib>
 
-#include "PhzOutput/PhzColumnHandlers/PhysicalParameter.h"
 #include "PhzDataModel/GridType.h"
-#include <CCfits/CCfits>
+#include "PhzOutput/PhzColumnHandlers/PhysicalParameter.h"
 #include "Table/FitsReader.h"
+#include <CCfits/CCfits>
 #include <tuple>
-
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -40,25 +39,25 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string PP_CONFIG_FILE {"physical_parameter_config_file"};
-
+static const std::string PP_CONFIG_FILE{"physical_parameter_config_file"};
 
 static Elements::Logging logger = Elements::Logging::getLogger("PhysicalParametersConfig");
 
 PhysicalParametersConfig::PhysicalParametersConfig(long manager_id) : Configuration(manager_id) {}
 
 auto PhysicalParametersConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Physical parameters options", {
-    {PP_CONFIG_FILE.c_str(), po::value<std::string>(),
-        "Path to the FITS file containing the physical parameter configuration in a table with columns : PARAM_NAME,SED,A,B. For each parameter a line must be present for each used SED and the param. value is p= A*L0+ B"}
-  }}};
+  return {{"Physical parameters options",
+           {{PP_CONFIG_FILE.c_str(), po::value<std::string>(),
+             "Path to the FITS file containing the physical parameter configuration in a table with columns : "
+             "PARAM_NAME,SED,A,B. For each parameter a line must be present for each used SED and the param. value is "
+             "p= A*L0+ B"}}}};
 }
 
+std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>
+PhysicalParametersConfig::readConfig(fs::path path) const {
+  std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> results{};
 
-std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> PhysicalParametersConfig::readConfig(fs::path path) const {
-  std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> results {};
-
-  std::ifstream  sfile(path.generic_string());
+  std::ifstream sfile(path.generic_string());
   CCfits::FITS::setVerboseMode(true);
 
   // Check file exists
@@ -68,19 +67,18 @@ std::map<std::string, std::map<std::string, std::tuple<double, double, std::stri
       auto table = Table::FitsReader{path.generic_string(), 1}.read();
 
       for (auto row : table) {
-            std::string param_name = boost::get<std::string>(row[0]);
-            std::string sed_name = boost::get<std::string>(row[1]);
-            double param_A = boost::get<double>(row[2]);
-            double param_B = boost::get<double>(row[3]);
-            std::string param_unit = boost::get<std::string>(row[4]);
+        std::string param_name = boost::get<std::string>(row[0]);
+        std::string sed_name   = boost::get<std::string>(row[1]);
+        double      param_A    = boost::get<double>(row[2]);
+        double      param_B    = boost::get<double>(row[3]);
+        std::string param_unit = boost::get<std::string>(row[4]);
 
-            if (results.find(param_name) == results.end()) {
-              results.insert(std::make_pair(param_name, std::map<std::string, std::tuple<double, double, std::string>>()));
-            }
+        if (results.find(param_name) == results.end()) {
+          results.insert(std::make_pair(param_name, std::map<std::string, std::tuple<double, double, std::string>>()));
+        }
 
-            results.at(param_name).insert(std::make_pair(sed_name, std::make_tuple(param_A, param_B, param_unit)));
-
-       }
+        results.at(param_name).insert(std::make_pair(sed_name, std::make_tuple(param_A, param_B, param_unit)));
+      }
     } catch (CCfits::FitsException& fits_except) {
       throw Elements::Exception() << "FitsException catched! File: " << path.generic_string();
     }
@@ -88,43 +86,42 @@ std::map<std::string, std::map<std::string, std::tuple<double, double, std::stri
   return results;
 }
 
-
 void PhysicalParametersConfig::initialize(const UserValues& args) {
   if (args.count(PP_CONFIG_FILE) > 0) {
-      logger.debug() << "Configuring Physical parameters ";
-      fs::path conf_file_path {args.find(PP_CONFIG_FILE)->second.as<std::string>()};
+    logger.debug() << "Configuring Physical parameters ";
+    fs::path conf_file_path{args.find(PP_CONFIG_FILE)->second.as<std::string>()};
 
-      m_param_config = readConfig(conf_file_path);
+    m_param_config = readConfig(conf_file_path);
   }
 }
 
-const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& PhysicalParametersConfig::getParamConfig() const{
+const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>&
+PhysicalParametersConfig::getParamConfig() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
-      throw Elements::Exception() << "Call to getParamConfig() on a not initialized instance.";
+    throw Elements::Exception() << "Call to getParamConfig() on a not initialized instance.";
   }
 
   return m_param_config;
 }
 
-
-
-std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter> PhysicalParametersConfig::getLikelihoodOutputHandler() const {
+std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter>
+PhysicalParametersConfig::getLikelihoodOutputHandler() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
-      throw Elements::Exception() << "Call to getLikelihoodOutputHandler() on a not initialized instance.";
+    throw Elements::Exception() << "Call to getLikelihoodOutputHandler() on a not initialized instance.";
   }
-  return std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter>{new PhzOutput::ColumnHandlers::PhysicalParameter(PhzDataModel::GridType::LIKELIHOOD , m_param_config)};
+  return std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter>{
+      new PhzOutput::ColumnHandlers::PhysicalParameter(PhzDataModel::GridType::LIKELIHOOD, m_param_config)};
 }
 
-std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter> PhysicalParametersConfig::getPosteriorOutputHandler() const {
+std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter>
+PhysicalParametersConfig::getPosteriorOutputHandler() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
-      throw Elements::Exception() << "Call to getPosteriorOutputHandler() on a not initialized instance.";
+    throw Elements::Exception() << "Call to getPosteriorOutputHandler() on a not initialized instance.";
   }
 
-  return std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter> {new PhzOutput::ColumnHandlers::PhysicalParameter(PhzDataModel::GridType::POSTERIOR, m_param_config)};
+  return std::unique_ptr<PhzOutput::ColumnHandlers::PhysicalParameter>{
+      new PhzOutput::ColumnHandlers::PhysicalParameter(PhzDataModel::GridType::POSTERIOR, m_param_config)};
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

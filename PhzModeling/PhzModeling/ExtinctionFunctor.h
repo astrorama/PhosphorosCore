@@ -23,16 +23,16 @@
  */
 
 #ifndef PHZMODELING_EXTINCTIONFUNCTOR_H
-#define	PHZMODELING_EXTINCTIONFUNCTOR_H
+#define PHZMODELING_EXTINCTIONFUNCTOR_H
 
-#include <memory>
-#include <cmath>
 #include "MathUtils/function/Function.h"
+#include <cmath>
+#include <memory>
 
 namespace Euclid {
 
 namespace XYDataset {
-  class XYDataset;
+class XYDataset;
 }
 namespace PhzModeling {
 /**
@@ -47,31 +47,29 @@ namespace PhzModeling {
 class ExtinctionFunctor {
 
 public:
-
   /**
-  * @brief Function Call Operator
-  * @details
-  * Apply extinction on the SED
-  *
-  * @param sed
-  * A XYDataset representing the SED to be reddened.
-  *
-  * @param reddening_curve
-  * The extinction law implementing the function \lambda->k(\lambda)
-  * such that k(B)-k(V)=1.
-  *
-  * @param ebv
-  * The color excess E(B-V)
-  *
-  * @return
-  * A XYDataset representing the reddened SED.
-  */
+   * @brief Function Call Operator
+   * @details
+   * Apply extinction on the SED
+   *
+   * @param sed
+   * A XYDataset representing the SED to be reddened.
+   *
+   * @param reddening_curve
+   * The extinction law implementing the function \lambda->k(\lambda)
+   * such that k(B)-k(V)=1.
+   *
+   * @param ebv
+   * The color excess E(B-V)
+   *
+   * @return
+   * A XYDataset representing the reddened SED.
+   */
   Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed,
-      const Euclid::MathUtils::Function& reddening_curve, double ebv) const;
+                                          const Euclid::MathUtils::Function& reddening_curve, double ebv) const;
 };
 
-} // end of namespace PhzModeling
-} // end of namespace Euclid
+}  // end of namespace PhzModeling
+}  // end of namespace Euclid
 
-#endif	/* PHZMODELING_EXTINCTIONFUNCTOR_H */
-
+#endif /* PHZMODELING_EXTINCTIONFUNCTOR_H */
