@@ -33,13 +33,13 @@ LuminosityPrior::LuminosityGroupSampledProcessor::LuminosityGroupSampledProcesso
     PhzDataModel::DoubleListGrid& prior_scal_grid, const PhzDataModel::DoubleGrid& scale_factor_grid,
     const PhzDataModel::DoubleGrid& sigma_scale_factor_grid, bool in_mag, double solar_mag, double scaling_sigma_range,
     const size_t sample_number)
-    : m_prior_scal_grid{prior_scal_grid}
-    , m_scale_factor_grid{scale_factor_grid}
-    , m_sigma_scale_factor_grid{sigma_scale_factor_grid}
-    , m_in_mag{in_mag}
-    , m_solar_mag{solar_mag}
-    , m_scaling_sigma_range{scaling_sigma_range}
-    , m_sample_number{sample_number} {}
+    : m_prior_scal_grid(prior_scal_grid)
+    , m_scale_factor_grid(scale_factor_grid)
+    , m_sigma_scale_factor_grid(sigma_scale_factor_grid)
+    , m_in_mag(in_mag)
+    , m_solar_mag(solar_mag)
+    , m_scaling_sigma_range(scaling_sigma_range)
+    , m_sample_number(sample_number) {}
 
 double LuminosityPrior::LuminosityGroupSampledProcessor::getMaxPrior() {
   return m_max;
@@ -88,7 +88,7 @@ void LuminosityPrior::LuminosityGroupSampledProcessor::operator()(const std::fun
 LuminosityPrior::LuminosityGroupdProcessor::LuminosityGroupdProcessor(PhzDataModel::DoubleGrid&       prior_grid,
                                                                       const PhzDataModel::DoubleGrid& scale_factor_grid,
                                                                       bool in_mag, double solar_mag)
-    : m_prior_grid{prior_grid}, m_scale_factor_grid{scale_factor_grid}, m_in_mag{in_mag}, m_solar_mag{solar_mag} {}
+    : m_prior_grid(prior_grid), m_scale_factor_grid(scale_factor_grid), m_in_mag(in_mag), m_solar_mag(solar_mag) {}
 
 double LuminosityPrior::LuminosityGroupdProcessor::getMaxPrior() {
   return m_max;

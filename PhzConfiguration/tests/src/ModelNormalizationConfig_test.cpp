@@ -28,6 +28,7 @@
 #include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzUtils/Multithreading.h"
 #include <boost/test/unit_test.hpp>
+#include <fstream>
 #include <thread>
 
 using namespace Euclid;

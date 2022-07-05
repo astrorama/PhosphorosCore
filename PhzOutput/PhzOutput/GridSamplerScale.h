@@ -50,7 +50,7 @@ public:
 
   virtual ~GridSamplerScale() = default;
 
-  static std::stringstream createComment(const PhzDataModel::SourceResults& results);
+  static std::string createComment(const PhzDataModel::SourceResults& results);
 
   double getLuminosity(double alpha, double n_sigma, size_t sample_number, double index) const;
 

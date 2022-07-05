@@ -20,20 +20,22 @@
  * @author Florian Dubath
  */
 
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
-using boost::regex;
-using boost::regex_match;
-using boost::smatch;
+#include "PhzConfiguration/ObservationConditionColumnConfig.h"
 #include "Configuration/CatalogConfig.h"
 #include "Configuration/PhotometricBandMappingConfig.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzConfiguration/ObservationConditionColumnConfig.h"
 #include "PhzDataModel/CatalogAttributes/ObservationCondition.h"
+#include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/regex.hpp>
+#include <fstream>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
+
+using boost::regex;
+using boost::regex_match;
+using boost::smatch;
 
 namespace Euclid {
 namespace PhzConfiguration {

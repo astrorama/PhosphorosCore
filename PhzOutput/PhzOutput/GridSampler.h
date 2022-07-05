@@ -77,10 +77,10 @@ public:
    * the "GridType" will be extracted
    *
    * @return
-   *    A string stream containing the description of the non-numerical axis for
+   *    A string containing the description of the non-numerical axis for
    *    each region of the template space
    */
-  static std::stringstream createComment(const PhzDataModel::SourceResults& results);
+  static std::string createComment(const PhzDataModel::SourceResults& results);
 
   /**
    * @brief

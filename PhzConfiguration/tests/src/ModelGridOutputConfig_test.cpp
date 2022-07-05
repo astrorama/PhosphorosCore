@@ -113,10 +113,6 @@ struct ModelGridOutputConfig_fixture : public ConfigManager_fixture {
   }
 };
 
-boost::test_tools::assertion_result not_root(boost::unit_test::test_unit_id) {
-  return geteuid() != 0;
-}
-
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE(ModelGridOutputConfig_test)
@@ -164,6 +160,13 @@ BOOST_FIXTURE_TEST_CASE(NotInitializedGetter_test, ConfigManager_fixture) {
 // Test the permission check
 //-----------------------------------------------------------------------------
 
+// boost::unit_test::precondition was added in boost 1.59
+#if BOOST_VERSION >= 105900
+
+boost::test_tools::assertion_result not_root(boost::unit_test::test_unit_id) {
+  return geteuid() != 0;
+}
+
 BOOST_FIXTURE_TEST_CASE(permission_exception_test, ModelGridOutputConfig_fixture,
                         *boost::unit_test::precondition(not_root)) {
   // Given
@@ -182,6 +185,8 @@ BOOST_FIXTURE_TEST_CASE(permission_exception_test, ModelGridOutputConfig_fixture
   // Then
   BOOST_CHECK_THROW(config_manager.initialize(options_map), Elements::Exception);
 }
+
+#endif
 
 //-----------------------------------------------------------------------------
 // Test the directories creation

@@ -75,7 +75,7 @@ BOOST_FIXTURE_TEST_CASE(test_creatComment, GridSamplerScale_fixture) {
   const std::string expected("MODEL-GRID : {\"Test_Region\": "
                              "{\"REGION_INDEX\":0,\"REDDENING_CURVE\":{\"0\":\"Curve1\",\"1\":\"Curve_2\"},\"SED\":{"
                              "\"0\":\"SED_1\",\"1\":\"SED_2\"}}}");
-  BOOST_CHECK_EQUAL(comment.str(), expected);
+  BOOST_CHECK_EQUAL(comment, expected);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getLuminosity, GridSamplerScale_fixture) {

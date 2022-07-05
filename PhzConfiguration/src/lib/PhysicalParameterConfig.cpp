@@ -25,12 +25,11 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/PhysicalParametersConfig.h"
-#include <cstdlib>
-
 #include "PhzDataModel/GridType.h"
 #include "PhzOutput/PhzColumnHandlers/PhysicalParameter.h"
 #include "Table/FitsReader.h"
 #include <CCfits/CCfits>
+#include <fstream>
 #include <tuple>
 
 namespace po = boost::program_options;

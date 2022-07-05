@@ -201,7 +201,7 @@ ComputeSedWeight::computeSedColors(const std::vector<std::pair<XYDataset::Qualif
 double ComputeSedWeight::distance(const std::vector<double>& colors_1, const std::vector<double>& colors_2) const {
   double max = 0.0;
   for (size_t index_col = 0; index_col < colors_1.size(); ++index_col) {
-    double dist_color = abs(colors_1[index_col] - colors_2[index_col]);
+    double dist_color = std::abs(colors_1[index_col] - colors_2[index_col]);
     if (max < dist_color) {
       max = dist_color;
     }

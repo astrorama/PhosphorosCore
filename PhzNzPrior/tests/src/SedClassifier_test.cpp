@@ -4,18 +4,14 @@
  * @author Florian dubath
  */
 
+#include "ElementsKernel/Exception.h"
+#include "PhzDataModel/QualifiedNameGroupManager.h"
 #include "PhzNzPrior/SedClassifier.h"
-
 #include <boost/test/unit_test.hpp>
-#include <cmath>
+#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
-
-#include "ElementsKernel/Exception.h"
-#include "ElementsKernel/Real.h"
-#include "PhzDataModel/QualifiedNameGroupManager.h"
 
 using namespace Euclid;
 

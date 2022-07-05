@@ -5,19 +5,15 @@
  *      Author: Nicolas Morisset
  */
 
+#include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Temporary.h"
+#include "PhzUtils/FileUtils.h"
+#include <boost/filesystem.hpp>
+#include <boost/test/test_tools.hpp>
+#include <boost/test/unit_test.hpp>
 #include <fstream>
-#include <iostream>
 #include <string>
 #include <vector>
-
-#include <boost/filesystem.hpp>
-#include <boost/test/unit_test.hpp>
-
-#include "ElementsKernel/Temporary.h"
-#include <boost/test/test_tools.hpp>
-
-#include "ElementsKernel/Exception.h"
-#include "PhzUtils/FileUtils.h"
 
 namespace pu = Euclid::PhzUtils;
 namespace fs = boost::filesystem;
@@ -31,13 +27,16 @@ struct FileUtils_Fixture {
   ~FileUtils_Fixture() {}
 };
 
-boost::test_tools::assertion_result not_root(boost::unit_test::test_unit_id) {
-  return geteuid() != 0;
-}
-
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE(FileUtils_test)
+
+// boost::unit_test::precondition was added in boost 1.59
+#if BOOST_VERSION >= 105900
+
+boost::test_tools::assertion_result not_root(boost::unit_test::test_unit_id) {
+  return geteuid() != 0;
+}
 
 //-----------------------------------------------------------------------------
 // Test the exception of the CreateDirectoryIfAny function
@@ -125,6 +124,8 @@ BOOST_FIXTURE_TEST_CASE(checkCreateDirectoryOnly_exception_test, FileUtils_Fixtu
 
   BOOST_CHECK_THROW(pu::checkCreateDirectoryOnly(dir.string()), Elements::Exception);
 }
+
+#endif  // BOOST_VERSION >= 105900
 
 //-----------------------------------------------------------------------------
 // Test the exception of checkDirectoryWithFile function

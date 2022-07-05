@@ -39,12 +39,12 @@ CorrectedPhotometry::CorrectedPhotometry(
     bool do_marginalize, bool correct_filter, bool correct_galactic, double dust_map_sed_bpc,
     const std::map<std::string, PhzDataModel::PhotometryGrid>& filter_shift_coef_grid,
     const std::map<std::string, PhzDataModel::PhotometryGrid>& galactic_correction_coef_grid)
-    : m_do_marginalize{do_marginalize}
-    , m_correct_filter{correct_filter}
-    , m_correct_galactic{correct_galactic}
-    , m_dust_map_sed_bpc{dust_map_sed_bpc}
-    , m_filter_shift_coef_grid{filter_shift_coef_grid}
-    , m_galactic_correction_coef_grid{galactic_correction_coef_grid} {
+    : m_do_marginalize(do_marginalize)
+    , m_correct_filter(correct_filter)
+    , m_correct_galactic(correct_galactic)
+    , m_dust_map_sed_bpc(dust_map_sed_bpc)
+    , m_filter_shift_coef_grid(filter_shift_coef_grid)
+    , m_galactic_correction_coef_grid(galactic_correction_coef_grid) {
 
   for (auto& map_filter : mapping) {
 

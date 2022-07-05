@@ -27,8 +27,8 @@ template <PhzDataModel::RegionResultType GridType>
 GridSamplerScale<GridType>::GridSamplerScale() {}
 
 template <PhzDataModel::RegionResultType GridType>
-std::stringstream GridSamplerScale<GridType>::createComment(const PhzDataModel::SourceResults& results) {
-  return GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>::createComment(results);
+std::string GridSamplerScale<GridType>::createComment(const PhzDataModel::SourceResults& results) {
+  return std::move(GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>::createComment(results));
 }
 
 template <PhzDataModel::RegionResultType GridType>
