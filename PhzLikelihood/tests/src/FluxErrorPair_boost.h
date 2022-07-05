@@ -9,18 +9,30 @@
 
 #include <SourceCatalog/SourceAttributes/Photometry.h>
 
-namespace std {
-inline ostream& operator<<(ostream& wrapped, const Euclid::SourceCatalog::FluxErrorPair& item) {
-  return wrapped << '(' << item.flux << ',' << item.error << ')';
+inline std::ostream& operator<<(std::ostream& os, const Euclid::SourceCatalog::FluxErrorPair& item) {
+  return os << '(' << item.flux << ',' << item.error << ')';
 }
-}  // namespace std
 
 namespace boost {
 
-/// Enables boost to print objects of type FluxErrorPair
-inline wrap_stringstream& operator<<(wrap_stringstream& wrapped, const Euclid::SourceCatalog::FluxErrorPair& item) {
-  return wrapped << '(' << item.flux << ',' << item.error << ')';
-}
+namespace test_tools {
+
+#if BOOST_VERSION >= 106100
+namespace tt_detail {
+#endif
+
+template <>
+struct print_log_value<Euclid::SourceCatalog::FluxErrorPair> {
+  void operator()(std::ostream& os, const Euclid::SourceCatalog::FluxErrorPair& item) const {
+    ::operator<<(os, item);
+  }
+};
+
+#if BOOST_VERSION >= 106100
+}  // namespace tt_detail
+#endif
+
+}  // namespace test_tools
 
 }  // namespace boost
 
