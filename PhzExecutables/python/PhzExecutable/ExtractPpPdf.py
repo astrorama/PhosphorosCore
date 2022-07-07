@@ -396,7 +396,6 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
    
     
     hdul.writeto(out_file, overwrite=True)
-    hdul.writeto('/home/dubathf/test.fits', overwrite=True)
 
     
 #-------------------------- 
