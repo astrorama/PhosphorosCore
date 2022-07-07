@@ -365,31 +365,35 @@ class TestExtractPpPdf(object):
         assert len(samples) == 2
         assert len(samples['PP1'])==0
         assert len(samples['PP2'])==0
- 
+
     def test_outputRange(self):
-        min_data={'PP1':0,'PP2':10,'PP3':-10}
-        max_data={'PP1':100,'PP2':110,'PP3':90}
-        units={'PP1':"U_PP1",'PP2':"U_PP2",'PP3':"U_PP3"}
+        min_data = {'PP1': 0, 'PP2': 10, 'PP3': -10}
+        max_data = {'PP1': 100, 'PP2': 110, 'PP3': 90}
+        units = {'PP1': "U_PP1", 'PP2': "U_PP2", 'PP3': "U_PP3"}
         with TempDir() as idx_d:
-            worker.outputRange(idx_d.path()+'/test.fits', min_data, max_data, units) 
-            t_read = Table.read(idx_d.path()+'/test.fits')
+            worker.outputRange(idx_d.path() + '/test.fits', min_data, max_data, units)
+            t_read = Table.read(idx_d.path() + '/test.fits')
         assert len(t_read) == 3
         assert 'PP' in t_read.colnames
         assert 'MIN' in t_read.colnames
         assert 'MAX' in t_read.colnames
         assert 'UNITS' in t_read.colnames
-        assert t_read[0]['PP'] == 'PP1'
-        assert t_read[0]['MIN'] == 0
-        assert t_read[0]['MAX'] == 100
-        assert t_read[0]['UNITS'] == 'U_PP1'
-        assert t_read[1]['PP'] == 'PP2'
-        assert t_read[1]['MIN'] == 10
-        assert t_read[1]['MAX'] == 110
-        assert t_read[1]['UNITS'] == 'U_PP2'
-        assert t_read[2]['PP'] == 'PP3'
-        assert t_read[2]['MIN'] == -10
-        assert t_read[2]['MAX'] == 90
-        assert t_read[2]['UNITS'] == 'U_PP3'
+
+        # The dict may not be ordered (python2)
+        assert set(t_read['PP']) == {'PP1', 'PP2', 'PP3'}
+        for row in t_read:
+            if row['PP'] == 'PP1':
+                assert row['MIN'] == 0
+                assert row['MAX'] == 100
+                assert row['UNITS'] == 'U_PP1'
+            elif row['PP'] == 'PP2':
+                assert row['MIN'] == 10
+                assert row['MAX'] == 110
+                assert row['UNITS'] == 'U_PP2'
+            elif row['PP'] == 'PP3':
+                assert row['MIN'] == -10
+                assert row['MAX'] == 90
+                assert row['UNITS'] == 'U_PP3'
          
     def test_computeHisto1d(self):
         pp=['PP1'] 
