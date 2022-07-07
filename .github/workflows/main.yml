@@ -63,3 +63,4 @@ jobs:
           REPOSITORY_KEY: ${{ secrets.REPOSITORY_KEY }}
         with:
           rpm-dir: ${{ steps.build.outputs.rpm-dir }}
+          srpm-dir: ${{ steps.build.outputs.srpm-dir }}
