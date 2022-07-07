@@ -55,7 +55,7 @@ jobs:
           path: ${{ steps.build.outputs.rpm-dir }}/*.rpm
           retention-days: 15
       - name: Upload RPM to repository
-        uses: astrorama/actions/upload-rpm@no-sources
+        uses: astrorama/actions/upload-rpm@v3
         if: ${{ github.repository_owner == 'astrorama' }}
         env:
           REPOSITORY_USER: ${{ secrets.REPOSITORY_USER }}
