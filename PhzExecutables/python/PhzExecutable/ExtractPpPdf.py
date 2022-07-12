@@ -348,7 +348,7 @@ def computeHisto2d(pdf_2d, samples, pdf_range, pdf_bin):
                 hist /= np.diff(bin_edges_x).reshape(-1, 1)
                 hist /= np.diff(bin_edges_y).reshape(1, -1)
                 hist /= s
-        histo[key].append(hist)
+                histo[key].append(hist)
     return histo
 
 
@@ -402,16 +402,24 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
             fits.Column('MC_' + param.upper(), array=np_array, format=npDtype2FitsTForm(np_array))
         )
 
+    col_index = len(outTable)
+    comments = {}
     for param in pdf_2d:
+        col_index+=1
         key = param[0] + '_' + param[1]
         out_key = 'MC_' + param[0].upper() + '_' + param[1].upper()
         np_array = np.array(histo2d[key])
+        shapes = '('+str(np_array.shape[2])+','+str(np_array.shape[1])+')'
         np_array = np.reshape(np_array,
                               (np_array.shape[0], (np_array.shape[1] * np_array.shape[2])))
         outTable.append(fits.Column(out_key, array=np_array, format=npDtype2FitsTForm(np_array)))
+        
+        comments['TDIM'+str(col_index)] = shapes
 
     hdul = fits.HDUList(hdus=[fits.PrimaryHDU(), fits.BinTableHDU.from_columns(outTable)])
     hdul[1].name = 'PDFs'
+    for key in comments:
+        hdul['PDFs'].header[key]=comments[key]
 
     full_pp = copy(pdf_1d)
     for param in pdf_2d:

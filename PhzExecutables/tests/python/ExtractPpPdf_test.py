@@ -422,21 +422,26 @@ class TestExtractPpPdf(object):
          
     def test_computeHisto2d(self):
         pps=[['PP1','PP2']] 
-        samples={'PP1':{'obj_1':[1.5,2.5,3.5,4.5,4.5,4.5,5.5,6.5,7.5,8.5]}, 'PP2':{'obj_1':[1.5,2.5,3.5,4.5,4.5,4.5,5.5,5.5,5.5,5.5]}}
+        samples={'PP1':{'obj_1':[1.5,2.5,3.5,4.5,4.5,4.5,5.5,6.5,7.5,8.5],'obj_2':[1.5,2.5,3.5,4.5,4.5,4.5,5.5,6.5,7.5,8.5]}, 
+                 'PP2':{'obj_1':[1.5,2.5,3.5,4.5,4.5,4.5,5.5,5.5,5.5,5.5],'obj_2':[1.5,2.5,3.5,4.5,4.5,4.5,5.5,5.5,5.5,5.5]}}
         pdf_range={'PP1':[0,10], 'PP2':[1,6]}
         pdf_bin={'PP1':10, 'PP2':6}
         histo = worker.computeHisto2d(pps, samples, pdf_range, pdf_bin) 
         assert len(histo)==1
         assert 'PP1_PP2' in histo.keys()
-        assert len(histo['PP1_PP2'])==1
+        assert len(histo['PP1_PP2'])==2
         assert histo['PP1_PP2'][0].shape[0] == 10
         assert histo['PP1_PP2'][0].shape[1] == 6
         assert histo['PP1_PP2'][0][0,0] == 0
         np.testing.assert_almost_equal(histo['PP1_PP2'][0][1,0], 0.12)
         np.testing.assert_almost_equal(histo['PP1_PP2'][0][4,4], 0.36)
         
+        assert histo['PP1_PP2'][1].shape[0] == 10
+        assert histo['PP1_PP2'][1].shape[1] == 6
+        
         
         histo = worker.computeHisto2d([], samples, pdf_range, pdf_bin)
+        
         
         
     def test_outputPDF(self):
@@ -473,16 +478,16 @@ class TestExtractPpPdf(object):
         assert t_read[ 'MC_PP1'][0][2] == 0.1
         assert t_read[ 'MC_PP1'][0][3] == 0.1
         assert t_read[ 'MC_PP1'][0][4] == 0.5
-        assert t_read[ 'MC_PP1_PP2'][0][0] == 0.0
-        assert t_read[ 'MC_PP1_PP2'][0][1] == 0.1
-        assert t_read[ 'MC_PP1_PP2'][0][2] == 0.1
-        assert t_read[ 'MC_PP1_PP2'][0][3] == 0.1
-        assert t_read[ 'MC_PP1_PP2'][0][4] == 0.3
-        assert t_read[ 'MC_PP1_PP2'][0][5] == 0.1
-        assert t_read[ 'MC_PP1_PP2'][0][6] == 0.0
-        assert t_read[ 'MC_PP1_PP2'][0][7] == 0.0
-        assert t_read[ 'MC_PP1_PP2'][0][8] == 0.0
-        assert t_read[ 'MC_PP1_PP2'][0][9] == 0.2
+        assert t_read[ 'MC_PP1_PP2'][0][0,0] == 0.0
+        assert t_read[ 'MC_PP1_PP2'][0][0,1] == 0.1
+        assert t_read[ 'MC_PP1_PP2'][0][0,2] == 0.1
+        assert t_read[ 'MC_PP1_PP2'][0][0,3] == 0.1
+        assert t_read[ 'MC_PP1_PP2'][0][0,4] == 0.3
+        assert t_read[ 'MC_PP1_PP2'][0][1,0] == 0.1
+        assert t_read[ 'MC_PP1_PP2'][0][1,1] == 0.0
+        assert t_read[ 'MC_PP1_PP2'][0][1,2] == 0.0
+        assert t_read[ 'MC_PP1_PP2'][0][1,3] == 0.0
+        assert t_read[ 'MC_PP1_PP2'][0][1,4] == 0.2
 
   
         assert len(hdul) == 4
