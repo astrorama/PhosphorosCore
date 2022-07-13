@@ -48,8 +48,10 @@ public:
    * Constructor
    * @param path
    *    Where to store the index
+   * @param read_only
+   *    If true, the index can not be modified
    */
-  explicit IndexProvider(const boost::filesystem::path& path);
+  IndexProvider(const boost::filesystem::path& path, bool read_only = false);
 
   /**
    * Move constructor
@@ -123,6 +125,7 @@ public:
 
 private:
   boost::filesystem::path                    m_path;
+  bool                                       m_read_only;
   std::unique_ptr<NdArray::NdArray<int64_t>> m_data;
   std::map<int64_t, size_t>                  m_index;
 

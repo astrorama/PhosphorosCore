@@ -33,11 +33,14 @@ using NdArray::createMmapNpy;
 using NdArray::mmapNpy;
 using NdArray::NdArray;
 
-PdzDataProvider::PdzDataProvider(const boost::filesystem::path& path, size_t max_size)
-    : m_data_path{path}, m_max_size{max_size} {
+PdzDataProvider::PdzDataProvider(const boost::filesystem::path& path, size_t max_size, bool read_only)
+    : m_data_path{path}, m_max_size{max_size}, m_read_only{read_only} {
+  using mmap_mode = boost::iostreams::mapped_file_base;
+
   if (boost::filesystem::exists(m_data_path)) {
-    m_array = Euclid::make_unique<NdArray<float>>(
-        mmapNpy<float>(m_data_path, boost::iostreams::mapped_file_base::readwrite, m_max_size + 1024));
+    auto mode = m_read_only ? mmap_mode::readonly : mmap_mode::readwrite;
+
+    m_array = Euclid::make_unique<NdArray<float>>(mmapNpy<float>(m_data_path, mode, m_max_size + 1024));
 
     if (m_array->shape().size() != 2) {
       throw Elements::Exception() << "Expected an NdArray with two dimensions";
@@ -47,12 +50,14 @@ PdzDataProvider::PdzDataProvider(const boost::filesystem::path& path, size_t max
     for (size_t i = 0; i < m_bins.size(); ++i) {
       m_bins[i] = m_array->at(0, i);
     }
-  } else {
+  } else if (!m_read_only) {
     // We can not create the file yet: we need to know the size of the binning
     // Just touch it to get hold of the name and fail soon if we can not write here
     std::fstream stream;
     stream.exceptions(~std::ios_base::goodbit);
     stream.open(path.native(), std::ios_base::out);
+  } else {
+    throw Elements::Exception() << "Can not open a missing pdz provider in read-only mode";
   }
 }
 
@@ -83,6 +88,10 @@ size_t PdzDataProvider::length() const {
 }
 
 int64_t PdzDataProvider::addPdz(const Euclid::XYDataset::XYDataset& data) {
+  if (m_read_only) {
+    throw Elements::Exception("Can not modify a read-only pdz provider");
+  }
+
   std::vector<float> bins;
   NdArray<float>     values({1, data.size()});
   bins.reserve(data.size());
@@ -90,7 +99,8 @@ int64_t PdzDataProvider::addPdz(const Euclid::XYDataset::XYDataset& data) {
   size_t i = 0;
   for (auto p : data) {
     bins.emplace_back(p.first);
-    values.at(0, i++) = p.second;
+    values.at(0, i) = static_cast<float>(p.second);
+    ++i;
   }
 
   if (m_bins.empty())
@@ -129,6 +139,10 @@ void PdzDataProvider::validateBins(const std::vector<float>& bins) const {
 }
 
 void PdzDataProvider::setPdz(int64_t position, const XYDataset::XYDataset& data) {
+  if (m_read_only) {
+    throw Elements::Exception("Can not modify a read-only pdz provider");
+  }
+
   if (position < 0) {
     throw Elements::Exception() << "Negative offset";
   }
@@ -141,7 +155,8 @@ void PdzDataProvider::setPdz(int64_t position, const XYDataset::XYDataset& data)
 
   size_t i = 0;
   for (auto& p : data) {
-    m_array->at(static_cast<size_t>(position), i++) = p.second;
+    m_array->at(static_cast<size_t>(position), i) = static_cast<float>(p.second);
+    ++i;
   }
 }
 

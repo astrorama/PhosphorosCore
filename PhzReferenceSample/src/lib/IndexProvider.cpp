@@ -32,26 +32,29 @@ using NdArray::NdArray;
 
 static const std::vector<std::string> FIELDS{"id", "sed_file", "sed_offset", "pdz_file", "pdz_offset"};
 
-IndexProvider::IndexProvider(const boost::filesystem::path& path) : m_path{path} {
+IndexProvider::IndexProvider(const boost::filesystem::path& path, bool read_only)
+    : m_path{path}, m_read_only(read_only) {
+  using mmap_mode = boost::iostreams::mapped_file_base;
+
   if (boost::filesystem::exists(path)) {
-    m_data = Euclid::make_unique<NdArray<int64_t>>(
-        std::move(mmapNpy<int64_t>(path, boost::iostreams::mapped_file_base::readwrite, 2147483648)));
+    auto mode = m_read_only ? mmap_mode::readonly : mmap_mode::readwrite;
+
+    m_data = Euclid::make_unique<NdArray<int64_t>>(mmapNpy<int64_t>(path, mode, 2147483648));
     if (m_data->shape().size() != 2) {
       throw Elements::Exception() << "Expected an array with two dimensions";
-    }
-    if (m_data->shape()[1] != FIELDS.size()) {
-      throw Elements::Exception() << "The second dimension is expected to be of size " << FIELDS.size();
     }
 
     auto n_items = m_data->shape()[0];
     for (size_t i = 0; i < n_items; ++i) {
       m_index[m_data->at(i, "id")] = i;
     }
-  } else {
+  } else if (!read_only) {
     // Touch file so umask is honored
     std::ofstream _(path.native());
     // Create mmap version
-    m_data = Euclid::make_unique<NdArray<int64_t>>(std::move(createMmapNpy<int64_t>(path, {0}, FIELDS, 2147483648)));
+    m_data = Euclid::make_unique<NdArray<int64_t>>(createMmapNpy<int64_t>(path, {0}, FIELDS, 2147483648));
+  } else {
+    throw Elements::Exception() << "Can not open a missing index in read-only mode";
   }
 }
 
@@ -73,11 +76,16 @@ static std::string to_string(IndexProvider::IndexKey key) {
     return "sed";
   case IndexProvider::PDZ:
     return "pdz";
+  default:
+    throw Elements::Exception("Unexpected index key!");
   }
-  throw Elements::Exception("Unexpected index key!");
 }
 
 void IndexProvider::add(int64_t id, IndexKey key, const ObjectLocation& location) {
+  if (m_read_only) {
+    throw Elements::Exception() << "Can not modify a read-only index";
+  }
+
   auto i = m_index.find(id);
   if (i == m_index.end()) {
     i = create(id);
@@ -103,10 +111,13 @@ size_t IndexProvider::size() const {
 std::set<size_t> IndexProvider::getFiles(IndexKey key) const {
   std::set<size_t> files;
   auto             file_field = to_string(key) + "_file";
-  for (size_t i = 0; i < m_data->shape()[0]; ++i) {
-    files.emplace(m_data->at(i, file_field));
+  const auto&      attrs      = m_data->attributes();
+  if (std::find(attrs.begin(), attrs.end(), file_field) != attrs.end()) {
+    for (size_t i = 0; i < m_data->shape()[0]; ++i) {
+      files.emplace(m_data->at(i, file_field));
+    }
+    files.erase(-1);
   }
-  files.erase(-1);
   return files;
 }
 
@@ -119,6 +130,10 @@ std::vector<int64_t> IndexProvider::getIds() const {
 }
 
 void IndexProvider::sort(IndexKey key) {
+  if (m_read_only) {
+    throw Elements::Exception() << "Can not modify a read-only index";
+  }
+
   using Euclid::NdArray::sort;
   sort(*m_data, {to_string(key) + "_file", to_string(key) + "_offset"});
   // Rebuild index

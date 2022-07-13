@@ -54,10 +54,11 @@ static const std::string INDEX_FILE_NAME{"index.npy"};
 static const std::string SED_DATA_NAME_PATTERN{"sed_data_%1%.npy"};
 static const std::string PDZ_DATA_NAME_PATTERN{"pdz_data_%1%.npy"};
 
-ReferenceSample::ReferenceSample(const boost::filesystem::path& path, size_t max_file_size)
+ReferenceSample::ReferenceSample(const boost::filesystem::path& path, size_t max_file_size, bool read_only)
     : m_root_path{path}
     , m_max_file_size(max_file_size)
-    , m_index{std::make_shared<IndexProvider>(path / INDEX_FILE_NAME)} {
+    , m_read_only(read_only)
+    , m_index{std::make_shared<IndexProvider>(path / INDEX_FILE_NAME, m_read_only)} {
   initSedProviders();
   initPdzProviders();
 }
@@ -66,18 +67,21 @@ ReferenceSample ReferenceSample::create(const boost::filesystem::path& path, siz
   if (!boost::filesystem::create_directories(path)) {
     throw Elements::Exception() << "The directory already exists: " << path;
   }
-  return {path, max_file_size};
+  return {path, max_file_size, false};
 }
 
 ReferenceSample::ReferenceSample(boost::filesystem::path root_path, size_t max_file_size,
-                                 std::shared_ptr<IndexProvider> index)
-    : m_root_path(std::move(root_path)), m_max_file_size(max_file_size), m_index(std::move(index)) {
+                                 std::shared_ptr<IndexProvider> index, bool readonly)
+    : m_root_path(std::move(root_path))
+    , m_max_file_size(max_file_size)
+    , m_read_only(readonly)
+    , m_index(std::move(index)) {
   initSedProviders();
   initPdzProviders();
 }
 
 std::unique_ptr<ReferenceSample> ReferenceSample::clone() const {
-  return std::unique_ptr<ReferenceSample>(new ReferenceSample(m_root_path, m_max_file_size, m_index));
+  return std::unique_ptr<ReferenceSample>(new ReferenceSample(m_root_path, m_max_file_size, m_index, m_read_only));
 }
 
 size_t ReferenceSample::size() const {
@@ -103,7 +107,7 @@ boost::optional<XYDataset::XYDataset> ReferenceSample::getSedData(int64_t id) co
     }
     auto sed_filename   = boost::str(boost::format(SED_DATA_NAME_PATTERN) % loc.file);
     auto sed_path       = m_root_path / sed_filename;
-    m_read_sed_provider = make_unique<SedDataProvider>(sed_path);
+    m_read_sed_provider = make_unique<SedDataProvider>(sed_path, m_max_file_size, m_read_only);
     m_read_sed_idx      = loc.file;
   }
   return m_read_sed_provider->readSed(loc.offset);
@@ -120,12 +124,16 @@ boost::optional<XYDataset::XYDataset> ReferenceSample::getPdzData(int64_t id) co
   if (loc.file != m_pdz_index) {
     auto pdz_filename = boost::str(boost::format(PDZ_DATA_NAME_PATTERN) % loc.file);
     auto pdz_path     = m_root_path / pdz_filename;
-    m_pdz_provider    = make_unique<PdzDataProvider>(pdz_path);
+    m_pdz_provider    = make_unique<PdzDataProvider>(pdz_path, m_max_file_size, m_read_only);
   }
   return m_pdz_provider->readPdz(loc.offset);
 }
 
 void ReferenceSample::addSedData(int64_t id, const XYDataset::XYDataset& data) {
+  if (m_read_only) {
+    throw Elements::Exception() << "Can not modify a read-only reference sample";
+  }
+
   auto loc = m_index->get(id, IndexProvider::SED);
   if (loc.file > -1) {
     throw Elements::Exception() << "SED for ID " << id << " is already set";
@@ -159,13 +167,18 @@ void ReferenceSample::addSedData(int64_t id, const XYDataset::XYDataset& data) {
 }
 
 std::pair<int64_t, std::unique_ptr<SedDataProvider>> ReferenceSample::createNewSedProvider() {
-  uint16_t new_sed_idx  = ++m_sed_provider_count;
+  ++m_sed_provider_count;
+  uint16_t new_sed_idx  = m_sed_provider_count;
   auto     sed_filename = boost::str(boost::format(SED_DATA_NAME_PATTERN) % new_sed_idx);
   auto     sed_path     = m_root_path / sed_filename;
-  return std::make_pair(new_sed_idx, make_unique<SedDataProvider>(sed_path));
+  return std::make_pair(new_sed_idx, make_unique<SedDataProvider>(sed_path, m_max_file_size, m_read_only));
 }
 
 void ReferenceSample::addPdzData(int64_t id, const XYDataset::XYDataset& data) {
+  if (m_read_only) {
+    throw Elements::Exception() << "Can not modify a read-only reference sample";
+  }
+
   auto loc = m_index->get(id, IndexProvider::PDZ);
   if (loc.file > -1) {
     throw Elements::Exception() << "PDZ for ID " << id << " is already set";
@@ -200,7 +213,7 @@ void ReferenceSample::addPdzData(int64_t id, const XYDataset::XYDataset& data) {
     m_pdz_index       = ++m_pdz_provider_count;
     auto pdz_filename = boost::str(boost::format(PDZ_DATA_NAME_PATTERN) % m_pdz_index);
     auto pdz_path     = m_root_path / pdz_filename;
-    m_pdz_provider    = make_unique<PdzDataProvider>(pdz_path);
+    m_pdz_provider    = make_unique<PdzDataProvider>(pdz_path, m_max_file_size, m_read_only);
   }
 
   loc.file   = m_pdz_index;
@@ -217,11 +230,11 @@ void ReferenceSample::initSedProviders() {
     return;
   }
 
-  m_sed_provider_count = static_cast<int64_t>(*std::max_element(sed_files.begin(), sed_files.end()));
+  m_sed_provider_count = static_cast<uint16_t>(*std::max_element(sed_files.begin(), sed_files.end()));
   for (auto sed_idx : sed_files) {
     auto sed_filename             = boost::str(boost::format(SED_DATA_NAME_PATTERN) % sed_idx);
     auto sed_path                 = m_root_path / sed_filename;
-    auto sed_prov                 = make_unique<SedDataProvider>(sed_path);
+    auto sed_prov                 = make_unique<SedDataProvider>(sed_path, m_max_file_size, m_read_only);
     auto knots                    = sed_prov->getKnots();
     m_write_sed_provider[sed_idx] = std::move(sed_prov);
     m_write_sed_idx[knots]        = sed_idx;
@@ -236,14 +249,17 @@ void ReferenceSample::initPdzProviders() {
     return;
   }
 
-  m_pdz_provider_count = static_cast<int64_t>(*std::max_element(pdz_files.begin(), pdz_files.end()));
+  m_pdz_provider_count = static_cast<uint16_t>(*std::max_element(pdz_files.begin(), pdz_files.end()));
   m_pdz_index          = m_pdz_provider_count;
   auto pdz_filename    = boost::str(boost::format(PDZ_DATA_NAME_PATTERN) % m_pdz_index);
   auto pdz_path        = m_root_path / pdz_filename;
-  m_pdz_provider       = make_unique<PdzDataProvider>(pdz_path);
+  m_pdz_provider       = make_unique<PdzDataProvider>(pdz_path, m_max_file_size, m_read_only);
 }
 
 void ReferenceSample::optimize() {
+  if (m_read_only) {
+    throw Elements::Exception() << "Can not modify a read-only reference sample";
+  }
   // Clear providers
   m_pdz_provider.reset();
   m_read_sed_provider.reset();
@@ -258,7 +274,7 @@ void ReferenceSample::optimize() {
   for (int64_t i = 1; i <= m_pdz_provider_count; ++i) {
     auto pdz_filename    = boost::str(boost::format(PDZ_DATA_NAME_PATTERN) % i);
     auto pdz_path        = m_root_path / pdz_filename;
-    pdz_providers[i - 1] = make_unique<PdzDataProvider>(pdz_path);
+    pdz_providers[i - 1] = make_unique<PdzDataProvider>(pdz_path, m_max_file_size, m_read_only);
   }
 
   // Shuffle around the PDZs so they are in order too
