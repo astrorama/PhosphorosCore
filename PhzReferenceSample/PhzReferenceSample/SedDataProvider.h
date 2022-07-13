@@ -45,6 +45,8 @@ namespace ReferenceSample {
 class SedDataProvider {
 
 public:
+  static const std::size_t DEFAULT_MAX_SIZE = 1 << 30;
+
   /**
    * @brief Destructor
    */
@@ -61,7 +63,7 @@ public:
    * @throw Elements::Exception
    *    On failure to open the file.
    */
-  SedDataProvider(const boost::filesystem::path& path, std::size_t max_size = 1 << 30, bool read_only = false);
+  SedDataProvider(const boost::filesystem::path& path, std::size_t max_size = DEFAULT_MAX_SIZE, bool read_only = false);
 
   /**
    * Move constructor.

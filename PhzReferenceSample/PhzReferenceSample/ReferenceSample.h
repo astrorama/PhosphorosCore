@@ -55,6 +55,8 @@ namespace ReferenceSample {
 class ReferenceSample {
 
 public:
+  static const std::size_t DEFAULT_MAX_SIZE = 1 << 30;
+
   /**
    * @brief Destructor
    */
@@ -70,7 +72,7 @@ public:
    *    If true, the reference sample will be open on read-only mode
    * @note Always open for read/write.
    */
-  ReferenceSample(const boost::filesystem::path& path, size_t max_file_size = 1073741824, bool read_only = false);
+  ReferenceSample(const boost::filesystem::path& path, size_t max_file_size = DEFAULT_MAX_SIZE, bool read_only = false);
 
   /**
    * Move constructor

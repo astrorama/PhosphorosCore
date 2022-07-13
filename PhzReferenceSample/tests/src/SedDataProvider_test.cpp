@@ -130,4 +130,26 @@ BOOST_FIXTURE_TEST_CASE(open_and_close, SedDataProvider_Fixture) {
 
 //-----------------------------------------------------------------------------
 
+BOOST_FIXTURE_TEST_CASE(open_and_close_readonly, SedDataProvider_Fixture) {
+  int64_t offset;
+
+  {
+    SedDataProvider sed_provider{m_sed_bin};
+    offset = sed_provider.addSed(sed);
+  }
+
+  auto perm = status(m_sed_bin).permissions();
+  permissions(m_sed_bin, perm & ~boost::filesystem::perms::owner_write);
+
+  SedDataProvider sed_provider(m_sed_bin, SedDataProvider::DEFAULT_MAX_SIZE, true);
+  BOOST_CHECK_NE(sed_provider.diskSize(), 0);
+
+  auto recovered = sed_provider.readSed(offset);
+  BOOST_CHECK(checkAllClose(recovered, sed));
+
+  BOOST_CHECK_THROW(sed_provider.addSed(recovered), Elements::Exception);
+}
+
+//-----------------------------------------------------------------------------
+
 BOOST_AUTO_TEST_SUITE_END()

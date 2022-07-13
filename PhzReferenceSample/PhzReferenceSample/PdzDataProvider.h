@@ -46,6 +46,8 @@ namespace ReferenceSample {
 class PdzDataProvider {
 
 public:
+  static const std::size_t DEFAULT_MAX_SIZE = 1 << 30;
+
   /**
    * @brief Destructor
    */
@@ -62,7 +64,7 @@ public:
    * @throw Elements::Exception
    *    On failure to read the PDZ bins (only if the file is not empty)
    */
-  PdzDataProvider(const boost::filesystem::path& path, std::size_t max_size = 1 << 30, bool read_only = false);
+  PdzDataProvider(const boost::filesystem::path& path, std::size_t max_size = DEFAULT_MAX_SIZE, bool read_only = false);
 
   /**
    * Move constructor.

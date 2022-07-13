@@ -22,10 +22,8 @@
  */
 
 #include "PhzReferenceSample/PdzDataProvider.h"
-
 #include <ElementsKernel/Exception.h>
 #include <ElementsKernel/Temporary.h>
-
 #include <boost/test/unit_test.hpp>
 
 #include "AllClose.h"
@@ -44,7 +42,6 @@ struct PdzDataProvider_Fixture {
   XYDataset               pdz{{{0, 0}, {1, 4}, {2, 3}, {3, 1}}};
 
   PdzDataProvider_Fixture() : m_pdz_bin{m_top_dir.path() / "pdz_data_1.bin"} {
-    ;
   }
 
   virtual ~PdzDataProvider_Fixture() {
@@ -132,6 +129,29 @@ BOOST_FIXTURE_TEST_CASE(open_and_close, PdzDataProvider_Fixture) {
 
   auto recovered = pdz_provider.readPdz(offset);
   BOOST_CHECK(checkAllClose(recovered, pdz));
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(open_and_close_readonly, PdzDataProvider_Fixture) {
+  int64_t offset;
+
+  {
+    PdzDataProvider pdz_provider{m_pdz_bin};
+    offset = pdz_provider.addPdz(pdz);
+  }
+
+  auto perm = status(m_pdz_bin).permissions();
+  permissions(m_pdz_bin, perm & ~boost::filesystem::perms::owner_write);
+
+  PdzDataProvider pdz_provider(m_pdz_bin, PdzDataProvider::DEFAULT_MAX_SIZE, true);
+  BOOST_CHECK_NE(pdz_provider.diskSize(), 0);
+
+  auto recovered = pdz_provider.readPdz(offset);
+  BOOST_CHECK(checkAllClose(recovered, pdz));
+
+  BOOST_CHECK_THROW(pdz_provider.setPdz(offset, recovered), Elements::Exception);
+  BOOST_CHECK_THROW(pdz_provider.addPdz(recovered), Elements::Exception);
 }
 
 //-----------------------------------------------------------------------------

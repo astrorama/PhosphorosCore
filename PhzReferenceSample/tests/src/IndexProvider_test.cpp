@@ -121,6 +121,41 @@ BOOST_FIXTURE_TEST_CASE(create_and_reopen, IndexProvider_Fixture) {
 
 //-----------------------------------------------------------------------------
 
+BOOST_FIXTURE_TEST_CASE(create_and_reopen_readonly, IndexProvider_Fixture) {
+  {
+    IndexProvider idx{m_index_bin};
+
+    idx.add(10, IndexProvider::SED, {6, 30});
+    idx.add(10, IndexProvider::PDZ, {42, 99});
+    idx.add(11, IndexProvider::PDZ, {43, 88});
+  }
+
+  auto perm = status(m_index_bin).permissions();
+  permissions(m_index_bin, perm & ~boost::filesystem::perms::owner_write);
+
+  IndexProvider idx(m_index_bin, true);
+
+  auto loc = idx.get(10, IndexProvider::SED);
+  BOOST_CHECK_EQUAL(loc.file, 6);
+  BOOST_CHECK_EQUAL(loc.offset, 30);
+
+  loc = idx.get(10, IndexProvider::PDZ);
+  BOOST_CHECK_EQUAL(loc.file, 42);
+  BOOST_CHECK_EQUAL(loc.offset, 99);
+
+  loc = idx.get(11, IndexProvider::PDZ);
+  BOOST_CHECK_EQUAL(loc.file, 43);
+  BOOST_CHECK_EQUAL(loc.offset, 88);
+
+  BOOST_CHECK_EQUAL(idx.getFiles(IndexProvider::SED).size(), 1);
+  BOOST_CHECK_EQUAL(idx.getFiles(IndexProvider::PDZ).size(), 2);
+
+  BOOST_CHECK_THROW(idx.add(25, IndexProvider::SED, {5, 100}), Elements::Exception);
+  BOOST_CHECK_THROW(idx.sort(IndexProvider::SED), Elements::Exception);
+}
+
+//-----------------------------------------------------------------------------
+
 BOOST_FIXTURE_TEST_CASE(SortIndexProvider_test, IndexProvider_Fixture) {
   {
     IndexProvider idx{m_index_bin};
