@@ -251,4 +251,17 @@ BOOST_FIXTURE_TEST_CASE(test_addPdz_normalize, ReferenceSample_Fixture) {
 
 //-----------------------------------------------------------------------------
 
+BOOST_FIXTURE_TEST_CASE(test_read_only, ReferenceSampleOnDisk_Fixture) {
+  ReferenceSample ref(m_top_dir.path(), ReferenceSample::DEFAULT_MAX_SIZE, true);
+
+  auto ids = ref.getIds();
+  BOOST_CHECK_EQUAL_COLLECTIONS(ids.begin(), ids.end(), m_obj_ids.begin(), m_obj_ids.end());
+
+  BOOST_CHECK_THROW(ref.addPdzData(80, m_pdz[2]), Elements::Exception);
+  BOOST_CHECK_THROW(ref.addSedData(80, m_sed[2]), Elements::Exception);
+  BOOST_CHECK_THROW(ref.optimize(), Elements::Exception);
+}
+
+//-----------------------------------------------------------------------------
+
 BOOST_AUTO_TEST_SUITE_END()

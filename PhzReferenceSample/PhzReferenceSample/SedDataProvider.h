@@ -45,6 +45,8 @@ namespace ReferenceSample {
 class SedDataProvider {
 
 public:
+  static const std::size_t DEFAULT_MAX_SIZE = 1 << 30;
+
   /**
    * @brief Destructor
    */
@@ -56,10 +58,12 @@ public:
    *    Path to the SED data file.
    * @param max_size
    *    The maximum number of elements expected to be added. Defaults to 1 GiB.
+   * @param read_only
+   *    If true, the data provider can not be modified
    * @throw Elements::Exception
    *    On failure to open the file.
    */
-  SedDataProvider(const boost::filesystem::path& path, std::size_t max_size = 1 << 30);
+  SedDataProvider(const boost::filesystem::path& path, std::size_t max_size = DEFAULT_MAX_SIZE, bool read_only = false);
 
   /**
    * Move constructor.
@@ -106,8 +110,9 @@ public:
 private:
   boost::filesystem::path                  m_data_path;
   size_t                                   m_max_size;
+  bool                                     m_read_only;
   std::unique_ptr<NdArray::NdArray<float>> m_array;
-  uint32_t                                 m_length;
+  size_t                                   m_length;
 
   void create(size_t knots);
 };  // End of SedDataProvider class

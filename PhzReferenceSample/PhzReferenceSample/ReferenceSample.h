@@ -55,6 +55,8 @@ namespace ReferenceSample {
 class ReferenceSample {
 
 public:
+  static const std::size_t DEFAULT_MAX_SIZE = 1 << 30;
+
   /**
    * @brief Destructor
    */
@@ -66,9 +68,11 @@ public:
    *    Path of the reference sample. It is expected to exist and be initialized.
    * @param max_file_size
    *    Maximum data file size. Defaults to 1GiB.
+   * @param read_only
+   *    If true, the reference sample will be open on read-only mode
    * @note Always open for read/write.
    */
-  ReferenceSample(const boost::filesystem::path& path, size_t max_file_size = 1073741824);
+  ReferenceSample(const boost::filesystem::path& path, size_t max_file_size = DEFAULT_MAX_SIZE, bool read_only = false);
 
   /**
    * Move constructor
@@ -155,8 +159,10 @@ public:
 private:
   boost::filesystem::path                             m_root_path;
   size_t                                              m_max_file_size;
+  bool                                                m_read_only;
   std::shared_ptr<IndexProvider>                      m_index;
-  int64_t                                             m_sed_provider_count, m_pdz_provider_count;
+  uint16_t                                            m_sed_provider_count;
+  uint16_t                                            m_pdz_provider_count;
   std::map<int64_t, std::unique_ptr<SedDataProvider>> m_write_sed_provider;
   std::map<size_t, int64_t>                           m_write_sed_idx;
   mutable std::unique_ptr<SedDataProvider>            m_read_sed_provider;
@@ -164,7 +170,8 @@ private:
   mutable std::unique_ptr<PdzDataProvider>            m_pdz_provider;
   mutable int64_t                                     m_pdz_index;
 
-  ReferenceSample(boost::filesystem::path root_path, size_t max_file_size, std::shared_ptr<IndexProvider> index);
+  ReferenceSample(boost::filesystem::path root_path, size_t max_file_size, std::shared_ptr<IndexProvider> index,
+                  bool readonly);
 
   void                                                 initSedProviders();
   void                                                 initPdzProviders();

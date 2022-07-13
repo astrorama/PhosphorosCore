@@ -33,11 +33,14 @@ using NdArray::createMmapNpy;
 using NdArray::mmapNpy;
 using NdArray::NdArray;
 
-SedDataProvider::SedDataProvider(const boost::filesystem::path& path, std::size_t max_size)
-    : m_data_path{path}, m_max_size{max_size}, m_length{0} {
+SedDataProvider::SedDataProvider(const boost::filesystem::path& path, std::size_t max_size, bool read_only)
+    : m_data_path{path}, m_max_size{max_size}, m_read_only{read_only}, m_length{0} {
+  using mmap_mode = boost::iostreams::mapped_file_base;
+
   if (boost::filesystem::exists(m_data_path)) {
-    m_array = Euclid::make_unique<NdArray<float>>(
-        mmapNpy<float>(m_data_path, boost::iostreams::mapped_file_base::readwrite, m_max_size + 1024));
+    auto mode = m_read_only ? mmap_mode::readonly : mmap_mode::readwrite;
+
+    m_array = Euclid::make_unique<NdArray<float>>(mmapNpy<float>(m_data_path, mode, m_max_size + 1024));
 
     if (m_array->shape().size() != 3) {
       throw Elements::Exception() << "Expected an NdArray with three dimensions";
@@ -47,12 +50,14 @@ SedDataProvider::SedDataProvider(const boost::filesystem::path& path, std::size_
     }
 
     m_length = m_array->shape()[1];
-  } else {
+  } else if (!read_only) {
     // We can not create the file yet: we need to know the size of the binning
     // Just touch it to get hold of the name and fail soon if we can not write here
     std::fstream stream;
     stream.exceptions(~std::ios_base::goodbit);
     stream.open(path.native(), std::ios_base::out);
+  } else {
+    throw Elements::Exception() << "Can not open a missing sed provider in read-only mode";
   }
 }
 
@@ -84,8 +89,12 @@ size_t SedDataProvider::length() const {
 }
 
 int64_t SedDataProvider::addSed(const XYDataset::XYDataset& data) {
-  typedef XYDataset::XYDataset::const_iterator::value_type pair_type;
-  auto                                                     cmp_bin_func = [](const pair_type& a, const pair_type& b) {
+  if (m_read_only) {
+    throw Elements::Exception("Can not modify a read-only sed provider");
+  }
+
+  using pair_type   = XYDataset::XYDataset::const_iterator::value_type;
+  auto cmp_bin_func = [](const pair_type& a, const pair_type& b) {
     return a.first < b.first;
   };
 
@@ -103,8 +112,8 @@ int64_t SedDataProvider::addSed(const XYDataset::XYDataset& data) {
   NdArray<float> values{1, m_length, 2};
   size_t         i = 0;
   for (auto p : data) {
-    values.at(0, i, 0) = p.first;
-    values.at(0, i, 1) = p.second;
+    values.at(0, i, 0) = static_cast<float>(p.first);
+    values.at(0, i, 1) = static_cast<float>(p.second);
     ++i;
   }
   m_array->concatenate(values);
