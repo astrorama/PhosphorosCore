@@ -5,10 +5,10 @@
  */
 
 #ifndef PHZOUTPUT_OUTPUTHANDLER_H
-#define	PHZOUTPUT_OUTPUTHANDLER_H
+#define PHZOUTPUT_OUTPUTHANDLER_H
 
-#include "SourceCatalog/Source.h"
 #include "PhzDataModel/SourceResults.h"
+#include "SourceCatalog/Source.h"
 
 namespace Euclid {
 namespace PhzOutput {
@@ -16,16 +16,12 @@ namespace PhzOutput {
 class OutputHandler {
 
 public:
-
   virtual ~OutputHandler() {}
 
-  virtual void handleSourceOutput(const SourceCatalog::Source& source,
-                                  const PhzDataModel::SourceResults& results) = 0;
-
+  virtual void handleSourceOutput(const SourceCatalog::Source& source, const PhzDataModel::SourceResults& results) = 0;
 };
 
-} // end of namespace PhzOutput
-} // end of namespace Euclid
+}  // end of namespace PhzOutput
+}  // end of namespace Euclid
 
-#endif	/* PHZOUTPUT_OUTPUTHANDLER_H */
-
+#endif /* PHZOUTPUT_OUTPUTHANDLER_H */

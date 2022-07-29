@@ -25,15 +25,14 @@
 #ifndef PHZCONFIGURATION_MODELGRIDMODIFICATIONCONFIG_H
 #define PHZCONFIGURATION_MODELGRIDMODIFICATIONCONFIG_H
 
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <map>
 
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzLikelihood/ProcessModelGridFunctor.h"
-
+#include <boost/filesystem/operations.hpp>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -58,20 +57,15 @@ public:
 
   const std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>>& getProcessModelGridFunctors() const;
 
-
   void addFunctor(std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor> new_functor);
-
 
   void addFunctorAtBegining(std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor> new_functor);
 
 private:
-
-   std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> m_functor_list;
-
+  std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> m_functor_list;
 };
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif  /* PHZCONFIGURATION_MODELGRIDMODIFICATIONCONFIG_H */
+#endif /* PHZCONFIGURATION_MODELGRIDMODIFICATIONCONFIG_H */

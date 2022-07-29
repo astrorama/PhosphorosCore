@@ -1,12 +1,15 @@
-
 # /
-/.project
-/.cproject
-/.settings
-/build.*
-/InstallArea
 /*.log
-/.sonar
-/PAQA
-/sonar-project.properties
+/.cproject
+/.project
 /.pydevproject
+/.settings
+/.sonar
+/InstallArea
+/PAQA
+/build.*
+/sonar-project.properties
+
+# Python
+__pycache__/
+*.py[cod]

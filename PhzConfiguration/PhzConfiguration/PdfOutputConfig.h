@@ -25,9 +25,9 @@
 #ifndef _PHZCONFIGURATION_PDFOUTPUTCONFIG_H
 #define _PHZCONFIGURATION_PDFOUTPUTCONFIG_H
 
-#include <boost/filesystem/path.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzOutput/OutputHandler.h"
+#include <boost/filesystem/path.hpp>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -40,7 +40,6 @@ namespace PhzConfiguration {
 class PdfOutputConfig : public Configuration::Configuration {
 
 public:
-
   PdfOutputConfig(long manager_id);
 
   /**
@@ -59,15 +58,13 @@ public:
   bool doNormalizePDFs() const;
 
 private:
-
-  bool m_pdf_normalized = true;
-  std::string m_format;
+  bool                    m_pdf_normalized = true;
+  std::string             m_format;
   boost::filesystem::path m_out_pdf_dir;
 
 }; /* End of PdfOutputConfig class */
 
 } /* namespace PhzConfiguration */
 } /* namespace Euclid */
-
 
 #endif

@@ -23,18 +23,17 @@
  */
 
 #ifndef PHZCONFIGURATION_MODELGRIDOUTPUTCONFIG_H
-#define	PHZCONFIGURATION_MODELGRIDOUTPUTCONFIG_H
+#define PHZCONFIGURATION_MODELGRIDOUTPUTCONFIG_H
 
-#include <cstdlib>
-#include <string>
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzModeling/PhotometryGridCreator.h"
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
+#include <string>
 
 namespace Euclid {
 namespace PhzConfiguration {
-
 
 /**
  * @class ModelGridOutputConfig
@@ -45,8 +44,7 @@ namespace PhzConfiguration {
 class ModelGridOutputConfig : public Configuration::Configuration {
 
 public:
-
- typedef std::function<void(const std::map<std::string, PhzDataModel::PhotometryGrid>&)> OutputFunction;
+  typedef std::function<void(const std::map<std::string, PhzDataModel::PhotometryGrid>&)> OutputFunction;
 
   /**
    * @brief Constructor
@@ -98,18 +96,15 @@ public:
    * @return
    * A function to be used for outputing the PhotometryGrid
    */
-  const OutputFunction & getOutputFunction();
+  const OutputFunction& getOutputFunction();
 
 private:
-
   OutputFunction m_output_function;
-  std::string m_grid_type = "ModelGrids";
+  std::string    m_grid_type = "ModelGrids";
 
 }; /* End of AuxDataDirConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_MODELGRIDOUTPUTCONFIG_H */
-
+#endif /* PHZCONFIGURATION_MODELGRIDOUTPUTCONFIG_H */

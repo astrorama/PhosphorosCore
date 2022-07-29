@@ -14,6 +14,8 @@
 #include <CCfits/CCfits>
 #include <random>
 #include <vector>
+#include <sstream>
+#include <iomanip>
 
 namespace fs = boost::filesystem;
 
@@ -85,29 +87,33 @@ LikelihoodHandler<GridType, Sampler>::LikelihoodHandler(
     std::string file_name = "Index_File_" + FullGridOutputTraits<GridType>::filename() + ".fits";
     m_index_file          = m_out_dir / file_name;
     m_index_fits_file     = std::make_shared<CCfits::FITS>("!" + m_index_file.string(), CCfits::RWmode::Write);
-    // Create the columnInfo object
-    m_index_column_info = std::shared_ptr<Table::ColumnInfo>{
-        new Euclid::Table::ColumnInfo{{Euclid::Table::ColumnInfo::info_type("OBJECT_ID", typeid(std::string)),
-                                       Euclid::Table::ColumnInfo::info_type("FILE_NAME", typeid(std::string))}}};
 
     createAndOpenSampleFile();
-
-    std::vector<Euclid::Table::ColumnInfo::info_type> info_list{
-        Euclid::Table::ColumnInfo::info_type("OBJECT_ID", typeid(std::string)),
-        Euclid::Table::ColumnInfo::info_type("GRID_REGION_INDEX", typeid(int)),
-        Euclid::Table::ColumnInfo::info_type("SED_INDEX", typeid(int)),
-        Euclid::Table::ColumnInfo::info_type("REDSHIFT", typeid(float)),
-        Euclid::Table::ColumnInfo::info_type("RED_CURVE_INDEX", typeid(int)),
-        Euclid::Table::ColumnInfo::info_type("EB_V", typeid(float)),
-        Euclid::Table::ColumnInfo::info_type("LUMINOSITY", typeid(float))};
-
-    for (auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
-      loggerPhz.info() << "Creating sampler columns adding " << iter->first;
-      info_list.push_back(Table::ColumnInfo::info_type(iter->first, typeid(float)));
-    }
-
-    m_sampling_column_info = std::shared_ptr<Euclid::Table::ColumnInfo>{new Euclid::Table::ColumnInfo{info_list}};
   }
+}
+
+
+template <PhzDataModel::RegionResultType GridType, typename Sampler>
+void LikelihoodHandler<GridType, Sampler>::createColumnsLists(const SourceCatalog::Source& first_source) {
+	auto source_id_type = first_source.getId();
+	m_index_column_info = std::shared_ptr<Table::ColumnInfo>{
+	        new Euclid::Table::ColumnInfo{{Euclid::Table::ColumnInfo::info_type("OBJECT_ID", source_id_type.type()),
+	                                       Euclid::Table::ColumnInfo::info_type("FILE_NAME", typeid(std::string))}}};
+
+	std::vector<Euclid::Table::ColumnInfo::info_type> info_list{
+	        Euclid::Table::ColumnInfo::info_type("OBJECT_ID", source_id_type.type()),
+	        Euclid::Table::ColumnInfo::info_type("GRID_REGION_INDEX", typeid(int)),
+	        Euclid::Table::ColumnInfo::info_type("SED_INDEX", typeid(int)),
+	        Euclid::Table::ColumnInfo::info_type("REDSHIFT", typeid(float)),
+	        Euclid::Table::ColumnInfo::info_type("RED_CURVE_INDEX", typeid(int)),
+	        Euclid::Table::ColumnInfo::info_type("EB_V", typeid(float)),
+	        Euclid::Table::ColumnInfo::info_type("LUMINOSITY", typeid(float))};
+	for (auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
+	      loggerPhz.info() << "Creating sampler columns adding " << iter->first;
+	      info_list.push_back(Table::ColumnInfo::info_type(iter->first, typeid(float)));
+	    }
+
+	m_sampling_column_info = std::shared_ptr<Euclid::Table::ColumnInfo>{new Euclid::Table::ColumnInfo{info_list}};
 }
 
 template <PhzDataModel::RegionResultType GridType, typename Sampler>
@@ -182,23 +188,26 @@ void LikelihoodHandler<GridType, Sampler>::exportFullGrid(const SourceCatalog::S
 
 template <PhzDataModel::RegionResultType GridType, typename Sampler>
 std::vector<Table::Row>
-LikelihoodHandler<GridType, Sampler>::drawSample(std::string source_id, const std::map<std::string, double>& region_volume,
+LikelihoodHandler<GridType, Sampler>::drawSample(SourceCatalog::Source::id_type source_id, const std::map<std::string, double>& region_volume,
                                                  const std::map<std::string, PhzDataModel::RegionResults>& result_map) {
   std::random_device rd;         // Will be used to obtain a seed for the random number engine
   std::mt19937       gen(rd());  // Standard mersenne_twister_engine seeded with rd()
   auto               sample = m_grid_sampler.drawSample(m_sample_number, region_volume, result_map, gen);
 
-  loggerPhz.debug() << "Add data to the sampling file ";
-  std::vector<Table::Row> sampling_row_list{};
+  loggerPhz.debug() << "Add data to the sampling file " << source_id;
+  std::vector<Table::Row> sampling_row_list;
+  sampling_row_list.reserve(sample.size());
   for (auto& s : sample) {
-    auto                               sed_qualified = s.sed.qualifiedName();
+    const auto&                        sed_qualified = s.sed.qualifiedName();
+
     std::vector<Table::Row::cell_type> values{source_id, s.region_index, s.sed_index, s.z, s.red_index, s.ebv, s.alpha};
     for (auto& param : m_param_config) {
-      float param_value = float(std::get<0>(param.second.at(sed_qualified)) * s.alpha + std::get<1>(param.second.at(sed_qualified)));
+      float param_value =
+          float(std::get<0>(param.second.at(sed_qualified)) * s.alpha + std::get<1>(param.second.at(sed_qualified)));
       values.push_back(param_value);
     }
 
-    sampling_row_list.push_back(Table::Row{values, m_sampling_column_info});
+    sampling_row_list.emplace_back(std::move(values), m_sampling_column_info);
   }
   return sampling_row_list;
 }
@@ -210,6 +219,10 @@ void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(const SourceCatalo
   loggerPhz.debug() << "Outputting the " << FullGridOutputTraits<GridType>::filename() << " for source with id " << id;
 
   if (m_do_sample) {
+	// 0 if it is the first source create the columns of the output files
+	if (m_counter==0 && m_current_file_id==1) {
+		  createColumnsLists(source);
+	}
     // 1) "Volume" of the different regions
     std::map<std::string, double> region_volume{};
 
@@ -218,7 +231,7 @@ void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(const SourceCatalo
     }
 
     // Draw the samples
-    auto sampling_row_list = drawSample(id, region_volume, results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>());
+    auto sampling_row_list = drawSample(source.getId(), region_volume, results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>());
 
     // Flush output file
     if (m_counter >= m_chunk_size) {
@@ -230,14 +243,14 @@ void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(const SourceCatalo
     if (!m_current_file_has_comment) {
       m_current_file_has_comment = true;
       auto comment               = Sampler::createComment(results);
-      m_sample_fits_writer->addComment(comment.str());
+      m_sample_fits_writer->addComment(comment);
       loggerPhz.info() << "Add comment to the sample file ";
     }
     m_sample_fits_writer->addData(Table::Table{sampling_row_list});
 
     // loggerPhz.info() << "Add info to index file ";
     std::string samp_file_name = getFileName(m_current_file_id);
-    m_index_row_list.push_back({{id, samp_file_name}, m_index_column_info});
+    m_index_row_list.push_back({{source.getId(), samp_file_name}, m_index_column_info});
 
     ++m_counter;
 

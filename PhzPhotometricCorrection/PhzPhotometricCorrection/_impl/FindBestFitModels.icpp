@@ -96,7 +96,7 @@ std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> FindBestFitM
     
     // If the redshift of the source is not in the model grid range we ignore it
     if (!zInRange(expected_redshift)) {
-      logger.info() << "Ignoring source with ID " << source_id << " because its "
+      logger.debug() << "Ignoring source with ID " << source_id << " because its "
               << "spectroscopic redshift (" << expected_redshift << ") is outside "
               << "the model grid range";
       continue;

@@ -26,9 +26,9 @@
 #ifndef _PHZEXECUTABLES_BUILDPPCONFIG_H
 #define _PHZEXECUTABLES_BUILDPPCONFIG_H
 
+#include "Configuration/ConfigManager.h"
 #include <functional>
 #include <tuple>
-#include "Configuration/ConfigManager.h"
 
 #include "MathUtils/function/Function.h"
 #include "XYDataset/QualifiedName.h"
@@ -45,9 +45,6 @@ namespace PhzExecutables {
 class BuildPPConfig {
 
 public:
-
-
-
   /**
    * @brief Destructor
    */
@@ -59,11 +56,7 @@ public:
 
   std::map<std::string, std::tuple<double, double, std::string>> getParamMap(std::string string_params) const;
 
-
-
 private:
-
-
 };  // End of BuildPPConfig class
 
 }  // namespace PhzExecutables

@@ -24,8 +24,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "ConfigManager_fixture.h"
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
@@ -33,11 +33,11 @@ namespace fs = boost::filesystem;
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (CosmologicalParameterConfig_test)
+BOOST_AUTO_TEST_SUITE(CosmologicalParameterConfig_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, ConfigManager_fixture) {
 
   // Given
   config_manager.registerConfiguration<CosmologicalParameterConfig>();
@@ -51,7 +51,6 @@ BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
   BOOST_CHECK_NO_THROW(options.find("cosmology-hubble-constant", false));
 }
 
-
 //-----------------------------------------------------------------------------
 // Test that the returned class contains the provided values
 //-----------------------------------------------------------------------------
@@ -60,14 +59,14 @@ BOOST_FIXTURE_TEST_CASE(Values_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<CosmologicalParameterConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
+  std::map<std::string, po::variable_value> options_map{};
 
-  double omega_m= 0.4;
-  double omega_lambda=0.6;
-  double h_0=70.;
+  double omega_m      = 0.4;
+  double omega_lambda = 0.6;
+  double h_0          = 70.;
 
-  options_map["cosmology-omega-m"].value() = boost::any(omega_m);
-  options_map["cosmology-omega-lambda"].value() = boost::any(omega_lambda);
+  options_map["cosmology-omega-m"].value()         = boost::any(omega_m);
+  options_map["cosmology-omega-lambda"].value()    = boost::any(omega_lambda);
   options_map["cosmology-hubble-constant"].value() = boost::any(h_0);
 
   // When
@@ -84,11 +83,11 @@ BOOST_FIXTURE_TEST_CASE(Missing_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<CosmologicalParameterConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
+  std::map<std::string, po::variable_value> options_map{};
 
-  double omega_m = 0.3089;
+  double omega_m      = 0.3089;
   double omega_lambda = 0.6911;
-  double h_0 = 67.74;
+  double h_0          = 67.74;
 
   // When
   config_manager.initialize(options_map);
@@ -100,10 +99,6 @@ BOOST_FIXTURE_TEST_CASE(Missing_test, ConfigManager_fixture) {
   BOOST_CHECK_EQUAL(result.getOmegaM(), omega_m);
 }
 
-
-
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

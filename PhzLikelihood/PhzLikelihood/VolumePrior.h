@@ -1,20 +1,20 @@
-/*  
- * Copyright (C) 2012-2020 Euclid Science Ground Segment    
- *  
+/*
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ *
  * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 3.0 of the License, or (at your option)  
- * any later version.  
- *  
- * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
- * details.  
- *  
- * You should have received a copy of the GNU Lesser General Public License 
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
- */  
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 /**
  * @file PhzLikelihood/VolumePrior.h
@@ -25,10 +25,10 @@
 #ifndef _PHZLIKELIHOOD_VOLUMEPRIOR_H
 #define _PHZLIKELIHOOD_VOLUMEPRIOR_H
 
-#include <vector>
-#include <map>
 #include "PhysicsUtils/CosmologicalParameters.h"
 #include "PhzDataModel/RegionResults.h"
+#include <map>
+#include <vector>
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -41,7 +41,6 @@ namespace PhzLikelihood {
 class VolumePrior {
 
 public:
- 
   /**
    * @brief Constructs a new instance of VolumePrior
    * @details
@@ -55,9 +54,8 @@ public:
    * @param effectiveness
    *    The effectiveness of the prior in range [0,1]
    */
-  VolumePrior(const PhysicsUtils::CosmologicalParameters& cosmology,
-              const std::vector<double>& expected_redshifts,
-              double effectiveness=1.);
+  VolumePrior(const PhysicsUtils::CosmologicalParameters& cosmology, const std::vector<double>& expected_redshifts,
+              double effectiveness = 1.);
 
   /**
    * @brief Destructor
@@ -80,13 +78,11 @@ public:
   void operator()(PhzDataModel::RegionResults& results) const;
 
 private:
-  
-  std::map<double, double> m_precomputed {};
+  std::map<double, double> m_precomputed{};
 
 }; /* End of VolumePrior class */
 
 } /* namespace PhzLikelihood */
 } /* namespace Euclid */
-
 
 #endif

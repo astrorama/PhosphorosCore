@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -16,8 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PhzModelGrid2FitsConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -29,19 +29,17 @@ static const std::string OUTPUT{"output-file"};
 static const std::string OVERWRITE{"overwrite"};
 static const std::string SQUASH{"squash"};
 
-PhzModelGrid2FitsConfig::PhzModelGrid2FitsConfig(long manager_id) : Configuration(manager_id) {
+PhzModelGrid2FitsConfig::PhzModelGrid2FitsConfig(long manager_id)
+    : Configuration(manager_id), m_overwrite(false), m_squash(false) {
   declareDependency<PhotometryGridConfig>();
 }
 
-
 auto PhzModelGrid2FitsConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Model Grid to FITS options", {
-    {OUTPUT.c_str(), po::value<std::string>()->default_value("model_grid.fits"),
-     "The path and filename of the model grid FITS file"},
-    {OVERWRITE.c_str(), po::bool_switch(), "Overwrite destination file if it exists"},
-    {SQUASH.c_str(), po::bool_switch(), "Write a single HDU instead of one per grid"}
-  }}
-  };
+  return {{"Model Grid to FITS options",
+           {{OUTPUT.c_str(), po::value<std::string>()->default_value("model_grid.fits"),
+             "The path and filename of the model grid FITS file"},
+            {OVERWRITE.c_str(), po::bool_switch(), "Overwrite destination file if it exists"},
+            {SQUASH.c_str(), po::bool_switch(), "Write a single HDU instead of one per grid"}}}};
 }
 
 void PhzModelGrid2FitsConfig::initialize(const UserValues& args) {
@@ -52,5 +50,5 @@ void PhzModelGrid2FitsConfig::initialize(const UserValues& args) {
     m_squash = args.at(SQUASH).as<bool>();
 }
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid

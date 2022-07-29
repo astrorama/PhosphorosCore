@@ -23,13 +23,13 @@
  */
 
 #ifndef PHZCONFIGURATION_PIORCONFIG_H
-#define	PHZCONFIGURATION_PIORCONFIG_H
+#define PHZCONFIGURATION_PIORCONFIG_H
 
+#include "Configuration/Configuration.h"
+#include "PhzLikelihood/CatalogHandler.h"
+#include <boost/filesystem/operations.hpp>
 #include <cstdlib>
 #include <string>
-#include <boost/filesystem/operations.hpp>
-#include "PhzLikelihood/CatalogHandler.h"
-#include "Configuration/Configuration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -42,7 +42,6 @@ namespace PhzConfiguration {
 class PriorConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief Constructor
    */
@@ -59,7 +58,7 @@ public:
    * @return
    * A vector of PriorFunction, one for each registered prior.
    */
-  const std::vector<PhzLikelihood::CatalogHandler::PriorFunction> & getPriors();
+  const std::vector<PhzLikelihood::CatalogHandler::PriorFunction>& getPriors();
 
   /**
    * @brief Add a prior to the list of priors to be applied to the likelihood.
@@ -70,14 +69,11 @@ public:
   void addPrior(PhzLikelihood::CatalogHandler::PriorFunction prior);
 
 private:
-
-  std::vector<PhzLikelihood::CatalogHandler::PriorFunction> m_priors {};
+  std::vector<PhzLikelihood::CatalogHandler::PriorFunction> m_priors{};
 
 }; /* End of PriorConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_PIORCONFIG_H */
-
+#endif /* PHZCONFIGURATION_PIORCONFIG_H */

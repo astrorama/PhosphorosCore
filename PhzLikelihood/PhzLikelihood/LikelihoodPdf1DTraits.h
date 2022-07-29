@@ -16,7 +16,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
 /*
  * @file Pdf1DTraits.h
  * @author Nikolaos Apostolakos
@@ -32,8 +31,7 @@ namespace Euclid {
 namespace PhzLikelihood {
 
 template <int FixedAxis>
-struct LikelihoodPdf1DTraits {
-};
+struct LikelihoodPdf1DTraits {};
 
 template <>
 struct LikelihoodPdf1DTraits<PhzDataModel::ModelParameter::SED> {
@@ -55,8 +53,7 @@ struct LikelihoodPdf1DTraits<PhzDataModel::ModelParameter::Z> {
   static constexpr auto PdfRes = PhzDataModel::RegionResultType::LIKELIHOOD_Z_1D_PDF;
 };
 
-} // end of namespace PhzLikelihood
-} // end of namespace Euclid
+}  // end of namespace PhzLikelihood
+}  // end of namespace Euclid
 
 #endif /* PDF1DTRAITS_H */
-

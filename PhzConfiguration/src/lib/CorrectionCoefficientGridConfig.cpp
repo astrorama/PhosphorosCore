@@ -22,11 +22,11 @@
  * @author Florian Dubath
  */
 
-#include <fstream>
+#include <PhzDataModel/ArchiveFormat.h>
 #include <algorithm>
 #include <boost/archive/binary_iarchive.hpp>
-#include <PhzDataModel/ArchiveFormat.h>
 #include <boost/archive/text_iarchive.hpp>
+#include <fstream>
 
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
@@ -37,8 +37,8 @@
 #include "Configuration/ConfigManager.h"
 #include "Configuration/PhotometricBandMappingConfig.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
-#include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/CorrectionCoefficientGridConfig.h"
+#include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 
 namespace po = boost::program_options;
@@ -49,7 +49,7 @@ namespace PhzConfiguration {
 
 static Elements::Logging logger = Elements::Logging::getLogger("CorrectionCoefficientGridConfig");
 
-static const std::string CORRECTION_COEFFICIENT_GRID_FILE {"galactic-correction-coefficient-grid-file"};
+static const std::string CORRECTION_COEFFICIENT_GRID_FILE{"galactic-correction-coefficient-grid-file"};
 
 CorrectionCoefficientGridConfig::CorrectionCoefficientGridConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<CatalogTypeConfig>();
@@ -59,19 +59,19 @@ CorrectionCoefficientGridConfig::CorrectionCoefficientGridConfig(long manager_id
   // is loading a catalog with photometries, we want to have model grids with the
   // same photometries.
   auto& manager = Euclid::Configuration::ConfigManager::getInstance(manager_id);
-  manager.registerDependency<PhzConfiguration::PhotometryGridConfig, Euclid::Configuration::PhotometricBandMappingConfig>();
+  manager.registerDependency<PhzConfiguration::PhotometryGridConfig,
+                             Euclid::Configuration::PhotometricBandMappingConfig>();
 }
 
 auto CorrectionCoefficientGridConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Galactic Correction Coefficient options", {
-    {CORRECTION_COEFFICIENT_GRID_FILE.c_str(), po::value<std::string>()->default_value(""),
-        "The path and filename of the correction coefficient grid file"}
-  }}};
+  return {{"Galactic Correction Coefficient options",
+           {{CORRECTION_COEFFICIENT_GRID_FILE.c_str(), po::value<std::string>()->default_value(""),
+             "The path and filename of the correction coefficient grid file"}}}};
 }
 
 template <typename IArchive>
-static void readModelGridFile (std::ifstream&in, PhzDataModel::PhotometryGridInfo& info,
-                               std::map<std::string, PhzDataModel::PhotometryGrid>& grids) {
+static void readModelGridFile(std::ifstream& in, PhzDataModel::PhotometryGridInfo& info,
+                              std::map<std::string, PhzDataModel::PhotometryGrid>& grids) {
   IArchive iarchive{in};
   iarchive >> info;
 
@@ -81,40 +81,42 @@ static void readModelGridFile (std::ifstream&in, PhzDataModel::PhotometryGridInf
 }
 
 void CorrectionCoefficientGridConfig::initialize(const UserValues& args) {
-  if (args.at(CORRECTION_COEFFICIENT_GRID_FILE).as<std::string>()!=""){
-    auto intermediate_dir = getDependency<IntermediateDirConfig>().getIntermediateDir();
-    auto catalog_type = getDependency<CatalogTypeConfig>().getCatalogType();
-    fs::path path = args.at(CORRECTION_COEFFICIENT_GRID_FILE).as<std::string>();
-    auto filename = path.is_absolute() ? path : intermediate_dir/catalog_type/"GalacticCorrectionCoefficientGrids"/path;
+  if (args.at(CORRECTION_COEFFICIENT_GRID_FILE).as<std::string>() != "") {
+    auto     intermediate_dir = getDependency<IntermediateDirConfig>().getIntermediateDir();
+    auto     catalog_type     = getDependency<CatalogTypeConfig>().getCatalogType();
+    fs::path path             = args.at(CORRECTION_COEFFICIENT_GRID_FILE).as<std::string>();
+    auto     filename =
+        path.is_absolute() ? path : intermediate_dir / catalog_type / "GalacticCorrectionCoefficientGrids" / path;
     if (!fs::exists(filename)) {
       logger.error() << "File " << filename << " not found!";
       throw Elements::Exception() << "Galactic Correction Coefficient grid file (" << CORRECTION_COEFFICIENT_GRID_FILE
                                   << " option) does not exist: " << filename;
     }
 
-    std::ifstream in {filename.string()};
-    auto format = PhzDataModel::guessArchiveFormat(in);
+    std::ifstream in{filename.string()};
+    auto          format = PhzDataModel::guessArchiveFormat(in);
 
     switch (format) {
-      case PhzDataModel::ArchiveFormat::BINARY:
-        logger.info() << "Model grid in binary format";
-        readModelGridFile<boost::archive::binary_iarchive>(in, m_info, m_grids);
-        break;
-      case PhzDataModel::ArchiveFormat::TEXT:
-        logger.info() << "Model grid in text format";
-        readModelGridFile<boost::archive::text_iarchive>(in, m_info, m_grids);
-        break;
-      default:
-        throw Elements::Exception() << "Unknown model grid format";
+    case PhzDataModel::ArchiveFormat::BINARY:
+      logger.info() << "Model grid in binary format";
+      readModelGridFile<boost::archive::binary_iarchive>(in, m_info, m_grids);
+      break;
+    case PhzDataModel::ArchiveFormat::TEXT:
+      logger.info() << "Model grid in text format";
+      readModelGridFile<boost::archive::text_iarchive>(in, m_info, m_grids);
+      break;
+    default:
+      throw Elements::Exception() << "Unknown model grid format";
     }
 
     // Here we try to get the PhotometricBandMappingConfig. If this is throws, it
     // means the PhotometryGridConfig is not used together with a Photometry catalog,
     // so we need to do nothing. Otherwise we set the photometries to the correct
     // filters
-    std::shared_ptr<std::vector<std::string>> filter_names {nullptr};
+    std::shared_ptr<std::vector<std::string>> filter_names{nullptr};
     try {
-      auto& filter_mapping = getDependency<Euclid::Configuration::PhotometricBandMappingConfig>().getPhotometricBandMapping();
+      auto& filter_mapping =
+          getDependency<Euclid::Configuration::PhotometricBandMappingConfig>().getPhotometricBandMapping();
       filter_names = std::make_shared<std::vector<std::string>>();
       for (auto& pair : filter_mapping) {
         filter_names->push_back(pair.first);
@@ -137,20 +139,6 @@ void CorrectionCoefficientGridConfig::initialize(const UserValues& args) {
             throw Elements::Exception() << "Filter " << f << " missing from the model grid";
           }
         }
-
-        // Here we know we need to make new photometries and replace the members
-        m_info.filter_names.clear();
-        m_info.filter_names.insert(m_info.filter_names.begin(), filter_names->begin(), filter_names->end());
-
-        for (auto& pair : m_grids) {
-          for (auto& p : pair.second) {
-            std::vector<SourceCatalog::FluxErrorPair> values {};
-            for (auto& f : *filter_names) {
-              values.emplace_back(*(p.find(f)));
-            }
-            p = SourceCatalog::Photometry(filter_names, std::move(values));
-          }
-        }
       }
     }
   }
@@ -163,15 +151,13 @@ const PhzDataModel::PhotometryGridInfo& CorrectionCoefficientGridConfig::getCorr
   return m_info;
 }
 
-const std::map<std::string, PhzDataModel::PhotometryGrid>& CorrectionCoefficientGridConfig::getCorrectionCoefficientGrid() {
+const std::map<std::string, PhzDataModel::PhotometryGrid>&
+CorrectionCoefficientGridConfig::getCorrectionCoefficientGrid() {
   if (getCurrentState() < State::INITIALIZED) {
     throw Elements::Exception() << "getPhotometryGrid() call on uninitialized PhotometryGridConfig";
   }
   return m_grids;
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

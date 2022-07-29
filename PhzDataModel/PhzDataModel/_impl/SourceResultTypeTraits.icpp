@@ -34,6 +34,14 @@ namespace PhzDataModel {
 
 template <SourceResultType T>
 struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
+                                    T == SourceResultType::BEST_LIKELIHOOD_REGION ||
+                                    T == SourceResultType::BEST_REGION
+                             >::type> {
+  using type = double;
+};
+
+template <SourceResultType T>
+struct TypedEnumTraits<SourceResultType, T, typename std::enable_if<
                                     T == SourceResultType::BEST_LIKELIHOOD_MODEL_ITERATOR ||
                                     T == SourceResultType::BEST_MODEL_ITERATOR
                              >::type> {

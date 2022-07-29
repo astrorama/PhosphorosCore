@@ -4,11 +4,11 @@
  * @author Nikolaos Apostolakos
  */
 
-#include "ElementsKernel/ProgramHeaders.h"
+#include "PhzExecutables/ComputeRedshifts.h"
 #include "Configuration/ConfigManager.h"
 #include "Configuration/Utils.h"
+#include "ElementsKernel/ProgramHeaders.h"
 #include "PhzConfiguration/ComputeRedshiftsConfig.h"
-#include "PhzExecutables/ComputeRedshifts.h"
 
 using namespace Euclid;
 using namespace Euclid::Configuration;
@@ -31,12 +31,11 @@ class ComputeRedshifts : public Elements::Program {
 
     auto& config_manager = ConfigManager::getInstance(config_manager_id);
     config_manager.initialize(args);
-    
+
     PhzExecutables::ComputeRedshifts{}.run(config_manager);
 
     return Elements::ExitCode::OK;
   }
-
 };
 
 MAIN_FOR(ComputeRedshifts)

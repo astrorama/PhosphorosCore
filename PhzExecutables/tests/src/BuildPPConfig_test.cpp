@@ -33,8 +33,6 @@
 using namespace Euclid;
 using namespace Euclid::PhzExecutables;
 
-
-
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE(BuildPPConfig_test)
@@ -43,12 +41,12 @@ BOOST_AUTO_TEST_SUITE(BuildPPConfig_test)
 BOOST_AUTO_TEST_CASE(getParamMap_test) {
   BuildPPConfig runner{};
 
-  std::string input = "";
-  auto result = runner.getParamMap(input);
+  std::string input  = "";
+  auto        result = runner.getParamMap(input);
 
   BOOST_CHECK_EQUAL(result.size(), 0);
 
-  input = "MASS=1E30*L+0[Solar Mass]";
+  input  = "MASS=1E30*L+0[Solar Mass]";
   result = runner.getParamMap(input);
 
   BOOST_CHECK_EQUAL(result.size(), 1);
@@ -57,7 +55,7 @@ BOOST_AUTO_TEST_CASE(getParamMap_test) {
   BOOST_CHECK_EQUAL(std::get<1>(result.begin()->second), 0);
   BOOST_CHECK_EQUAL(std::get<2>(result.begin()->second), "Solar Mass");
 
-  input = "MASS=1E30*L+0;AGE=1E10[Year]";
+  input  = "MASS=1E30*L+0;AGE=1E10[Year]";
   result = runner.getParamMap(input);
 
   BOOST_CHECK_EQUAL(result.size(), 2);
@@ -69,8 +67,6 @@ BOOST_AUTO_TEST_CASE(getParamMap_test) {
   BOOST_CHECK_EQUAL(std::get<0>((++(result.begin()))->second), 1E30);
   BOOST_CHECK_EQUAL(std::get<1>((++(result.begin()))->second), 0);
   BOOST_CHECK_EQUAL(std::get<2>((++(result.begin()))->second), "");
-
-
 }
 
 //-----------------------------------------------------------------------------

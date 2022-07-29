@@ -18,20 +18,14 @@
 // string_to_parse : string, the string to apply the regex
 // throw:
 // invalid character(s) found
-inline void ApplyRegex(const std::string& regex_string,
-                       const std::string& option,
-                       const std::string& string_to_parse)
-{
+inline void ApplyRegex(const std::string& regex_string, const std::string& option, const std::string& string_to_parse) {
 
   boost::regex expression(regex_string);
   if (!boost::regex_match(string_to_parse, expression)) {
-    throw Elements::Exception() <<"Invalid character(s) found for the \""
-                                << option << "\" option : \""
-                                << string_to_parse
-                                << "\"";
+    throw Elements::Exception() << "Invalid character(s) found for the \"" << option << "\" option : \""
+                                << string_to_parse << "\"";
   }
 }
-
 
 // The checkRangeString function applies a provided regex (regex_string) to a
 // string (string_to_parse) in order to detect any not wanted character(s) for
@@ -39,9 +33,7 @@ inline void ApplyRegex(const std::string& regex_string,
 // Params:
 // option          : string, the name of the parameter to be checked
 // string_to_parse : string, the string to apply the regex
-inline void checkRangeString(const std::string& option,
-                             const std::string& string_to_parse)
-{
+inline void checkRangeString(const std::string& option, const std::string& string_to_parse) {
   // Regex for the range option where the string expected is as follows:
   // "min max step"
   //  where min max and step are doubles so only digits and/or dot are expected
@@ -55,16 +47,12 @@ inline void checkRangeString(const std::string& option,
 // Params:
 // option          : string, the name of the parameter to be checked
 // string_to_parse : string, the string to apply the regex
-inline void checkValueString( const std::string& option,
-                              const std::string& string_to_parse)
-{
+inline void checkValueString(const std::string& option, const std::string& string_to_parse) {
   // Regex for the value option where the string expected is as follows:
   // "value"  where value is a double so only digits and/or dot characters
   // are expected
   const std::string regex_string{"((\\d+(\\.\\d*)?)|(\\.\\d+))($|\\s+)"};
   ApplyRegex(regex_string, option, string_to_parse);
 }
-
-
 
 #endif /* CHECKSTRING_H_ */

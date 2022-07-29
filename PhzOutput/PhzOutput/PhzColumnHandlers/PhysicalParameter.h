@@ -25,21 +25,17 @@
 #ifndef _PHZOUTPUT_PHZCOLUMNHANDLERS_PHYSICALPARAMETER_H
 #define _PHZOUTPUT_PHZCOLUMNHANDLERS_PHYSICALPARAMETER_H
 
+#include "PhzDataModel/GridType.h"
+#include "PhzDataModel/PhotometryGrid.h"
+#include "PhzOutput/PhzColumnHandlers/ColumnHandler.h"
 #include <functional>
 #include <map>
 #include <string>
 #include <tuple>
-#include "PhzOutput/PhzColumnHandlers/ColumnHandler.h"
-#include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/GridType.h"
 
 namespace Euclid {
 namespace PhzOutput {
 namespace ColumnHandlers {
-
-
-
-
 
 /**
  * @class BestModel
@@ -49,40 +45,34 @@ namespace ColumnHandlers {
 class PhysicalParameter : public ColumnHandler {
 
 public:
-
-  using ModelIteratorFunctor = std::function<PhzDataModel::PhotometryGrid::const_iterator(const PhzDataModel::SourceResults&)>;
+  using ModelIteratorFunctor =
+      std::function<PhzDataModel::PhotometryGrid::const_iterator(const PhzDataModel::SourceResults&)>;
   using ScaleFunctor = std::function<double(const PhzDataModel::SourceResults&)>;
 
-  PhysicalParameter(PhzDataModel::GridType grid_type, const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& param_config);
-
+  PhysicalParameter(
+      PhzDataModel::GridType                                                                       grid_type,
+      const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& param_config);
 
   /**
    * @brief Destructor
    */
   virtual ~PhysicalParameter() = default;
 
-
   std::vector<Table::ColumnInfo::info_type> getColumnInfoList() const override;
 
-  std::vector<Table::Row::cell_type> convertResults(
-                    const SourceCatalog::Source& source,
-                    const PhzDataModel::SourceResults& results) const override;
+  std::vector<Table::Row::cell_type> convertResults(const SourceCatalog::Source&       source,
+                                                    const PhzDataModel::SourceResults& results) const override;
 
 private:
-
-  std::string m_column_prefix;
-  ModelIteratorFunctor m_model_iterator_functor;
-  ScaleFunctor m_scale_functor;
+  std::string                                                                                  m_column_prefix;
+  ModelIteratorFunctor                                                                         m_model_iterator_functor;
+  ScaleFunctor                                                                                 m_scale_functor;
   const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& m_param_config;
 
-
 }; /* End of BestModel class */
-
-
 
 } /* namespace ColumnHandlers */
 } /* namespace PhzOutput */
 } /* namespace Euclid */
-
 
 #endif

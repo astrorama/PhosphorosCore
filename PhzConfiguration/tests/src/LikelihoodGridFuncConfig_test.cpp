@@ -24,8 +24,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "PhzConfiguration/LikelihoodGridFuncConfig.h"
 #include "ConfigManager_fixture.h"
+#include "PhzConfiguration/LikelihoodGridFuncConfig.h"
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
@@ -33,28 +33,22 @@ namespace fs = boost::filesystem;
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (LikelihoodGridFuncConfig_test)
+BOOST_AUTO_TEST_SUITE(LikelihoodGridFuncConfig_test)
 
 //-----------------------------------------------------------------------------
 
-
-
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
-// Given
-config_manager.registerConfiguration<LikelihoodGridFuncConfig>();
-config_manager.closeRegistration();
+BOOST_FIXTURE_TEST_CASE(NotInitializedGetter_test, ConfigManager_fixture) {
+  // Given
+  config_manager.registerConfiguration<LikelihoodGridFuncConfig>();
+  config_manager.closeRegistration();
 
-// Then
-BOOST_CHECK_THROW(config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction(), Elements::Exception);
+  // Then
+  BOOST_CHECK_THROW(config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction(),
+                    Elements::Exception);
 }
 
-
-
-
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

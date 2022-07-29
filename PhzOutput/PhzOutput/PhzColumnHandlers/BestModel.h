@@ -25,18 +25,14 @@
 #ifndef _PHZOUTPUT_PHZCOLUMNHANDLERS_BESTMODEL_H
 #define _PHZOUTPUT_PHZCOLUMNHANDLERS_BESTMODEL_H
 
-#include <functional>
-#include "PhzOutput/PhzColumnHandlers/ColumnHandler.h"
-#include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/GridType.h"
+#include "PhzDataModel/PhotometryGrid.h"
+#include "PhzOutput/PhzColumnHandlers/ColumnHandler.h"
+#include <functional>
 
 namespace Euclid {
 namespace PhzOutput {
 namespace ColumnHandlers {
-
-
-
-
 
 /**
  * @class BestModel
@@ -46,39 +42,33 @@ namespace ColumnHandlers {
 class BestModel : public ColumnHandler {
 
 public:
-
-  using ModelIteratorFunctor = std::function<PhzDataModel::PhotometryGrid::const_iterator(const PhzDataModel::SourceResults&)>;
-  using ScaleFunctor = std::function<double(const PhzDataModel::SourceResults&)>;
+  using ModelIteratorFunctor =
+      std::function<PhzDataModel::PhotometryGrid::const_iterator(const PhzDataModel::SourceResults&)>;
+  using ScaleFunctor      = std::function<double(const PhzDataModel::SourceResults&)>;
+  using RegonIndexFunctor = std::function<int(const PhzDataModel::SourceResults&)>;
 
   BestModel(PhzDataModel::GridType grid_type);
-
 
   /**
    * @brief Destructor
    */
   virtual ~BestModel() = default;
 
-
   std::vector<Table::ColumnInfo::info_type> getColumnInfoList() const override;
 
-  std::vector<Table::Row::cell_type> convertResults(
-                    const SourceCatalog::Source& source,
-                    const PhzDataModel::SourceResults& results) const override;
+  std::vector<Table::Row::cell_type> convertResults(const SourceCatalog::Source&       source,
+                                                    const PhzDataModel::SourceResults& results) const override;
 
 private:
-
-  std::string m_column_prefix;
+  std::string          m_column_prefix;
   ModelIteratorFunctor m_model_iterator_functor;
-  ScaleFunctor m_scale_functor;
-
+  ScaleFunctor         m_scale_functor;
+  RegonIndexFunctor    m_region_index_functior;
 
 }; /* End of BestModel class */
-
-
 
 } /* namespace ColumnHandlers */
 } /* namespace PhzOutput */
 } /* namespace Euclid */
-
 
 #endif

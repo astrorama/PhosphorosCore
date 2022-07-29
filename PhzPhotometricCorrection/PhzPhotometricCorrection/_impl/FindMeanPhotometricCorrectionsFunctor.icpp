@@ -38,7 +38,7 @@ template <typename SourceIter>
   }
   for (auto& pair : result) {
     if ( result_count[pair.first] == 0) {
-      meanCorrlogger.warn()<< "The photometry band " << pair.first << " has no reliable source. Set the correction to 1";
+      meanCorrlogger.warn()<< "The photometry band " << pair.first << " has no reliable source. It will not be fitted.";
       pair.second = 1.0;
     } else {
       pair.second /= result_count[pair.first];

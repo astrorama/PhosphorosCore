@@ -22,10 +22,10 @@
  * @author Florian Dubath
  */
 
-#include <cstdlib>
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzConfiguration/CosmologicalParameterConfig.h"
+#include <cstdlib>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -33,45 +33,45 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string OMEGA_M {"cosmology-omega-m"};
-static const std::string OMEGA_LAMBDA {"cosmology-omega-lambda"};
-static const std::string HUBBLE_CONSTANT {"cosmology-hubble-constant"};
+static const std::string OMEGA_M{"cosmology-omega-m"};
+static const std::string OMEGA_LAMBDA{"cosmology-omega-lambda"};
+static const std::string HUBBLE_CONSTANT{"cosmology-hubble-constant"};
 
-CosmologicalParameterConfig::CosmologicalParameterConfig(long manager_id) : Configuration(manager_id) {
-}
+CosmologicalParameterConfig::CosmologicalParameterConfig(long manager_id) : Configuration(manager_id) {}
 
 auto CosmologicalParameterConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
 
   auto default_param = PhysicsUtils::CosmologicalParameters();
 
-  return {{"Cosmological Parameters options", {
-      {OMEGA_M.c_str(), po::value<double>()->default_value(default_param.getOmegaM()),
-             ("The matter density parameter (default "+std::to_string(default_param.getOmegaM())+")").c_str()},
-      {OMEGA_LAMBDA.c_str(), po::value<double>()->default_value(default_param.getOmegaLambda()),
-             ("Effective mass density of the dark energy parameter (default "+std::to_string(default_param.getOmegaLambda())+")").c_str()},
-      {HUBBLE_CONSTANT.c_str(), po::value<double>()->default_value(default_param.getHubbleConstant()),
-             ("Hubble constant in (km/s)/Mpc (default "+std::to_string(default_param.getHubbleConstant())+")").c_str()}
-  }}};
+  return {{"Cosmological Parameters options",
+           {{OMEGA_M.c_str(), po::value<double>()->default_value(default_param.getOmegaM()),
+             ("The matter density parameter (default " + std::to_string(default_param.getOmegaM()) + ")").c_str()},
+            {OMEGA_LAMBDA.c_str(), po::value<double>()->default_value(default_param.getOmegaLambda()),
+             ("Effective mass density of the dark energy parameter (default " +
+              std::to_string(default_param.getOmegaLambda()) + ")")
+                 .c_str()},
+            {HUBBLE_CONSTANT.c_str(), po::value<double>()->default_value(default_param.getHubbleConstant()),
+             ("Hubble constant in (km/s)/Mpc (default " + std::to_string(default_param.getHubbleConstant()) + ")")
+                 .c_str()}}}};
 }
 
 void CosmologicalParameterConfig::initialize(const UserValues& args) {
-  auto default_param = PhysicsUtils::CosmologicalParameters();
-  double omega_m = args.count(OMEGA_M) > 0 ? args.find(OMEGA_M)->second.as<double>() : default_param.getOmegaM();
-  double omega_lambda = args.count(OMEGA_LAMBDA) > 0 ? args.find(OMEGA_LAMBDA)->second.as<double>() : default_param.getOmegaLambda();
-  double h_0 = args.count(HUBBLE_CONSTANT) > 0 ? args.find(HUBBLE_CONSTANT)->second.as<double>() : default_param.getHubbleConstant();
+  auto   default_param = PhysicsUtils::CosmologicalParameters();
+  double omega_m       = args.count(OMEGA_M) > 0 ? args.find(OMEGA_M)->second.as<double>() : default_param.getOmegaM();
+  double omega_lambda =
+      args.count(OMEGA_LAMBDA) > 0 ? args.find(OMEGA_LAMBDA)->second.as<double>() : default_param.getOmegaLambda();
+  double h_0           = args.count(HUBBLE_CONSTANT) > 0 ? args.find(HUBBLE_CONSTANT)->second.as<double>()
+                                                         : default_param.getHubbleConstant();
   m_cosmological_param = PhysicsUtils::CosmologicalParameters(omega_m, omega_lambda, h_0);
 }
 
 const PhysicsUtils::CosmologicalParameters& CosmologicalParameterConfig::getCosmologicalParam() {
-  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-      throw Elements::Exception() << "Call to getCosmologicalParam() on a not initialized instance.";
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getCosmologicalParam() on a not initialized instance.";
   }
 
   return m_cosmological_param;
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

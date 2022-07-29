@@ -22,10 +22,10 @@
  * @author dubathf
  */
 
-#include "ElementsKernel/ProgramHeaders.h"
+#include "PhzExecutables/ComputeSedWeight.h"
 #include "Configuration/ConfigManager.h"
 #include "Configuration/Utils.h"
-#include "PhzExecutables/ComputeSedWeight.h"
+#include "ElementsKernel/ProgramHeaders.h"
 
 #include "PhzConfiguration/ComputeSedWeightConfig.h"
 
@@ -50,12 +50,11 @@ class ComputeSedWeight : public Elements::Program {
 
     auto& config_manager = ConfigManager::getInstance(config_manager_id);
     config_manager.initialize(args);
-    
+
     PhzExecutables::ComputeSedWeight{}.run(config_manager);
 
     return Elements::ExitCode::OK;
   }
-
 };
 
 MAIN_FOR(ComputeSedWeight)

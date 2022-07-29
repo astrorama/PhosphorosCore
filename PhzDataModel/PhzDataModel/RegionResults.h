@@ -99,4 +99,3 @@ using RegionResults = TypedEnumMap<RegionResultType>;
 #include "PhzDataModel/_impl/RegionResultsTypeTraits.icpp"
 
 #endif /* _PHZDATAMODEL_REGIONRESULTS_H */
-

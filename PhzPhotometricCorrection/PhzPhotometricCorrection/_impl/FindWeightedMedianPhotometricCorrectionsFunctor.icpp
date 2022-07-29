@@ -4,24 +4,28 @@
  * @author Nikolaos Apostolakos
  */
 
-#include <set>
-#include <cmath>
 #include "ElementsKernel/Logging.h"
+#include <SourceCatalog/SourceAttributes/Photometry.h>
+#include <cmath>
+#include <set>
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
 
-static Elements::Logging weightedMedianlogger = Elements::Logging::getLogger("FindWeightedMedianPhotometricCorrectionsFunctor");
+static Elements::Logging weightedMedianlogger =
+    Elements::Logging::getLogger("FindWeightedMedianPhotometricCorrectionsFunctor");
 
 template <typename SourceIter>
-  PhzDataModel::PhotometricCorrectionMap FindWeightedMedianPhotometricCorrectionsFunctor::operator()(
-            const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
-            SourceIter source_begin, SourceIter source_end) {
-  std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap> source_weights_map {};
+PhzDataModel::PhotometricCorrectionMap FindWeightedMedianPhotometricCorrectionsFunctor::operator()(
+    const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap>&
+               source_phot_corr_map,
+    SourceIter source_begin, SourceIter source_end) {
+  std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap>
+      source_weights_map{};
   for (auto source = source_begin; source != source_end; ++source) {
-    auto source_phot_ptr = source->template getAttribute<SourceCatalog::Photometry>();
-    PhzDataModel::PhotometricCorrectionMap source_weights {};
-    for (auto iter=source_phot_ptr->begin(); iter!=source_phot_ptr->end(); ++iter) {
+    auto                                   source_phot_ptr = source->template getAttribute<SourceCatalog::Photometry>();
+    PhzDataModel::PhotometricCorrectionMap source_weights{};
+    for (auto iter = source_phot_ptr->begin(); iter != source_phot_ptr->end(); ++iter) {
       if (!(*iter).missing_photometry_flag && !(*iter).upper_limit_flag) {
         source_weights[iter.filterName()] = (*iter).flux / (*iter).error;
       } else {
@@ -32,22 +36,25 @@ template <typename SourceIter>
   }
 
   struct Compare {
-    bool operator()(const std::pair<double, double>& a, const std::pair<double, double>& b) {return a.first < b.first;}
-  };
-  std::map<XYDataset::QualifiedName, std::multiset<std::pair<double,double>, Compare>> ordered_source_phot_corr;
-  std::map<XYDataset::QualifiedName, double> total_weights {};
-  bool first = true;
-  for (auto source_phot_corr_iter=source_phot_corr_map.begin(), source_weight_iter=source_weights_map.cbegin();
-          source_phot_corr_iter!=source_phot_corr_map.end(); ++source_phot_corr_iter, ++ source_weight_iter) {
-    if (first) {
-      for (auto phot_corr_iter=source_phot_corr_iter->second.begin();phot_corr_iter!=source_phot_corr_iter->second.end(); ++phot_corr_iter) {
-            ordered_source_phot_corr[phot_corr_iter->first] = {};
-            total_weights[phot_corr_iter->first] = 0.;
-          }
-          first = false;
+    bool operator()(const std::pair<double, double>& a, const std::pair<double, double>& b) {
+      return a.first < b.first;
     }
-    for (auto phot_corr_iter=source_phot_corr_iter->second.begin(), weight_iter=source_weight_iter->second.begin();
-          phot_corr_iter!=source_phot_corr_iter->second.end(); ++phot_corr_iter, ++ weight_iter) {
+  };
+  std::map<XYDataset::QualifiedName, std::multiset<std::pair<double, double>, Compare>> ordered_source_phot_corr;
+  std::map<XYDataset::QualifiedName, double>                                            total_weights{};
+  bool                                                                                  first = true;
+  for (auto source_phot_corr_iter = source_phot_corr_map.begin(), source_weight_iter = source_weights_map.cbegin();
+       source_phot_corr_iter != source_phot_corr_map.end(); ++source_phot_corr_iter, ++source_weight_iter) {
+    if (first) {
+      for (auto phot_corr_iter = source_phot_corr_iter->second.begin();
+           phot_corr_iter != source_phot_corr_iter->second.end(); ++phot_corr_iter) {
+        ordered_source_phot_corr[phot_corr_iter->first] = {};
+        total_weights[phot_corr_iter->first]            = 0.;
+      }
+      first = false;
+    }
+    for (auto phot_corr_iter = source_phot_corr_iter->second.begin(), weight_iter = source_weight_iter->second.begin();
+         phot_corr_iter != source_phot_corr_iter->second.end(); ++phot_corr_iter, ++weight_iter) {
 
       if (std::isfinite(weight_iter->second)) {
         ordered_source_phot_corr[phot_corr_iter->first].insert({phot_corr_iter->second, weight_iter->second});
@@ -56,16 +63,18 @@ template <typename SourceIter>
     }
   }
 
-  PhzDataModel::PhotometricCorrectionMap result {};
+  PhzDataModel::PhotometricCorrectionMap result{};
   for (auto& pair : ordered_source_phot_corr) {
     double total_weight = total_weights[pair.first];
 
-    if ( total_weight == 0) {
-      weightedMedianlogger.warn()<< "The photometry band " << pair.first << " has no reliable source. Set the correction to 1";
+    if (total_weight == 0) {
+      weightedMedianlogger.warn() << "The photometry band " << pair.first
+                                  << " has no reliable source. It will not be fitted.";
       result[pair.first] = 1.0;
     } else {
       auto iter = pair.second.begin();
-      for (double current_weight=0; current_weight + iter->second < total_weight/2.; current_weight += iter->second) {
+      for (double current_weight = 0; current_weight + iter->second < total_weight / 2.;
+           current_weight += iter->second) {
         ++iter;
       }
       result[pair.first] = iter->first;
@@ -74,5 +83,5 @@ template <typename SourceIter>
   return result;
 }
 
-} // end of namespace PhzPhotometricCorrection
-} // end of namespace Euclid
+}  // end of namespace PhzPhotometricCorrection
+}  // end of namespace Euclid

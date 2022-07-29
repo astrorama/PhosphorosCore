@@ -23,13 +23,12 @@
  */
 
 #ifndef PHZCONFIGURATION_AUXDIRCONFIG_H
-#define	PHZCONFIGURATION_AUXDIRCONFIG_H
+#define PHZCONFIGURATION_AUXDIRCONFIG_H
 
+#include "Configuration/Configuration.h"
+#include <boost/filesystem/operations.hpp>
 #include <cstdlib>
 #include <string>
-#include <boost/filesystem/operations.hpp>
-#include "Configuration/Configuration.h"
-
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -48,7 +47,6 @@ namespace PhzConfiguration {
 class AuxDataDirConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief constructor
    */
@@ -86,14 +84,11 @@ public:
   const boost::filesystem::path& getAuxDataDir();
 
 private:
-
   boost::filesystem::path m_aux_dir;
 
 }; /* End of AuxDataDirConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_AUXDIRCONFIG_H */
-
+#endif /* PHZCONFIGURATION_AUXDIRCONFIG_H */

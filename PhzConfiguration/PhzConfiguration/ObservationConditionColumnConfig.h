@@ -17,13 +17,13 @@
  */
 
 /**
- * @file PhzConfiguration/DustColumnDensityColumnConfig.h
- * @date 2016/11/08
+ * @file PhzConfiguration/ObservationConditionColumnConfig.h
+ * @date 2021/09/10
  * @author Florian Dubath
  */
 
-#ifndef PHZCONFIGURATION_DUSTCOLUMNDENSITYCOLUMNCONFIG_H
-#define	PHZCONFIGURATION_DUSTCOLUMNDENSITYCOLUMNCONFIG_H
+#ifndef PHZCONFIGURATION_OBSERVATIONCONDITIONCOLUMNCONFIG_H
+#define PHZCONFIGURATION_OBSERVATIONCONDITIONCOLUMNCONFIG_H
 
 #include "Configuration/Configuration.h"
 
@@ -31,23 +31,23 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 /**
- * @class DustColumnDensityColumnConfig
+ * @class ObservationConditionColumnConfig
  *
  * @brief
  * This class defines the standard B and V Filters options
  */
-class DustColumnDensityColumnConfig : public Configuration::Configuration {
+class ObservationConditionColumnConfig : public Configuration::Configuration {
 
 public:
   /**
    * @brief constructor
    */
-  DustColumnDensityColumnConfig(long manager_id);
+  ObservationConditionColumnConfig(long manager_id);
 
   /**
    * @brief Destructor
    */
-  virtual ~DustColumnDensityColumnConfig() = default;
+  virtual ~ObservationConditionColumnConfig() = default;
 
   /**
    * @details
@@ -56,20 +56,19 @@ public:
    */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
-  void initialize(const UserValues& args) override;
-  bool isGalacticCorrectionEnabled();
+  void   initialize(const UserValues& args) override;
+  bool   isGalacticCorrectionEnabled();
+  bool   isFilterVariationEnabled();
   double getDustMapSedBpc() const;
 
 private:
-
-  bool m_galactic_correction_enabled = false;
-  double m_dust_map_sed_bpc=1.;
+  bool   m_galactic_correction_enabled = false;
+  bool   m_filter_variation_enabled    = false;
+  double m_dust_map_sed_bpc            = 1.;
 
 }; /* End of DustColumnDensityColumnConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_DUSTCOLUMNDENSITYCOLUMNCONFIG_H */
-
+#endif /* PHZCONFIGURATION_OBSERVATIONCONDITIONCOLUMNCONFIG_H */

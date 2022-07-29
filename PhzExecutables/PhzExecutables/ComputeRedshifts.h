@@ -39,11 +39,10 @@ namespace PhzExecutables {
 class ComputeRedshifts {
 
 public:
-  
   using ProgressListener = PhzLikelihood::ParallelCatalogHandler::ProgressListener;
-  
+
   ComputeRedshifts();
-  
+
   ComputeRedshifts(ProgressListener progress_listener);
 
   void run(Configuration::ConfigManager& config_manager);
@@ -52,7 +51,6 @@ public:
    * @brief Destructor
    */
   virtual ~ComputeRedshifts() = default;
-
 
 private:
   template <typename CatalogHandler>
@@ -64,6 +62,5 @@ private:
 
 } /* namespace PhzExecutables */
 } /* namespace Euclid */
-
 
 #endif

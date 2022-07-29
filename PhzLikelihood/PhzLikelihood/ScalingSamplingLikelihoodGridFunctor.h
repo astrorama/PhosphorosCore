@@ -5,14 +5,14 @@
  */
 
 #ifndef PHZLIKELIHOOD_SCALINGSAMPLINGLIKELIHOODGRIDFUNCTOR_H
-#define	PHZLIKELIHOOD_SCALINGSAMPLINGLIKELIHOODGRIDFUNCTOR_H
+#define PHZLIKELIHOOD_SCALINGSAMPLINGLIKELIHOODGRIDFUNCTOR_H
 
-#include <tuple>
-#include "SourceCatalog/SourceAttributes/Photometry.h"
-#include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/DoubleListGrid.h"
+#include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/RegionResults.h"
+#include "SourceCatalog/SourceAttributes/Photometry.h"
+#include <tuple>
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -27,7 +27,6 @@ namespace PhzLikelihood {
 class ScalingSamplingLikelihoodGridFunctor {
 
 public:
-
   /**
    * Definition of the STL-like algorithm for calculating the grid containing
    * the natural logarithm of the likelihood. It is a function which gets a
@@ -35,15 +34,13 @@ public:
    * the likelihood logarithm and scale factor results, using a likelihood
    * iterator and a scale factor iterator.
    */
-  typedef std::function<void(const SourceCatalog::Photometry& source_photometry,
-                             PhzDataModel::PhotometryGrid::const_iterator model_begin,
-                             PhzDataModel::PhotometryGrid::const_iterator model_end,
-                             PhzDataModel::DoubleGrid::iterator likelihood_log_begin,
-                             PhzDataModel::DoubleGrid::iterator scale_factor_begin,
-                             PhzDataModel::DoubleGrid::iterator sigma_scale_factor_begin,
-                             PhzDataModel::DoubleListGrid::iterator likelihood_log_sample_begin
-                             )
-                       > LikelihoodScaleSampleLogarithmFunction;
+  typedef std::function<void(
+      const SourceCatalog::Photometry& source_photometry, PhzDataModel::PhotometryGrid::const_iterator model_begin,
+      PhzDataModel::PhotometryGrid::const_iterator model_end, PhzDataModel::DoubleGrid::iterator likelihood_log_begin,
+      PhzDataModel::DoubleGrid::iterator     scale_factor_begin,
+      PhzDataModel::DoubleGrid::iterator     sigma_scale_factor_begin,
+      PhzDataModel::DoubleListGrid::iterator likelihood_log_sample_begin)>
+      LikelihoodScaleSampleLogarithmFunction;
 
   /**
    * Constructs a new LikelihoodGridFunctor instance.
@@ -64,13 +61,10 @@ public:
   void operator()(PhzDataModel::RegionResults& results);
 
 private:
-
   LikelihoodScaleSampleLogarithmFunction m_likelihood_scale_sample_log_func;
-
 };
 
-} // end of namespace PhzLikelihood
-} // end of namespace Euclid
+}  // end of namespace PhzLikelihood
+}  // end of namespace Euclid
 
-#endif	/* PHZLIKELIHOOD_SCALINGSAMPLINGLIKELIHOODGRIDFUNCTOR_H */
-
+#endif /* PHZLIKELIHOOD_SCALINGSAMPLINGLIKELIHOODGRIDFUNCTOR_H */

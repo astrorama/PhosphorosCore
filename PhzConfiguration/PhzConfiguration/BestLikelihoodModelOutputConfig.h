@@ -38,7 +38,6 @@ namespace PhzConfiguration {
 class BestLikelihoodModelOutputConfig : public Configuration::Configuration {
 
 public:
-
   BestLikelihoodModelOutputConfig(long manager_id);
 
   /**
@@ -56,6 +55,5 @@ public:
 
 } /* namespace PhzConfiguration */
 } /* namespace Euclid */
-
 
 #endif

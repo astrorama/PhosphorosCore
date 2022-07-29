@@ -22,33 +22,32 @@
  * @author Florian Dubath
  */
 
-#include <boost/test/unit_test.hpp>
 #include "ElementsKernel/Temporary.h"
-#include <iostream>
+#include <boost/test/unit_test.hpp>
 #include <fstream>
+#include <iostream>
 
-#include "PhzConfiguration/FilterConfig.h"
 #include "ConfigManager_fixture.h"
+#include "PhzConfiguration/FilterConfig.h"
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-
 struct FilterConfig_fixture : public ConfigManager_fixture {
   Elements::TempDir temp_dir;
-   fs::path base_directory { temp_dir.path() / "euclid" };
-   fs::path mer_directory { base_directory /  "Filters" / "MER" };
-   fs::path cosmos_directory { base_directory / "Filters" / "COSMOS" };
+  fs::path          base_directory{temp_dir.path() / "euclid"};
+  fs::path          mer_directory{base_directory / "Filters" / "MER"};
+  fs::path          cosmos_directory{base_directory / "Filters" / "COSMOS"};
 
-   std::map<std::string, po::variable_value> options_map;
-   std::map<std::string, po::variable_value> empty_map;
-   std::vector<std::string> group_vector;
-   std::vector<std::string> exclude_vector;
-   std::vector<std::string> add_vector;
+  std::map<std::string, po::variable_value> options_map;
+  std::map<std::string, po::variable_value> empty_map;
+  std::vector<std::string>                  group_vector;
+  std::vector<std::string>                  exclude_vector;
+  std::vector<std::string>                  add_vector;
 
-   FilterConfig_fixture(){
-     group_vector.push_back( "MER" );
+  FilterConfig_fixture() {
+    group_vector.push_back("MER");
 
     fs::create_directories(base_directory);
     fs::create_directories(mer_directory);
@@ -76,18 +75,18 @@ struct FilterConfig_fixture : public ConfigManager_fixture {
 
     // Fill up options
     options_map["aux-data-dir"].value() = boost::any(base_directory.string());
-    options_map["catalog-type"].value() = boost::any(std::string { "CAT_NAME" });
+    options_map["catalog-type"].value() = boost::any(std::string{"CAT_NAME"});
     options_map["filter-group"].value() = boost::any(group_vector);
-   }
+  }
 };
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (FilterConfig_test)
+BOOST_AUTO_TEST_SUITE(FilterConfig_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, ConfigManager_fixture) {
 
   // Given
   config_manager.registerConfiguration<FilterConfig>();
@@ -101,19 +100,16 @@ BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
   BOOST_CHECK_NO_THROW(options.find("filter-exclude", false));
 }
 
-
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(NotInitializedGetter_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<FilterConfig>();
   config_manager.closeRegistration();
 
   // Then
-BOOST_CHECK_THROW(config_manager.getConfiguration<FilterConfig>().getFilterList(), Elements::Exception);
+  BOOST_CHECK_THROW(config_manager.getConfiguration<FilterConfig>().getFilterList(), Elements::Exception);
 }
-
-
 
 //-----------------------------------------------------------------------------
 // Test the getFilterList function
@@ -152,8 +148,7 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_exclude_function_test, FilterConfig_fixtur
 
   // Then
   BOOST_CHECK_EQUAL(result.size(), 1);
-  BOOST_CHECK_EQUAL(result[0].qualifiedName(),
-      (fs::path("MER") / "Dataset_name_for_file1").string());
+  BOOST_CHECK_EQUAL(result[0].qualifiedName(), (fs::path("MER") / "Dataset_name_for_file1").string());
 }
 
 //-----------------------------------------------------------------------------
@@ -166,7 +161,7 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_add_function_test, FilterConfig_fixture) {
   config_manager.closeRegistration();
 
   // Filter to be added
-  fs::path fscosmos { "COSMOS/Dataset_name_for_file3" };
+  fs::path fscosmos{"COSMOS/Dataset_name_for_file3"};
   add_vector.push_back(fscosmos.string());
   options_map["filter-name"].value() = boost::any(add_vector);
 
@@ -189,7 +184,7 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_add_twice_function_test, FilterConfig_fixt
   config_manager.closeRegistration();
 
   // Add twice the same filter
-  fs::path fsmer { "MER/Dataset_name_for_file1" };
+  fs::path fsmer{"MER/Dataset_name_for_file1"};
   add_vector.push_back(fsmer.string());
   options_map["filter-name"].value() = boost::any(add_vector);
 
@@ -211,9 +206,8 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_noparams_function_test, FilterConfig_fixtu
   config_manager.registerConfiguration<FilterConfig>();
   config_manager.closeRegistration();
 
-  options_map["filter-group"].value() = boost::any(
-      std::vector<std::string> { });
-  options_map["catalog-type"].value() = boost::any(std::string { "MER" });
+  options_map["filter-group"].value() = boost::any(std::vector<std::string>{});
+  options_map["catalog-type"].value() = boost::any(std::string{"MER"});
 
   // When
   config_manager.initialize(options_map);
@@ -221,7 +215,7 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_noparams_function_test, FilterConfig_fixtu
 
   // Then
   BOOST_CHECK_EQUAL(result.size(), 2);
-  std::set<Euclid::XYDataset::QualifiedName> set { result.begin(), result.end() };
+  std::set<Euclid::XYDataset::QualifiedName> set{result.begin(), result.end()};
 
   BOOST_CHECK_EQUAL(set.count((fs::path("MER") / "Dataset_name_for_file1").string()), 1);
   BOOST_CHECK_EQUAL(set.count((fs::path("MER") / "file2").string()), 1);
@@ -229,6 +223,4 @@ BOOST_FIXTURE_TEST_CASE(getFilterList_noparams_function_test, FilterConfig_fixtu
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

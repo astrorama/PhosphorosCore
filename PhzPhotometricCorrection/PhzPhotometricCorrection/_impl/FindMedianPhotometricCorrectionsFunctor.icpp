@@ -47,7 +47,7 @@ template <typename SourceIter>
     for (auto& pair : ordered_source_phot_corr) {
       size_t size = pair.second.size();
       if ( size == 0) {
-            MedianCorrFunctorlogger.warn()<< "The photometry band " << pair.first << " has no reliable source. Set the correction to 1";
+            MedianCorrFunctorlogger.warn()<< "The photometry band " << pair.first << " has no reliable source. It will not be fitted.";
             result[pair.first] = 1.0;
        } else {
             double median = (size % 2 == 0)

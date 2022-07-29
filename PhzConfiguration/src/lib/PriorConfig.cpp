@@ -22,10 +22,10 @@
  * @author Florian Dubath
  */
 
-#include <cstdlib>
+#include "PhzConfiguration/PriorConfig.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzConfiguration/PriorConfig.h"
+#include <cstdlib>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -35,20 +35,17 @@ namespace PhzConfiguration {
 
 PriorConfig::PriorConfig(long manager_id) : Configuration(manager_id) {}
 
-const std::vector<PhzLikelihood::CatalogHandler::PriorFunction> & PriorConfig::getPriors(){
-  if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-        throw Elements::Exception() << "Call to getPriors() on a not initialized instance.";
+const std::vector<PhzLikelihood::CatalogHandler::PriorFunction>& PriorConfig::getPriors() {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getPriors() on a not initialized instance.";
   }
 
   return m_priors;
 }
 
- void PriorConfig::addPrior(PhzLikelihood::CatalogHandler::PriorFunction prior){
-   m_priors.emplace_back(std::move(prior));
+void PriorConfig::addPrior(PhzLikelihood::CatalogHandler::PriorFunction prior) {
+  m_priors.emplace_back(std::move(prior));
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

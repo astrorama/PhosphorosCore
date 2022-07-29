@@ -27,12 +27,12 @@
 #include "NdArray/NdArray.h"
 #include "XYDataset/XYDataset.h"
 
-#include <fstream>
 #include <boost/filesystem/path.hpp>
+#include <fstream>
 
-#  include <sys/types.h>
+#include <sys/types.h>
 #if defined(__APPLE__)
-#  include <sys/dtrace.h>
+#include <sys/dtrace.h>
 #endif
 
 namespace Euclid {
@@ -46,6 +46,7 @@ namespace ReferenceSample {
 class PdzDataProvider {
 
 public:
+  static const std::size_t DEFAULT_MAX_SIZE = 1 << 30;
 
   /**
    * @brief Destructor
@@ -58,16 +59,17 @@ public:
    *    The path to the PDZ data file.
    * @param max_size
    *    The maximum number of elements expected to be added. Defaults to 1 GiB.
+   * @param read_only
+   *    If true, the data provider can not be modified
    * @throw Elements::Exception
    *    On failure to read the PDZ bins (only if the file is not empty)
    */
-  PdzDataProvider(const boost::filesystem::path& path,
-                  std::size_t max_size = 1 << 30);
+  PdzDataProvider(const boost::filesystem::path& path, std::size_t max_size = DEFAULT_MAX_SIZE, bool read_only = false);
 
   /**
    * Move constructor.
    */
-  PdzDataProvider(PdzDataProvider &&) = default;
+  PdzDataProvider(PdzDataProvider&&) = default;
 
   /**
    * Get the PDZ stored on the given file position.
@@ -82,7 +84,12 @@ public:
   /**
    * @return Size on disk of the data file.
    */
-  size_t size() const;
+  size_t diskSize() const;
+
+  /**
+   * @return number of elements
+   */
+  size_t length() const;
 
   /**
    * Store a new PDZ entry.
@@ -93,22 +100,31 @@ public:
    *    do not match the stored bins, or, only for the first stored pdz, if the
    *    bins are not in ascending order.
    */
-  int64_t addPdz(const XYDataset::XYDataset &data);
+  int64_t addPdz(const XYDataset::XYDataset& data);
+
+  /**
+   * Modify a PDZ entry.
+   * @param position
+   *    Address inside the file where the PDZ is stored.
+   * @param data
+   *    PDZ data. The X axis contains the bins, and the Y axis the values.
+   */
+  void setPdz(int64_t position, const XYDataset::XYDataset& data);
 
 private:
-  boost::filesystem::path m_data_path;
-  size_t m_max_size;
+  boost::filesystem::path                  m_data_path;
+  size_t                                   m_max_size;
+  bool                                     m_read_only;
   std::unique_ptr<NdArray::NdArray<float>> m_array;
 
-  uint32_t m_length;
   std::vector<float> m_bins;
 
-  void setBins(const std::vector<float> &bins);
+  void setBins(const std::vector<float>& bins);
 
-  void validateBins(const std::vector<float> &bins) const;
+  void validateBins(const std::vector<float>& bins) const;
 };  // End of PdzDataProvider class
 
-}  // namespace PhzReferenceSample
+}  // namespace ReferenceSample
 }  // namespace Euclid
 
 #endif

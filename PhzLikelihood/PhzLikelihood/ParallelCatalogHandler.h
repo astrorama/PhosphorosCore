@@ -5,7 +5,7 @@
  */
 
 #ifndef PHZLIKELIHOOD_PARALLELCATALOGHANDLER_H
-#define	PHZLIKELIHOOD_PARALLELCATALOGHANDLER_H
+#define PHZLIKELIHOOD_PARALLELCATALOGHANDLER_H
 
 #include "PhzLikelihood/CatalogHandler.h"
 #include "PhzLikelihood/ProcessModelGridFunctor.h"
@@ -22,7 +22,6 @@ namespace PhzLikelihood {
 class ParallelCatalogHandler {
 
 public:
-
   typedef CatalogHandler::MarginalizationFunction MarginalizationFunction;
 
   typedef CatalogHandler::PriorFunction StaticPriorFunction;
@@ -54,18 +53,16 @@ public:
    *    If the phot_corr_map does not contain photometric corrections for all
    *    the filters of the model photometries
    */
-  ParallelCatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
-                         PhzDataModel::AdjustErrorParamMap adjust_error_param_map,
+  ParallelCatalogHandler(PhzDataModel::PhotometricCorrectionMap                     phot_corr_map,
+                         PhzDataModel::AdjustErrorParamMap                          adjust_error_param_map,
                          const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
-                         LikelihoodGridFunction likelihood_grid_func,
-                         double sampling_sigma_range,
-                         std::vector<StaticPriorFunction> static_priors,
-                         std::vector<MarginalizationFunction> marginalization_func_list,
+                         LikelihoodGridFunction likelihood_grid_func, double sampling_sigma_range,
+                         std::vector<StaticPriorFunction>                                     static_priors,
+                         std::vector<MarginalizationFunction>                                 marginalization_func_list,
                          std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list,
-                         bool doNormalizePdf = true);
+                         bool                                                                 doNormalizePdf = true);
 
   virtual ~ParallelCatalogHandler();
-
 
   /**
    * Iterates through a set of sources and calculates the PHZ parameters for
@@ -92,21 +89,17 @@ public:
    *    A function of type ProgressListener which is notified with the progress
    *    of the catalog handling (defaults to no action)
    */
-  template<typename SourceIter>
-  void handleSources(SourceIter source_begin, SourceIter source_end,
-                     PhzOutput::OutputHandler& out_handler,
-                     ProgressListener progress_listener=ProgressListener{}) const;
+  template <typename SourceIter>
+  void handleSources(SourceIter source_begin, SourceIter source_end, PhzOutput::OutputHandler& out_handler,
+                     ProgressListener progress_listener = ProgressListener{}) const;
 
 private:
-
   CatalogHandler m_catalog_handler;
-
 };
 
-}
-}
+}  // namespace PhzLikelihood
+}  // namespace Euclid
 
 #include "PhzLikelihood/_impl/ParallelCatalogHandler.icpp"
 
-#endif	/* PHZLIKELIHOOD_PARALLELCATALOGHANDLER_H */
-
+#endif /* PHZLIKELIHOOD_PARALLELCATALOGHANDLER_H */

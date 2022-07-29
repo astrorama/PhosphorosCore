@@ -1,20 +1,20 @@
-/*  
- * Copyright (C) 2012-2020 Euclid Science Ground Segment    
- *  
+/*
+ * Copyright (C) 2012-2020 Euclid Science Ground Segment
+ *
  * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 3.0 of the License, or (at your option)  
- * any later version.  
- *  
- * This library is distributed in the hope that it will be useful, but WITHOUT 
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more  
- * details.  
- *  
- * You should have received a copy of the GNU Lesser General Public License 
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  
- */  
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 /**
  * @file PhzLikelihood/AxisFunctionPrior.h
@@ -25,9 +25,9 @@
 #ifndef _PHZLIKELIHOOD_AXISFUNCTIONPRIOR_H
 #define _PHZLIKELIHOOD_AXISFUNCTIONPRIOR_H
 
-#include <memory>
 #include "MathUtils/function/Function.h"
 #include "PhzDataModel/RegionResults.h"
+#include <memory>
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -45,7 +45,6 @@ template <int AxisIndex>
 class AxisFunctionPrior {
 
 public:
-  
   /// Constructs a new AxisFunctionPrior, with the given function
   AxisFunctionPrior(std::unique_ptr<MathUtils::Function> prior_func);
 
@@ -53,7 +52,7 @@ public:
    * @brief Destructor
    */
   virtual ~AxisFunctionPrior() = default;
-  
+
   /**
    * @brief Applies the axis function prior to a posterior grid
    * @param results
@@ -62,7 +61,6 @@ public:
   void operator()(PhzDataModel::RegionResults& results) const;
 
 private:
-  
   std::shared_ptr<MathUtils::Function> m_prior_func;
 
 }; /* End of AxisFunctionPrior class */

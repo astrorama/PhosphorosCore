@@ -25,26 +25,22 @@
 #ifndef PHZLIKELIHOOD_PROCESSMODELGRIDFUNCTOR_H
 #define PHZLIKELIHOOD_PROCESSMODELGRIDFUNCTOR_H
 
+#include "PhzDataModel/PhotometryGrid.h"
+#include "SourceCatalog/Source.h"
 #include <map>
 #include <string>
-#include "SourceCatalog/Source.h"
-#include "PhzDataModel/PhotometryGrid.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
 
-class ProcessModelGridFunctor{
-  public:
-  virtual PhzDataModel::PhotometryGrid operator()(
-      const std::string & region_name,
-      const PhzDataModel::PhotometryGrid & model_grid,
-      const SourceCatalog::Source & source) const=0;
-  virtual ~ProcessModelGridFunctor(){}
+class ProcessModelGridFunctor {
+public:
+  virtual void operator()(const std::string& region_name, const SourceCatalog::Source& source,
+                          PhzDataModel::PhotometryGrid& model_grid) const = 0;
+  virtual ~ProcessModelGridFunctor() {}
 };
 
+}  // end of namespace PhzLikelihood
+}  // end of namespace Euclid
 
-
-} // end of namespace PhzLikelihood
-} // end of namespace Euclid
-
-#endif  /* PHZLIKELIHOOD_PROCESSMODELGRIDFUNCTOR_H */
+#endif /* PHZLIKELIHOOD_PROCESSMODELGRIDFUNCTOR_H */

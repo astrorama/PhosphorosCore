@@ -1,31 +1,32 @@
-/** 
+/**
  * @file FindWeightedMeanPhotometricCorrectionsFunctor.h
  * @date January 23, 2015
  * @author Nikolaos Apostolakos
  */
 
-#include <set>
-#include <cmath>
 #include "ElementsKernel/Logging.h"
+#include <SourceCatalog/SourceAttributes/Photometry.h>
+#include <cmath>
+#include <set>
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
 
-static Elements::Logging weightedMeanlogger = Elements::Logging::getLogger("FindWeightedMeanPhotometricCorrectionsFunctor");
+static Elements::Logging weightedMeanlogger =
+    Elements::Logging::getLogger("FindWeightedMeanPhotometricCorrectionsFunctor");
 
 template <typename SourceIter>
-  PhzDataModel::PhotometricCorrectionMap FindWeightedMeanPhotometricCorrectionsFunctor::operator()(
-            const std::map<
-                typename PhzUtils::SourceIterTraits<SourceIter>::id_type,
-                PhzDataModel::PhotometricCorrectionMap>& source_phot_corr_map,
-            SourceIter source_begin, SourceIter source_end) {
-  std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type,
-      PhzDataModel::PhotometricCorrectionMap> source_weights_map {};
+PhzDataModel::PhotometricCorrectionMap FindWeightedMeanPhotometricCorrectionsFunctor::operator()(
+    const std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap>&
+               source_phot_corr_map,
+    SourceIter source_begin, SourceIter source_end) {
+  std::map<typename PhzUtils::SourceIterTraits<SourceIter>::id_type, PhzDataModel::PhotometricCorrectionMap>
+      source_weights_map{};
 
   for (auto source = source_begin; source != source_end; ++source) {
-    auto source_phot_ptr = source->template getAttribute<SourceCatalog::Photometry>();
-    PhzDataModel::PhotometricCorrectionMap source_weights {};
-    for (auto iter=source_phot_ptr->begin(); iter!=source_phot_ptr->end(); ++iter) {
+    auto                                   source_phot_ptr = source->template getAttribute<SourceCatalog::Photometry>();
+    PhzDataModel::PhotometricCorrectionMap source_weights{};
+    for (auto iter = source_phot_ptr->begin(); iter != source_phot_ptr->end(); ++iter) {
       if (!(*iter).missing_photometry_flag && !(*iter).upper_limit_flag) {
         source_weights[iter.filterName()] = (*iter).flux / (*iter).error;
       } else {
@@ -34,14 +35,14 @@ template <typename SourceIter>
     }
     source_weights_map[source->getId()] = std::move(source_weights);
   }
-  
-  PhzDataModel::PhotometricCorrectionMap result {};
-  PhzDataModel::PhotometricCorrectionMap total_weights {};
-  bool first = true;
+
+  PhzDataModel::PhotometricCorrectionMap result{};
+  PhzDataModel::PhotometricCorrectionMap total_weights{};
+  bool                                   first = true;
   for (auto& source_phot_corr_pair : source_phot_corr_map) {
     if (first) {
       for (auto& phot_corr_pair : source_phot_corr_pair.second) {
-        result[phot_corr_pair.first] = 0.;
+        result[phot_corr_pair.first]        = 0.;
         total_weights[phot_corr_pair.first] = 0.;
       }
       first = false;
@@ -55,8 +56,9 @@ template <typename SourceIter>
     }
   }
   for (auto& pair : result) {
-    if ( total_weights[pair.first] == 0) {
-      weightedMeanlogger.warn()<< "The photometry band " << pair.first << " has no reliable source. Set the correction to 1";
+    if (total_weights[pair.first] == 0) {
+      weightedMeanlogger.warn() << "The photometry band " << pair.first
+                                << " has no reliable source. It will not be fitted.";
       pair.second = 1.0;
     } else {
       pair.second /= total_weights[pair.first];
@@ -65,5 +67,5 @@ template <typename SourceIter>
   return result;
 }
 
-} // end of namespace PhzPhotometricCorrection
-} // end of namespace Euclid
+}  // end of namespace PhzPhotometricCorrection
+}  // end of namespace Euclid

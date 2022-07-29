@@ -1,4 +1,22 @@
 /**
+ * Copyright (C) 2022 Euclid Science Ground Segment
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+/**
  * @file PhzModeling/PhotometryAlgorithm.h
  * @date Oct 9, 2014
  * @author Florian Dubath
@@ -9,11 +27,11 @@
 
 #include <map>
 
-#include "XYDataset/XYDataset.h"
-#include "XYDataset/QualifiedName.h"
-#include "SourceCatalog/SourceAttributes/Photometry.h"
 #include "PhzDataModel/FilterInfo.h"
 #include "PhzModeling/BuildFilterInfoFunctor.h"
+#include "SourceCatalog/SourceAttributes/Photometry.h"
+#include "XYDataset/QualifiedName.h"
+#include "XYDataset/XYDataset.h"
 
 namespace Euclid {
 namespace PhzModeling {
@@ -26,11 +44,10 @@ namespace PhzModeling {
  * This algorithm will iterate on a Model container and compute for each of them
  * the flux for each of the provided filters.
  */
-template<typename ModelFluxAlgo>
-class PhotometryAlgorithm{
+template <typename ModelFluxAlgo>
+class PhotometryAlgorithm {
 
 public:
-
   /**
    * @brief constructor
    *
@@ -47,14 +64,14 @@ public:
    * A vector<QualifiedName> storing the list ( and the order) of filters to be
    * used to build the photometry.
    */
-  PhotometryAlgorithm(ModelFluxAlgo model_flux_algorithm,
-      const std::map<XYDataset::QualifiedName,XYDataset::XYDataset>& filter_map,
-      const std::vector<XYDataset::QualifiedName>& filter_name_list);
+  PhotometryAlgorithm(ModelFluxAlgo                                                   model_flux_algorithm,
+                      const std::map<XYDataset::QualifiedName, XYDataset::XYDataset>& filter_map,
+                      const std::vector<XYDataset::QualifiedName>&                    filter_name_list);
 
   /**
    * @brief destructor.
    */
-  virtual ~PhotometryAlgorithm()=default;
+  virtual ~PhotometryAlgorithm() = default;
 
   /**
    * @brief Function Call Operator
@@ -75,9 +92,9 @@ public:
    * A reference to an object to be notified with the progress of the job. Its
    * prefix ++ operator will be called every time a model is handled.
    */
-  template<typename ModelIterator,typename PhotometryIterator, typename Monitor>
-  void operator()(ModelIterator model_begin, ModelIterator model_end,
-                  PhotometryIterator photometry_begin, Monitor& monitor) const;
+  template <typename ModelIterator, typename PhotometryIterator, typename Monitor>
+  void operator()(ModelIterator model_begin, ModelIterator model_end, PhotometryIterator photometry_begin,
+                  Monitor& monitor) const;
 
   /**
    * @brief Function Call Operator
@@ -93,29 +110,28 @@ public:
    * @param photometry_begin
    * An iterator over a Photometry container into which the computed photometry will be stored.
    */
-  template<typename ModelIterator,typename PhotometryIterator>
-  void operator()(ModelIterator model_begin, ModelIterator model_end,
-                  PhotometryIterator photometry_begin) const;
+  template <typename ModelIterator, typename PhotometryIterator>
+  void operator()(ModelIterator model_begin, ModelIterator model_end, PhotometryIterator photometry_begin) const;
 
 private:
-  ModelFluxAlgo m_model_flux_agorithm;
-  std::vector<PhzDataModel::FilterInfo> m_filter_info_vector;
+  ModelFluxAlgo                             m_model_flux_agorithm;
+  std::vector<PhzDataModel::FilterInfo>     m_filter_info_vector;
   std::shared_ptr<std::vector<std::string>> m_filter_name_shared_vector;
-
 };
 
-template<typename ModelFluxAlgo>
-PhotometryAlgorithm<ModelFluxAlgo> createPhotometryAlgorithm(ModelFluxAlgo model_flux_algorithm,
-      const std::map<XYDataset::QualifiedName,XYDataset::XYDataset>& filter_map,
-      const std::vector<XYDataset::QualifiedName>& filter_name_list) {
+template <typename ModelFluxAlgo>
+PhotometryAlgorithm<ModelFluxAlgo>
+createPhotometryAlgorithm(ModelFluxAlgo                                                   model_flux_algorithm,
+                          const std::map<XYDataset::QualifiedName, XYDataset::XYDataset>& filter_map,
+                          const std::vector<XYDataset::QualifiedName>&                    filter_name_list) {
   return PhotometryAlgorithm<ModelFluxAlgo>(model_flux_algorithm, filter_map, filter_name_list);
 }
 
-} // end of namespace PhzModeling
-} // end of namespace Euclid
+}  // end of namespace PhzModeling
+}  // end of namespace Euclid
 
 #define PHOTOMETRYALGO_IMPL
 #include "PhzModeling/_impl/PhotometryAlgorithm.icpp"
 #undef PHOTOMETRYALGO_IMPL
 
-#endif    /* PHZMODELING_MODELFLUXALGORITHM_H */
+#endif /* PHZMODELING_MODELFLUXALGORITHM_H */

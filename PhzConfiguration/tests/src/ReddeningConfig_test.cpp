@@ -22,27 +22,27 @@
  * @author Florian Dubath
  */
 
-#include <boost/test/unit_test.hpp>
 #include "ElementsKernel/Temporary.h"
-#include <iostream>
+#include <boost/test/unit_test.hpp>
 #include <fstream>
+#include <iostream>
 
-#include "PhzConfiguration/ReddeningConfig.h"
 #include "ConfigManager_fixture.h"
+#include "PhzConfiguration/ReddeningConfig.h"
 
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
 struct ReddeningConfig_fixture : public ConfigManager_fixture {
-  
+
   Elements::TempDir temp_dir;
-  fs::path base_directory { temp_dir.path() / "AuxiliaryData" };
-  fs::path red_curves_directory { base_directory / "ReddeningCurves" };
-  fs::path cal_directory  { base_directory / "ReddeningCurves" / "CAL" };
-  
-  std::map<std::string, po::variable_value> options_map { };
-  
+  fs::path          base_directory{temp_dir.path() / "AuxiliaryData"};
+  fs::path          red_curves_directory{base_directory / "ReddeningCurves"};
+  fs::path          cal_directory{base_directory / "ReddeningCurves" / "CAL"};
+
+  std::map<std::string, po::variable_value> options_map{};
+
   ReddeningConfig_fixture() {
     fs::create_directories(base_directory);
     fs::create_directories(red_curves_directory);
@@ -63,16 +63,15 @@ struct ReddeningConfig_fixture : public ConfigManager_fixture {
     calzetti_file2 << "140.00 60.93358\n";
     calzetti_file2.close();
   }
-  
 };
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (ReddeningConfig_test)
+BOOST_AUTO_TEST_SUITE(ReddeningConfig_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, ConfigManager_fixture) {
 
   // Given
   config_manager.registerConfiguration<ReddeningConfig>();
@@ -89,9 +88,7 @@ BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
   BOOST_CHECK_NO_THROW(options.find("ebv-value", false));
 }
 
-
-
-BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(NotInitializedGetter_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<ReddeningConfig>();
   config_manager.closeRegistration();
@@ -111,23 +108,21 @@ BOOST_FIXTURE_TEST_CASE(getReddeningCurveList_function_test, ReddeningConfig_fix
   config_manager.closeRegistration();
 
   std::vector<std::string> group_vector;
-  group_vector.push_back( "CAL");
+  group_vector.push_back("CAL");
 
   // Fill up options
   options_map["reddening-curve-group"].value() = boost::any(group_vector);
 
-
   // When
-   config_manager.initialize(options_map);
-   auto result = config_manager.getConfiguration<ReddeningConfig>().getReddeningCurveList();
-   auto list = result.at("");
+  config_manager.initialize(options_map);
+  auto result = config_manager.getConfiguration<ReddeningConfig>().getReddeningCurveList();
+  auto list   = result.at("");
 
   // Then
   BOOST_CHECK_EQUAL(list.size(), 2);
-  std::set<Euclid::XYDataset::QualifiedName> set {list.begin(), list.end()};
+  std::set<Euclid::XYDataset::QualifiedName> set{list.begin(), list.end()};
   BOOST_CHECK_EQUAL(set.count({(fs::path("CAL") / "calzetti_1").string()}), 1);
   BOOST_CHECK_EQUAL(set.count({(fs::path("CAL") / "calzetti_2").string()}), 1);
-
 }
 
 //-----------------------------------------------------------------------------
@@ -148,20 +143,17 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_exclude_function_test, ReddeningConfig_
   exclude_vector.push_back((fs::path("CAL") / "FILE_DOES_NOT_EXIST").string());
 
   // Fill up options
-  options_map["reddening-curve-group"].value() = boost::any(group_vector);
+  options_map["reddening-curve-group"].value()   = boost::any(group_vector);
   options_map["reddening-curve-exclude"].value() = boost::any(exclude_vector);
 
   // When
   config_manager.initialize(options_map);
-  auto result =
-      config_manager.getConfiguration<ReddeningConfig>().getReddeningCurveList();
-  auto list = result.at("");
+  auto result = config_manager.getConfiguration<ReddeningConfig>().getReddeningCurveList();
+  auto list   = result.at("");
 
   // Then
   BOOST_CHECK_EQUAL(list.size(), 1);
-  BOOST_CHECK_EQUAL(list[0].qualifiedName(),
-      (fs::path("CAL") / "calzetti_2").string());
-
+  BOOST_CHECK_EQUAL(list[0].qualifiedName(), (fs::path("CAL") / "calzetti_2").string());
 }
 
 //-----------------------------------------------------------------------------
@@ -173,7 +165,7 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_add_function_test, ReddeningConfig_fixt
   config_manager.registerConfiguration<ReddeningConfig>();
   config_manager.closeRegistration();
 
-  fs::path others_directory { base_directory / "ReddeningCurves" / "OTHERS" };
+  fs::path others_directory{base_directory / "ReddeningCurves" / "OTHERS"};
 
   std::vector<std::string> group_vector;
   group_vector.push_back("CAL");
@@ -193,19 +185,17 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_add_function_test, ReddeningConfig_fixt
 
   // Fill up options
   options_map["reddening-curve-group"].value() = boost::any(group_vector);
-  options_map["reddening-curve-name"].value() = boost::any(add_vector);
+  options_map["reddening-curve-name"].value()  = boost::any(add_vector);
 
   // When
   config_manager.initialize(options_map);
-  auto result =
-      config_manager.getConfiguration<ReddeningConfig>().getReddeningCurveList();
-  auto list = result.at("");
+  auto result = config_manager.getConfiguration<ReddeningConfig>().getReddeningCurveList();
+  auto list   = result.at("");
 
   // Then
   BOOST_CHECK_EQUAL(list.size(), 3);
-  std::set<Euclid::XYDataset::QualifiedName> set { list.begin(), list.end() };
-  BOOST_CHECK_EQUAL(set.count( { (fs::path("OTHERS") / "ext_law").string() }),
-      1);
+  std::set<Euclid::XYDataset::QualifiedName> set{list.begin(), list.end()};
+  BOOST_CHECK_EQUAL(set.count({(fs::path("OTHERS") / "ext_law").string()}), 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -225,21 +215,18 @@ BOOST_FIXTURE_TEST_CASE(getReddeningList_add_twice_function_test, ReddeningConfi
   add_vector.push_back((fs::path("CAL") / "calzetti_2").string());
 
   options_map["reddening-curve-group"].value() = boost::any(group_vector);
-  options_map["reddening-curve-name"].value() = boost::any(add_vector);
+  options_map["reddening-curve-name"].value()  = boost::any(add_vector);
 
   // When
   config_manager.initialize(options_map);
-  auto result =
-      config_manager.getConfiguration<ReddeningConfig>().getReddeningCurveList();
-  auto list = result.at("");
+  auto result = config_manager.getConfiguration<ReddeningConfig>().getReddeningCurveList();
+  auto list   = result.at("");
 
   // Then
   BOOST_CHECK_EQUAL(list.size(), 2);
-  std::set<Euclid::XYDataset::QualifiedName> set { list.begin(), list.end() };
-  BOOST_CHECK_EQUAL(set.count( { (fs::path("CAL") / "calzetti_2").string() }),
-      1);
+  std::set<Euclid::XYDataset::QualifiedName> set{list.begin(), list.end()};
+  BOOST_CHECK_EQUAL(set.count({(fs::path("CAL") / "calzetti_2").string()}), 1);
 }
-
 
 //-----------------------------------------------------------------------------
 // Test the getEbvList function
@@ -256,7 +243,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_function_test, ReddeningConfig_fixture) {
 
   // When
   config_manager.initialize(options_map);
-  auto result = config_manager.getConfiguration<ReddeningConfig>().getEbvList();
+  auto result   = config_manager.getConfiguration<ReddeningConfig>().getEbvList();
   auto ebv_list = result.at("");
 
   // Then
@@ -286,7 +273,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_added_zvalue_function_test, ReddeningConfig_f
 
   // When
   config_manager.initialize(options_map);
-  auto result = config_manager.getConfiguration<ReddeningConfig>().getEbvList();
+  auto result   = config_manager.getConfiguration<ReddeningConfig>().getEbvList();
   auto ebv_list = result.at("");
 
   // Then
@@ -312,7 +299,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_more_ranges_function_test, ReddeningConfig_fi
   options_map["ebv-range"].value() = boost::any(ebv_range_vector);
   // When
   config_manager.initialize(options_map);
-  auto result = config_manager.getConfiguration<ReddeningConfig>().getEbvList();
+  auto result   = config_manager.getConfiguration<ReddeningConfig>().getEbvList();
   auto ebv_list = result.at("");
 
   // Then
@@ -338,7 +325,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_more_ranges_random_order_function_test, Redde
   options_map["ebv-range"].value() = boost::any(ebv_range_vector);
   // When
   config_manager.initialize(options_map);
-  auto result = config_manager.getConfiguration<ReddeningConfig>().getEbvList();
+  auto result   = config_manager.getConfiguration<ReddeningConfig>().getEbvList();
   auto ebv_list = result.at("");
 
   // Then
@@ -443,7 +430,7 @@ BOOST_FIXTURE_TEST_CASE(getEbvList_boundaries_function_test, ReddeningConfig_fix
 
   // When
   config_manager.initialize(options_map);
-  auto result = config_manager.getConfiguration<ReddeningConfig>().getEbvList();
+  auto result   = config_manager.getConfiguration<ReddeningConfig>().getEbvList();
   auto ebv_list = result.at("");
 
   // Then
@@ -548,6 +535,4 @@ BOOST_FIXTURE_TEST_CASE(wrong_characters_ebvvalue_test, ReddeningConfig_fixture)
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

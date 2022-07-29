@@ -24,14 +24,14 @@
 #ifndef _REFERENCESAMPLE_SEDDATAPROVIDER_H
 #define _REFERENCESAMPLE_SEDDATAPROVIDER_H
 
-#include "XYDataset/XYDataset.h"
 #include "NdArray/NdArray.h"
-#include <fstream>
+#include "XYDataset/XYDataset.h"
 #include <boost/filesystem/path.hpp>
+#include <fstream>
 
-#  include <sys/types.h>
+#include <sys/types.h>
 #if defined(__APPLE__)
-#  include <sys/dtrace.h>
+#include <sys/dtrace.h>
 #endif
 
 namespace Euclid {
@@ -45,6 +45,7 @@ namespace ReferenceSample {
 class SedDataProvider {
 
 public:
+  static const std::size_t DEFAULT_MAX_SIZE = 1 << 30;
 
   /**
    * @brief Destructor
@@ -57,15 +58,17 @@ public:
    *    Path to the SED data file.
    * @param max_size
    *    The maximum number of elements expected to be added. Defaults to 1 GiB.
+   * @param read_only
+   *    If true, the data provider can not be modified
    * @throw Elements::Exception
    *    On failure to open the file.
    */
-  SedDataProvider(const boost::filesystem::path &path, std::size_t max_size = 1 << 30);
+  SedDataProvider(const boost::filesystem::path& path, std::size_t max_size = DEFAULT_MAX_SIZE, bool read_only = false);
 
   /**
    * Move constructor.
    */
-  SedDataProvider(SedDataProvider &&) = default;
+  SedDataProvider(SedDataProvider&&) = default;
 
   /**
    * Read SED data.
@@ -80,7 +83,12 @@ public:
   /**
    * @return Size on disk of the data file.
    */
-  size_t size() const;
+  size_t diskSize() const;
+
+  /**
+   * @return number of elements
+   */
+  size_t length() const;
 
   /**
    * Store a new SED entry.
@@ -92,7 +100,7 @@ public:
    *    On failure to write to disk, or if the
    *    bins are not in ascending order.
    */
-  int64_t addSed(const XYDataset::XYDataset &data);
+  int64_t addSed(const XYDataset::XYDataset& data);
 
   /**
    * @return How many knots supports this particular provider
@@ -100,15 +108,16 @@ public:
   size_t getKnots() const;
 
 private:
-  boost::filesystem::path m_data_path;
-  size_t m_max_size;
+  boost::filesystem::path                  m_data_path;
+  size_t                                   m_max_size;
+  bool                                     m_read_only;
   std::unique_ptr<NdArray::NdArray<float>> m_array;
-  uint32_t m_length;
+  size_t                                   m_length;
 
   void create(size_t knots);
 };  // End of SedDataProvider class
 
-}  // namespace PhzReferenceSample
+}  // namespace ReferenceSample
 }  // namespace Euclid
 
 #endif

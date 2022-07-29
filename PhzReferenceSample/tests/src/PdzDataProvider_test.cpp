@@ -22,10 +22,8 @@
  */
 
 #include "PhzReferenceSample/PdzDataProvider.h"
-
 #include <ElementsKernel/Exception.h>
 #include <ElementsKernel/Temporary.h>
-
 #include <boost/test/unit_test.hpp>
 
 #include "AllClose.h"
@@ -39,12 +37,11 @@ using Euclid::XYDataset::XYDataset;
 BOOST_AUTO_TEST_SUITE(PdzDataProvider_test)
 
 struct PdzDataProvider_Fixture {
-  TempDir m_top_dir;
+  TempDir                 m_top_dir;
   boost::filesystem::path m_pdz_bin;
-  XYDataset pdz{{{0, 0}, {1, 4}, {2, 3}, {3, 1}}};
+  XYDataset               pdz{{{0, 0}, {1, 4}, {2, 3}, {3, 1}}};
 
   PdzDataProvider_Fixture() : m_pdz_bin{m_top_dir.path() / "pdz_data_1.bin"} {
-    ;
   }
 
   virtual ~PdzDataProvider_Fixture() {
@@ -67,9 +64,9 @@ BOOST_AUTO_TEST_CASE(open_non_existing) {
 
 BOOST_FIXTURE_TEST_CASE(add_one, PdzDataProvider_Fixture) {
   PdzDataProvider pdz_provider{m_pdz_bin};
-  BOOST_CHECK_EQUAL(pdz_provider.size(), 0);
+  BOOST_CHECK_EQUAL(pdz_provider.diskSize(), 0);
 
-  auto offset = pdz_provider.addPdz(pdz);
+  auto offset    = pdz_provider.addPdz(pdz);
   auto recovered = pdz_provider.readPdz(offset);
 
   BOOST_CHECK(checkAllClose(recovered, pdz));
@@ -128,10 +125,33 @@ BOOST_FIXTURE_TEST_CASE(open_and_close, PdzDataProvider_Fixture) {
   }
 
   PdzDataProvider pdz_provider{m_pdz_bin};
-  BOOST_CHECK_NE(pdz_provider.size(), 0);
+  BOOST_CHECK_NE(pdz_provider.diskSize(), 0);
 
   auto recovered = pdz_provider.readPdz(offset);
   BOOST_CHECK(checkAllClose(recovered, pdz));
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(open_and_close_readonly, PdzDataProvider_Fixture) {
+  int64_t offset;
+
+  {
+    PdzDataProvider pdz_provider{m_pdz_bin};
+    offset = pdz_provider.addPdz(pdz);
+  }
+
+  auto perm = status(m_pdz_bin).permissions();
+  permissions(m_pdz_bin, perm & ~boost::filesystem::perms::owner_write);
+
+  PdzDataProvider pdz_provider(m_pdz_bin, PdzDataProvider::DEFAULT_MAX_SIZE, true);
+  BOOST_CHECK_NE(pdz_provider.diskSize(), 0);
+
+  auto recovered = pdz_provider.readPdz(offset);
+  BOOST_CHECK(checkAllClose(recovered, pdz));
+
+  BOOST_CHECK_THROW(pdz_provider.setPdz(offset, recovered), Elements::Exception);
+  BOOST_CHECK_THROW(pdz_provider.addPdz(recovered), Elements::Exception);
 }
 
 //-----------------------------------------------------------------------------

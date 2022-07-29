@@ -22,18 +22,18 @@
  * @author dubathf
  */
 
-#include "AlexandriaKernel/memory_tools.h"
-#include <PhzOutput/PhzColumnHandlers/BestModel.h>
 #include "PhzConfiguration/BestLikelihoodModelOutputConfig.h"
+#include "AlexandriaKernel/memory_tools.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
 #include "PhzConfiguration/PhysicalParametersConfig.h"
+#include <PhzOutput/PhzColumnHandlers/BestModel.h>
 
 namespace po = boost::program_options;
 
 namespace Euclid {
 namespace PhzConfiguration {
 
-static const std::string CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG {"create-output-best-likelihood-model"};
+static const std::string CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG{"create-output-best-likelihood-model"};
 
 BestLikelihoodModelOutputConfig::BestLikelihoodModelOutputConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PhysicalParametersConfig>();
@@ -41,37 +41,31 @@ BestLikelihoodModelOutputConfig::BestLikelihoodModelOutputConfig(long manager_id
 }
 
 auto BestLikelihoodModelOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
-  return {{"Output options", {
-    {CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG.c_str(), po::value<std::string>()->default_value("YES"),
-        "Enables or disables the best likelihood model info in the output (YES/NO, default: YES)"}
-  }}};
+  return {{"Output options",
+           {{CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG.c_str(), po::value<std::string>()->default_value("YES"),
+             "Enables or disables the best likelihood model info in the output (YES/NO, default: YES)"}}}};
 }
 
 void BestLikelihoodModelOutputConfig::preInitialize(const UserValues& args) {
 
   if (args.at(CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG).as<std::string>() != "YES" &&
       args.at(CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG).as<std::string>() != "NO") {
-    throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG
-        << ": " << args.at(CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG).as<std::string>();
+    throw Elements::Exception() << "Invalid value for option " << CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG << ": "
+                                << args.at(CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG).as<std::string>();
   }
 }
 
 void BestLikelihoodModelOutputConfig::initialize(const UserValues& args) {
   if (args.at(CREATE_OUTPUT_BEST_LIKELIHOOD_MODEL_FLAG).as<std::string>() == "YES") {
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        Euclid::make_unique<PhzOutput::ColumnHandlers::BestModel>(PhzDataModel::GridType::LIKELIHOOD)
-    );
+        Euclid::make_unique<PhzOutput::ColumnHandlers::BestModel>(PhzDataModel::GridType::LIKELIHOOD));
 
-    if (getDependency<PhysicalParametersConfig>().getParamConfig().size()>0) {
-         getDependency<OutputCatalogConfig>().addColumnHandler(
-             std::move(getDependency<PhysicalParametersConfig>().getPosteriorOutputHandler())
-         );
-       }
+    if (getDependency<PhysicalParametersConfig>().getParamConfig().size() > 0) {
+      getDependency<OutputCatalogConfig>().addColumnHandler(
+          std::move(getDependency<PhysicalParametersConfig>().getPosteriorOutputHandler()));
+    }
   }
 }
 
-} // PhzConfiguration namespace
-} // Euclid namespace
-
-
-
+}  // namespace PhzConfiguration
+}  // namespace Euclid

@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2022 Euclid Science Ground Segment
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 /**
  * @file GridSampler.h
  * @date 18/08/2020
@@ -30,7 +48,7 @@ struct GridSample {
   float                    z;
   float                    alpha;
 
-  GridSample() : region_index(0), sed(DefaultQualifiedName), ebv(-1.), z(-1.), alpha(-1.) {}
+  GridSample() : region_index(0), sed_index(0), sed(DefaultQualifiedName), red_index(0), ebv(-1.), z(-1.), alpha(-1.) {}
 };
 
 /**
@@ -59,10 +77,10 @@ public:
    * the "GridType" will be extracted
    *
    * @return
-   *    A string stream containing the description of the non-numerical axis for
+   *    A string containing the description of the non-numerical axis for
    *    each region of the template space
    */
-  static std::stringstream createComment(const PhzDataModel::SourceResults& results);
+  static std::string createComment(const PhzDataModel::SourceResults& results);
 
   /**
    * @brief
@@ -78,7 +96,8 @@ public:
   double computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const;
 
   std::vector<GridSample> drawSample(std::size_t sample_number, const std::map<std::string, double>& region_volume,
-                                     const std::map<std::string, PhzDataModel::RegionResults>& results, std::mt19937& gen);
+                                     const std::map<std::string, PhzDataModel::RegionResults>& results,
+                                     std::mt19937&                                             gen);
 
 private:
 };

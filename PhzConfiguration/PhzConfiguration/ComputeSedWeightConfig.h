@@ -23,13 +23,12 @@
  */
 
 #ifndef PHZCONFIGURATION_COMPUTESEDWEIGHT_H
-#define	PHZCONFIGURATION_COMPUTESEDWEIGHT_H
+#define PHZCONFIGURATION_COMPUTESEDWEIGHT_H
 
+#include "Configuration/Configuration.h"
+#include <boost/filesystem/operations.hpp>
 #include <cstdlib>
 #include <string>
-#include <boost/filesystem/operations.hpp>
-#include "Configuration/Configuration.h"
-
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -44,15 +43,12 @@ namespace PhzConfiguration {
 class ComputeSedWeightConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief Constructor
    */
   ComputeSedWeightConfig(long manager_id);
 
-
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
-
 
   void initialize(const UserValues& args) override;
 
@@ -66,12 +62,9 @@ public:
 private:
   std::string m_output_file;
 
-
 }; /* End of ComputeSedWeightConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_COMPUTESEDWEIGHT_H */
-
+#endif /* PHZCONFIGURATION_COMPUTESEDWEIGHT_H */

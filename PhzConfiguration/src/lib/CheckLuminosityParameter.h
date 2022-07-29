@@ -8,30 +8,26 @@
 #ifndef PHZCONFIGURATION_SRC_LIB_CHECKLUMINOSITYPARAMETER_H_
 #define PHZCONFIGURATION_SRC_LIB_CHECKLUMINOSITYPARAMETER_H_
 
-#include "XYDataset/QualifiedName.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/QualifiedNameGroupManager.h"
+#include "XYDataset/QualifiedName.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
 
-
-
-class CheckLuminosityParameter{
+class CheckLuminosityParameter {
 public:
-  bool checkSedGroupCompletness(const PhzDataModel::PhotometryGridInfo& modelGridInfo,
-                  const PhzDataModel::QualifiedNameGroupManager& sedGroupManager);
+  bool checkSedGroupCompletness(const PhzDataModel::PhotometryGridInfo&        modelGridInfo,
+                                const PhzDataModel::QualifiedNameGroupManager& sedGroupManager);
 
   bool checkLuminosityModelGrid(const PhzDataModel::PhotometryGridInfo& modelGridInfo,
-                  const PhzDataModel::PhotometryGrid& luminosityGrid,bool withReddening);
+                                const PhzDataModel::PhotometryGrid& luminosityGrid, bool withReddening);
 
 private:
-
-
-  template<typename ReturnType, int I>
+  template <typename ReturnType, int I>
   std::vector<ReturnType> getCompleteList(const PhzDataModel::PhotometryGridInfo& modelGridInfo) {
-    std::vector<ReturnType> all_item { };
+    std::vector<ReturnType> all_item{};
     for (auto& sub_grid : modelGridInfo.region_axes_map) {
       for (auto& item : std::get<I>(sub_grid.second)) {
         if (std::find(all_item.begin(), all_item.end(), item) == all_item.end())
@@ -42,10 +38,10 @@ private:
     return all_item;
   }
 
-  template<typename ReturnType, int I>
+  template <typename ReturnType, int I>
   bool checkAxis(const PhzDataModel::PhotometryGridInfo& modelGridInfo,
-      const PhzDataModel::PhotometryGrid& luminosityGrid) {
-    auto grid_items = getCompleteList<ReturnType, I>(modelGridInfo);
+                 const PhzDataModel::PhotometryGrid&     luminosityGrid) {
+    auto grid_items       = getCompleteList<ReturnType, I>(modelGridInfo);
     auto luminosity_items = luminosityGrid.getAxis<I>();
 
     if (grid_items.size() != luminosity_items.size()) {
@@ -60,10 +56,9 @@ private:
 
     return true;
   }
-
 };
 
-}
-}
+}  // namespace PhzConfiguration
+}  // namespace Euclid
 
 #endif /* PHZCONFIGURATION_SRC_LIB_CHECKLUMINOSITYPARAMETER_H_ */

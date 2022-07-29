@@ -50,7 +50,7 @@ public:
 
   virtual ~GridSamplerScale() = default;
 
-  static std::stringstream createComment(const PhzDataModel::SourceResults& results);
+  static std::string createComment(const PhzDataModel::SourceResults& results);
 
   double getLuminosity(double alpha, double n_sigma, size_t sample_number, double index) const;
 
@@ -68,7 +68,8 @@ public:
   double computeEnclosingVolumeOfCells(const PhzDataModel::RegionResults& results) const;
 
   std::vector<GridSample> drawSample(std::size_t sample_number, const std::map<std::string, double>& region_volume,
-                                     const std::map<std::string, PhzDataModel::RegionResults>& results, std::mt19937& gen);
+                                     const std::map<std::string, PhzDataModel::RegionResults>& results,
+                                     std::mt19937&                                             gen);
 };
 
 }  // end of namespace PhzOutput

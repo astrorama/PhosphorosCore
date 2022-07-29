@@ -5,14 +5,14 @@
  */
 
 #ifndef PHZLIKELIHOOD_CATALOGHANDLER_H
-#define	PHZLIKELIHOOD_CATALOGHANDLER_H
+#define PHZLIKELIHOOD_CATALOGHANDLER_H
 
-#include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzDataModel/AdjustErrorParamMap.h"
+#include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzDataModel/PhotometryGrid.h"
-#include "PhzOutput/OutputHandler.h"
-#include "PhzLikelihood/SourcePhzFunctor.h"
 #include "PhzLikelihood/ProcessModelGridFunctor.h"
+#include "PhzLikelihood/SourcePhzFunctor.h"
+#include "PhzOutput/OutputHandler.h"
 
 namespace Euclid {
 namespace PhzLikelihood {
@@ -31,7 +31,6 @@ namespace PhzLikelihood {
 class CatalogHandler {
 
 public:
-
   typedef SourcePhzFunctor::MarginalizationFunction MarginalizationFunction;
 
   typedef SourcePhzFunctor::PriorFunction PriorFunction;
@@ -39,10 +38,10 @@ public:
   typedef SourcePhzFunctor::LikelihoodGridFunction LikelihoodGridFunction;
 
   /**
- * Defines the signature of the functions which can be used as listeners for
- * the progress of the catalog handling. The first parameter is the
- * number of the current step and the second is the total number of steps.
- */
+   * Defines the signature of the functions which can be used as listeners for
+   * the progress of the catalog handling. The first parameter is the
+   * number of the current step and the second is the total number of steps.
+   */
   typedef std::function<void(size_t step, size_t total)> ProgressListener;
 
   /**
@@ -68,15 +67,13 @@ public:
    *    If the phot_corr_map does not contain photometric corrections for all
    *    the filters of the model photometries
    */
-  CatalogHandler(PhzDataModel::PhotometricCorrectionMap phot_corr_map,
-                 PhzDataModel::AdjustErrorParamMap adjust_error_param_map,
+  CatalogHandler(PhzDataModel::PhotometricCorrectionMap                     phot_corr_map,
+                 PhzDataModel::AdjustErrorParamMap                          adjust_error_param_map,
                  const std::map<std::string, PhzDataModel::PhotometryGrid>& phot_grid_map,
-                 LikelihoodGridFunction likelihood_grid_func,
-                 double sampling_sigma_range,
-                 std::vector<PriorFunction> priors,
-                 std::vector<MarginalizationFunction> marginalization_func_list,
+                 LikelihoodGridFunction likelihood_grid_func, double sampling_sigma_range,
+                 std::vector<PriorFunction> priors, std::vector<MarginalizationFunction> marginalization_func_list,
                  std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list,
-                 bool doNormalizePdf);
+                 bool                                                                 doNormalizePdf);
 
   /**
    * Iterates through a set of sources and calculates the PHZ parameters for
@@ -95,21 +92,17 @@ public:
    *    A reference to the PhzOutput::OutputHandler object, which will be used
    *    for returning the output.
    */
-  template<typename SourceIter>
-  void handleSources(SourceIter source_begin, SourceIter source_end,
-                     PhzOutput::OutputHandler& out_handler,
-                     ProgressListener progress_listener=ProgressListener{}) const;
+  template <typename SourceIter>
+  void handleSources(SourceIter source_begin, SourceIter source_end, PhzOutput::OutputHandler& out_handler,
+                     ProgressListener progress_listener = ProgressListener{}) const;
 
 private:
-
   SourcePhzFunctor m_source_phz_func;
-
 };
 
-} // end of namespace PhzLikelihood
-} // end of namespace Euclid
+}  // end of namespace PhzLikelihood
+}  // end of namespace Euclid
 
 #include "PhzLikelihood/_impl/CatalogHandler.icpp"
 
-#endif	/* PHZLIKELIHOOD_CATALOGHANDLER_H */
-
+#endif /* PHZLIKELIHOOD_CATALOGHANDLER_H */

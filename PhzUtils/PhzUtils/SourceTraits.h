@@ -15,15 +15,15 @@ namespace PhzUtils {
 
 template <typename SourceIter>
 struct SourceIterTraits {
-    using id_type = decltype(std::declval<typename SourceIter::value_type>().getId());
+  using id_type = decltype(std::declval<typename SourceIter::value_type>().getId());
 };
 
 template <typename Source>
 struct SourceTraits {
-    using id_type = decltype(std::declval<Source>().getId());
+  using id_type = decltype(std::declval<Source>().getId());
 };
 
-}
-}
+}  // namespace PhzUtils
+}  // namespace Euclid
 
-#endif //PHZUTILS_PHZUTILS_SOURCETRAITS_H_
+#endif  // PHZUTILS_PHZUTILS_SOURCETRAITS_H_

@@ -16,47 +16,47 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
- /* @file src/lib/ModelGridModificationConfig.cpp
+/* @file src/lib/ModelGridModificationConfig.cpp
  * @date 2018/11/28
  * @author Florian Dubath
  */
 
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <map>
 
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
-#include "PhzLikelihood/ProcessModelGridFunctor.h"
 #include "PhzConfiguration/ModelGridModificationConfig.h"
-
+#include "PhzLikelihood/ProcessModelGridFunctor.h"
+#include <boost/filesystem/operations.hpp>
 
 namespace Euclid {
 namespace PhzConfiguration {
 
-  ModelGridModificationConfig::ModelGridModificationConfig(long manager_id) : Configuration(manager_id) {}
+ModelGridModificationConfig::ModelGridModificationConfig(long manager_id) : Configuration(manager_id) {}
 
-  const std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>>& ModelGridModificationConfig::getProcessModelGridFunctors() const{
-    if (getCurrentState()<Configuration::Configuration::State::FINAL){
-       throw Elements::Exception() << "Call to getProcessModelGridFunctors() on a not Finalized instance.";
-     }
-    return m_functor_list;
+const std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>>&
+ModelGridModificationConfig::getProcessModelGridFunctors() const {
+  if (getCurrentState() < Configuration::Configuration::State::FINAL) {
+    throw Elements::Exception() << "Call to getProcessModelGridFunctors() on a not Finalized instance.";
   }
-
-
-  void ModelGridModificationConfig::addFunctor(std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor> new_functor){
-    if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-           throw Elements::Exception() << "Call to getProcessModelGridFunctors() on a not initialized instance.";
-    }
-    m_functor_list.push_back(new_functor);
-  }
-
-  void ModelGridModificationConfig::addFunctorAtBegining(std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor> new_functor){
-    if (getCurrentState()<Configuration::Configuration::State::INITIALIZED){
-           throw Elements::Exception() << "Call to getProcessModelGridFunctors() on a not initialized instance.";
-    }
-    m_functor_list.insert(m_functor_list.begin(),new_functor);
-  }
+  return m_functor_list;
 }
+
+void ModelGridModificationConfig::addFunctor(std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor> new_functor) {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getProcessModelGridFunctors() on a not initialized instance.";
+  }
+  m_functor_list.push_back(new_functor);
 }
+
+void ModelGridModificationConfig::addFunctorAtBegining(
+    std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor> new_functor) {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getProcessModelGridFunctors() on a not initialized instance.";
+  }
+  m_functor_list.insert(m_functor_list.begin(), new_functor);
+}
+}  // namespace PhzConfiguration
+}  // namespace Euclid

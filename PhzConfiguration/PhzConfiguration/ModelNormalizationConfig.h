@@ -23,14 +23,13 @@
  */
 
 #ifndef PHZCONFIGURATION_MODELNORMALIZATIONCONFIG_H
-#define	PHZCONFIGURATION_MODELNORMALIZATIONCONFIG_H
+#define PHZCONFIGURATION_MODELNORMALIZATIONCONFIG_H
 
-#include <cstdlib>
-#include <string>
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "XYDataset/QualifiedName.h"
-
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
+#include <string>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -44,7 +43,6 @@ namespace PhzConfiguration {
 class ModelNormalizationConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief Constructor
    */
@@ -64,7 +62,7 @@ public:
   /**
    * @brief get the values from the parametres
    */
-  void initialize (const UserValues& args) override;
+  void initialize(const UserValues& args) override;
 
   // Returns the band of the luminosity normalization
   const XYDataset::QualifiedName& getNormalizationFilter() const;
@@ -75,18 +73,13 @@ public:
   double getSolarMagAB() const;
 
 private:
-
-  XYDataset::QualifiedName m_band {"uninitialized"};
-  XYDataset::QualifiedName m_solar_sed {"uninitialized"};
-  double m_solar_MAG_AB=0;
-
-
+  XYDataset::QualifiedName m_band{"uninitialized"};
+  XYDataset::QualifiedName m_solar_sed{"uninitialized"};
+  double                   m_solar_MAG_AB = 0;
 
 }; /* End of ComputeModelGridConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_MODELNORMALIZATIONCONFIG_H */
-
+#endif /* PHZCONFIGURATION_MODELNORMALIZATIONCONFIG_H */

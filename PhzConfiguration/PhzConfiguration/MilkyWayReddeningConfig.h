@@ -23,15 +23,14 @@
  */
 
 #ifndef PHZCONFIGURATION_MILKYWAYREDDENINGCONFIG_H
-#define	PHZCONFIGURATION_MILKYWAYREDDENINGCONFIG_H
+#define PHZCONFIGURATION_MILKYWAYREDDENINGCONFIG_H
 
-#include <string>
-#include <vector>
-#include <map>
+#include "Configuration/Configuration.h"
 #include "XYDataset/XYDatasetProvider.h"
 #include <boost/filesystem/operations.hpp>
-#include "Configuration/Configuration.h"
-
+#include <map>
+#include <string>
+#include <vector>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -78,17 +77,14 @@ public:
     * @return
     * A QualifiedName
     */
-   XYDataset::QualifiedName getMilkyWayReddeningCurve() const;
+  XYDataset::QualifiedName getMilkyWayReddeningCurve() const;
 
 private:
-
   std::string m_miky_way_reddening_curve;
 
 }; /* End of MilkyWayReddeningConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_MILKYWAYREDDENINGCONFIG_H */
-
+#endif /* PHZCONFIGURATION_MILKYWAYREDDENINGCONFIG_H */

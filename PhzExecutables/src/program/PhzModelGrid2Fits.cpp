@@ -24,22 +24,21 @@
 #include <map>
 #include <string>
 
-#include <boost/program_options.hpp>
-#include "ElementsKernel/ProgramHeaders.h"
 #include "AlexandriaKernel/memory_tools.h"
 #include "Configuration/ConfigManager.h"
 #include "Configuration/Utils.h"
-#include "Table/FitsWriter.h"
-#include "PhzConfiguration/PhzModelGrid2FitsConfig.h"
+#include "ElementsKernel/ProgramHeaders.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
-#include "PhzDataModel/Photometry.h"
+#include "PhzConfiguration/PhzModelGrid2FitsConfig.h"
+#include "Table/FitsWriter.h"
+#include <boost/program_options.hpp>
 
 using namespace Euclid::Table;
 using namespace Euclid::Configuration;
 using namespace Euclid::PhzConfiguration;
 
-using Euclid::SourceCatalog::Photometry;
 using Euclid::GridContainer::gridContainerToTable;
+using Euclid::SourceCatalog::Photometry;
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -56,7 +55,6 @@ static long config_manager_id = getUniqueManagerId();
 class PhzModelGrid2Fits : public Elements::Program {
 
 public:
-
   po::options_description defineSpecificProgramOptions() override {
     auto& config_manager = ConfigManager::getInstance(config_manager_id);
     config_manager.registerConfiguration<PhzModelGrid2FitsConfig>();
@@ -67,8 +65,8 @@ public:
     auto& config_manager = ConfigManager::getInstance(config_manager_id);
     config_manager.initialize(args);
 
-    auto output_config = config_manager.getConfiguration<PhzModelGrid2FitsConfig>();
-    auto& grid_map = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
+    auto  output_config = config_manager.getConfiguration<PhzModelGrid2FitsConfig>();
+    auto& grid_map      = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
 
     if (fs::exists(output_config.getOutputCatalog())) {
       if (output_config.overwrite())
@@ -95,7 +93,6 @@ public:
 
     return Elements::ExitCode::OK;
   }
-
 };
 
 MAIN_FOR(PhzModelGrid2Fits)

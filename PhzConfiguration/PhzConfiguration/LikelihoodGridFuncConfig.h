@@ -23,13 +23,13 @@
  */
 
 #ifndef PHZCONFIGURATION_LIKELIHOODGRIDFUNCTIONCONFIG_H
-#define	PHZCONFIGURATION_LIKELIHOODGRIDFUNCTIONCONFIG_H
+#define PHZCONFIGURATION_LIKELIHOODGRIDFUNCTIONCONFIG_H
 
-#include <cstdlib>
-#include <string>
-#include <boost/filesystem/operations.hpp>
 #include "Configuration/Configuration.h"
 #include "PhzLikelihood/SourcePhzFunctor.h"
+#include <boost/filesystem/operations.hpp>
+#include <cstdlib>
+#include <string>
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -44,7 +44,6 @@ namespace PhzConfiguration {
 class LikelihoodGridFuncConfig : public Configuration::Configuration {
 
 public:
-
   /**
    * @brief Constructor
    */
@@ -55,27 +54,22 @@ public:
    */
   virtual ~LikelihoodGridFuncConfig() = default;
 
-
-
   /**
    * @details
    * Computes and returns the Likelihood Grid Function based on the provided
    * parameters.
    */
-  const PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction & getLikelihoodGridFunction();
-  
+  const PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction& getLikelihoodGridFunction();
+
   // Returns the function which computes the scale factor
   PhzLikelihood::LikelihoodLogarithmAlgorithm::ScaleFactorCalc getScaleFactorFunction();
 
 private:
-
   PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction m_grid_function;
 
 }; /* End of LikelihoodGridFuncConfig class */
 
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
-
-#endif	/* PHZCONFIGURATION_LIKELIHOODGRIDFUNCTIONCONFIG_H */
-
+#endif /* PHZCONFIGURATION_LIKELIHOODGRIDFUNCTIONCONFIG_H */

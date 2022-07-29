@@ -4,32 +4,27 @@
  * @author Florian dubath
  */
 
-#include <memory>
-#include <vector>
-#include <cmath>
-#include <utility>
-#include "ElementsKernel/Real.h"
 #include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Real.h"
 #include <boost/test/unit_test.hpp>
+#include <cmath>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "PhzNzPrior/NzPriorParam.h"
 
 using namespace Euclid;
 
-
-
-
-
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (NzPriorParam_test)
-
+BOOST_AUTO_TEST_SUITE(NzPriorParam_test)
 
 /**
  * Check the Luminosity in flux
  */
 BOOST_AUTO_TEST_CASE(Const_and_accessor_test) {
-  auto param = PhzNzPrior::NzPriorParam(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16);
+  auto param = PhzNzPrior::NzPriorParam(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
 
   BOOST_CHECK_CLOSE(1, param.getZ0t(1), 0.00001);
   BOOST_CHECK_CLOSE(2, param.getKmt(1), 0.00001);
@@ -49,25 +44,6 @@ BOOST_AUTO_TEST_CASE(Const_and_accessor_test) {
   BOOST_CHECK_CLOSE(14, param.getKmt(3), 0.00001);
   BOOST_CHECK_CLOSE(15, param.getAlphat(3), 0.00001);
   BOOST_CHECK_CLOSE(16, param.getCst(3), 0.00001);
-}
-
-BOOST_AUTO_TEST_CASE(fail_accessor_test) {
-  auto param = PhzNzPrior::NzPriorParam(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16);
-
-  BOOST_CHECK_THROW(param.getZ0t(0), Elements::Exception);
-  BOOST_CHECK_THROW(param.getKmt(0), Elements::Exception);
-  BOOST_CHECK_THROW(param.getAlphat(0), Elements::Exception);
-  BOOST_CHECK_THROW(param.getKt(0), Elements::Exception);
-  BOOST_CHECK_THROW(param.getFt(0), Elements::Exception);
-  BOOST_CHECK_THROW(param.getCst(0), Elements::Exception);
-
-  BOOST_CHECK_THROW(param.getZ0t(4), Elements::Exception);
-  BOOST_CHECK_THROW(param.getKmt(4), Elements::Exception);
-  BOOST_CHECK_THROW(param.getAlphat(4), Elements::Exception);
-  BOOST_CHECK_THROW(param.getKt(3), Elements::Exception);
-  BOOST_CHECK_THROW(param.getFt(3), Elements::Exception);
-  BOOST_CHECK_THROW(param.getCst(4), Elements::Exception);
-
 }
 
 BOOST_AUTO_TEST_CASE(default_test) {
@@ -91,12 +67,8 @@ BOOST_AUTO_TEST_CASE(default_test) {
   BOOST_CHECK_CLOSE(0.150, param.getKmt(3), 0.00001);
   BOOST_CHECK_CLOSE(2.00, param.getAlphat(3), 0.00001);
   BOOST_CHECK_CLOSE(0.8874, param.getCst(3), 0.00001);
-
 }
-
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

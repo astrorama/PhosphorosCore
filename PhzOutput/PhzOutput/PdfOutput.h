@@ -8,12 +8,11 @@
 #ifndef PHZOUTPUT_PHZOUTPUT_PDFOUTPUT_H_
 #define PHZOUTPUT_PHZOUTPUT_PDFOUTPUT_H_
 
-
-#include <boost/filesystem.hpp>
-#include <CCfits/CCfits>
-#include "Table/Row.h"
 #include "PhzDataModel/GridType.h"
 #include "PhzOutput/OutputHandler.h"
+#include "Table/Row.h"
+#include <CCfits/CCfits>
+#include <boost/filesystem.hpp>
 
 namespace Euclid {
 namespace PhzOutput {
@@ -34,8 +33,7 @@ template <PhzDataModel::GridType GT, int Parameter>
 class PdfOutput : public OutputHandler {
 
 public:
-  
-  PdfOutput(boost::filesystem::path out_dir, uint flush_chunk_size=500);
+  PdfOutput(boost::filesystem::path out_dir, uint flush_chunk_size = 500);
 
   virtual ~PdfOutput();
 
@@ -47,20 +45,17 @@ public:
    * @param results
    *    The results of the template fitting for the source
    */
-  void handleSourceOutput(const SourceCatalog::Source& source,
-                          const PhzDataModel::SourceResults& results) override;
+  void handleSourceOutput(const SourceCatalog::Source& source, const PhzDataModel::SourceResults& results) override;
 
 private:
-
-  boost::filesystem::path       m_out_file;  // Filename of the output fits file
-  std::shared_ptr<CCfits::FITS> m_fits_file; // Pointer to the FITS file object
-  int64_t                       m_counter;   // Counting the number of sources
-  uint m_flush_chunk_size;
-
+  boost::filesystem::path       m_out_file;   // Filename of the output fits file
+  std::shared_ptr<CCfits::FITS> m_fits_file;  // Pointer to the FITS file object
+  int64_t                       m_counter;    // Counting the number of sources
+  uint                          m_flush_chunk_size;
 };
 
-} // end of namespace PhzOutput
-} // end of namespace Euclid
+}  // end of namespace PhzOutput
+}  // end of namespace Euclid
 
 #include <PhzOutput/_impl/PdfOutput.icpp>
 

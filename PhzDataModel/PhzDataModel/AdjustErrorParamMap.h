@@ -5,11 +5,11 @@
  */
 
 #ifndef PHZDATAMODEL_ADJUSTERRORPARAMMAP_H
-#define	PHZDATAMODEL_ADJUSTERRORPARAMMAP_H
+#define PHZDATAMODEL_ADJUSTERRORPARAMMAP_H
 
+#include "XYDataset/QualifiedName.h"
 #include <map>
 #include <tuple>
-#include "XYDataset/QualifiedName.h"
 
 namespace Euclid {
 namespace PhzDataModel {
@@ -41,7 +41,7 @@ void writeAdjustErrorParamMap(std::ostream& out, const AdjustErrorParamMap& adju
  * The stream must contain a ASCII representation of a Table
  * with 4 columns (Filter <string>, Alpha<double>, Beta<double>, Gamma<double>).
  * The Filter column contains the full (also with groups) filter name.
- * 
+ *
  * Example file:
  * \code
  *  # Column: Filter string
@@ -71,8 +71,7 @@ void writeAdjustErrorParamMap(std::ostream& out, const AdjustErrorParamMap& adju
  */
 AdjustErrorParamMap readAdjustErrorParamMap(std::istream& in);
 
-} // end of namespace PhzDataModel
-} // end of namespace Euclid
+}  // end of namespace PhzDataModel
+}  // end of namespace Euclid
 
-#endif	/* PHZDATAMODEL_ADJUSTERRORPARAMMAP_H */
-
+#endif /* PHZDATAMODEL_ADJUSTERRORPARAMMAP_H */

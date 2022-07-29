@@ -24,8 +24,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "PhzConfiguration/IgmConfig.h"
 #include "ConfigManager_fixture.h"
+#include "PhzConfiguration/IgmConfig.h"
 #include "PhzModeling/NoIgmFunctor.h"
 #include "XYDataset/XYDataset.h"
 
@@ -33,11 +33,11 @@ using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE (IgmConfig_test)
+BOOST_AUTO_TEST_SUITE(IgmConfig_test)
 
 //-----------------------------------------------------------------------------
 
-BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, ConfigManager_fixture) {
 
   // Given
   config_manager.registerConfiguration<IgmConfig>();
@@ -47,11 +47,10 @@ BOOST_FIXTURE_TEST_CASE( getProgramOptions_test, ConfigManager_fixture ) {
 
   // Then
   BOOST_CHECK_NO_THROW(options.find("igm-absorption-type", false));
-
 }
 
 //-----------------------------------------------------------------------------
-BOOST_FIXTURE_TEST_CASE( NotInitializedGetter_test, ConfigManager_fixture ) {
+BOOST_FIXTURE_TEST_CASE(NotInitializedGetter_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<IgmConfig>();
   config_manager.closeRegistration();
@@ -69,9 +68,9 @@ BOOST_FIXTURE_TEST_CASE(UnknowType_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<IgmConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
+  std::map<std::string, po::variable_value> options_map{};
 
-  std::string unknown_type = "TYPE";
+  std::string unknown_type                   = "TYPE";
   options_map["igm-absorption-type"].value() = boost::any(unknown_type);
 
   // Then
@@ -85,43 +84,38 @@ BOOST_FIXTURE_TEST_CASE(Nominal_test, ConfigManager_fixture) {
   // Given
   config_manager.registerConfiguration<IgmConfig>();
   config_manager.closeRegistration();
-  std::map<std::string, po::variable_value> options_map {};
+  std::map<std::string, po::variable_value> options_map{};
 
-  std::string known_type = "OFF";
+  std::string known_type                     = "OFF";
   options_map["igm-absorption-type"].value() = boost::any(known_type);
 
   // When
-   config_manager.initialize(options_map);
-   auto type_result = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionType();
-   auto result = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
+  config_manager.initialize(options_map);
+  auto type_result = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionType();
+  auto result      = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
 
-   // Then
-   BOOST_CHECK_EQUAL(type_result, "OFF");
+  // Then
+  BOOST_CHECK_EQUAL(type_result, "OFF");
 
-   std::vector<std::pair<double, double>> values {};
-   values.push_back(std::make_pair(1.,1.));
-   values.push_back(std::make_pair(2.,2.));
-   values.push_back(std::make_pair(3.,3.));
+  std::vector<std::pair<double, double>> values{};
+  values.push_back(std::make_pair(1., 1.));
+  values.push_back(std::make_pair(2., 2.));
+  values.push_back(std::make_pair(3., 3.));
 
-   Euclid::XYDataset::XYDataset input_data{std::move(values)};
+  Euclid::XYDataset::XYDataset input_data{std::move(values)};
 
-   Euclid::XYDataset::XYDataset output_data = result(input_data,0.);
-   auto iter_input = input_data.begin();
-   auto iter_output = output_data.begin();
-   do{
-     BOOST_CHECK_EQUAL(iter_input->first, iter_output->first);
-     BOOST_CHECK_EQUAL(iter_input->second, iter_output->second);
-     ++iter_input;
-     ++iter_output;
+  Euclid::XYDataset::XYDataset output_data = result(input_data, 0.);
+  auto                         iter_input  = input_data.begin();
+  auto                         iter_output = output_data.begin();
+  do {
+    BOOST_CHECK_EQUAL(iter_input->first, iter_output->first);
+    BOOST_CHECK_EQUAL(iter_input->second, iter_output->second);
+    ++iter_input;
+    ++iter_output;
 
-   } while (iter_input!=input_data.end());
-
+  } while (iter_input != input_data.end());
 }
-
-
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE_END ()
-
-
+BOOST_AUTO_TEST_SUITE_END()

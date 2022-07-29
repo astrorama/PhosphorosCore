@@ -7,15 +7,15 @@
 #ifndef PHZPHOTOMETRICCORRECTION_FINDBESTFITMODELS_H
 #define PHZPHOTOMETRICCORRECTION_FINDBESTFITMODELS_H
 
-#include <map>
-#include <vector>
-#include <memory>
-#include "SourceCatalog/Catalog.h"
-#include "PhzDataModel/PhotometryGrid.h"
-#include "PhzDataModel/PhotometricCorrectionMap.h"
 #include "PhzDataModel/AdjustErrorParamMap.h"
-#include "PhzLikelihood/SourcePhzFunctor.h"
+#include "PhzDataModel/PhotometricCorrectionMap.h"
+#include "PhzDataModel/PhotometryGrid.h"
 #include "PhzLikelihood/ProcessModelGridFunctor.h"
+#include "PhzLikelihood/SourcePhzFunctor.h"
+#include "SourceCatalog/Catalog.h"
+#include <map>
+#include <memory>
+#include <vector>
 
 namespace Euclid {
 namespace PhzPhotometricCorrection {
@@ -32,20 +32,20 @@ namespace PhzPhotometricCorrection {
  * finding the best fitted model.
  * See SourcePhzFunctor::SourcePhzFunctor for the signatures.
  */
-template<typename SourceCalculatorFunctor>
+template <typename SourceCalculatorFunctor>
 class FindBestFitModels {
-  
+
 public:
-  
   using LikelihoodGridFunction = PhzLikelihood::SourcePhzFunctor::LikelihoodGridFunction;
-  using PriorFunction = PhzLikelihood::SourcePhzFunctor::PriorFunction;
-  
-  FindBestFitModels(LikelihoodGridFunction likelihood_func,
-                    const PhzDataModel::AdjustErrorParamMap& adjust_error_param_map,
-                    double sampling_sigma_range,
-                    std::vector<PriorFunction> priors = {},
-                    std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> marginalization_func_list = {PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{PhzDataModel::GridType::POSTERIOR}},
-                    std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list ={});
+  using PriorFunction          = PhzLikelihood::SourcePhzFunctor::PriorFunction;
+
+  FindBestFitModels(LikelihoodGridFunction                   likelihood_func,
+                    const PhzDataModel::AdjustErrorParamMap& adjust_error_param_map, double sampling_sigma_range,
+                    std::vector<PriorFunction>                                            priors = {},
+                    std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> marginalization_func_list =
+                        {PhzLikelihood::BayesianMarginalizationFunctor<PhzDataModel::ModelParameter::Z>{
+                            PhzDataModel::GridType::POSTERIOR}},
+                    std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> model_funct_list = {});
 
   /**
    * @brief Map each input source to the model which is the best match,
@@ -74,25 +74,23 @@ public:
    *    if any of the source is missing the Photometry information
    */
   template <typename SourceIter>
-  std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry> operator()(
-      SourceIter source_begin, SourceIter source_end,
-      const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
-      const PhzDataModel::PhotometricCorrectionMap& photometric_correction) const;
-  
+  std::map<SourceCatalog::Source::id_type, SourceCatalog::Photometry>
+  operator()(SourceIter source_begin, SourceIter source_end,
+             const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid_map,
+             const PhzDataModel::PhotometricCorrectionMap&              photometric_correction) const;
+
 private:
-  
-  const PhzDataModel::AdjustErrorParamMap& m_adjust_error_param_map;
-  LikelihoodGridFunction m_likelihood_func;
-  double m_sampling_sigma_range;
-  std::vector<PriorFunction> m_priors;
+  const PhzDataModel::AdjustErrorParamMap&                              m_adjust_error_param_map;
+  LikelihoodGridFunction                                                m_likelihood_func;
+  double                                                                m_sampling_sigma_range;
+  std::vector<PriorFunction>                                            m_priors;
   std::vector<PhzLikelihood::SourcePhzFunctor::MarginalizationFunction> m_marginalization_func_list;
-  std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>> m_model_funct_list;
-  
+  std::vector<std::shared_ptr<PhzLikelihood::ProcessModelGridFunctor>>  m_model_funct_list;
 };
 
-} // end of namespace PhzPhotometricCorrection
-} // end of namespace Euclid
+}  // end of namespace PhzPhotometricCorrection
+}  // end of namespace Euclid
 
 #include "PhzPhotometricCorrection/_impl/FindBestFitModels.icpp"
 
-#endif    /* PHZPHOTOMETRICCORRECTION_FINDBESTFITMODELS_H */
+#endif /* PHZPHOTOMETRICCORRECTION_FINDBESTFITMODELS_H */

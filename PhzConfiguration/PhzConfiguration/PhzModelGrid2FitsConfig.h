@@ -82,10 +82,10 @@ public:
 
 private:
   boost::filesystem::path m_output_catalog;
-  bool m_overwrite, m_squash;
+  bool                    m_overwrite, m_squash;
 };
 
-} // end of namespace PhzConfiguration
-} // end of namespace Euclid
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-#endif // _PHZCONFIGURATION_PHZMODELGRID2FITSCONFIG_H
+#endif  // _PHZCONFIGURATION_PHZMODELGRID2FITSCONFIG_H
