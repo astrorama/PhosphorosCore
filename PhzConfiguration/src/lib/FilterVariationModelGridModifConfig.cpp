@@ -55,7 +55,7 @@ void FilterVariationModelGridModifConfig::postInitialize(const UserValues& /* ar
     const auto& coeff_grid_info =
         getDependency<FilterVariationCoefficientGridConfig>().getFilterVariationCoefficientGridInfo();
     if (!GalactiAbsorptionModelGridModifConfig::areGridsCompatible(coeff_grid_info, model_grid_info)) {
-      throw Elements::Exception() << "The provided 'galactic-correction-coefficient-grid-file' is not "
+      throw Elements::Exception() << "The provided 'filter-variation-coefficient-grid-file' is not "
                                      "compatible with the 'model-grid-file'";
     }
 
