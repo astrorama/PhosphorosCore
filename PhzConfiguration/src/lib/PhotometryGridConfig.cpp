@@ -135,20 +135,26 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
         }
       }
 
-      // Here we know we need to make new photometries and replace the members
+      // Here we now need to make new photometries and replace the members
       m_info.filter_names.clear();
       m_info.filter_names.insert(m_info.filter_names.begin(), filter_names->begin(), filter_names->end());
 
       for (auto& pair : m_grids) {
+        PhzDataModel::PhotometryGrid sliced_grid(pair.second.getAxesTuple(), *filter_names);
+        using PhotometryProxy = PhzDataModel::PhotometryCellManager::PhotometryProxy;
+
         // Note that the PhotometryGrid returns a proxy object when iterating, not the object.
         // We can not get a reference to this proxy
-        for (auto p : pair.second) {
-          std::vector<SourceCatalog::FluxErrorPair> values{};
-          for (auto& f : *filter_names) {
-            values.emplace_back(*(p.find(f)));
-          }
-          p = SourceCatalog::Photometry(filter_names, std::move(values));
-        }
+        std::transform(
+            pair.second.begin(), pair.second.end(), sliced_grid.begin(), [filter_names](const PhotometryProxy& photo) {
+              std::vector<SourceCatalog::FluxErrorPair> values(filter_names->size(), {0., 0.});
+              std::transform(filter_names->begin(), filter_names->end(), values.begin(), [photo](const std::string& f) {
+                return *photo.find(f);
+              });
+              return SourceCatalog::Photometry(filter_names, std::move(values));
+            });
+
+        pair.second = std::move(sliced_grid);
       }
     }
   }
