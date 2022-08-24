@@ -26,6 +26,7 @@
 #include "PhysicsUtils/CosmologicalDistances.h"
 #include "PhzDataModel/PhzModel.h"
 #include <algorithm>
+#include <cmath>
 
 namespace Euclid {
 namespace PhzLikelihood {

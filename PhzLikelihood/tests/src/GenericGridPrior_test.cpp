@@ -25,6 +25,7 @@
 #include "PhzLikelihood/GenericGridPrior.h"
 #include "XYDataset/QualifiedName.h"
 #include <boost/test/unit_test.hpp>
+#include <cmath>
 
 using namespace Euclid;
 using namespace Euclid::PhzLikelihood;

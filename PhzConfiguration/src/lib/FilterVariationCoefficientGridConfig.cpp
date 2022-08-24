@@ -32,6 +32,7 @@
 #include "ElementsKernel/Logging.h"
 
 #include "GridContainer/serialize.h"
+#include "PhzDataModel/serialization/PhotometryGrid.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 
 #include "Configuration/ConfigManager.h"

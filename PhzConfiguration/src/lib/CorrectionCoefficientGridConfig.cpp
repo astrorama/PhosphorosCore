@@ -22,24 +22,21 @@
  * @author Florian Dubath
  */
 
-#include <PhzDataModel/ArchiveFormat.h>
+#include "PhzConfiguration/CorrectionCoefficientGridConfig.h"
+#include "Configuration/ConfigManager.h"
+#include "Configuration/PhotometricBandMappingConfig.h"
+#include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Logging.h"
+#include "PhzConfiguration/CatalogTypeConfig.h"
+#include "PhzConfiguration/IntermediateDirConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
+#include "PhzDataModel/serialization/PhotometryGrid.h"
+#include "PhzDataModel/serialization/PhotometryGridInfo.h"
+#include "PhzDataModel/ArchiveFormat.h"
 #include <algorithm>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <fstream>
-
-#include "ElementsKernel/Exception.h"
-#include "ElementsKernel/Logging.h"
-
-#include "GridContainer/serialize.h"
-#include "PhzDataModel/serialization/PhotometryGridInfo.h"
-
-#include "Configuration/ConfigManager.h"
-#include "Configuration/PhotometricBandMappingConfig.h"
-#include "PhzConfiguration/CatalogTypeConfig.h"
-#include "PhzConfiguration/CorrectionCoefficientGridConfig.h"
-#include "PhzConfiguration/IntermediateDirConfig.h"
-#include "PhzConfiguration/PhotometryGridConfig.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;

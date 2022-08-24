@@ -24,6 +24,7 @@ using namespace Euclid;
 using PhzLikelihood::FilterShiftProcessModelGridFunctor;
 using std::make_shared;
 using std::shared_ptr;
+using std::string;
 using std::vector;
 
 struct FilterShiftFixture {

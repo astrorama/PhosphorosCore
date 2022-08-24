@@ -26,7 +26,7 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Temporary.h"
 #include "PhzConfiguration/LuminositySedGroupConfig.h"
-#include "PhzDataModel/PhotometryGridInfo.h"
+#include "PhzDataModel/serialization/PhotometryGrid.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include <boost/filesystem.hpp>
 #include <boost/test/unit_test.hpp>

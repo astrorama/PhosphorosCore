@@ -7,9 +7,10 @@
 #ifndef PHZDATAMODEL_PHOTOMETRYGRID_H
 #define PHZDATAMODEL_PHOTOMETRYGRID_H
 
-#include "GridContainer/GridContainerToTable.h"
 #include "PhzDataModel/PhzModel.h"
 #include "SourceCatalog/SourceAttributes/Photometry.h"
+#include <GridContainer/GridCellManagerTraits.h>
+#include <cassert>
 #include <memory>
 #include <vector>
 
@@ -278,42 +279,6 @@ typedef PhzGrid<PhotometryCellManager> PhotometryGrid;
 }  // end of namespace PhzDataModel
 
 namespace GridContainer {
-
-template <>
-struct GridCellToTable<PhzDataModel::PhotometryCellManager::PhotometryProxy> {
-
-  /**
-   * Get the column descriptions of the values of the cell. The element passed will be one
-   * reference cell from the grid (i.e. the first one)
-   * @param c
-   *    A cell instance
-   * @param columns
-   *    The column description(s) for the cell type. New columns must be *appended*
-   */
-  static void addColumnDescriptions(const PhzDataModel::PhotometryCellManager::PhotometryProxy& p,
-                                    std::vector<Table::ColumnDescription>&                      columns) {
-    for (auto piter = p.begin(); piter != p.end(); ++piter) {
-      columns.emplace_back(piter.filterName(), typeid(double));
-      columns.emplace_back(piter.filterName() + "_error", typeid(double));
-    }
-  }
-
-  /**
-   * Add the cell values into the row
-   * @param c
-   *    A cell instance to be serialized
-   * @param row
-   *    Destination row. New cells must be *appended* on the same order as the column descriptions.
-   */
-  static void addCells(const PhzDataModel::PhotometryCellManager::PhotometryProxy& photometry,
-                       std::vector<Table::Row::cell_type>&                         row) {
-    for (auto& p : photometry) {
-      row.emplace_back(p.flux);
-      row.emplace_back(p.error);
-    }
-  }
-};
-
 /**
  * @struct Euclid::GridContainer::GridCellManagerTraits<PhotometryCellManager>
  * @brief Specialization of the GridCellManagerTraits template.
@@ -373,10 +338,5 @@ struct GridCellManagerTraits<PhzDataModel::PhotometryCellManager> {
 
 }  // end of namespace GridContainer
 }  // end of namespace Euclid
-
-// Here we include the serialization of the photometry grid. This is done here
-// to avoid having the default grid serialization applied to the PhotometryGrid
-// (which would happen if the user would forget to include this file)
-#include "PhzDataModel/serialization/PhotometryGrid.h"
 
 #endif /* PHZDATAMODEL_PHOTOMETRYGRID_H */
