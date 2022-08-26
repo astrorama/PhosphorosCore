@@ -1,4 +1,22 @@
 /**
+ * Copyright (C) 2022 Euclid Science Ground Segment
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+/**
  * @file PhotometryGridInfo.h
  * @date May 11, 2015
  * @author Nikolaos Apostolakos
@@ -11,8 +29,7 @@
 #include "GridContainer/serialization/GridContainer.h"
 #include "GridContainer/serialization/tuple.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
-#include "PhzDataModel/serialization/QualifiedName.h"
-#include "XYDataset/QualifiedName.h"
+#include "XYDataset/serialize.h"
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/string.hpp>

@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+/**
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -25,6 +25,7 @@
 #ifndef _PHZCONFIGURATION_GRIDFILEHELPER_H
 #define _PHZCONFIGURATION_GRIDFILEHELPER_H
 
+#include "GridContainer/serialize.h"
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"

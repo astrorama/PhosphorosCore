@@ -32,7 +32,7 @@
 #include "ElementsKernel/Temporary.h"
 #include "GridContainer/serialize.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
-#include "PhzDataModel/PhotometryGrid.h"
+#include "PhzDataModel/serialization/PhotometryGrid.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 
 using namespace Euclid::PhzConfiguration;

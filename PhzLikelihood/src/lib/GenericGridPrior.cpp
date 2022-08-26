@@ -25,6 +25,8 @@
 #include "PhzLikelihood/GenericGridPrior.h"
 #include "ElementsKernel/Exception.h"
 #include "PhzDataModel/PhzModel.h"
+#include <cmath>
+#include <limits>
 
 namespace Euclid {
 namespace PhzLikelihood {

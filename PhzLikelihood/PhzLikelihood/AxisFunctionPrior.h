@@ -28,6 +28,8 @@
 #include "MathUtils/function/Function.h"
 #include "PhzDataModel/RegionResults.h"
 #include <memory>
+#include <cmath>
+#include <limits>
 
 namespace Euclid {
 namespace PhzLikelihood {

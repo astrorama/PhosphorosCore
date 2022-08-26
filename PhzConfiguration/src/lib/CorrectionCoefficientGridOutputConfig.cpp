@@ -32,10 +32,9 @@
 #include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzDataModel/ArchiveFormat.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
-#include "PhzDataModel/serialization/PhotometryGridInfo.h"
+#include "PhzDataModel/serialization/PhotometryGrid.h"
 #include "PhzUtils/FileUtils.h"
 #include <boost/archive/text_oarchive.hpp>
-#include <fstream>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;

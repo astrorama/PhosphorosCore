@@ -37,6 +37,7 @@
 
 using std::get;
 using std::shared_ptr;
+using std::string;
 using std::vector;
 using namespace Euclid;
 using namespace Euclid::PhzLikelihood;

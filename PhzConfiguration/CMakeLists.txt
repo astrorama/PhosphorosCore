@@ -40,6 +40,14 @@ elements_add_library(PhzConfiguration ${CONFIG_SRC}
         PhzModeling PhzUtils PhzLuminosity ElementsKernel Configuration ${PHZ_REF_SAMPLE_TARGET}
         INCLUDE_DIRS XYDataset MathUtils PhzDataModel PhzUtils PhzLuminosity PhzNzPrior
         PUBLIC_HEADERS PhzConfiguration)
+
+if (${CMAKE_VERSION} VERSION_GREATER "3.16.0" OR ${CMAKE_VERSION} VERSION_EQUAL "3.16.0")
+    target_precompile_headers(PhzConfiguration PRIVATE
+            <Configuration/Configuration.h>
+            <Configuration/ConfigManager.h>
+            <GridContainer/serialize.h>)
+endif ()
+
 elements_add_unit_test(CatalogTypeConfig_test tests/src/CatalogTypeConfig_test.cpp
         LINK_LIBRARIES PhzConfiguration
         TYPE Boost)

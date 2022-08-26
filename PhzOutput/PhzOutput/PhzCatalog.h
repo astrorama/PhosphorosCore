@@ -27,7 +27,8 @@
 
 #include "PhzOutput/OutputHandler.h"
 #include "PhzOutput/PhzColumnHandlers/ColumnHandler.h"
-#include "Table/Row.h"
+#include "Table/Table.h"
+#include "Table/TableWriter.h"
 #include <boost/filesystem.hpp>
 #include <vector>
 

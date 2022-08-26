@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -38,11 +38,13 @@
 #include "PhzFilterVariation/FilterVariationSingleGridCreator.h"
 #include "PhzModeling/NormalizationFunctorFactory.h"
 #include <chrono>
+#include <iomanip>
 #include <map>
 #include <memory>
 #include <tuple>
 
 using std::map;
+using std::string;
 using namespace Euclid;
 using namespace Euclid::Configuration;
 using namespace Euclid::PhzConfiguration;

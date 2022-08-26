@@ -27,6 +27,7 @@
 #include "PhzConfiguration/AxisWeightPriorConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/serialization/PhotometryGrid.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzLikelihood/AxisWeightPrior.h"
 #include <boost/test/unit_test.hpp>

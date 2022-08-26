@@ -1,4 +1,22 @@
 /**
+ * Copyright (C) 2022 Euclid Science Ground Segment
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+/**
  * @file PhotometricCorrectionCalculator_test.cpp
  * @date January 20, 2015
  * @author Nikolaos Apostolakos
@@ -13,6 +31,7 @@ using std::initializer_list;
 using std::make_shared;
 using std::map;
 using std::shared_ptr;
+using std::string;
 using std::vector;
 using namespace Euclid;
 using namespace Euclid::PhzPhotometricCorrection;
@@ -235,8 +254,8 @@ BOOST_AUTO_TEST_CASE(FunctorCallSuccess) {
   map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map{};
   model_grid_map.emplace(std::make_pair(std::string{""}, std::move(model_phot_grid)));
   vector<PhzDataModel::PhotometricCorrectionMap>          phot_corr_map_list{{{{"Filter1"}, 1.}, {{"Filter2"}, 1.}},
-                                                                    {{{"Filter1"}, 2.}, {{"Filter2"}, 2.}},
-                                                                    {{{"Filter1"}, 3.}, {{"Filter2"}, 3.}}};
+                                                                             {{{"Filter1"}, 2.}, {{"Filter2"}, 2.}},
+                                                                             {{{"Filter1"}, 3.}, {{"Filter2"}, 3.}}};
   vector<map<Source::id_type, SourceCatalog::Photometry>> best_fit_map_list{
       {{1, SourceCatalog::Photometry{*(model_grid_map.at("").cbegin())}}},
       {{2, SourceCatalog::Photometry{*(model_grid_map.at("").cbegin())}}}};

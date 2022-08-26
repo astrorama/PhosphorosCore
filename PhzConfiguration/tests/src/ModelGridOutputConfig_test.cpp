@@ -28,7 +28,6 @@
 #include <vector>
 
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/test/unit_test.hpp>
 
@@ -37,7 +36,7 @@
 #include "ElementsKernel/Temporary.h"
 #include "GridContainer/serialize.h"
 #include "PhzConfiguration/ModelGridOutputConfig.h"
-#include "PhzDataModel/PhotometryGridInfo.h"
+#include "PhzDataModel/serialization/PhotometryGrid.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 
 using namespace Euclid;

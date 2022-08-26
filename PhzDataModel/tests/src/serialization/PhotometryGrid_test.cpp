@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -22,6 +22,8 @@
  * @author Florian Dubath
  */
 
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/test/unit_test.hpp>
@@ -31,6 +33,7 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Real.h"
 #include "PhzDataModel/serialization/PhotometryGrid.h"
+#include "PhzDataModel/serialization/PhotometryGridToTable.h"
 
 struct PhzPhotometryGridName_Fixture {
 

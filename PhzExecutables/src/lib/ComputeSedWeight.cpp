@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -30,6 +30,7 @@
 #include <set>
 #include <vector>
 
+#include "GridContainer/serialize.h"
 #include "MathUtils/function/function_tools.h"
 #include "MathUtils/interpolation/interpolation.h"
 #include "PhzConfiguration/ComputeSedWeightConfig.h"
@@ -37,10 +38,9 @@
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
-#include "PhzModeling/ApplyFilterFunctor.h"
-
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
+#include "PhzModeling/ApplyFilterFunctor.h"
 
 #include "PhzExecutables/ComputeSedWeight.h"
 #include "PhzUtils/Multithreading.h"

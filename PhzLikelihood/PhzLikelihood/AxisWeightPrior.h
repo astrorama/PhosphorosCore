@@ -27,8 +27,8 @@
 
 #include "PhzDataModel/RegionResults.h"
 #include "XYDataset/QualifiedName.h"
+#include <cmath>
 #include <map>
-#include <string>
 
 namespace Euclid {
 namespace PhzLikelihood {

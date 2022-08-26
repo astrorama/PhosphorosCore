@@ -30,6 +30,7 @@
 #include "ElementsKernel/ProgramHeaders.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PhzModelGrid2FitsConfig.h"
+#include "PhzDataModel/serialization/PhotometryGridToTable.h"
 #include "Table/FitsWriter.h"
 #include <boost/program_options.hpp>
 
