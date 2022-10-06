@@ -59,7 +59,7 @@ LuminosityPrior::LuminosityGroupSampledProcessor::LuminosityGroupSampledProcesso
     , m_scaling_sigma_range(scaling_sigma_range)
     , m_sample_number(sample_number) {}
 
-double LuminosityPrior::LuminosityGroupSampledProcessor::getMaxPrior() {
+double LuminosityPrior::LuminosityGroupSampledProcessor::getMaxPrior() const {
   return m_max;
 }
 
@@ -108,7 +108,7 @@ LuminosityPrior::LuminosityGroupdProcessor::LuminosityGroupdProcessor(PhzDataMod
                                                                       bool in_mag, double solar_mag)
     : m_prior_grid(prior_grid), m_scale_factor_grid(scale_factor_grid), m_in_mag(in_mag), m_solar_mag(solar_mag) {}
 
-double LuminosityPrior::LuminosityGroupdProcessor::getMaxPrior() {
+double LuminosityPrior::LuminosityGroupdProcessor::getMaxPrior() const {
   return m_max;
 }
 
@@ -183,7 +183,7 @@ double LuminosityPrior::getMagFromSolarLum(double solarLum, double ref_solar_mag
 }
 
 double LuminosityPrior::getLuminosityInSample(double alpha, double n_sigma, size_t sample_number, size_t sample_index) {
-  return alpha + n_sigma * ((2.0 * sample_index) / (sample_number - 1) - 1);
+  return alpha + n_sigma * ((2.0 * static_cast<double>(sample_index)) / static_cast<double>(sample_number - 1) - 1.0);
 }
 
 PhzDataModel::DoubleListGrid
