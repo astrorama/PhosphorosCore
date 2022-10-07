@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2022 Euclid Science Ground Segment
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 /*
  * LuminosityPrior.cpp
  *
@@ -41,7 +59,7 @@ LuminosityPrior::LuminosityGroupSampledProcessor::LuminosityGroupSampledProcesso
     , m_scaling_sigma_range(scaling_sigma_range)
     , m_sample_number(sample_number) {}
 
-double LuminosityPrior::LuminosityGroupSampledProcessor::getMaxPrior() {
+double LuminosityPrior::LuminosityGroupSampledProcessor::getMaxPrior() const {
   return m_max;
 }
 
@@ -90,7 +108,7 @@ LuminosityPrior::LuminosityGroupdProcessor::LuminosityGroupdProcessor(PhzDataMod
                                                                       bool in_mag, double solar_mag)
     : m_prior_grid(prior_grid), m_scale_factor_grid(scale_factor_grid), m_in_mag(in_mag), m_solar_mag(solar_mag) {}
 
-double LuminosityPrior::LuminosityGroupdProcessor::getMaxPrior() {
+double LuminosityPrior::LuminosityGroupdProcessor::getMaxPrior() const {
   return m_max;
 }
 
@@ -165,7 +183,7 @@ double LuminosityPrior::getMagFromSolarLum(double solarLum, double ref_solar_mag
 }
 
 double LuminosityPrior::getLuminosityInSample(double alpha, double n_sigma, size_t sample_number, size_t sample_index) {
-  return alpha + n_sigma * ((2.0 * sample_index) / (sample_number - 1) - 1);
+  return alpha + n_sigma * ((2.0 * static_cast<double>(sample_index)) / static_cast<double>(sample_number - 1) - 1.0);
 }
 
 PhzDataModel::DoubleListGrid
@@ -208,11 +226,10 @@ void LuminosityPrior::applySampleEffectiveness(PhzDataModel::DoubleListGrid& pri
 void LuminosityPrior::applyPrior(PhzDataModel::DoubleGrid& prior_grid, PhzDataModel::DoubleGrid& posterior_grid) const {
   double min_value = std::numeric_limits<double>::lowest();
   for (auto l_it = posterior_grid.begin(), p_it = prior_grid.begin(); l_it != posterior_grid.end(); ++l_it, ++p_it) {
-    double prior = std::log(*p_it);
     if (*p_it == 0) {
       *l_it = min_value;
-    } else if (std::isfinite(prior)) {
-      *l_it += prior;
+    } else if (*p_it > 0) {
+      *l_it += std::log(*p_it);
     }
   }
 }
@@ -223,11 +240,10 @@ void LuminosityPrior::applySamplePrior(PhzDataModel::DoubleListGrid& prior_grid,
   double min_value     = std::numeric_limits<double>::lowest();
   for (auto l_it = posterior_grid.begin(), p_it = prior_grid.begin(); l_it != posterior_grid.end(); ++l_it, ++p_it) {
     for (size_t cell_iter = 0; cell_iter < sample_number; ++cell_iter) {
-      double prior = std::log((*p_it)[cell_iter]);
       if ((*p_it)[cell_iter] == 0) {
         (*l_it)[cell_iter] = min_value;
-      } else if (std::isfinite(prior)) {
-        (*l_it)[cell_iter] += prior;
+      } else if ((*p_it)[cell_iter] > 0) {
+        (*l_it)[cell_iter] += std::log((*p_it)[cell_iter]);
       }
     }
   }
