@@ -9,17 +9,19 @@ elements_add_library(PhzOutput src/lib/*.cpp src/lib/PhzColumnHandlers/*.cpp
                      LINK_LIBRARIES ElementsKernel Table SourceCatalog PhzDataModel PhzUtils CCfits MathUtils NdArray
                      INCLUDE_DIRS CCfits
                      PUBLIC_HEADERS PhzOutput)
+
+elements_add_unit_test(BestModel_test tests/src/BestModel_test.cpp
+                     LINK_LIBRARIES PhzOutput
+                     TYPE Boost)
 elements_add_unit_test(MultithreadHandler_test tests/src/MultithreadHandler_test.cpp 
                      LINK_LIBRARIES PhzOutput
                      TYPE Boost)
 elements_add_unit_test(GridSampler_test tests/src/GridSampler_test.cpp 
                      LINK_LIBRARIES PhzOutput
                      TYPE Boost)
-                     
 elements_add_unit_test(GridSamplerScale_test tests/src/GridSamplerScale_test.cpp 
                      LINK_LIBRARIES PhzOutput
                      TYPE Boost)
-                     
 elements_add_unit_test(ColumnHandlers_Id_test tests/src/ColumnHandlers_Id_test.cpp 
                      LINK_LIBRARIES PhzOutput
                      TYPE Boost)
