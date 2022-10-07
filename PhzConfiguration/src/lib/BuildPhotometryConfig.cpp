@@ -17,10 +17,13 @@
  */
 
 #include "PhzConfiguration/BuildPhotometryConfig.h"
+#include <AlexandriaKernel/memory_tools.h>
 #include <boost/filesystem/operations.hpp>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
+
+using Euclid::make_unique;
 
 namespace Euclid {
 namespace PhzConfiguration {
@@ -56,7 +59,7 @@ void BuildPhotometryConfig::initialize(const UserValues& args) {
   }
 
   auto reference_sample_path = args.at(REFSAMPLE_DIR).as<std::string>();
-  m_reference_sample = std::make_unique<ReferenceSample::ReferenceSample>(reference_sample_path, 1073741824, true);
+  m_reference_sample         = make_unique<ReferenceSample::ReferenceSample>(reference_sample_path, 1073741824, true);
   if (m_input_size == 0) {
     m_input_size = m_reference_sample->size();
   }
