@@ -16,6 +16,9 @@ elements_add_unit_test(BestModel_test tests/src/BestModel_test.cpp
 elements_add_unit_test(BestModelOnlyZ_test tests/src/BestModelOnlyZ_test.cpp
                      LINK_LIBRARIES PhzOutput
                      TYPE Boost)
+elements_add_unit_test(CopyColumns_test tests/src/CopyColumns_test.cpp
+                     LINK_LIBRARIES PhzOutput
+                     TYPE Boost)
 elements_add_unit_test(MultithreadHandler_test tests/src/MultithreadHandler_test.cpp 
                      LINK_LIBRARIES PhzOutput
                      TYPE Boost)
