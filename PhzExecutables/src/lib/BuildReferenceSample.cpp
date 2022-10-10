@@ -1,9 +1,5 @@
 /**
- * @file src/lib/ComputeReferenceSample.cpp
- * @date 08/13/18
- * @author aalvarez
- *
- * @copyright (C) 2012-2020 Euclid Science Ground Segment
+ * Copyright (C) 2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -18,7 +14,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- *
  */
 
 #include "PhzExecutables/BuildReferenceSample.h"
@@ -144,7 +139,10 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_mana
   if (pdz_bins.empty()) {
     logger.warn() << "No PDZ bins found, skipping PDZ processing";
   } else {
-    logger.debug() << "PDZ bins: " << pdz_bins;
+    auto log_line = logger.debug() << "PDZ bins: ";
+    std::for_each(pdz_bins.begin(), pdz_bins.end(), [&log_line](double bin) {
+      log_line << bin << ' ';
+    });
   }
 
   int64_t i = 0;
