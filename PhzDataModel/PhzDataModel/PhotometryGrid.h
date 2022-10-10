@@ -80,6 +80,8 @@ public:
     typedef PhotometryIterator<true>  const_iterator;
     typedef PhotometryIterator<false> iterator;
 
+    PhotometryProxy(const PhotometryProxy&) = default;
+
     iterator begin() {
       return PhotometryIteratorWrapper<false>(m_parent.m_filter_names.begin(), m_begin);
     }
