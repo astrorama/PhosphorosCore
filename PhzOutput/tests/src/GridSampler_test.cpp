@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+/**
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -39,6 +39,7 @@ using namespace PhzOutput;
 
 struct GridSampler_fixture {
   std::map<size_t, double> region_prob_map = {{0, 0.2}, {1, 0.3}, {2, 0.0}, {3, 0.5}};
+  std::mt19937             rng{};
 };
 
 //-----------------------------------------------------------------------------
@@ -148,14 +149,7 @@ BOOST_FIXTURE_TEST_CASE(test_computeEnclosingVolumeOfCells, GridSampler_fixture)
   GridContainer::GridAxis<XYDataset::QualifiedName> sed_axis_4{"SED", {{"SED_1"}}};
   PhzDataModel::DoubleGrid                          grid_likelihood_4{z_axis_4, ebv_axis_4, red_axis_4, sed_axis_4};
   std::vector<double>                               values{0.3, 0.2, 0.1, 0.6, 0.5, 0.4, 0.9, 0.8, 0.7};
-  auto                                              iter_values = values.begin();
-  auto                                              iter_grid   = grid_likelihood_4.begin();
-
-  while (iter_grid != grid_likelihood_4.end()) {
-    *iter_grid = *iter_values;
-    ++iter_values;
-    ++iter_grid;
-  }
+  std::copy(values.begin(), values.end(), grid_likelihood_4.begin());
 
   PhzDataModel::RegionResults results_4{};
   results_4.set<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>(std::move(grid_likelihood_4));
@@ -164,5 +158,52 @@ BOOST_FIXTURE_TEST_CASE(test_computeEnclosingVolumeOfCells, GridSampler_fixture)
   // Then
   BOOST_CHECK_CLOSE(computed, 3.25871684618, 0.001);  // sum bellow
 }
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(test_Sample, GridSampler_fixture) {
+  GridContainer::GridAxis<double>                   z_axis{"Z", {0.0, 1.5, 2.0}};
+  GridContainer::GridAxis<double>                   ebv_axis{"E(B-V)", {0.0, 0.7, 1.0}};
+  GridContainer::GridAxis<XYDataset::QualifiedName> red_axis{"Reddening Curve", {{"Curve1"}, {"Curve_2"}}};
+  GridContainer::GridAxis<XYDataset::QualifiedName> sed_axis{"SED", {{"SED_1"}, {"SED_2"}}};
+  PhzDataModel::DoubleGrid                          grid_likelihood{z_axis, ebv_axis, red_axis, sed_axis};
+  PhzDataModel::DoubleGrid                          grid_scaling{z_axis, ebv_axis, red_axis, sed_axis};
+  std::vector<double>                               likelihood_values{0.3, 0.2, 0.1, 0.6, 0.5, 0.4, 0.9, 0.8, 0.7};
+
+  std::copy(likelihood_values.begin(), likelihood_values.end(), grid_likelihood.begin());
+  std::fill(grid_scaling.begin(), grid_scaling.end(), 1.);
+
+  PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID> handler;
+  PhzDataModel::RegionResults                                                 results;
+  results.set<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>(std::move(grid_likelihood));
+  results.set<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>(std::move(grid_scaling));
+
+  auto samples = handler.drawSample(100, {{"Region0", 1.}}, {{"Region0", results}}, rng);
+  BOOST_CHECK_EQUAL(samples.size(), 100);
+
+  // Poor-man histogram of the attributes
+  std::vector<int> red_count(2), sed_count(2);
+  double           z_mean = 0, ebv_mean = 0;
+  std::for_each(samples.begin(), samples.end(), [&](const GridSample& sample) {
+    BOOST_CHECK_EQUAL(sample.region_index, 0);
+    BOOST_CHECK_EQUAL(sample.alpha, 1.);
+    z_mean += sample.z;
+    ebv_mean += sample.ebv;
+    ++red_count[sample.red_index];
+    ++sed_count[sample.sed_index];
+  });
+  z_mean /= samples.size();
+  ebv_mean /= samples.size();
+
+  BOOST_CHECK_CLOSE(z_mean, 1.00, 1);
+  BOOST_CHECK_CLOSE(ebv_mean, 0.52, 1);
+
+  // RED1 is most likely
+  BOOST_CHECK_GT(red_count[0], red_count[1]);
+  // SED1 is most likely
+  BOOST_CHECK_GT(sed_count[0], sed_count[1]);
+}
+
+//-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END()
