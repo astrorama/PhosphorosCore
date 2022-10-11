@@ -44,5 +44,7 @@ elements_add_unit_test(NormalizationFunctor_test tests/src/NormalizationFunctor_
                        LINK_LIBRARIES PhzModeling TYPE Boost)
 elements_add_unit_test(NormalizationFunctorFactory_test tests/src/NormalizationFunctorFactory_test.cpp
                        LINK_LIBRARIES PhzModeling TYPE Boost)
-                       
-                       
+elements_add_unit_test(IgmFunctors_test tests/src/IgmFunctors_test.cpp
+                       LINK_LIBRARIES PhzModeling TYPE Boost)
+elements_add_unit_test(SparseGridCreator_test tests/src/SparseGridCreator_test.cpp
+                       LINK_LIBRARIES PhzModeling TYPE Boost)
