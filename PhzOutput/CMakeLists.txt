@@ -37,6 +37,9 @@ elements_add_unit_test(ColumnHandlers_Flag_test tests/src/ColumnHandlers_Flag_te
 elements_add_unit_test(CorrectedPhotometry_test tests/src/CorrectedPhotometry_test.cpp 
                      LINK_LIBRARIES PhzOutput
                      TYPE Boost)
+elements_add_unit_test(Pdf_test tests/src/Pdf_test.cpp
+                     LINK_LIBRARIES PhzOutput
+                     TYPE Boost)
 elements_add_unit_test(PhysicalParameter_test tests/src/PhysicalParameter_test.cpp
                      LINK_LIBRARIES PhzOutput
                      TYPE Boost)
