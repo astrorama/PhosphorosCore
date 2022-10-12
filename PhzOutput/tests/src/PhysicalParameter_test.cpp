@@ -32,14 +32,14 @@ struct PhysicalParameterFixture {
   Source                                                                                source{1234, {}};
   SourceResults                                                                         results;
   std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> p_params{
-      {"PP1", {{"SED_1", {1.0, 0.5, "solarmass"}}, {"SED_2", {8.0, 0.0, "solarmass"}}}},
-      {"PP2", {{"SED_1", {-2.5, 1.8, "rockets"}}, {"SED_2", {20.0, 5.6, "rockets"}}}}};
+      {"PP1", {{"SED_1", std::make_tuple(1.0, 0.5, "solarmass")}, {"SED_2", std::make_tuple(8.0, 0.0, "solarmass")}}},
+      {"PP2", {{"SED_1", std::make_tuple(-2.5, 1.8, "rockets")}, {"SED_2", std::make_tuple(20.0, 5.6, "rockets")}}}};
   GridAxis<double>         z_axis{"Z", {0.0, 1.5, 2.0}};
   GridAxis<double>         ebv_axis{"E(B-V)", {0.0, 0.7, 1.0}};
   GridAxis<QualifiedName>  red_axis{"Reddening Curve", {{"Curve1"}, {"Curve_2"}}};
   GridAxis<QualifiedName>  sed_axis{"SED", {{"SED_1"}, {"SED_2"}}};
   std::vector<std::string> filters{"vis", "Y", "J"};
-  PhotometryGrid           model_grid{{z_axis, ebv_axis, red_axis, sed_axis}, filters};
+  PhotometryGrid           model_grid{std::make_tuple(z_axis, ebv_axis, red_axis, sed_axis), filters};
 };
 
 //-----------------------------------------------------------------------------

@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(test_Output) {
   SourceResults       results;
   PDZBins             pdz_bins{"Z", {0., 1., 2., 3.}};
   std::vector<double> pdz_vals{0.1, 0.2, 5.0, 0.0};
-  PDZ                 pdz{{pdz_bins}};
+  PDZ                 pdz{std::make_tuple(pdz_bins)};
   std::copy(pdz_vals.begin(), pdz_vals.end(), pdz.begin());
 
   results.set<SourceResultType::BEST_MODEL_LIKELIHOOD_LOG>(0.5);

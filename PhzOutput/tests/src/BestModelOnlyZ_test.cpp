@@ -37,7 +37,7 @@ struct BestModelFixture {
   GridAxis<QualifiedName>  red_axis{"Reddening Curve", {{"Curve1"}, {"Curve_2"}}};
   GridAxis<QualifiedName>  sed_axis{"SED", {{"SED_1"}, {"SED_2"}}};
   std::vector<std::string> filters{"vis", "Y", "J"};
-  PhotometryGrid           model_grid{{z_axis, ebv_axis, red_axis, sed_axis}, filters};
+  PhotometryGrid           model_grid{std::make_tuple(z_axis, ebv_axis, red_axis, sed_axis), filters};
 };
 
 //-----------------------------------------------------------------------------

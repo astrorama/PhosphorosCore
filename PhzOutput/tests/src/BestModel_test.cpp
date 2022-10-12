@@ -17,7 +17,7 @@
  */
 
 #include "PhzDataModel/SourceResults.h"
-#include "PhzOutput/PhzOutput/PhzColumnHandlers/BestModel.h"
+#include "PhzOutput/PhzColumnHandlers/BestModel.h"
 #include <SourceCatalog/Source.h>
 #include <boost/test/unit_test.hpp>
 #include <set>
@@ -41,7 +41,7 @@ struct BestModelFixture {
   GridAxis<QualifiedName>  red_axis{"Reddening Curve", {{"Curve1"}, {"Curve_2"}}};
   GridAxis<QualifiedName>  sed_axis{"SED", {{"SED_1"}, {"SED_2"}}};
   std::vector<std::string> filters{"vis", "Y", "J"};
-  PhotometryGrid           model_grid{{z_axis, ebv_axis, red_axis, sed_axis}, filters};
+  PhotometryGrid           model_grid{std::make_tuple(z_axis, ebv_axis, red_axis, sed_axis), filters};
 
   std::set<std::string> columns_suffixes{
       "region-Index", "SED",          "SED-Index", "ReddeningCurve", "ReddeningCurve-Index",
