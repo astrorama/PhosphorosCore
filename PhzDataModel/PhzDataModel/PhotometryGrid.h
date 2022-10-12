@@ -1,4 +1,22 @@
 /**
+ * Copyright (C) 2022 Euclid Science Ground Segment
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 3.0 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+/**
  * @file PhzDataModel/PhotometryGrid.h
  * @date May 19, 2014
  * @author Nikolaos Apostolakos
@@ -61,6 +79,8 @@ public:
   public:
     typedef PhotometryIterator<true>  const_iterator;
     typedef PhotometryIterator<false> iterator;
+
+    PhotometryProxy(const PhotometryProxy&) = default;
 
     iterator begin() {
       return PhotometryIteratorWrapper<false>(m_parent.m_filter_names.begin(), m_begin);
@@ -148,8 +168,8 @@ public:
      * @note
      *  Going back to the 2D analogy, begin should point to array.begin() + cell_index * n_filters
      */
-    PhotometryProxy(const PhotometryCellManager& parent, photometry_iterator begin, photometry_iterator end)
-        : m_parent(parent), m_begin(begin), m_end(end){};
+    PhotometryProxy(const PhotometryCellManager& parent, photometry_iterator begin_, photometry_iterator end_)
+        : m_parent(parent), m_begin(begin_), m_end(end_){};
 
     const PhotometryCellManager& m_parent;
     photometry_iterator          m_begin, m_end;

@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+/**
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -86,12 +86,35 @@ struct CorrectedPhotometry_fixture {
   Euclid::SourceCatalog::Photometry photometry_3{filter_1, values_3};
   Euclid::SourceCatalog::Photometry photometry_4{filter_1, values_4};
 
-  CorrectedPhotometry_fixture() {}
+  Euclid::PhzDataModel::ModelAxesTuple axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
+  std::map<std::string, PhzDataModel::PhotometryGrid> grid_map;
+
+  std::vector<SourceCatalog::FluxErrorPair> photometry_vector{{1.0, 0.1, false, false}, {2.0, 0.2, false, false}};
+  std::shared_ptr<SourceCatalog::Attribute> photometry_ptr =
+      std::make_shared<SourceCatalog::Photometry>(filter_1, photometry_vector);
+
+  std::vector<double>                       shift_vector{10, 20};
+  std::shared_ptr<SourceCatalog::Attribute> condition_ptr =
+      std::make_shared<PhzDataModel::ObservationCondition>(shift_vector, 0.1);
+
+  std::vector<std::shared_ptr<SourceCatalog::Attribute>> attributes{photometry_ptr, condition_ptr};
+
+  SourceCatalog::Source source{"Source_ID", attributes};
+
+  CorrectedPhotometry_fixture() {
+    grid_map.insert(std::make_pair("Region0", Euclid::PhzDataModel::PhotometryGrid(axes, *filter_1)));
+
+    auto& grid       = grid_map.at("Region0");
+    grid(0, 0, 0, 0) = photometry_1;
+    grid(1, 0, 0, 0) = photometry_2;
+    grid(0, 1, 0, 0) = photometry_3;
+    grid(1, 1, 0, 0) = photometry_4;
+  }
 };
 
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE(CorrectedPhotometry_trest)
+BOOST_AUTO_TEST_SUITE(CorrectedPhotometry_test)
 
 //-----------------------------------------------------------------------------
 BOOST_FIXTURE_TEST_CASE(test_sumVector, CorrectedPhotometry_fixture) {
@@ -129,12 +152,6 @@ BOOST_FIXTURE_TEST_CASE(test_multVector, CorrectedPhotometry_fixture) {
 
 //-----------------------------------------------------------------------------
 BOOST_FIXTURE_TEST_CASE(test_getColumnInfoList, CorrectedPhotometry_fixture) {
-  // Given
-  auto axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-
-  std::map<std::string, PhzDataModel::PhotometryGrid> grid_map{};
-  grid_map.insert(std::make_pair("Region0", Euclid::PhzDataModel::PhotometryGrid(axes, *filter_1)));
-
   // When
   auto corrected_photo_handler = PhzOutput::ColumnHandlers::CorrectedPhotometry(colInfo, filter_mapping, false, false,
                                                                                 false, 1.0, grid_map, grid_map);
@@ -154,12 +171,6 @@ BOOST_FIXTURE_TEST_CASE(test_getColumnInfoList, CorrectedPhotometry_fixture) {
 
 //-----------------------------------------------------------------------------
 BOOST_FIXTURE_TEST_CASE(test_getColumnInfoListError, CorrectedPhotometry_fixture) {
-  // Given
-  auto axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-
-  std::map<std::string, PhzDataModel::PhotometryGrid> grid_map{};
-  grid_map.insert(std::make_pair("Region0", Euclid::PhzDataModel::PhotometryGrid(axes, *filter_1)));
-
   // When wrong flux column
   BOOST_CHECK_THROW(PhzOutput::ColumnHandlers::CorrectedPhotometry(colInfo, filter_mapping_err_f, false, false, false,
                                                                    1.0, grid_map, grid_map),
@@ -173,39 +184,14 @@ BOOST_FIXTURE_TEST_CASE(test_getColumnInfoListError, CorrectedPhotometry_fixture
 
 //-----------------------------------------------------------------------------
 BOOST_FIXTURE_TEST_CASE(test_computeCorrectionFactorForModel, CorrectedPhotometry_fixture) {
-  // Given
-  auto axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-
-  std::map<std::string, PhzDataModel::PhotometryGrid> grid_map{};
-  grid_map.insert(std::make_pair("Region0", Euclid::PhzDataModel::PhotometryGrid(axes, *filter_1)));
-
-  auto& grid       = grid_map.at("Region0");
-  grid(0, 0, 0, 0) = photometry_1;
-  grid(1, 0, 0, 0) = photometry_2;
-  grid(0, 1, 0, 0) = photometry_3;
-  grid(1, 1, 0, 0) = photometry_4;
-
-  std::vector<std::shared_ptr<SourceCatalog::Attribute>> attributes{};
-  std::string                                            Id = "Source_ID";
-
-  std::vector<SourceCatalog::FluxErrorPair> photometry_vector{};
-  photometry_vector.push_back(SourceCatalog::FluxErrorPair{1.0, 0.1, false, false});
-  photometry_vector.push_back(SourceCatalog::FluxErrorPair{2.0, 0.2, false, false});
-  std::shared_ptr<SourceCatalog::Attribute> photometry_ptr{new SourceCatalog::Photometry{filter_1, photometry_vector}};
-  attributes.push_back(photometry_ptr);
-
-  std::vector<double>                       shift_vector{10, 20};
-  std::shared_ptr<SourceCatalog::Attribute> condition_ptr{new PhzDataModel::ObservationCondition{shift_vector, 0.1}};
-  attributes.push_back(condition_ptr);
-  SourceCatalog::Source source = SourceCatalog::Source(Id, attributes);
-
   // When
   auto corrected_photo_handler = PhzOutput::ColumnHandlers::CorrectedPhotometry(colInfo, filter_mapping, false,
                                                                                 false,  // no filter correction
                                                                                 false,  // no galactic correction
                                                                                 1.0, grid_map, grid_map);
 
-  auto correction = corrected_photo_handler.computeCorrectionFactorForModel(source, 0, grid.cbegin());
+  auto& grid       = grid_map.at("Region0");
+  auto  correction = corrected_photo_handler.computeCorrectionFactorForModel(source, 0, grid.cbegin());
 
   // Then
   BOOST_CHECK_EQUAL(correction.size(), 2);
@@ -253,5 +239,29 @@ BOOST_FIXTURE_TEST_CASE(test_computeCorrectionFactorForModel, CorrectedPhotometr
   BOOST_CHECK_CLOSE(correction[0], 1.187955 / 132, 0.001);  // correction is the product of the previous correction
   BOOST_CHECK_CLOSE(correction[1], 1.6248003 / 1323, 0.001);
 }
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(test_Output, CorrectedPhotometry_fixture) {
+  Euclid::PhzDataModel::SourceResults                    results;
+  Euclid::PhzOutput::ColumnHandlers::CorrectedPhotometry corrected{colInfo, filter_mapping, false,
+                                                                   false,  //  no filter correction
+                                                                   true,   // galactic correction
+                                                                   1.7,     grid_map,       grid_map};
+  auto&                                                  grid = grid_map.at("Region0");
+
+  results.set<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>(grid.cbegin());
+  results.set<PhzDataModel::SourceResultType::BEST_REGION>(1234);
+
+  auto row = corrected.convertResults(source, results);
+
+  BOOST_CHECK_EQUAL(row.size(), 4);
+  BOOST_CHECK_CLOSE(boost::get<double>(row.at(0)), photometry_vector.at(0).flux * 1.187955, 0.001);
+  BOOST_CHECK_CLOSE(boost::get<double>(row.at(1)), photometry_vector.at(0).error * 1.187955, 0.001);
+  BOOST_CHECK_CLOSE(boost::get<double>(row.at(2)), photometry_vector.at(1).flux * 1.6248003, 0.001);
+  BOOST_CHECK_CLOSE(boost::get<double>(row.at(3)), photometry_vector.at(1).error * 1.6248003, 0.001);
+}
+
+//-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END()
