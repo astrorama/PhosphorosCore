@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+/**
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -35,7 +35,7 @@ std::vector<Table::ColumnInfo::info_type> PhysicalParameter::getColumnInfoList()
   for (auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
     std::string units = "";
     for (auto param_iter = iter->second.begin(); param_iter != iter->second.end(); ++param_iter) {
-      if (std::get<2>(param_iter->second) != "") {
+      if (!std::get<2>(param_iter->second).empty()) {
         units = std::get<2>(param_iter->second);
         break;
       }
@@ -63,9 +63,9 @@ std::vector<Table::Row::cell_type> PhysicalParameter::convertResults(const Sourc
 }
 
 PhysicalParameter::PhysicalParameter(
-    PhzDataModel::GridType                                                                       grid_type,
-    const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& param_config)
-    : m_param_config{param_config} {
+    PhzDataModel::GridType                                                                grid_type,
+    std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> param_config)
+    : m_param_config{std::move(param_config)} {
   switch (grid_type) {
   case PhzDataModel::GridType::LIKELIHOOD:
     m_column_prefix          = "LIKELIHOOD-";

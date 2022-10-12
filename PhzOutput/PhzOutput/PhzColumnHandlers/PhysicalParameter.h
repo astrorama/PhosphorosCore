@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2012-2020 Euclid Science Ground Segment
+/**
+ * Copyright (C) 2012-2022 Euclid Science Ground Segment
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -49,9 +49,8 @@ public:
       std::function<PhzDataModel::PhotometryGrid::const_iterator(const PhzDataModel::SourceResults&)>;
   using ScaleFunctor = std::function<double(const PhzDataModel::SourceResults&)>;
 
-  PhysicalParameter(
-      PhzDataModel::GridType                                                                       grid_type,
-      const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& param_config);
+  PhysicalParameter(PhzDataModel::GridType                                                                grid_type,
+                    std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> param_config);
 
   /**
    * @brief Destructor
@@ -64,10 +63,10 @@ public:
                                                     const PhzDataModel::SourceResults& results) const override;
 
 private:
-  std::string                                                                                  m_column_prefix;
-  ModelIteratorFunctor                                                                         m_model_iterator_functor;
-  ScaleFunctor                                                                                 m_scale_functor;
-  const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& m_param_config;
+  std::string                                                                           m_column_prefix;
+  ModelIteratorFunctor                                                                  m_model_iterator_functor;
+  ScaleFunctor                                                                          m_scale_functor;
+  std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> m_param_config;
 
 }; /* End of BestModel class */
 
