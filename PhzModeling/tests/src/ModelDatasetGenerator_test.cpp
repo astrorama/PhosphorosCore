@@ -88,6 +88,8 @@ struct ModelDatasetGenerator_Fixture {
 
   class DummyExtinctionFunction : public Euclid::MathUtils::Function {
   public:
+    using Euclid::MathUtils::Function::operator();
+
     DummyExtinctionFunction() = default;
 
     DummyExtinctionFunction(double factor) : m_factor{factor} {}

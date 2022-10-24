@@ -16,6 +16,8 @@ struct FilterInfo_Fixture {
 
   class squareFunction : public Euclid::MathUtils::Function {
   public:
+    using Euclid::MathUtils::Function::operator();
+
     squareFunction() = default;
 
     virtual ~squareFunction() = default;

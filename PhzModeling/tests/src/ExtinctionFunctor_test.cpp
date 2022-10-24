@@ -20,6 +20,8 @@ struct ExtinctionFunctor_Fixture {
   class DummyExtinctionFunction : public Euclid::MathUtils::Function {
 
   public:
+    using Euclid::MathUtils::Function::operator();
+
     DummyExtinctionFunction() = default;
 
     virtual ~DummyExtinctionFunction() = default;
