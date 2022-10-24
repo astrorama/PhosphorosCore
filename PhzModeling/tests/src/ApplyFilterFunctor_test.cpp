@@ -18,6 +18,8 @@ struct ApplyFilterFunctor_Fixture {
 
   class DummyFilterFunction : public Euclid::MathUtils::Function {
   public:
+    using Euclid::MathUtils::Function::operator();
+
     DummyFilterFunction() = default;
 
     virtual ~DummyFilterFunction() = default;
