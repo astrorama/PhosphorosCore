@@ -63,9 +63,13 @@ ReferenceSample::ReferenceSample(const boost::filesystem::path& path, size_t max
   initPdzProviders();
 }
 
-ReferenceSample ReferenceSample::create(const boost::filesystem::path& path, size_t max_file_size) {
-  if (!boost::filesystem::create_directories(path)) {
-    throw Elements::Exception() << "The directory already exists: " << path;
+ReferenceSample ReferenceSample::create(const boost::filesystem::path& path, bool throw_on_exists, size_t max_file_size) {
+  if (boost::filesystem::exists(path)) {
+	  if (throw_on_exists) {
+		  throw Elements::Exception() << "The directory already exists: " << path;
+	  }
+  } else if (!boost::filesystem::create_directories(path)) {
+    throw Elements::Exception() << "Unable to create the directory: " << path;
   }
   return {path, max_file_size, false};
 }

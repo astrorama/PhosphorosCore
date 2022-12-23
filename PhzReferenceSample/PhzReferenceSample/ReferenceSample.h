@@ -87,7 +87,7 @@ public:
    *    Maximum data file size. Defaults to 1GiB.
    * @return A ReferenceSample instance
    */
-  static ReferenceSample create(const boost::filesystem::path& path, size_t max_file_size = 1073741824);
+  static ReferenceSample create(const boost::filesystem::path& path, bool throw_on_exists = true ,  size_t max_file_size = 1073741824);
 
   /**
    * Create a copy of the *state* reference sample.

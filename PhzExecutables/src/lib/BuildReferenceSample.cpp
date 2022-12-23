@@ -114,10 +114,25 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_mana
   auto ref_sample_path   = ref_sample_config.getReferenceSamplePath();
 
   logger.info() << "Creating Reference Sample dir";
-  if (boost::filesystem::exists(ref_sample_path) && ref_sample_config.overwrite()) {
-    boost::filesystem::remove_all(ref_sample_path);
+  if (boost::filesystem::exists(ref_sample_path)){
+	  if (ref_sample_config.overwrite()) {
+		 std::vector<boost::filesystem::path> paths;
+		 for (auto const & entry : boost::filesystem::recursive_directory_iterator(ref_sample_path)) {
+
+			 if (entry.path().extension() == ".npy") {
+				 paths.emplace_back(entry);
+			 }
+		 }
+		 logger.info() << "Clearing the Reference Sample dir of "<< paths.size() << " *.npy files";
+		 for (auto const & path : paths) {
+			 boost::filesystem::remove(path);
+		 }
+
+	  } else {
+		  throw Elements::Exception() << "The directory already exists: " << ref_sample_path;
+	  }
   }
-  auto ref_sample = ReferenceSample::create(ref_sample_config.getReferenceSamplePath(), ref_sample_config.getMaxSize());
+  auto ref_sample = ReferenceSample::create(ref_sample_config.getReferenceSamplePath(), false, ref_sample_config.getMaxSize());
 
   logger.info() << "Reading the Phosphoros catalog";
   auto phosphoros_readers = ref_sample_config.getPhosphorosCatalogReader();

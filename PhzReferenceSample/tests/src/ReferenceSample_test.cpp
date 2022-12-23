@@ -103,6 +103,13 @@ BOOST_FIXTURE_TEST_CASE(test_create_new_dir_exists, ReferenceSamplePath_Fixture)
 }
 
 //-----------------------------------------------------------------------------
+BOOST_FIXTURE_TEST_CASE(test_create_using_existing_dir, ReferenceSamplePath_Fixture) {
+  boost::filesystem::create_directories(m_top_dir.path());
+  auto ref = ReferenceSample::create(m_top_dir.path(), false);
+  BOOST_CHECK_EQUAL(ref.size(), 0);
+}
+
+//-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE(test_create_new_success, ReferenceSamplePath_Fixture) {
   auto ref = ReferenceSample::create(m_top_dir.path());
