@@ -184,7 +184,7 @@ void BuildReferenceSample::processCatalog(Table::TableReader& reader, ReferenceS
     logger.info() << phosphoros_table.size() << " entries loaded";
 
     for (auto& object : phosphoros_table) {
-      auto                     obj_id = boost::get<int64_t>(object["ID"]);
+      auto                     obj_id = i; // boost::get<int64_t>(object["ID"]);
       auto                     z      = boost::get<double>(object["Z"]);
       auto                     ebv    = boost::get<double>(object["E(B-V)"]);
       auto                     scale  = boost::get<double>(object["Scale"]);
