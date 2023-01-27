@@ -46,7 +46,6 @@ GalacticCorrectionCalculator::GalacticCorrectionCalculator(
     , m_filter_functor(filter_functor)
     , m_integrate_functor(integrate_functor)
     , m_red_range(red_dataset.front().first, red_dataset.back().first) {
-
   m_mw_reddening = MathUtils::interpolate(expDataSet(red_dataset, -0.12), MathUtils::InterpolationType::LINEAR);
 }
 

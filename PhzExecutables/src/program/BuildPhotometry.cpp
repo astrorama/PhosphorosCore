@@ -38,6 +38,7 @@
 #include <ElementsKernel/ProgramHeaders.h>
 #include <MathUtils/regression/LinearRegression.h>
 #include <future>
+#include "ElementsKernel/Exception.h"
 
 using namespace Euclid::Configuration;
 using namespace Euclid::PhzConfiguration;
@@ -100,7 +101,7 @@ public:
    */
   std::vector<Row> operator()() const {
     using Euclid::SourceCatalog::FluxErrorPair;
-
+    
     ApplyFilterFunctor                apply_filter_functor;
     IntegrateDatasetFunctor           integrate_functor(Euclid::MathUtils::InterpolationType::LINEAR);
     IntegrateLambdaTimeDatasetFunctor integrate_lambda_time_functor(Euclid::MathUtils::InterpolationType::LINEAR);
@@ -108,10 +109,10 @@ public:
     ModelFluxAlgorithm           model_flux(apply_filter_functor);
     GalacticCorrectionCalculator gal_ebv_corr_calc(m_filters_trans, apply_filter_functor, integrate_functor,
                                                    m_reddening_curve);
-
     std::vector<Row>           results;
     std::vector<FluxErrorPair> fluxes(m_filter_list.size(), {0., 0.});
     std::vector<double>        gal_ebv_corr(m_filter_list.size());
+
 
     for (id_iterator_t i = m_start; i < m_end; ++i) {
       auto sed = m_ref_sample->getSedData(*i).get();
@@ -230,9 +231,16 @@ public:
         config_manager.getConfiguration<MilkyWayReddeningConfig>().getMilkyWayReddeningCurve();
     unsigned nthreads = getThreadNumber();
 
+	logger.info()<<"Get the reddening curve "<<milky_way_reddening_curve;
     auto reddening_curve = reddening_provider->getDataset(milky_way_reddening_curve);
+    
+    if (!reddening_curve) {
+    	logger.info()<<"Reddening curve " <<milky_way_reddening_curve << " not found!";
+    	throw Elements::Exception() << "Reddening curve " <<milky_way_reddening_curve << " not found!";
+    }
 
     // Transmissions
+	logger.info()<<"Get the transmissions curves";
     std::vector<XYDataset> filter_transmissions;
     filter_transmissions.reserve(filter_list.size());
     std::transform(filter_list.begin(), filter_list.end(), std::back_inserter(filter_transmissions),
@@ -262,6 +270,8 @@ public:
       std::vector<std::future<std::vector<Row>>> futures;
       for (size_t thread = 0; thread < nthreads && start < ids.end(); ++thread) {
         size_t current_chunk_size = std::min(chunk_size, static_cast<size_t>(ids.end() - start));
+        
+	  
         futures.push_back(std::async(std::launch::async,
                                      BuildPhotometryJob(col_info, filter_list, filters_info, shifted_filters,
                                                         filter_var_sampling, *reddening_curve, reference_sample.clone(),
