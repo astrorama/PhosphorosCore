@@ -53,6 +53,7 @@ private:
   std::shared_ptr<CCfits::FITS>              m_index_fits_file;  // Pointer to the FITS file object
   std::shared_ptr<Euclid::Table::ColumnInfo> m_index_column_info;
   std::vector<Table::Row>                    m_index_row_list{};
+  std::vector<Table::Row>                    m_sample_row_list{};
   Sampler                                    m_grid_sampler;
 
   std::string getFileName(int file_id);
