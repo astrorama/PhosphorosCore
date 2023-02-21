@@ -147,7 +147,9 @@ void LikelihoodHandler<GridType, Sampler>::createAndOpenSampleFile() {
 
 template <PhzDataModel::RegionResultType GridType, typename Sampler>
 void LikelihoodHandler<GridType, Sampler>::closeSampleFile() {
-  m_sample_fits_writer->addData(Table::Table{m_sample_row_list});
+  if (m_index_column_info->getDescription(1).type ==  typeid(std::string)) {
+  	m_sample_fits_writer->addData(Table::Table{m_sample_row_list});
+  }
   m_current_fits_file->destroy();
   m_sample_row_list = std::vector<Table::Row>{};
 }
@@ -248,8 +250,13 @@ void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(const SourceCatalo
       m_sample_fits_writer->addComment(comment);
       loggerPhz.info() << "Add comment to the sample file ";
     }
-    for (auto& row : sampling_row_list) {
-    	m_sample_row_list.push_back(row);
+    // if the type of the ID column is a string then keep the data in memory to have the right ID column length
+    if (m_index_column_info->getDescription(1).type ==  typeid(std::string)) {
+       for (auto& row : sampling_row_list) {
+	   	   m_sample_row_list.push_back(row);
+	   }
+    } else {
+	   m_sample_fits_writer->addData(Table::Table{sampling_row_list});
     }
 
     // loggerPhz.info() << "Add info to index file ";
