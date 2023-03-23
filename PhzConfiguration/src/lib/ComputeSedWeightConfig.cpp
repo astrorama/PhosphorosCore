@@ -41,6 +41,7 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 static const std::string SED_WEIGHT_OUTPUT{"SED-Weight-Output"};
+static const std::string SED_WEIGHT_SAMPLING{"SED-Weight-sampling"};
 
 ComputeSedWeightConfig::ComputeSedWeightConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<AuxDataDirConfig>();
@@ -56,7 +57,9 @@ auto ComputeSedWeightConfig::getProgramOptions() -> std::map<std::string, Option
 
                {SED_WEIGHT_OUTPUT.c_str(), po::value<std::string>()->default_value("SedWeight.ascii"),
                 "Path of the file into which output the SED weights. Relative path are relative to "
-                "<AuxDataDir>/GenericPriors/SedWeight/"}
+                "<AuxDataDir>/GenericPriors/SedWeight/"},
+	           {SED_WEIGHT_SAMPLING.c_str(), po::value<int>()->default_value(100000),
+	                "Number of sample for computing SED weight, if put to 0 all weight are set to 1"}
 
            }}};
 }
@@ -74,6 +77,8 @@ void ComputeSedWeightConfig::initialize(const UserValues& args) {
     fs::path result = getDependency<AuxDataDirConfig>().getAuxDataDir() / "GenericPriors" / "SedWeight" / file_name;
     m_output_file   = result.string();
   }
+
+  m_sampling = args.find(SED_WEIGHT_SAMPLING)->second.as<int>();
 }
 
 const std::string& ComputeSedWeightConfig::getOutputFile() const {
@@ -82,6 +87,14 @@ const std::string& ComputeSedWeightConfig::getOutputFile() const {
   }
   return m_output_file;
 }
+
+int ComputeSedWeightConfig::getWeightSampling() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getWeightSampling() on a not initialized instance.";
+  }
+  return m_sampling;
+}
+
 
 }  // namespace PhzConfiguration
 }  // namespace Euclid

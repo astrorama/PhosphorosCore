@@ -51,7 +51,7 @@ class ComputeSedWeight : public Elements::Program {
     auto& config_manager = ConfigManager::getInstance(config_manager_id);
     config_manager.initialize(args);
 
-    PhzExecutables::ComputeSedWeight{}.run(config_manager);
+    PhzExecutables::ComputeSedWeight{config_manager.getConfiguration<ComputeSedWeightConfig>().getWeightSampling()}.run(config_manager);
 
     return Elements::ExitCode::OK;
   }
