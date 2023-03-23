@@ -114,9 +114,14 @@ void BuildPPConfig::run(Euclid::Configuration::ConfigManager& config_manager) {
             current_units = std::get<2>(parsed_param);
           }
 
+          std::string store_unit = current_units;
+          if (store_unit==""){
+        	  store_unit="N.A.";
+          }
+
           std::vector<Table::Row::cell_type> values{std::string{pp}, std::string{sed_iter.qualifiedName()},
                                                     std::get<0>(parsed_param), std::get<1>(parsed_param),
-                                                    std::get<2>(parsed_param)};
+													store_unit};
           Table::Row                         row{values, column_info};
           row_list.push_back(row);
           added_seds.insert(sed_iter);
