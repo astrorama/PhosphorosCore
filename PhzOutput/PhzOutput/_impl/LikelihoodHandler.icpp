@@ -1,5 +1,5 @@
 /**
- * @file LikelihoodHandler.cpp
+ * @file LikelihoodHandler.icpp
  * @date March 13, 2015
  * @author Nikolaos Apostolakos
  */
@@ -70,7 +70,7 @@ public:
 
 template <PhzDataModel::RegionResultType GridType, typename Sampler>
 LikelihoodHandler<GridType, Sampler>::LikelihoodHandler(
-    boost::filesystem::path out_dir, const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& param_config,
+    boost::filesystem::path out_dir, const  std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>>& param_config,
     bool do_sample, size_t sample_number, size_t chunk_size)
     : m_out_dir{std::move(out_dir)}
     , m_param_config{param_config}
@@ -147,7 +147,11 @@ void LikelihoodHandler<GridType, Sampler>::createAndOpenSampleFile() {
 
 template <PhzDataModel::RegionResultType GridType, typename Sampler>
 void LikelihoodHandler<GridType, Sampler>::closeSampleFile() {
+  if (m_index_column_info->getDescription(1).type ==  typeid(std::string)) {
+  	m_sample_fits_writer->addData(Table::Table{m_sample_row_list});
+  }
   m_current_fits_file->destroy();
+  m_sample_row_list = std::vector<Table::Row>{};
 }
 
 template <PhzDataModel::RegionResultType GridType, typename Sampler>
@@ -203,7 +207,7 @@ LikelihoodHandler<GridType, Sampler>::drawSample(SourceCatalog::Source::id_type 
     std::vector<Table::Row::cell_type> values{source_id, s.region_index, s.sed_index, s.z, s.red_index, s.ebv, s.alpha};
     for (auto& param : m_param_config) {
       float param_value =
-          float(std::get<0>(param.second.at(sed_qualified)) * s.alpha + std::get<1>(param.second.at(sed_qualified)));
+          float((param.second.at(sed_qualified)).apply(s.alpha));
       values.push_back(param_value);
     }
 
@@ -246,7 +250,14 @@ void LikelihoodHandler<GridType, Sampler>::handleSourceOutput(const SourceCatalo
       m_sample_fits_writer->addComment(comment);
       loggerPhz.info() << "Add comment to the sample file ";
     }
-    m_sample_fits_writer->addData(Table::Table{sampling_row_list});
+    // if the type of the ID column is a string then keep the data in memory to have the right ID column length
+    if (m_index_column_info->getDescription(1).type ==  typeid(std::string)) {
+       for (auto& row : sampling_row_list) {
+	   	   m_sample_row_list.push_back(row);
+	   }
+    } else {
+	   m_sample_fits_writer->addData(Table::Table{sampling_row_list});
+    }
 
     // loggerPhz.info() << "Add info to index file ";
     std::string samp_file_name = getFileName(m_current_file_id);

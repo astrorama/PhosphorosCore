@@ -46,3 +46,6 @@ elements_add_unit_test(PhysicalParameter_test tests/src/PhysicalParameter_test.c
 elements_add_unit_test(PosteriorStatistics_test tests/src/PosteriorStatistics_test.cpp
                      LINK_LIBRARIES PhzOutput
                      TYPE Boost)
+elements_add_unit_test(LikelihoodHandler_test tests/src/LikelihoodHandler_test.cpp
+                     LINK_LIBRARIES PhzOutput
+                     TYPE Boost)

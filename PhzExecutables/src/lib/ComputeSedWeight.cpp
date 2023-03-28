@@ -299,50 +299,53 @@ double ComputeSedWeight::maxGap(const std::vector<std::vector<double>>& sed_dist
 
 std::vector<double> ComputeSedWeight::getWeights(const std::vector<std::vector<double>>& seds_colors,
                                                  double                                  radius) const {
-  std::vector<double> weight(seds_colors.size(), 0.);
 
-  size_t sed_number   = seds_colors.size();
-  size_t color_number = seds_colors[0].size();
+  std::vector<double> weight(seds_colors.size(), 1.);
 
-  // Prepare a KDTree with the sed colors so we can do faster lookups
-  KdTree::KdTree<std::vector<double>, KdTree::ChebyshevDistance<std::vector<double>>> seds_kdtree(seds_colors, 10);
+  if (m_sampling_number>0) {
+	  size_t sed_number   = seds_colors.size();
+	  size_t color_number = seds_colors[0].size();
 
-  // Random sample
-  std::random_device rd;
-  std::mt19937       mt(rd());
-  double             total_weight      = 0;
-  long               total             = m_sampling_number * sed_number;
-  int                current_percentil = 0;
-  for (size_t sed_index = 0; sed_index < sed_number; ++sed_index) {
-    double total_match = 0;
-    for (long draw_index = 0; draw_index < m_sampling_number; ++draw_index) {
-      std::vector<double> sample_color{};
-      sample_color.reserve(color_number);
-      for (size_t color_index = 0; color_index < color_number; ++color_index) {
-        std::uniform_real_distribution<double> dist(seds_colors[sed_index][color_index] - radius,
-                                                    seds_colors[sed_index][color_index] + radius);
-        double                                 draw = dist(mt);
-        sample_color.emplace_back(draw);
-      }
+	  // Prepare a KDTree with the sed colors so we can do faster lookups
+	  KdTree::KdTree<std::vector<double>, KdTree::ChebyshevDistance<std::vector<double>>> seds_kdtree(seds_colors, 10);
 
-      size_t match_number = seds_kdtree.countPointsWithinRadius(sample_color, radius);
-      total_match += 1.0 / match_number;
+	  // Random sample
+	  std::random_device rd;
+	  std::mt19937       mt(rd());
+	  double             total_weight      = 0;
+	  long               total             = m_sampling_number * sed_number;
+	  int                current_percentil = 0;
+	  for (size_t sed_index = 0; sed_index < sed_number; ++sed_index) {
+		double total_match = 0;
+		for (long draw_index = 0; draw_index < m_sampling_number; ++draw_index) {
+		  std::vector<double> sample_color{};
+		  sample_color.reserve(color_number);
+		  for (size_t color_index = 0; color_index < color_number; ++color_index) {
+			std::uniform_real_distribution<double> dist(seds_colors[sed_index][color_index] - radius,
+														seds_colors[sed_index][color_index] + radius);
+			double                                 draw = dist(mt);
+			sample_color.emplace_back(draw);
+		  }
 
-      int percentil = static_cast<int>((100 * (m_sampling_number * sed_index + draw_index + 1)) / total);
-      if (percentil != current_percentil) {
-        current_percentil = percentil;
-      }
-    }
-    weight[sed_index] = total_match / (m_sampling_number);
-    total_weight += weight[sed_index];
-    if (PhzUtils::getStopThreadsFlag()) {
-      throw Elements::Exception() << "Stopped by the user";
-    }
-  }
+		  size_t match_number = seds_kdtree.countPointsWithinRadius(sample_color, radius);
+		  total_match += 1.0 / match_number;
 
-  // Normalization
-  for (size_t sed_index = 0; sed_index < seds_colors.size(); ++sed_index) {
-    weight[sed_index] /= total_weight;
+		  int percentil = static_cast<int>((100 * (m_sampling_number * sed_index + draw_index + 1)) / total);
+		  if (percentil != current_percentil) {
+			current_percentil = percentil;
+		  }
+		}
+		weight[sed_index] = total_match / (m_sampling_number);
+		total_weight += weight[sed_index];
+		if (PhzUtils::getStopThreadsFlag()) {
+		  throw Elements::Exception() << "Stopped by the user";
+		}
+	  }
+
+	  // Normalization
+	  for (size_t sed_index = 0; sed_index < seds_colors.size(); ++sed_index) {
+		weight[sed_index] /= total_weight;
+	  }
   }
 
   return weight;

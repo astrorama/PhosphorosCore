@@ -8,6 +8,7 @@
 #define PHZOUTPUT_LIKELIHOODHANDLER_H
 
 #include "PhzDataModel/RegionResults.h"
+#include "PhzDataModel/PPConfig.h"
 #include "PhzOutput/GridSampler.h"
 #include "PhzOutput/OutputHandler.h"
 #include <boost/filesystem.hpp>
@@ -25,9 +26,11 @@ class LikelihoodHandler : public OutputHandler {
 
 public:
   LikelihoodHandler(
-      boost::filesystem::path                                                                      out_dir,
-      const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& param_config,
-      bool do_sample, size_t sample_number = 1000, size_t chunk_size = 10000);
+      boost::filesystem::path out_dir,
+      const std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>>& param_config,
+      bool do_sample,
+	  size_t sample_number = 1000,
+	  size_t chunk_size = 10000);
 
   virtual ~LikelihoodHandler();
 
@@ -35,7 +38,7 @@ public:
 
 private:
   boost::filesystem::path                                                                      m_out_dir;
-  const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>& m_param_config;
+  const std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>>& m_param_config;
 
   bool   m_do_sample;
   size_t m_sample_number;
@@ -53,6 +56,7 @@ private:
   std::shared_ptr<CCfits::FITS>              m_index_fits_file;  // Pointer to the FITS file object
   std::shared_ptr<Euclid::Table::ColumnInfo> m_index_column_info;
   std::vector<Table::Row>                    m_index_row_list{};
+  std::vector<Table::Row>                    m_sample_row_list{};
   Sampler                                    m_grid_sampler;
 
   std::string getFileName(int file_id);

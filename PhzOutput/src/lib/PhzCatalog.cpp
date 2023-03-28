@@ -69,11 +69,6 @@ PhzCatalog::~PhzCatalog() {
 
 void PhzCatalog::writeData() {
 
-  // If there are no rows to write ignore the call
-  if (m_row_list.empty()) {
-    return;
-  }
-
   // If it is the first time we need to add any comments the handlers have
   if (!m_writing_started) {
     m_writing_started = true;
@@ -84,8 +79,16 @@ void PhzCatalog::writeData() {
     }
   }
 
-  Table::Table out_table{m_row_list};
-  m_writer->addData(out_table);
+ // If there are no rows to write ignore the call
+  if (m_row_list.empty()) {
+    logger.info() << "The PHZ catalog in file has no row.";
+    Table::Table out_table{m_column_info};
+  	m_writer->addData(out_table);
+  } else {
+  	  Table::Table out_table{m_row_list};
+  	  m_writer->addData(out_table);
+  }
+
 }
 
 void PhzCatalog::handleSourceOutput(const SourceCatalog::Source& source, const PhzDataModel::SourceResults& results) {

@@ -70,17 +70,14 @@ private:
  */
 static std::vector<double> getPdzBins(std::string comment) {
   boost::replace_all(comment, "\n", "");
-  auto z_bins = boost::find_regex(comment, boost::regex{"Z-BINS : \\{.+\\}"});
+  auto z_bins = boost::find_regex(comment, boost::regex{"Z-BINS : \\{[\.0123456789, ]+\\}"});
   if (!z_bins) {
     return {};
   }
-
   std::string              bins_str{z_bins.begin() + 10, z_bins.end() - 1};
   std::vector<std::string> bins;
-
   boost::split(bins, bins_str, boost::is_any_of("\t\n ,"));
-
-  std::vector<double> v(bins.size());
+  std::vector<double> v(bins.size());  	 
   std::transform(bins.begin(), bins.end(), v.begin(), boost::lexical_cast<double, const std::string&>);
 
   return v;
@@ -143,13 +140,17 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_mana
   size_t              total = 0;
   for (auto& reader : phosphoros_readers) {
     total += reader->rowsLeft();
+   logger.info() << "total="<< total;
     auto cat_pdz_bins = getPdzBins(reader->getComment());
+   logger.info() << "DZ BIN read";
     if (pdz_bins.empty()) {
       pdz_bins = cat_pdz_bins;
     } else if (pdz_bins != cat_pdz_bins) {
       throw Elements::Exception() << "All catalogs must have the same PDZ bins";
     }
   }
+  
+  logger.info() << "PDZ BIN read II";
 
   if (pdz_bins.empty()) {
     logger.warn() << "No PDZ bins found, skipping PDZ processing";
@@ -163,7 +164,7 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_mana
   int64_t i = 0;
   for (auto& reader : phosphoros_readers) {
     logger.info() << "Processing input catalog with " << reader->rowsLeft() << " sources";
-
+ 
     processCatalog(*reader, ref_sample, igm_function, normalizer_functor, reddening_provider, sed_provider,
                    redshiftFunctor, pdz_bins, total, i);
   }

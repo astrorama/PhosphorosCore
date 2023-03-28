@@ -3,6 +3,8 @@
  * @date 2019-03-15
  * @author Florian dubath
  */
+ 
+ // From: Benitez https://arxiv.org/abs/astro-ph/9811189v1
 
 #include "PhzNzPrior/NzPrior.h"
 

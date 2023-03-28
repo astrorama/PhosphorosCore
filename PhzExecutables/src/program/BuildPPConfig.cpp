@@ -18,7 +18,7 @@
  */
 
 /**
- * @file src/program/BuildPPCOnfig.cpp
+ * @file src/program/BuildPPConfig.cpp
  * @date 2021/04/23
  * @author dubathf
  */
@@ -40,7 +40,7 @@ using namespace Euclid::Configuration;
 using namespace Euclid::PhzConfiguration;
 namespace po = boost::program_options;
 
-static Elements::Logging logger = Elements::Logging::getLogger("BuildPPCOnfig");
+static Elements::Logging logger = Elements::Logging::getLogger("BuildPPConfig");
 
 static long config_manager_id = getUniqueManagerId();
 

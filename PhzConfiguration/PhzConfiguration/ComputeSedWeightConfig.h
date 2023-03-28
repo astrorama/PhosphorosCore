@@ -53,6 +53,7 @@ public:
   void initialize(const UserValues& args) override;
 
   const std::string& getOutputFile() const;
+  int getWeightSampling() const;
 
   /**
    * @brief Destructor
@@ -61,6 +62,7 @@ public:
 
 private:
   std::string m_output_file;
+  int m_sampling;
 
 }; /* End of ComputeSedWeightConfig class */
 

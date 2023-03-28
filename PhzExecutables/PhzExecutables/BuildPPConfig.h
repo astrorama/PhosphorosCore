@@ -29,13 +29,18 @@
 #include "Configuration/ConfigManager.h"
 #include <functional>
 #include <tuple>
+#include <string>
 
 #include "MathUtils/function/Function.h"
+#include "PhzDataModel/PPConfig.h"
 #include "XYDataset/QualifiedName.h"
 #include "XYDataset/XYDataset.h"
 
 namespace Euclid {
 namespace PhzExecutables {
+
+
+
 
 /**
  * @class BuildPPConfig
@@ -54,7 +59,7 @@ public:
 
   void run(Configuration::ConfigManager& config_manager);
 
-  std::map<std::string, std::tuple<double, double, std::string>> getParamMap(std::string string_params) const;
+  std::map<std::string, PhzDataModel::PPConfig> getParamMap(std::string string_params) const;
 
 private:
 };  // End of BuildPPConfig class
