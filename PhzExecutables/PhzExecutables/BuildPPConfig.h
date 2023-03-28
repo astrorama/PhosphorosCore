@@ -32,28 +32,14 @@
 #include <string>
 
 #include "MathUtils/function/Function.h"
+#include "PhzDataModel/PPConfig.h"
 #include "XYDataset/QualifiedName.h"
 #include "XYDataset/XYDataset.h"
 
 namespace Euclid {
 namespace PhzExecutables {
 
-class PPConfig {
-public:
-	PPConfig(double A, double B,  double C,  double D, std::string unit) : m_A{A}, m_B{B},m_C{C}, m_D{D}, m_unit{unit}{}
-	virtual ~PPConfig() = default;
-	double getA() const {return m_A;}
-	double getB() const {return m_B;}
-	double getC() const {return m_C;}
-	double getD() const {return m_D;}
-	std::string getUnit() const {return m_unit;}
-private:
-	double m_A;
-	double m_B;
-	double m_C;
-	double m_D;
-	std::string m_unit;
-};
+
 
 
 /**
@@ -73,7 +59,7 @@ public:
 
   void run(Configuration::ConfigManager& config_manager);
 
-  std::map<std::string, PPConfig> getParamMap(std::string string_params) const;
+  std::map<std::string, PhzDataModel::PPConfig> getParamMap(std::string string_params) const;
 
 private:
 };  // End of BuildPPConfig class

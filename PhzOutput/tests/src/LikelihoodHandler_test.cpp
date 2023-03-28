@@ -18,6 +18,8 @@
 
 #include "PhzOutput/LikelihoodHandler.h"
 #include "PhzDataModel/RegionResults.h"
+#include "PhzDataModel/PPConfig.h"
+
 #include "PhzDataModel/DoubleGrid.h"
 #include "ElementsKernel/Temporary.h"  // for TempDir
 #include <boost/test/unit_test.hpp>
@@ -93,8 +95,13 @@ BOOST_FIXTURE_TEST_CASE(test_PosteriorGridZ, LikelihoodFixture) {
   // Add a scope to lkimit the lifespan of the LikelihoodHandler
   while (true) {
 	  // Given
-	   std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> param_config {};
-	  LikelihoodHandler<Euclid::PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID, MockSampler> likelihoodHandler(output_path.path(), param_config, true, 10, 2);
+	   std::map<std::string, std::map<std::string, Euclid::PhzDataModel::PPConfig>> param_config {};
+	  LikelihoodHandler<Euclid::PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID, MockSampler> likelihoodHandler(
+			  output_path.path(),
+			  param_config,
+			  true,
+			  10,
+			  2);
 	
 	
 	  // THEN
@@ -203,7 +210,7 @@ BOOST_FIXTURE_TEST_CASE(test_PosteriorGridZ_int, LikelihoodFixture) {
   // Add a scope to lkimit the lifespan of the LikelihoodHandler
   while (true) {
 	  // Given
-	   std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> param_config {};
+	   std::map<std::string, std::map<std::string, Euclid::PhzDataModel::PPConfig>> param_config {};
 	  LikelihoodHandler<Euclid::PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID, MockSampler> likelihoodHandler(output_path.path(), param_config, true, 10, 2);
 
 

@@ -29,6 +29,7 @@
 #include "Table/FitsWriter.h"
 #include "Table/Table.h"
 
+#include "PhzDataModel/PPConfig.h"
 #include "PhzExecutables/BuildPPConfig.h"
 
 namespace Euclid {
@@ -41,11 +42,11 @@ static Elements::Logging logger = Elements::Logging::getLogger("BuildPPConfig");
 
 BuildPPConfig::BuildPPConfig() {}
 
-std::map<std::string, PPConfig>
+std::map<std::string, PhzDataModel::PPConfig>
 BuildPPConfig::getParamMap(std::string string_params) const {
   //
-  std::vector<std::string>                                       raw_params;
-  std::map<std::string, PPConfig> param_map{};
+  std::vector<std::string> raw_params;
+  std::map<std::string, PhzDataModel::PPConfig> param_map{};
   boost::algorithm::split(raw_params, string_params, boost::is_any_of(";"));
   for (std::string& param_st : raw_params) {
 	// Expect the Param to be described as Name=A*L+B+C*LOG(D*L)[Unit]
@@ -81,13 +82,13 @@ BuildPPConfig::getParamMap(std::string string_params) const {
     	    for (auto& log_p : log_piece) {
 
     	    	if (log_p.find("LO") != std::string::npos && log_p.find("*")!= std::string::npos){
-            		logger.info("parsing C in '"+log_p+"'");
+            		logger.debug("parsing C in '"+log_p+"'");
     	    		log_p.replace(log_p.find("L"), 2, "");
     	    	    log_p.replace(log_p.find("*"), 1, "");
     	    	    logger.info(log_p);
     	    	    c = std::stod(log_p);
     	    	} else if (log_p.find("(") != std::string::npos){
-            		logger.info("parsing D in '"+log_p+"'");
+            		logger.debug("parsing D in '"+log_p+"'");
     	    	    log_p.replace(log_p.find("L"), 1, "");
     	    	    log_p.replace(log_p.find("*"), 1, "");
     	    	    log_p.replace(log_p.find("("), 1, "");
@@ -107,7 +108,7 @@ BuildPPConfig::getParamMap(std::string string_params) const {
       if (d==0.0){
     	  c=0.0;
       }
-      param_map.insert(std::make_pair(param_name, PPConfig(a, b, c, d, units)));
+      param_map.insert(std::make_pair(param_name, PhzDataModel::PPConfig(a, b, c, d, units)));
     }
   }
 

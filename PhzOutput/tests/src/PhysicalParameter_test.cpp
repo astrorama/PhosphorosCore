@@ -17,7 +17,9 @@
  */
 
 #include "PhzOutput/PhzColumnHandlers/PhysicalParameter.h"
+#include "PhzDataModel/PPConfig.h"
 #include <boost/test/unit_test.hpp>
+#include <cmath>
 
 using Euclid::GridContainer::GridAxis;
 using Euclid::PhzDataModel::GridType;
@@ -31,9 +33,11 @@ using Euclid::XYDataset::QualifiedName;
 struct PhysicalParameterFixture {
   Source                                                                                source{1234, {}};
   SourceResults                                                                         results;
-  std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> p_params{
-      {"PP1", {{"SED_1", std::make_tuple(1.0, 0.5, "solarmass")}, {"SED_2", std::make_tuple(8.0, 0.0, "solarmass")}}},
-      {"PP2", {{"SED_1", std::make_tuple(-2.5, 1.8, "rockets")}, {"SED_2", std::make_tuple(20.0, 5.6, "rockets")}}}};
+  std::map<std::string, std::map<std::string, Euclid::PhzDataModel::PPConfig>> p_params{
+      {"PP1", {{"SED_1", Euclid::PhzDataModel::PPConfig(1.0, 0.5, 0.0,  0.0, "solarmass")},
+    		   {"SED_2", Euclid::PhzDataModel::PPConfig(8.0, 0.0, 0.0,  0.0,  "solarmass")}}},
+      {"PP2", {{"SED_1", Euclid::PhzDataModel::PPConfig(-2.5, 1.8, 0.0,  0.0, "rockets")},
+    		   {"SED_2", Euclid::PhzDataModel::PPConfig(20.0, 5.6, 3.0,  7.0,  "rockets")}}}};
   GridAxis<double>         z_axis{"Z", {0.0, 1.5, 2.0}};
   GridAxis<double>         ebv_axis{"E(B-V)", {0.0, 0.7, 1.0}};
   GridAxis<QualifiedName>  red_axis{"Reddening Curve", {{"Curve1"}, {"Curve_2"}}};
@@ -98,7 +102,7 @@ BOOST_FIXTURE_TEST_CASE(test_LikelihoodGrid, PhysicalParameterFixture) {
   auto row = physical_parameter.convertResults(source, results);
   BOOST_CHECK_EQUAL(row.size(), 2);
   BOOST_CHECK_CLOSE(boost::get<double>(row.at(0)), scale * 8.0 + 0.0, 1e-6);
-  BOOST_CHECK_CLOSE(boost::get<double>(row.at(1)), scale * 20.0 + 5.6, 1e-6);
+  BOOST_CHECK_CLOSE(boost::get<double>(row.at(1)), scale * 20.0 + 5.6 +3.0*log10(7.0*scale), 1e-6);
 }
 
 //-----------------------------------------------------------------------------

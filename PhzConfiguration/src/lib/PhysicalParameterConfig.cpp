@@ -26,6 +26,7 @@
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/PhysicalParametersConfig.h"
 #include "PhzDataModel/GridType.h"
+#include "PhzDataModel/PPConfig.h"
 #include "PhzOutput/PhzColumnHandlers/PhysicalParameter.h"
 #include "Table/FitsReader.h"
 #include <CCfits/CCfits>
@@ -48,13 +49,13 @@ auto PhysicalParametersConfig::getProgramOptions() -> std::map<std::string, Opti
   return {{"Physical parameters options",
            {{PP_CONFIG_FILE.c_str(), po::value<std::string>(),
              "Path to the FITS file containing the physical parameter configuration in a table with columns : "
-             "PARAM_NAME,SED,A,B. For each parameter a line must be present for each used SED and the param. value is "
-             "p= A*L0+ B"}}}};
+             "PARAM_NAME, SED, A, B, C, D and Units. (C and D are optional) For each parameter a line must be present for each used SED and the param. "
+             "value is p= A*L0 + B + C*LOG(D*L0)"}}}};
 }
 
-std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>
+std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>>
 PhysicalParametersConfig::readConfig(fs::path path) const {
-  std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> results{};
+  std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>> results{};
 
   std::ifstream sfile(path.generic_string());
   CCfits::FITS::setVerboseMode(true);
@@ -65,18 +66,28 @@ PhysicalParametersConfig::readConfig(fs::path path) const {
       // Read first HDU
       auto table = Table::FitsReader{path.generic_string(), 1}.read();
 
+      size_t col_number = table.getColumnInfo()->size();
       for (auto row : table) {
         std::string param_name = boost::get<std::string>(row[0]);
         std::string sed_name   = boost::get<std::string>(row[1]);
         double      param_A    = boost::get<double>(row[2]);
         double      param_B    = boost::get<double>(row[3]);
-        std::string param_unit = boost::get<std::string>(row[4]);
-
-        if (results.find(param_name) == results.end()) {
-          results.insert(std::make_pair(param_name, std::map<std::string, std::tuple<double, double, std::string>>()));
+        double      param_C    = 0;
+        double      param_D    = 0;
+        std::string param_unit = "";
+        if ( col_number==5){
+        	param_unit = boost::get<std::string>(row[4]);
+        } else if (col_number==7) {
+            param_C    = boost::get<double>(row[4]);
+            param_D    = boost::get<double>(row[5]);
+        	param_unit = boost::get<std::string>(row[6]);
         }
 
-        results.at(param_name).insert(std::make_pair(sed_name, std::make_tuple(param_A, param_B, param_unit)));
+        if (results.find(param_name) == results.end()) {
+          results.insert(std::make_pair(param_name, std::map<std::string, PhzDataModel::PPConfig>()));
+        }
+
+        results.at(param_name).insert(std::make_pair(sed_name, PhzDataModel::PPConfig(param_A, param_B, param_C, param_D, param_unit)));
       }
     } catch (CCfits::FitsException& fits_except) {
       throw Elements::Exception() << "FitsException catched! File: " << path.generic_string();
@@ -94,7 +105,7 @@ void PhysicalParametersConfig::initialize(const UserValues& args) {
   }
 }
 
-const std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>>&
+const std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>>&
 PhysicalParametersConfig::getParamConfig() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
     throw Elements::Exception() << "Call to getParamConfig() on a not initialized instance.";

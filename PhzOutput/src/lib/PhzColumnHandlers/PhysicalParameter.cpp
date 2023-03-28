@@ -23,6 +23,7 @@
  */
 
 #include "PhzOutput/PhzColumnHandlers/PhysicalParameter.h"
+#include "PhzDataModel/PPConfig.h"
 #include <tuple>
 
 namespace Euclid {
@@ -33,13 +34,8 @@ std::vector<Table::ColumnInfo::info_type> PhysicalParameter::getColumnInfoList()
 
   std::vector<Table::ColumnInfo::info_type> column_list{};
   for (auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
-    std::string units = "";
-    for (auto param_iter = iter->second.begin(); param_iter != iter->second.end(); ++param_iter) {
-      if (!std::get<2>(param_iter->second).empty()) {
-        units = std::get<2>(param_iter->second);
-        break;
-      }
-    }
+	auto param_iter = iter->second.begin();
+    const std::string units = {(param_iter->second).getUnit()};
     column_list.push_back(Table::ColumnInfo::info_type(m_column_prefix + iter->first, typeid(double), units));
   }
 
@@ -56,7 +52,7 @@ std::vector<Table::Row::cell_type> PhysicalParameter::convertResults(const Sourc
   std::vector<Table::Row::cell_type> res_list{};
   for (auto iter = m_param_config.cbegin(); iter != m_param_config.cend(); ++iter) {
     const auto& funct_param = iter->second.at(sed);
-    res_list.push_back(std::get<0>(funct_param) * scale + std::get<1>(funct_param));
+    res_list.push_back((funct_param).apply(scale));
   }
 
   return res_list;
@@ -64,7 +60,7 @@ std::vector<Table::Row::cell_type> PhysicalParameter::convertResults(const Sourc
 
 PhysicalParameter::PhysicalParameter(
     PhzDataModel::GridType                                                                grid_type,
-    std::map<std::string, std::map<std::string, std::tuple<double, double, std::string>>> param_config)
+    std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>> param_config)
     : m_param_config{std::move(param_config)} {
   switch (grid_type) {
   case PhzDataModel::GridType::LIKELIHOOD:
