@@ -68,6 +68,8 @@ public:
    */
   Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed) const;
 
+  double getNormalizationFactor(const Euclid::XYDataset::XYDataset& sed) const;
+
   double getReferenceFlux() const;
 
 private:

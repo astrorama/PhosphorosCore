@@ -43,18 +43,20 @@ double Euclid::PhzModeling::NormalizationFunctor::getReferenceFlux() const {
   return m_integrated_flux;
 }
 
+double Euclid::PhzModeling::NormalizationFunctor::getNormalizationFactor(const Euclid::XYDataset::XYDataset& sed) const {
+	  ModelFluxAlgorithm::ApplyFilterFunction apply_filter_function{ApplyFilterFunctor{}};
+	  ModelFluxAlgorithm                      flux_model_algo{std::move(apply_filter_function)};
+
+	  std::vector<Euclid::SourceCatalog::FluxErrorPair> fluxes{{0.0, 0.0}};
+	  flux_model_algo(sed, m_filter_info.begin(), m_filter_info.end(), fluxes.begin());
+
+	  return m_integrated_flux / fluxes[0].flux;
+}
+
 Euclid::XYDataset::XYDataset
 Euclid::PhzModeling::NormalizationFunctor::operator()(const Euclid::XYDataset::XYDataset& sed) const {
 
-  ModelFluxAlgorithm::ApplyFilterFunction apply_filter_function{ApplyFilterFunctor{}};
-  ModelFluxAlgorithm                      flux_model_algo{std::move(apply_filter_function)};
-
-  std::vector<Euclid::SourceCatalog::FluxErrorPair> fluxes{{0.0, 0.0}};
-  flux_model_algo(sed, m_filter_info.begin(), m_filter_info.end(), fluxes.begin());
-
-  // logger.info() << "bare_norm " << fluxes[0].flux;
-
-  double factor = m_integrated_flux / fluxes[0].flux;
+  double factor = getNormalizationFactor(sed);
   // normalize
   std::vector<std::pair<double, double>> normalized_values{};
   for (auto& sed_pair : sed) {

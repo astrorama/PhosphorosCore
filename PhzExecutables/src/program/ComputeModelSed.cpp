@@ -36,7 +36,9 @@
 #include "PhzDataModel/PhzModel.h"
 #include "PhzModeling/ExtinctionFunctor.h"
 #include "PhzModeling/ModelDatasetGrid.h"
+#include "PhzModeling/ModelScalingGrid.h"
 #include "PhzModeling/NormalizationFunctorFactory.h"
+#include "PhzModeling/NormalizationFunctor.h"
 
 using std::cout;
 using std::map;
@@ -68,13 +70,17 @@ class ComputeModelSed : public Elements::Program {
 
     auto& grid_axes = config_manager.getConfiguration<ComputeModelSedConfig>().getGridAxes();
     std::map<QualifiedName, XYDataset> sed_map{};
+    std::map<QualifiedName, XYDataset> sed_map_2{};
     for (auto& pair : config_manager.getConfiguration<ComputeModelSedConfig>().getSedMap()) {
       std::vector<std::pair<double, double>> values{pair.second.begin(), pair.second.end()};
       sed_map.emplace(pair.first, values);
+      sed_map_2.emplace(pair.first, values);
     }
     std::map<QualifiedName, std::unique_ptr<Function>> red_curve_map{};
+    std::map<QualifiedName, std::unique_ptr<Function>> red_curve_map_2{};
     for (auto& pair : config_manager.getConfiguration<ComputeModelSedConfig>().getReddeningCurveMap()) {
       red_curve_map.emplace(pair.first, pair.second->clone());
+      red_curve_map_2.emplace(pair.first, pair.second->clone());
     }
     auto& igm_function = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
 
@@ -83,14 +89,20 @@ class ComputeModelSed : public Elements::Program {
 
     auto filter_provider  = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
     auto sun_sed_provider = config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider();
-    auto normalizer_functor =
+    auto normalizer_function =
         Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
             filter_provider, lum_filter_name, sun_sed_provider, sun_sed_name);
+    auto normalizer_functor =
+           Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(
+               filter_provider, lum_filter_name, sun_sed_provider, sun_sed_name);
 
     auto             redshiftFunctor = config_manager.getConfiguration<RedshiftFunctorConfig>().getRedshiftFunctor();
-    ModelDatasetGrid grid{grid_axes,       std::move(sed_map), std::move(red_curve_map), ExtinctionFunctor{},
-                          redshiftFunctor, igm_function,       normalizer_functor};
+    ModelDatasetGrid grid{grid_axes, std::move(sed_map), std::move(red_curve_map), ExtinctionFunctor{},
+                          redshiftFunctor, igm_function,       normalizer_function};
 
+    ModelScalingGrid scaling_grid{grid_axes, std::move(sed_map_2), std::move(red_curve_map_2), ExtinctionFunctor{}, normalizer_functor};
+
+    auto iter_scaling = scaling_grid.begin();
     for (auto iter = grid.begin(); iter != grid.end(); ++iter) {
       cout << "\nDataset for model with:\n";
       cout << "SED      " << iter.axisValue<ModelParameter::SED>().qualifiedName() << '\n';
@@ -98,10 +110,14 @@ class ComputeModelSed : public Elements::Program {
       cout << "EBV      " << iter.axisValue<ModelParameter::EBV>() << '\n';
       cout << "Z        " << iter.axisValue<ModelParameter::Z>() << '\n';
       cout << "IGM      " << config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionType() << '\n';
+      double value = *iter_scaling;
+      cout << "Model Scaling (number which have been multiplied to the reddened SED for normalizing it): " << value << '\n';
       cout << "\nData:\n";
       for (auto& pair : *iter) {
         cout << pair.first << '\t' << pair.second << '\n';
       }
+
+      ++iter_scaling;
     }
     cout << '\n';
 
