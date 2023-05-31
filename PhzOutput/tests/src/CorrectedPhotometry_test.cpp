@@ -67,6 +67,7 @@ struct CorrectedPhotometry_fixture {
   std::pair<std::string, std::pair<std::string, std::string>> filt_pair_2_e = std::make_pair("filter2", col_2_pair_e);
 
   Configuration::PhotometricBandMappingConfig::MappingMap filter_mapping{filt_pair_1, filt_pair_2};
+  Configuration::PhotometricBandMappingConfig::MappingMap filter_mapping_2{filt_pair_2};
   Configuration::PhotometricBandMappingConfig::MappingMap filter_mapping_err_f{filt_pair_1, filt_pair_2_f};
   Configuration::PhotometricBandMappingConfig::MappingMap filter_mapping_err_e{filt_pair_1, filt_pair_2_e};
 
@@ -264,4 +265,28 @@ BOOST_FIXTURE_TEST_CASE(test_Output, CorrectedPhotometry_fixture) {
 
 //-----------------------------------------------------------------------------
 
+BOOST_FIXTURE_TEST_CASE(test_missing_filter, CorrectedPhotometry_fixture) {
+	// Check the case where we have less filter in the sources than in the grid (Exclude filter case)
+	std::shared_ptr<std::vector<std::string>>     filter_2 =
+	  std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filter2"});
+	std::vector<SourceCatalog::FluxErrorPair> photometry_vector_2{{2.0, 0.2, false, false}};
+	  std::shared_ptr<SourceCatalog::Attribute> photometry_ptr_2 =
+	      std::make_shared<SourceCatalog::Photometry>(filter_2, photometry_vector_2);
+	  std::vector<std::shared_ptr<SourceCatalog::Attribute>> attributes_2{photometry_ptr_2, condition_ptr};
+
+	  SourceCatalog::Source source_2{"Source_ID", attributes_2};
+
+	  auto corrected_photo_handler= PhzOutput::ColumnHandlers::CorrectedPhotometry(colInfo, filter_mapping_2, false,
+	                                                                                  true,  //  filter correction
+	                                                                                  true,  // galactic correction
+	                                                                                  1.7, grid_map, grid_map);
+	  auto&                                                  grid = grid_map.at("Region0");
+	  auto correction = corrected_photo_handler.computeCorrectionFactorForModel(source_2, 0, grid.cbegin());
+
+	  // Then
+	  BOOST_CHECK_EQUAL(correction.size(), 1);
+	  BOOST_CHECK_CLOSE(correction[0], 1.6248003 / 1323, 0.001);
+}
+
+//-----------------------------------------------------------------------------
 BOOST_AUTO_TEST_SUITE_END()
