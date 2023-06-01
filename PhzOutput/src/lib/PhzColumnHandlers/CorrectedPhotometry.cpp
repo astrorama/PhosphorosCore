@@ -79,9 +79,61 @@ std::vector<Table::ColumnInfo::info_type> CorrectedPhotometry::getColumnInfoList
 std::vector<double>
 CorrectedPhotometry::computeCorrectionFactorForModel(const SourceCatalog::Source& source, size_t region_index,
                                                      const PhzDataModel::PhotometryGrid::const_iterator model) const {
-  auto                photometry                = source.getAttribute<SourceCatalog::Photometry>();
-  auto                observation_condition_ptr = source.getAttribute<PhzDataModel::ObservationCondition>();
-  std::vector<double> full_correction(photometry->size(), 1.0);
+	auto                photometry                = source.getAttribute<SourceCatalog::Photometry>();
+	auto                observation_condition_ptr = source.getAttribute<PhzDataModel::ObservationCondition>();
+	std::vector<double> full_correction(photometry->size(), 1.0);
+
+	size_t full_index = 0 ;
+	for (auto iter = photometry->begin(); iter != photometry->end(); ++iter) {
+		double corr_value = 1;
+		auto filter_name = iter.filterName();
+		if (m_correct_filter) {
+			auto filter_map_iter = m_filter_shift_coef_grid.cbegin();
+			for (size_t i = 0; i < region_index; ++i) {
+				++filter_map_iter;
+			}
+
+			auto filter_coeff_iter = (*filter_map_iter).second.begin();
+			filter_coeff_iter.fixAllAxes(model);
+			const std::vector<double>& shifts = observation_condition_ptr->getFilterShifts();
+			size_t index=0;
+			for(auto coef_iter = filter_coeff_iter->begin(); coef_iter != filter_coeff_iter->end(); ++coef_iter){
+				if (coef_iter.filterName()==filter_name){
+					double corr = 1.0 + shifts[index] * shifts[index] * (*coef_iter).flux + shifts[index] * (*coef_iter).error;
+					corr_value /= corr;
+					break;
+				}
+				++index;
+			}
+
+
+		  }
+
+
+		 // Galactic reddening
+		  if (m_correct_galactic) {
+		    auto gal_map_iter = m_galactic_correction_coef_grid.cbegin();
+		    for (size_t i = 0; i < region_index; ++i) {
+		      ++gal_map_iter;
+		    }
+
+		    auto galactic_coeff_iter = (*gal_map_iter).second.begin();
+		    galactic_coeff_iter.fixAllAxes(model);
+
+		    double dust_density  = m_dust_map_sed_bpc * observation_condition_ptr->getDustColumnDensity();
+		    double flux = galactic_coeff_iter->find(filter_name)->getFlux();
+		    double corr = std::exp(l10 * -0.4 * flux * dust_density);
+		    corr_value /= corr;
+		  }
+
+		  full_correction[full_index] = corr_value;
+		  ++full_index;
+	}
+
+
+
+
+  /*
 
   // Filter shift
   if (m_correct_filter) {
@@ -94,6 +146,11 @@ CorrectedPhotometry::computeCorrectionFactorForModel(const SourceCatalog::Source
     filter_coeff_iter.fixAllAxes(model);
     const std::vector<double>& shifts    = observation_condition_ptr->getFilterShifts();
     auto                       coef_iter = filter_coeff_iter->begin();
+
+    logger.info() << "Actual shifts size" << shifts.size();
+    logger.info() << "Actual filter_coeff_iter size" << filter_coeff_iter->size();
+    logger.info() << "Actual Photometry size" << photometry->size();
+
     for (size_t index = 0; index < shifts.size(); ++index) {
       double corr = 1.0 + shifts[index] * shifts[index] * (*coef_iter).flux + shifts[index] * (*coef_iter).error;
       full_correction[index] /= corr;
@@ -108,8 +165,16 @@ CorrectedPhotometry::computeCorrectionFactorForModel(const SourceCatalog::Source
       ++gal_map_iter;
     }
 
+
+
+
     auto galactic_coeff_iter = (*gal_map_iter).second.begin();
     galactic_coeff_iter.fixAllAxes(model);
+
+    logger.info() << "Actual gal_coef_iter size" << galactic_coeff_iter->size();
+    logger.info() << "Actual Photometry size" << photometry->size();
+
+
     double dust_density  = m_dust_map_sed_bpc * observation_condition_ptr->getDustColumnDensity();
     auto   gal_coef_iter = galactic_coeff_iter->begin();
     for (size_t index = 0; index < galactic_coeff_iter->size(); ++index) {
@@ -118,6 +183,7 @@ CorrectedPhotometry::computeCorrectionFactorForModel(const SourceCatalog::Source
       ++gal_coef_iter;
     }
   }
+  */
 
   return full_correction;
 }

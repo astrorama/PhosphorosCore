@@ -17,71 +17,69 @@
  */
 
 /*
- * PhzModeling/ModelDatasetGrid.h
+ * PhzModeling/ModelScalingGrid.h
  *
- *  Created on: Sep 29, 2014
+ *  Created on: 2023/04/25
  *      Author: fdubath
  */
 
-#ifndef PHZMODELING_MODELDATASETGRID_H_
-#define PHZMODELING_MODELDATASETGRID_H_
+#ifndef PHZMODELING_MODELSCALINGGRID_H_
+#define PHZMODELING_MODELSCALINGGRID_H_
 
-#include "PhzModeling/ModelDatasetGenerator.h"
+#include "PhzDataModel/PhzModel.h"
+#include "PhzModeling/ModelScalingGenerator.h"
 #include "XYDataset/XYDataset.h"
+#include "PhzDataModel/DoubleGrid.h"
+#include "PhzModeling/NormalizationFunctor.h"
 
 namespace Euclid {
 namespace PhzModeling {
 
-struct ModelDatasetCellManager {
-  size_t m_size;
-};
+
 
 }  // namespace PhzModeling
 }  // end of namespace Euclid
+
 
 namespace Euclid {
 namespace GridContainer {
 
 template <>
-struct GridCellManagerTraits<PhzModeling::ModelDatasetCellManager> {
-  typedef XYDataset::XYDataset data_type;
-  typedef data_type*           pointer_type;
-  typedef data_type&           reference_type;
+struct GridCellManagerTraits<PhzDataModel::DoubleCellManager> {
+  typedef double data_type;
+  typedef double*           pointer_type;
+  typedef double&           reference_type;
 
-  typedef PhzModeling::ModelDatasetGenerator                   iterator;
-  static std::unique_ptr<PhzModeling::ModelDatasetCellManager> factory(size_t size) {
-    return std::unique_ptr<PhzModeling::ModelDatasetCellManager>{new PhzModeling::ModelDatasetCellManager{size}};
+  typedef PhzModeling::ModelScalingGenerator                   iterator;
+  static std::unique_ptr<PhzDataModel::DoubleCellManager> factory(size_t size) {
+    return std::unique_ptr<PhzDataModel::DoubleCellManager>{new PhzDataModel::DoubleCellManager(size)};
   }
-  static size_t begin(const PhzModeling::ModelDatasetCellManager&) {
+  static size_t begin(const PhzDataModel::DoubleCellManager&) {
     return 0;
   }
-  static size_t end(const PhzModeling::ModelDatasetCellManager& manager) {
-    return manager.m_size;
+  static size_t end(const PhzDataModel::DoubleCellManager& manager) {
+    return manager.size();
   }
 };
 
 }  // namespace GridContainer
 }  // end of namespace Euclid
 
+
 namespace Euclid {
 namespace PhzModeling {
 /**
- * @class PhzModeling::ModelDatasetGrid
+ * @class PhzModeling::ModelScalingGrid
  * @brief Specialization of the PhzDataModel::PhzGrid used to store
  * and walk through the parameter space.
  * The grid do not actually store the SED models but compute them dynamically
- * (through the ModelDatsetGenerator).
+ * (through the ModelScalingGenerator).
  */
-class ModelDatasetGrid : public PhzDataModel::PhzGrid<ModelDatasetCellManager> {
+class ModelScalingGrid : public PhzDataModel::PhzGrid<PhzDataModel::DoubleCellManager> {
 
 public:
-  typedef ModelDatasetGenerator::ReddeningFunction ReddeningFunction;
+  typedef ModelScalingGenerator::ReddeningFunction ReddeningFunction;
 
-  typedef ModelDatasetGenerator::RedshiftFunction RedshiftFunction;
-
-  typedef ModelDatasetGenerator::IgmAbsorptionFunction IgmAbsorptionFunction;
-
-  typedef ModelDatasetGenerator::NormalizationFunction NormalizationFunction;
 
   /**
    * @brief Constructor
@@ -110,23 +108,21 @@ public:
    * @param igm_function
    * A function used to apply the IGM absorption to a redshifted SED
    */
-  ModelDatasetGrid(const PhzDataModel::ModelAxesTuple&                                      parameter_space,
+  ModelScalingGrid(const PhzDataModel::ModelAxesTuple&                                      parameter_space,
                    std::map<XYDataset::QualifiedName, XYDataset::XYDataset>                 sed_map,
                    std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> reddening_curve_map,
                    ReddeningFunction                                                        reddening_function,
-				   RedshiftFunction                                                         redshift_function,
-                   IgmAbsorptionFunction                                                    igm_function,
-				   NormalizationFunction                                                    normalization_function);
+				   NormalizationFunctor                                                     normalization_functor);
 
   /**
    * @brief begin function for the iteration.
    */
-  PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator begin();
+  PhzDataModel::PhzGrid<PhzDataModel::DoubleCellManager>::iterator begin();
 
   /**
    * @brief end function for the iteration.
    */
-  PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator end();
+  PhzDataModel::PhzGrid<PhzDataModel::DoubleCellManager>::iterator end();
 
 private:
   size_t m_size;
@@ -134,12 +130,10 @@ private:
   std::map<XYDataset::QualifiedName, XYDataset::XYDataset>                 m_sed_map;
   std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> m_reddening_curve_map;
   ReddeningFunction                                                        m_reddening_function;
-  RedshiftFunction                                                         m_redshift_function;
-  IgmAbsorptionFunction                                                    m_igm_function;
-  NormalizationFunction                                                    m_normalization_function;
+  NormalizationFunctor                                                     m_normalization_functor;
 };
 
 }  // namespace PhzModeling
 }  // namespace Euclid
 
-#endif /* PHZMODELING_MODELDATASETGRID_H_ */
+#endif /* PHZMODELING_MODELSCALINGGRID_H_ */
