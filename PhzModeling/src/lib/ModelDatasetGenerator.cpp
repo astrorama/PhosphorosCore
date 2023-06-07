@@ -25,13 +25,14 @@
 
 #include "PhzModeling/ModelDatasetGenerator.h"
 #include "XYDataset/XYDataset.h"
+#include "PhzDataModel/Sed.h"
 
 namespace Euclid {
 namespace PhzModeling {
 
 ModelDatasetGenerator::ModelDatasetGenerator(
     const PhzDataModel::ModelAxesTuple&                                             parameter_space,
-    const std::map<XYDataset::QualifiedName, XYDataset::XYDataset>&                 sed_map,
+    const std::map<XYDataset::QualifiedName, PhzDataModel::Sed>&                 sed_map,
     const std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>>& reddening_curve_map,
     size_t current_index, const ReddeningFunction& reddening_function, const RedshiftFunction& redshift_function,
     const IgmAbsorptionFunction& igm_function, const NormalizationFunction& normalization_function)
@@ -125,7 +126,7 @@ bool ModelDatasetGenerator::operator<(const ModelDatasetGenerator& other) const 
   return m_current_index < other.m_current_index;
 }
 
-XYDataset::XYDataset& ModelDatasetGenerator::operator*() {
+PhzDataModel::Sed& ModelDatasetGenerator::operator*() {
   // We calculate the parameter indices for the current index
   size_t new_sed_index = m_index_helper.axisIndex(PhzDataModel::ModelParameter::SED, m_current_index);
 
@@ -147,15 +148,15 @@ XYDataset::XYDataset& ModelDatasetGenerator::operator*() {
 
     auto& sed_name = std::get<PhzDataModel::ModelParameter::SED>(m_parameter_space)[new_sed_index];
     // Redden and normalize the model
-    auto reddened = XYDataset::XYDataset(
+    auto reddened = PhzDataModel::Sed(
         m_reddening_function(m_sed_map.at(sed_name), *(m_reddening_curve_map.at(reddening_curve_name)), ebv));
-    m_current_reddened_sed.reset(new XYDataset::XYDataset(m_normalization_function(reddened)));
+    m_current_reddened_sed.reset(new PhzDataModel::Sed(m_normalization_function(reddened)));
   }
   if (new_sed_index != m_current_sed_index || new_reddening_curve_index != m_current_reddening_curve_index ||
       new_ebv_index != m_current_ebv_index || new_z_index != m_current_z_index || !m_current_redshifted_sed) {
     double               z              = std::get<PhzDataModel::ModelParameter::Z>(m_parameter_space)[new_z_index];
-    XYDataset::XYDataset redshifted_sed = m_redshift_function(*m_current_reddened_sed, z);
-    m_current_redshifted_sed.reset(new XYDataset::XYDataset(m_igm_function(redshifted_sed, z)));
+    PhzDataModel::Sed redshifted_sed = m_redshift_function(*m_current_reddened_sed, z);
+    m_current_redshifted_sed.reset(new PhzDataModel::Sed(m_igm_function(redshifted_sed, z)));
   }
   m_current_sed_index             = new_sed_index;
   m_current_reddening_curve_index = new_reddening_curve_index;

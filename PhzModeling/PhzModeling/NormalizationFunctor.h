@@ -35,6 +35,11 @@ namespace Euclid {
 namespace XYDataset {
 class XYDataset;
 }
+
+namespace PhzDataModel {
+class Sed;
+}
+
 namespace PhzModeling {
 /**
  * @class Euclid::PhzModeling::NormalizationFunctor
@@ -66,9 +71,9 @@ public:
    * @return
    * A XYDataset representing the normalized SED.
    */
-  Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed) const;
+  PhzDataModel::Sed operator()(const PhzDataModel::Sed& sed) const;
 
-  double getNormalizationFactor(const Euclid::XYDataset::XYDataset& sed) const;
+  double getNormalizationFactor(const PhzDataModel::Sed& sed) const;
 
   double getReferenceFlux() const;
 

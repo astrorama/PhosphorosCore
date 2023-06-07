@@ -8,7 +8,7 @@ namespace Euclid {
 namespace PhzModeling {
 
 template<typename FilterIterator, typename FluxIterator>
-void ModelFluxAlgorithm::operator()(const XYDataset::XYDataset& model,
+void ModelFluxAlgorithm::operator()(const PhzDataModel::Sed& model,
                                     FilterIterator filter_iterator_begin,
                                     FilterIterator filter_iterator_end,
                                     FluxIterator flux_iterator) const {

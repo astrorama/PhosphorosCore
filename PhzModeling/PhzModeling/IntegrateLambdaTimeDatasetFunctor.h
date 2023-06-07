@@ -27,6 +27,7 @@
 
 #include "MathUtils/interpolation/interpolation.h"
 #include "XYDataset/XYDataset.h"
+#include "PhzDataModel/Sed.h"
 #include <utility>
 
 namespace Euclid {
@@ -61,7 +62,7 @@ public:
    * @param range The range to integrate
    * @return The integral value
    */
-  double operator()(const XYDataset::XYDataset& dataset, const std::pair<double, double>& range) const;
+  double operator()(const PhzDataModel::Sed& dataset, const std::pair<double, double>& range) const;
 
 private:
   MathUtils::InterpolationType m_type;

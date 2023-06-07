@@ -35,6 +35,10 @@ namespace XYDataset {
 class XYDataset;
 }
 
+namespace PhzDataModel {
+class Sed;
+}
+
 namespace PhzModeling {
 
 /**
@@ -51,12 +55,12 @@ class ModelFluxAlgorithm {
 
 public:
   /// Signature of the functions which is used for applying the filter
-  typedef std::function<XYDataset::XYDataset(const XYDataset::XYDataset&      dataset,
+  typedef std::function<PhzDataModel::Sed(const PhzDataModel::Sed&      dataset,
                                              const std::pair<double, double>& range, const MathUtils::Function& filter)>
       ApplyFilterFunction;
 
   /// Signature of the function which is used for integrating the model dataset
-  typedef std::function<double(const XYDataset::XYDataset& dataset, std::pair<double, double> range)>
+  typedef std::function<double(const PhzDataModel::Sed& dataset, std::pair<double, double> range)>
       IntegrateDatasetFunction;
 
   /**
@@ -97,7 +101,7 @@ public:
    *
    */
   template <typename FilterIterator, typename FluxIterator>
-  void operator()(const XYDataset::XYDataset& model, FilterIterator filter_iterator_begin,
+  void operator()(const PhzDataModel::Sed& model, FilterIterator filter_iterator_begin,
                   FilterIterator filter_iterator_end, FluxIterator flux_iterator) const;
 
 private:

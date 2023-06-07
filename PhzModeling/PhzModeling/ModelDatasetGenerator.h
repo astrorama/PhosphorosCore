@@ -36,6 +36,10 @@ class XYDataset;
 class QualifiedName;
 }  // namespace XYDataset
 
+namespace PhzDataModel {
+ class Sed;
+}
+
 namespace PhzModeling {
 
 /**
@@ -46,14 +50,14 @@ namespace PhzModeling {
 class ModelDatasetGenerator {
 
 public:
-  typedef std::function<XYDataset::XYDataset(const XYDataset::XYDataset&, const MathUtils::Function&, double)>
+  typedef std::function<PhzDataModel::Sed(const PhzDataModel::Sed&, const MathUtils::Function&, double)>
       ReddeningFunction;
 
-  typedef std::function<XYDataset::XYDataset(const XYDataset::XYDataset&, double)> RedshiftFunction;
+  typedef std::function<PhzDataModel::Sed(const PhzDataModel::Sed&, double)> RedshiftFunction;
 
-  typedef std::function<XYDataset::XYDataset(const XYDataset::XYDataset&, double)> IgmAbsorptionFunction;
+  typedef std::function<PhzDataModel::Sed(const PhzDataModel::Sed&, double)> IgmAbsorptionFunction;
 
-  typedef std::function<XYDataset::XYDataset(const XYDataset::XYDataset&)> NormalizationFunction;
+  typedef std::function<PhzDataModel::Sed(const PhzDataModel::Sed&)> NormalizationFunction;
 
   /**
    * @brief Constructor
@@ -88,7 +92,7 @@ public:
    */
   ModelDatasetGenerator(
       const PhzDataModel::ModelAxesTuple&                                             parameter_space,
-      const std::map<XYDataset::QualifiedName, XYDataset::XYDataset>&                 sed_map,
+      const std::map<XYDataset::QualifiedName, PhzDataModel::Sed>&                    sed_map,
       const std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>>& reddening_curve_map,
       size_t current_index, const ReddeningFunction& reddening_function, const RedshiftFunction& redshift_function,
       const IgmAbsorptionFunction& igm_function, const NormalizationFunction& normalization_function);
@@ -232,7 +236,7 @@ public:
    * @return
    * A XYDataset representing the Model for the current index
    */
-  XYDataset::XYDataset& operator*();
+  PhzDataModel::Sed& operator*();
 
 private:
   // An object to convert the parameter space coordinates to a long index and vice versa
@@ -250,11 +254,11 @@ private:
   size_t m_current_z_index{0};
 
   // The latest calculated reddened and redshifted SEDs
-  std::unique_ptr<XYDataset::XYDataset> m_current_reddened_sed;
-  std::unique_ptr<XYDataset::XYDataset> m_current_redshifted_sed;
+  std::unique_ptr<PhzDataModel::Sed> m_current_reddened_sed;
+  std::unique_ptr<PhzDataModel::Sed> m_current_redshifted_sed;
 
   // map with the SED datasets the generator uses
-  const std::map<XYDataset::QualifiedName, XYDataset::XYDataset>& m_sed_map;
+  const std::map<XYDataset::QualifiedName, PhzDataModel::Sed>& m_sed_map;
 
   // vector with the reddening curves the generator uses
   const std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>>& m_reddening_curve_map;

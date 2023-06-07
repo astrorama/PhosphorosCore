@@ -36,7 +36,14 @@ ModelDatasetGrid::ModelDatasetGrid(
     NormalizationFunction normalization_function)
     : PhzDataModel::PhzGrid<ModelDatasetCellManager>(parameter_space) {
 
-  m_sed_map                   = std::move(sed_map);
+  m_sed_map                   = std::map<XYDataset::QualifiedName, PhzDataModel::Sed>{};
+  for  (auto it = sed_map.begin(); it != sed_map.end(); it++) {
+	  m_sed_map.emplace(std::make_pair(it->first, it->second));
+  }
+
+
+
+
   m_reddening_curve_map       = std::move(reddening_curve_map);
   m_reddening_function        = std::move(reddening_function);
   m_redshift_function         = std::move(redshift_function);

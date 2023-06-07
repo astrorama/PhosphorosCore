@@ -34,6 +34,7 @@
 #include "XYDataset/XYDataset.h"
 #include "XYDataset/XYDatasetProvider.h"
 #include <boost/algorithm/string.hpp>
+#include "PhzDataModel/Sed.h"
 
 namespace Euclid {
 namespace PhzModeling {

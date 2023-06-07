@@ -28,6 +28,7 @@
 #include "MathUtils/interpolation/interpolation.h"
 #include "PhzModeling/IntegrateLambdaTimeDatasetFunctor.h"
 #include "XYDataset/XYDataset.h"
+#include "PhzDataModel/Sed.h"
 
 namespace Euclid {
 namespace PhzModeling {
@@ -35,7 +36,7 @@ namespace PhzModeling {
 IntegrateLambdaTimeDatasetFunctor::IntegrateLambdaTimeDatasetFunctor(MathUtils::InterpolationType type)
     : m_type{type} {}
 
-double IntegrateLambdaTimeDatasetFunctor::operator()(const XYDataset::XYDataset&      dataset,
+double IntegrateLambdaTimeDatasetFunctor::operator()(const PhzDataModel::Sed&      dataset,
                                                      const std::pair<double, double>& range) const {
 
   std::vector<double> x;
