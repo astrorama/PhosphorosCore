@@ -68,6 +68,11 @@ void PhotometryAlgorithm<ModelFluxAlgo>::operator()(
 
     m_model_flux_agorithm(*model_begin,m_filter_info_vector.begin(),m_filter_info_vector.end(),fluxes.begin());
 
+    // Store the differential scaling of the model in the first error
+    if (fluxes.size()>0){
+      	fluxes[0].error = (*model_begin).getScaling() / (*model_begin).getDiffScaling();
+    }
+
     *photometry_begin=SourceCatalog::Photometry(m_filter_name_shared_vector, std::move(fluxes));
 
     ++model_begin;
