@@ -25,6 +25,7 @@
 
 #include "../../PhzModeling/ModelScalingGenerator.h"
 #include "XYDataset/XYDataset.h"
+#include "PhzDataModel/Sed.h"
 
 namespace Euclid {
 namespace PhzModeling {
@@ -142,7 +143,7 @@ double& ModelScalingGenerator::operator*() {
 
     auto& sed_name = std::get<PhzDataModel::ModelParameter::SED>(m_parameter_space)[new_sed_index];
     // Redden and normalize the model
-    auto reddened = XYDataset::XYDataset(
+    auto reddened = PhzDataModel::Sed(
         m_reddening_function(m_sed_map.at(sed_name), *(m_reddening_curve_map.at(reddening_curve_name)), ebv));
     m_scalling = m_normalization_functor.getNormalizationFactor(reddened);
   }

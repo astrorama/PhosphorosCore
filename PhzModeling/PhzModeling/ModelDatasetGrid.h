@@ -28,6 +28,7 @@
 
 #include "PhzModeling/ModelDatasetGenerator.h"
 #include "XYDataset/XYDataset.h"
+#include "PhzDataModel/Sed.h"
 
 namespace Euclid {
 namespace PhzModeling {
@@ -44,7 +45,7 @@ namespace GridContainer {
 
 template <>
 struct GridCellManagerTraits<PhzModeling::ModelDatasetCellManager> {
-  typedef XYDataset::XYDataset data_type;
+  typedef PhzDataModel::Sed data_type;
   typedef data_type*           pointer_type;
   typedef data_type&           reference_type;
 
@@ -131,7 +132,7 @@ public:
 private:
   size_t m_size;
 
-  std::map<XYDataset::QualifiedName, XYDataset::XYDataset>                 m_sed_map;
+  std::map<XYDataset::QualifiedName, PhzDataModel::Sed>                    m_sed_map;
   std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> m_reddening_curve_map;
   ReddeningFunction                                                        m_reddening_function;
   RedshiftFunction                                                         m_redshift_function;

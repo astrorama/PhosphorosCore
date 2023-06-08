@@ -48,11 +48,16 @@ std::vector<Table::Row::cell_type> PhysicalParameter::convertResults(const Sourc
   PhzDataModel::PhotometryGrid::const_iterator best_model = m_model_iterator_functor(results);
   const auto sed   = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
   auto       scale = m_scale_functor(results);
+  double     correction_factor = (*(*best_model).begin()).error;
+  //For retro-compatibility with existing grids
+  if (correction_factor == 0){
+	  correction_factor = 1.0;
+  }
 
   std::vector<Table::Row::cell_type> res_list{};
   for (auto iter = m_param_config.cbegin(); iter != m_param_config.cend(); ++iter) {
     const auto& funct_param = iter->second.at(sed);
-    res_list.push_back((funct_param).apply(scale));
+    res_list.push_back((funct_param).apply(scale*correction_factor));
   }
 
   return res_list;

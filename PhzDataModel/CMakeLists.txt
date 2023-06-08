@@ -52,4 +52,6 @@ elements_add_unit_test(FixedRedshift_test tests/src/CatalogAttributes/FixedRedsh
 elements_add_unit_test(ObservationCondition_test tests/src/CatalogAttributes/ObservationCondition_test.cpp 
                      LINK_LIBRARIES PhzDataModel
                      TYPE Boost)
-
+elements_add_unit_test(Sed_test tests/src/Sed_test.cpp 
+                     LINK_LIBRARIES PhzDataModel
+                     TYPE Boost)

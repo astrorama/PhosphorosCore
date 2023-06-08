@@ -31,6 +31,7 @@
 #include "SourceCatalog/SourceAttributes/Photometry.h"
 
 #include "XYDataset/XYDataset.h"
+#include "PhzDataModel/Sed.h"
 //#include "ElementsKernel/Logging.h"
 
 // static Elements::Logging logger = Elements::Logging::getLogger("NormalizationFunctor");
@@ -43,7 +44,7 @@ double Euclid::PhzModeling::NormalizationFunctor::getReferenceFlux() const {
   return m_integrated_flux;
 }
 
-double Euclid::PhzModeling::NormalizationFunctor::getNormalizationFactor(const Euclid::XYDataset::XYDataset& sed) const {
+double Euclid::PhzModeling::NormalizationFunctor::getNormalizationFactor(const PhzDataModel::Sed& sed) const {
 	  ModelFluxAlgorithm::ApplyFilterFunction apply_filter_function{ApplyFilterFunctor{}};
 	  ModelFluxAlgorithm                      flux_model_algo{std::move(apply_filter_function)};
 
@@ -53,8 +54,8 @@ double Euclid::PhzModeling::NormalizationFunctor::getNormalizationFactor(const E
 	  return m_integrated_flux / fluxes[0].flux;
 }
 
-Euclid::XYDataset::XYDataset
-Euclid::PhzModeling::NormalizationFunctor::operator()(const Euclid::XYDataset::XYDataset& sed) const {
+Euclid::PhzDataModel::Sed
+Euclid::PhzModeling::NormalizationFunctor::operator()(const PhzDataModel::Sed& sed) const {
 
   double factor = getNormalizationFactor(sed);
   // normalize
@@ -62,5 +63,5 @@ Euclid::PhzModeling::NormalizationFunctor::operator()(const Euclid::XYDataset::X
   for (auto& sed_pair : sed) {
     normalized_values.emplace_back(std::make_pair(sed_pair.first, factor * sed_pair.second));
   }
-  return normalized_values;
+  return {normalized_values, factor};
 }

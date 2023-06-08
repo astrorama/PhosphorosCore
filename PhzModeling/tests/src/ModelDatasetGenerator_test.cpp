@@ -17,42 +17,44 @@
 #include "PhzModeling/RedshiftFunctor.h"
 #include "XYDataset/XYDataset.h"
 
+#include "PhzDataModel/Sed.h"
+
 struct ModelDatasetGenerator_Fixture {
   class DummyRedshift {
   public:
     virtual ~DummyRedshift() = default;
-    Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed, double z) const {
+    Euclid::PhzDataModel::Sed operator()(const Euclid::PhzDataModel::Sed& sed, double z) const {
       std::vector<std::pair<double, double>> redshifted_values{};
       for (auto& sed_pair : sed) {
         redshifted_values.push_back(std::make_pair(sed_pair.first * (1 + z), sed_pair.second));
       }
-      return Euclid::XYDataset::XYDataset{std::move(redshifted_values)};
+      return Euclid::PhzDataModel::Sed{std::move(redshifted_values)};
     }
   };
 
   class NoRedshift {
   public:
     virtual ~NoRedshift() = default;
-    Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed, double) const {
+    Euclid::PhzDataModel::Sed operator()(const Euclid::PhzDataModel::Sed& sed, double) const {
       std::vector<std::pair<double, double>> redshifted_values{};
       for (auto& sed_pair : sed) {
         redshifted_values.push_back(std::make_pair(sed_pair.first, sed_pair.second));
       }
-      return Euclid::XYDataset::XYDataset{std::move(redshifted_values)};
+      return Euclid::PhzDataModel::Sed{std::move(redshifted_values)};
     }
   };
 
   class DummyReddening {
   public:
     virtual ~DummyReddening() = default;
-    Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed,
+    Euclid::PhzDataModel::Sed operator()(const Euclid::PhzDataModel::Sed& sed,
                                             const Euclid::MathUtils::Function& reddening_curve, double ebv) const {
       std::vector<std::pair<double, double>> redshifted_values{};
       for (auto& sed_pair : sed) {
         redshifted_values.push_back(
             std::make_pair(sed_pair.first, sed_pair.second * (1 + reddening_curve(sed_pair.first) * ebv)));
       }
-      return Euclid::XYDataset::XYDataset{std::move(redshifted_values)};
+      return Euclid::PhzDataModel::Sed{std::move(redshifted_values)};
     }
   };
 
@@ -61,12 +63,12 @@ struct ModelDatasetGenerator_Fixture {
     DummyNormalizing(double factor) : m_factor{factor} {}
 
     virtual ~DummyNormalizing() = default;
-    Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed) const {
+    Euclid::PhzDataModel::Sed operator()(const Euclid::PhzDataModel::Sed& sed) const {
       std::vector<std::pair<double, double>> normalized_values{};
       for (auto& sed_pair : sed) {
         normalized_values.push_back(std::make_pair(sed_pair.first, sed_pair.second * m_factor));
       }
-      return Euclid::XYDataset::XYDataset{std::move(normalized_values)};
+      return Euclid::PhzDataModel::Sed{std::move(normalized_values), 3.0, 5.0};
     }
 
   private:
@@ -76,13 +78,13 @@ struct ModelDatasetGenerator_Fixture {
   class NoReddening {
   public:
     virtual ~NoReddening() = default;
-    Euclid::XYDataset::XYDataset operator()(const Euclid::XYDataset::XYDataset& sed, const Euclid::MathUtils::Function&,
+    Euclid::PhzDataModel::Sed operator()(const Euclid::PhzDataModel::Sed& sed, const Euclid::MathUtils::Function&,
                                             double) const {
       std::vector<std::pair<double, double>> redshifted_values{};
       for (auto& sed_pair : sed) {
         redshifted_values.push_back(std::make_pair(sed_pair.first, sed_pair.second));
       }
-      return Euclid::XYDataset::XYDataset{std::move(redshifted_values)};
+      return Euclid::PhzDataModel::Sed{std::move(redshifted_values)};
     }
   };
 
@@ -124,29 +126,29 @@ struct ModelDatasetGenerator_Fixture {
   Euclid::PhzDataModel::ModelAxesTuple parameter_space =
       Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
 
-  std::map<Euclid::XYDataset::QualifiedName, Euclid::XYDataset::XYDataset>                 m_sed_map;
+  std::map<Euclid::XYDataset::QualifiedName, Euclid::PhzDataModel::Sed>                 m_sed_map;
   std::map<Euclid::XYDataset::QualifiedName, std::unique_ptr<Euclid::MathUtils::Function>> m_reddening_curve_map;
 
   std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, const Euclid::MathUtils::Function&,
                                              double)>
-      m_reddening_function = std::function<Euclid::XYDataset::XYDataset(
-          const Euclid::XYDataset::XYDataset&, const Euclid::MathUtils::Function&, double)>(DummyReddening{});
-  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)> m_redshift_function =
-      std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)>(DummyRedshift{});
+      m_reddening_function = std::function<Euclid::PhzDataModel::Sed(
+          const Euclid::PhzDataModel::Sed&, const Euclid::MathUtils::Function&, double)>(DummyReddening{});
+  std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&, double)> m_redshift_function =
+      std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&, double)>(DummyRedshift{});
 
-  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)> m_igm_function{
+  std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&, double)> m_igm_function{
       Euclid::PhzModeling::NoIgmFunctor{}};
-  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)> m_norm_function_1 =
-      std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>(DummyNormalizing{1.0});
-  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)> m_norm_function_11 =
-      std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&)>(DummyNormalizing{11.0});
+  std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&)> m_norm_function_1 =
+      std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&)>(DummyNormalizing{1.0});
+  std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&)> m_norm_function_11 =
+      std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&)>(DummyNormalizing{11.0});
 
-  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, const Euclid::MathUtils::Function&,
+  std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&, const Euclid::MathUtils::Function&,
                                              double)>
-      m_no_reddening_function = std::function<Euclid::XYDataset::XYDataset(
-          const Euclid::XYDataset::XYDataset&, const Euclid::MathUtils::Function&, double)>(NoReddening{});
-  std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)> m_no_redshift_function =
-      std::function<Euclid::XYDataset::XYDataset(const Euclid::XYDataset::XYDataset&, double)>(NoRedshift{});
+      m_no_reddening_function = std::function<Euclid::PhzDataModel::Sed(
+          const Euclid::PhzDataModel::Sed&, const Euclid::MathUtils::Function&, double)>(NoReddening{});
+  std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&, double)> m_no_redshift_function =
+      std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&, double)>(NoRedshift{});
 
   std::vector<std::pair<double, double>> sed1{std::make_pair(10000., 0.004), std::make_pair(12000., 0.002),
                                               std::make_pair(14000., 0.001)};
@@ -241,6 +243,16 @@ BOOST_FIXTURE_TEST_CASE(operator_generator_test, ModelDatasetGenerator_Fixture) 
   BOOST_CHECK(other_model_generator > model_generator);
 }
 
+BOOST_FIXTURE_TEST_CASE(helper_function_test, ModelDatasetGenerator_Fixture) {
+	auto sed = m_sed_map.at(Euclid::XYDataset::QualifiedName("sed/Curve_1"));
+	auto norm_sed = m_norm_function_11(sed);
+
+
+    BOOST_CHECK_CLOSE(norm_sed.getScaling(), 3.0, 0.001);
+    BOOST_CHECK_CLOSE(norm_sed.getDiffScaling(), 5.0, 0.001);
+
+}
+
 BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
   BOOST_TEST_MESSAGE(" ");
   BOOST_TEST_MESSAGE("--> Testing dereference operation");
@@ -329,6 +341,10 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
           auto& dataset_0 = *normalized_model_generator;
 
           BOOST_CHECK_EQUAL(3, dataset_0.size());
+
+
+          BOOST_CHECK_CLOSE(dataset_0.getScaling(), 3.0, 0.001);
+          BOOST_CHECK_CLOSE(dataset_0.getDiffScaling(), 3.0, 0.001);
 
           auto expected_iterator = sed.begin();
           for (auto& pair : dataset_0) {
