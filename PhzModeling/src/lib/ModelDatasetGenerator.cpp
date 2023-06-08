@@ -30,6 +30,7 @@
 namespace Euclid {
 namespace PhzModeling {
 
+
 ModelDatasetGenerator::ModelDatasetGenerator(
     const PhzDataModel::ModelAxesTuple&                                             parameter_space,
     const std::map<XYDataset::QualifiedName, PhzDataModel::Sed>&                 sed_map,
@@ -137,6 +138,13 @@ PhzDataModel::Sed& ModelDatasetGenerator::operator*() {
 
   size_t new_z_index = m_index_helper.axisIndex(PhzDataModel::ModelParameter::Z, m_current_index);
 
+  // We check if we need to recalculate the SED (for the scaling)
+   if (new_sed_index != m_current_sed_index || !m_current_sed) {
+	   auto& sed_name = std::get<PhzDataModel::ModelParameter::SED>(m_parameter_space)[new_sed_index];
+	   auto norm_sed = m_normalization_function(PhzDataModel::Sed(m_sed_map.at(sed_name)));
+	   m_current_sed.reset(new PhzDataModel::Sed(norm_sed));
+   }
+
   // We check if we need to recalculate the reddened SED
   if (new_sed_index != m_current_sed_index || new_reddening_curve_index != m_current_reddening_curve_index ||
       new_ebv_index != m_current_ebv_index || !m_current_reddened_sed) {
@@ -156,7 +164,11 @@ PhzDataModel::Sed& ModelDatasetGenerator::operator*() {
       new_ebv_index != m_current_ebv_index || new_z_index != m_current_z_index || !m_current_redshifted_sed) {
     double               z              = std::get<PhzDataModel::ModelParameter::Z>(m_parameter_space)[new_z_index];
     PhzDataModel::Sed redshifted_sed = m_redshift_function(*m_current_reddened_sed, z);
-    m_current_redshifted_sed.reset(new PhzDataModel::Sed(m_igm_function(redshifted_sed, z)));
+
+    auto igm_sed = m_igm_function(redshifted_sed, z);
+    igm_sed.setScaling(m_current_reddened_sed->getScaling());
+    igm_sed.setDiffScaling(m_current_sed->getScaling());
+    m_current_redshifted_sed.reset(new PhzDataModel::Sed(igm_sed));
   }
   m_current_sed_index             = new_sed_index;
   m_current_reddening_curve_index = new_reddening_curve_index;

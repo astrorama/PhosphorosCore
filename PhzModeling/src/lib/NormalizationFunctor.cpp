@@ -63,5 +63,5 @@ Euclid::PhzModeling::NormalizationFunctor::operator()(const PhzDataModel::Sed& s
   for (auto& sed_pair : sed) {
     normalized_values.emplace_back(std::make_pair(sed_pair.first, factor * sed_pair.second));
   }
-  return normalized_values;
+  return {normalized_values, factor};
 }

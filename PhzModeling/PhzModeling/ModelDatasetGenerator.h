@@ -254,6 +254,7 @@ private:
   size_t m_current_z_index{0};
 
   // The latest calculated reddened and redshifted SEDs
+  std::unique_ptr<PhzDataModel::Sed> m_current_sed;
   std::unique_ptr<PhzDataModel::Sed> m_current_reddened_sed;
   std::unique_ptr<PhzDataModel::Sed> m_current_redshifted_sed;
 

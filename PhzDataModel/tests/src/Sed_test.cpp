@@ -218,6 +218,25 @@ BOOST_FIXTURE_TEST_CASE(MoveXYDatasetConstructor_test, Sed_Fixture) {
 
 }
 
+
+//-----------------------------------------------------------------------------
+// Test Pointer
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(Pointer_test, Sed_Fixture) {
+
+  auto xy = Euclid::XYDataset::XYDataset::factory(vector_pair);
+  auto sed = Euclid::PhzDataModel::Sed(xy, 2.0, 3.0);
+
+  Euclid::PhzDataModel::Sed* sed_ptr = new Euclid::PhzDataModel::Sed(sed);
+
+  BOOST_CHECK(3 == sed_ptr->size());
+  BOOST_CHECK(2.0 == sed_ptr->getScaling());
+  BOOST_CHECK(3.0 == sed_ptr->getDiffScaling());
+
+
+}
+
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END()
