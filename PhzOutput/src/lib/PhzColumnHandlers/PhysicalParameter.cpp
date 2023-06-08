@@ -57,7 +57,7 @@ std::vector<Table::Row::cell_type> PhysicalParameter::convertResults(const Sourc
   std::vector<Table::Row::cell_type> res_list{};
   for (auto iter = m_param_config.cbegin(); iter != m_param_config.cend(); ++iter) {
     const auto& funct_param = iter->second.at(sed);
-    res_list.push_back((funct_param).apply(scale/correction_factor));
+    res_list.push_back((funct_param).apply(scale*correction_factor));
   }
 
   return res_list;
