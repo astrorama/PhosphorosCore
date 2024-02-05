@@ -39,7 +39,9 @@ std::vector<Table::ColumnInfo::info_type> BestModel::getColumnInfoList() const {
       Table::ColumnInfo::info_type(m_column_prefix + "E(B-V)-Index", typeid(int64_t)),
       Table::ColumnInfo::info_type(m_column_prefix + "Z", typeid(double)),
       Table::ColumnInfo::info_type(m_column_prefix + "Z-Index", typeid(int64_t)),
-      Table::ColumnInfo::info_type(m_column_prefix + "Scale", typeid(double))};
+      Table::ColumnInfo::info_type(m_column_prefix + "Scale", typeid(double)),
+      Table::ColumnInfo::info_type(m_column_prefix + "Corr", typeid(double)),
+      Table::ColumnInfo::info_type(m_column_prefix + "Reference-Luminosity", typeid(double))};
 }
 
 std::vector<Table::Row::cell_type> BestModel::convertResults(const SourceCatalog::Source&,
@@ -55,9 +57,15 @@ std::vector<Table::Row::cell_type> BestModel::convertResults(const SourceCatalog
   auto    z               = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
   int64_t z_index         = best_model.axisIndex<PhzDataModel::ModelParameter::Z>();
   auto    scale           = m_scale_functor(results);
+  double correction_factor = (*(*best_model).begin()).error;
+  //For retro-compatibility with existing grids
+  if (correction_factor == 0){
+	  correction_factor = 1.0;
+  }
+  double ref_lum = scale*correction_factor;
 
   return std::vector<Table::Row::cell_type>{region_index, sed,       sed_index, reddening_curve, red_index,
-                                            ebv,          ebv_index, z,         z_index,         scale};
+                                            ebv,          ebv_index, z,         z_index,     scale, correction_factor, ref_lum};
 }
 
 BestModel::BestModel(PhzDataModel::GridType grid_type) {

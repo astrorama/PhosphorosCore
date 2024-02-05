@@ -28,6 +28,7 @@
 #include <thread>
 
 #include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/RegionResults.h"
 #include "PhzDataModel/SourceResults.h"
