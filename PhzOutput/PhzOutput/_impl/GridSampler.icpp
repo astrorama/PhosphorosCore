@@ -46,6 +46,7 @@ const std::map<std::string, NdArray::NdArray<double>> convertModelGrid(const std
 		        	auto correction_factor = (*pair.second(z_index, ebv_index, red_index, sed_index).begin()).error;
 		        	//For retro-compatibility with existing grids
 		        	if (correction_factor == 0){
+		        		//loggerPhzGridSampler.info()<< "Source has best_model with correction factor 0";
 		        	    correction_factor = 1.0;
 		        	}
 		        	correction_factor_array.at(sed_index, red_index, ebv_index, z_index) = correction_factor;

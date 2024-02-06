@@ -23,6 +23,7 @@
  */
 
 #include "PhzOutput/PhzColumnHandlers/PhysicalParameter.h"
+#include "ElementsKernel/Logging.h"
 #include "PhzDataModel/PPConfig.h"
 #include <tuple>
 
@@ -30,12 +31,14 @@ namespace Euclid {
 namespace PhzOutput {
 namespace ColumnHandlers {
 
+static Elements::Logging logger = Elements::Logging::getLogger("PhysicalParameter");
+
 std::vector<Table::ColumnInfo::info_type> PhysicalParameter::getColumnInfoList() const {
 
   std::vector<Table::ColumnInfo::info_type> column_list{};
   for (auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
-	auto param_iter = iter->second.begin();
-    const std::string units = {(param_iter->second).getUnit()};
+    auto              param_iter = iter->second.begin();
+    const std::string units      = {(param_iter->second).getUnit()};
     column_list.push_back(Table::ColumnInfo::info_type(m_column_prefix + iter->first, typeid(double), units));
   }
 
@@ -46,32 +49,35 @@ std::vector<Table::Row::cell_type> PhysicalParameter::convertResults(const Sourc
                                                                      const PhzDataModel::SourceResults& results) const {
 
   PhzDataModel::PhotometryGrid::const_iterator best_model = m_model_iterator_functor(results);
-  const auto sed   = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
-  auto       scale = m_scale_functor(results);
+  const auto sed               = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
+  auto       scale             = m_scale_functor(results);
   double     correction_factor = (*(*best_model).begin()).error;
-  //For retro-compatibility with existing grids
-  if (correction_factor == 0){
-	  correction_factor = 1.0;
+  // For retro-compatibility with existing grids
+  if (correction_factor == 0) {
+    // logger.info()<< "Correction factor 0";
+    correction_factor = 1.0;
   }
 
   std::vector<Table::Row::cell_type> res_list{};
   for (auto iter = m_param_config.cbegin(); iter != m_param_config.cend(); ++iter) {
     const auto& funct_param = iter->second.at(sed);
-    res_list.push_back((funct_param).apply(scale*correction_factor));
+    res_list.push_back((funct_param).apply(scale * correction_factor));
   }
 
   return res_list;
 }
 
-PhysicalParameter::PhysicalParameter(
-    PhzDataModel::GridType                                                                grid_type,
-    std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>> param_config)
+PhysicalParameter::PhysicalParameter(PhzDataModel::GridType                                               grid_type,
+                                     std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>> param_config)
     : m_param_config{std::move(param_config)} {
   switch (grid_type) {
   case PhzDataModel::GridType::LIKELIHOOD:
     m_column_prefix          = "LIKELIHOOD-";
     m_model_iterator_functor = [](const PhzDataModel::SourceResults& results) {
       return results.get<PhzDataModel::SourceResultType::BEST_LIKELIHOOD_MODEL_ITERATOR>();
+    };
+    m_region_functor = [](const PhzDataModel::SourceResults& results) {
+      return results.get<PhzDataModel::SourceResultType::BEST_LIKELIHOOD_REGION>();
     };
     m_scale_functor = [](const PhzDataModel::SourceResults& results) {
       return results.get<PhzDataModel::SourceResultType::BEST_LIKELIHOOD_MODEL_SCALE_FACTOR>();
@@ -81,6 +87,9 @@ PhysicalParameter::PhysicalParameter(
     m_column_prefix          = "";
     m_model_iterator_functor = [](const PhzDataModel::SourceResults& results) {
       return results.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();
+    };
+    m_region_functor = [](const PhzDataModel::SourceResults& results) {
+      return results.get<PhzDataModel::SourceResultType::BEST_REGION>();
     };
     m_scale_functor = [](const PhzDataModel::SourceResults& results) {
       return results.get<PhzDataModel::SourceResultType::BEST_MODEL_SCALE_FACTOR>();
