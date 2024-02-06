@@ -80,7 +80,17 @@ BOOST_FIXTURE_TEST_CASE(test_creatComment, GridSamplerScale_fixture) {
 
 BOOST_FIXTURE_TEST_CASE(test_getLuminosity, GridSamplerScale_fixture) {
   // Given
-  auto handler = PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>{};
+
+  std::shared_ptr<std::vector<std::string>> filter_1 =
+      std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filter1", "filter2"});
+  auto axes = Euclid::PhzDataModel::createAxesTuple({0.0, 1.5, 2.0}, {0.0, 0.7, 1.0}, {{"Curve1"}, {"Curve_2"}},
+                                                    {{"SED_1"}, {"SED_2"}});
+  Euclid::PhzDataModel::PhotometryGrid                grid_model_1{axes, *filter_1};
+  std::map<std::string, PhzDataModel::PhotometryGrid> model_grid_map;
+  model_grid_map.emplace("one", std::move(grid_model_1));
+  auto handler =
+      PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>{model_grid_map};
+
   std::vector<double> alphas{0, 1, 1, 1, 1, 1};
   std::vector<double> sigmas{1, 1, 0.5, 1, 1, 1};
   std::vector<double> indexes{0, 0, 0, 1, 2, 0.7};
@@ -101,7 +111,14 @@ BOOST_FIXTURE_TEST_CASE(test_getLuminosity, GridSamplerScale_fixture) {
 //-----------------------------------------------------------------------------
 BOOST_FIXTURE_TEST_CASE(test_computeEnclosingVolumeOfCells, GridSamplerScale_fixture) {
   // Given
-  auto handler = PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>{};
+  std::shared_ptr<std::vector<std::string>> filter_1 =
+      std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filter1", "filter2"});
+  auto axes = Euclid::PhzDataModel::createAxesTuple({0.0}, {0.0}, {{"Curve1"}}, {{"SED_1"}, {"SED_2"}});
+  Euclid::PhzDataModel::PhotometryGrid                grid_model_1{axes, *filter_1};
+  std::map<std::string, PhzDataModel::PhotometryGrid> model_grid_map;
+  model_grid_map.emplace("one", std::move(grid_model_1));
+  auto handler =
+      PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>{model_grid_map};
 
   // CASE 1: 1 point in Z & 1 point in E(B-V)
   // when

@@ -22,13 +22,13 @@ namespace Euclid {
 namespace PhzOutput {
 
 template <PhzDataModel::RegionResultType GridType>
-GridSamplerScale<GridType>::GridSamplerScale(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid) {
-	m_correction_factor_map = convertModelGrid(model_grid);
+GridSamplerScale<GridType>::GridSamplerScale(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid) : m_correction_factor_map{convertModelGrid(model_grid)} {
+
 }
 
 template <PhzDataModel::RegionResultType GridType>
 std::string GridSamplerScale<GridType>::createComment(const PhzDataModel::SourceResults& results) {
-  return std::move(GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>::createComment(results));
+  return GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>::createComment(results);
 }
 
 template <PhzDataModel::RegionResultType GridType>
@@ -197,19 +197,19 @@ GridSamplerScale<GridType>::drawSample(std::size_t sample_number, const std::map
       std::tie(s.alpha, s.z, s.ebv, s.red_index, s.sed_index) = d;
       s.sed                                                   = sed_names[region_index][s.sed_index];
 
-      
+
 
       // Alpha contains an interpolated, normalized, value
       // The scale mean and sigma grids need to be used to get the actual value
-      
-	  auto mean_alpha_lum_pair = scaling_grid[s.region_index];	  
+
+      auto& mean_alpha_lum_pair = scaling_grid[s.region_index];
 	  double scale_mean = (*(mean_alpha_lum_pair.first))(s.z, s.ebv, s.red_index, s.sed_index);
 	  double lum_mean = (*(mean_alpha_lum_pair.second))(s.z, s.ebv, s.red_index, s.sed_index);
-	  
-	  auto sigma_alpha_lum_pair = scaling_grid[s.region_index];	  
+
+	  auto& sigma_alpha_lum_pair = scaling_grid[s.region_index];
 	  double scale_sigma = (*(sigma_alpha_lum_pair.first))(s.z, s.ebv, s.red_index, s.sed_index);
 	  double lum_sigma = (*(sigma_alpha_lum_pair.second))(s.z, s.ebv, s.red_index, s.sed_index);
-      
+
       // Transform the normalized sample to a "true" scale / luminosity sample
       s.alpha = getLuminosity(scale_mean, scale_sigma, nsamples_scale[s.region_index], s.alpha);
       s.obs_lum = getLuminosity(lum_mean, lum_sigma, nsamples_scale[s.region_index], s.alpha);

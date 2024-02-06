@@ -70,7 +70,8 @@ public:
 
 template <PhzDataModel::RegionResultType GridType, typename Sampler>
 LikelihoodHandler<GridType, Sampler>::LikelihoodHandler(
-    boost::filesystem::path out_dir, const  std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>>& param_config,
+    boost::filesystem::path out_dir,
+	const  std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>>& param_config,
 	const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid,
     bool do_sample, size_t sample_number, size_t chunk_size)
     : m_out_dir{std::move(out_dir)}
@@ -108,7 +109,7 @@ void LikelihoodHandler<GridType, Sampler>::createColumnsLists(const SourceCatalo
 	        Euclid::Table::ColumnInfo::info_type("REDSHIFT", typeid(float)),
 	        Euclid::Table::ColumnInfo::info_type("RED_CURVE_INDEX", typeid(int)),
 	        Euclid::Table::ColumnInfo::info_type("EB_V", typeid(float)),
-	        Euclid::Table::ColumnInfo::info_type("SCALE", typeid(float))};
+	        Euclid::Table::ColumnInfo::info_type("SCALE", typeid(float)),
 	        Euclid::Table::ColumnInfo::info_type("LUMINOSITY", typeid(float))};
 	for (auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
 	      loggerPhz.info() << "Creating sampler columns adding " << iter->first;
@@ -192,7 +193,7 @@ void LikelihoodHandler<GridType, Sampler>::exportFullGrid(const SourceCatalog::S
   }
 
   loggerPhz.debug() << "Created file " << filename << " for source " << id;
-  
+
   std::string scale_filename = (m_out_dir / (id + "_scaling.fits")).string();
   fs::remove(scale_filename);
   for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
@@ -204,7 +205,7 @@ void LikelihoodHandler<GridType, Sampler>::exportFullGrid(const SourceCatalog::S
        HduIdVisitor visitor{array_hdu};
        auto         source_id = source.getId();
        boost::apply_visitor(visitor, source_id);
-   
+
    }
 
    loggerPhz.debug() << "Created file " << scale_filename << " for scaling of the source " << id;

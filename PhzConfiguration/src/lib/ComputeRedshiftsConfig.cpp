@@ -295,18 +295,20 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
 
   const auto& pp_config = getDependency<PhysicalParametersConfig>().getParamConfig();
 
+  const auto& model_grid = getDependency<PhotometryGridConfig>().getPhotometryGrid();
   if (m_likelihood_flag) {
 
     if (has_scale_sampling) {
       result.addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::LikelihoodHandler<
           PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID,
           PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID>>{
-          m_out_likelihood_dir, pp_config, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+          m_out_likelihood_dir, pp_config, model_grid, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
     } else {
       result.addHandler(std::unique_ptr<PhzOutput::OutputHandler>{
           new PhzOutput::LikelihoodHandler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID,
                                            PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>>{
-              m_out_likelihood_dir, pp_config, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+              m_out_likelihood_dir, pp_config, model_grid, m_do_sample_full_grids, m_sampling_number,
+              m_sources_per_file}});
     }
   }
 
@@ -316,12 +318,13 @@ std::unique_ptr<PhzOutput::OutputHandler> ComputeRedshiftsConfig::getOutputHandl
       result.addHandler(std::unique_ptr<PhzOutput::OutputHandler>{new PhzOutput::LikelihoodHandler<
           PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID,
           PhzOutput::GridSamplerScale<PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID>>{
-          m_out_posterior_dir, pp_config, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+          m_out_posterior_dir, pp_config, model_grid, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
     } else {
       result.addHandler(std::unique_ptr<PhzOutput::OutputHandler>{
           new PhzOutput::LikelihoodHandler<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID,
                                            PhzOutput::GridSampler<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>>{
-              m_out_posterior_dir, pp_config, m_do_sample_full_grids, m_sampling_number, m_sources_per_file}});
+              m_out_posterior_dir, pp_config, model_grid, m_do_sample_full_grids, m_sampling_number,
+              m_sources_per_file}});
     }
   }
 
