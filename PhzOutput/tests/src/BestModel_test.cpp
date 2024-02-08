@@ -43,9 +43,18 @@ struct BestModelFixture {
   std::vector<std::string> filters{"vis", "Y", "J"};
   PhotometryGrid           model_grid{std::make_tuple(z_axis, ebv_axis, red_axis, sed_axis), filters};
 
-  std::set<std::string> columns_suffixes{
-      "region-Index", "SED",          "SED-Index", "ReddeningCurve", "ReddeningCurve-Index",
-      "E(B-V)",       "E(B-V)-Index", "Z",         "Z-Index",        "Scale"};
+  std::set<std::string> columns_suffixes{"region-Index",
+                                         "SED",
+                                         "SED-Index",
+                                         "ReddeningCurve",
+                                         "ReddeningCurve-Index",
+                                         "E(B-V)",
+                                         "E(B-V)-Index",
+                                         "Z",
+                                         "Z-Index",
+                                         "Scale",
+                                         "Corr",
+                                         "Reference-Luminosity"};
 
   template <typename T>
   static T get_cell(const std::vector<Table::Row::cell_type>&        row,
@@ -107,6 +116,8 @@ BOOST_FIXTURE_TEST_CASE(test_LikelihoodGrid, BestModelFixture) {
 
   BOOST_CHECK_EQUAL(get_cell<int64_t>(row, column_info, "LIKELIHOOD-region-Index"), 1024);
   BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "LIKELIHOOD-Scale"), 88.7);
+  BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "LIKELIHOOD-Corr"), 1);
+  BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "LIKELIHOOD-Reference-Luminosity"), 88.7);
   BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "LIKELIHOOD-Z"), 2.);
   BOOST_CHECK_EQUAL(get_cell<int64_t>(row, column_info, "LIKELIHOOD-Z-Index"), 2);
   BOOST_CHECK_EQUAL(get_cell<std::string>(row, column_info, "LIKELIHOOD-SED"), "SED_1");
@@ -143,6 +154,8 @@ BOOST_FIXTURE_TEST_CASE(test_PosteriorGrid, BestModelFixture) {
 
   BOOST_CHECK_EQUAL(get_cell<int64_t>(row, column_info, "region-Index"), 589);
   BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "Scale"), 2.22);
+  BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "Corr"), 1);
+  BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "Reference-Luminosity"), 2.22);
   BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "Z"), 1.5);
   BOOST_CHECK_EQUAL(get_cell<int64_t>(row, column_info, "Z-Index"), 1);  // 22 % 3
   BOOST_CHECK_EQUAL(get_cell<std::string>(row, column_info, "SED"), "SED_2");

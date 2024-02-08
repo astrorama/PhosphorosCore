@@ -88,7 +88,7 @@ public:
    * @throws Elements::Exception
    *    If the instance in not yet initialized
    */
-  const PhzDataModel::PhotometryGridInfo& getPhotometryGridInfo();
+  const PhzDataModel::PhotometryGridInfo& getPhotometryGridInfo() const;
 
   /**
    * @brief
@@ -100,7 +100,7 @@ public:
    * @throws Elements::Exception
    *    If the instance in not yet initialized
    */
-  const std::map<std::string, PhzDataModel::PhotometryGrid>& getPhotometryGrid();
+  const std::map<std::string, PhzDataModel::PhotometryGrid>& getPhotometryGrid() const;
 
 private:
   PhzDataModel::PhotometryGridInfo                    m_info;

@@ -161,14 +161,14 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
   }
 }
 
-const PhzDataModel::PhotometryGridInfo& PhotometryGridConfig::getPhotometryGridInfo() {
+const PhzDataModel::PhotometryGridInfo& PhotometryGridConfig::getPhotometryGridInfo() const {
   if (getCurrentState() < State::INITIALIZED) {
     throw Elements::Exception() << "getPhotometryGridInfo() call on uninitialized PhotometryGridConfig";
   }
   return m_info;
 }
 
-const std::map<std::string, PhzDataModel::PhotometryGrid>& PhotometryGridConfig::getPhotometryGrid() {
+const std::map<std::string, PhzDataModel::PhotometryGrid>& PhotometryGridConfig::getPhotometryGrid() const {
   if (getCurrentState() < State::INITIALIZED) {
     throw Elements::Exception() << "getPhotometryGrid() call on uninitialized PhotometryGridConfig";
   }

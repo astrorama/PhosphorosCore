@@ -21,14 +21,14 @@
 namespace Euclid {
 namespace PhzOutput {
 
-// static Elements::Logging loggerPhzGridSampler = Elements::Logging::getLogger("GridSampler");
-
 template <PhzDataModel::RegionResultType GridType>
-GridSamplerScale<GridType>::GridSamplerScale() {}
+GridSamplerScale<GridType>::GridSamplerScale(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid) : m_correction_factor_map{convertModelGrid(model_grid)} {
+
+}
 
 template <PhzDataModel::RegionResultType GridType>
 std::string GridSamplerScale<GridType>::createComment(const PhzDataModel::SourceResults& results) {
-  return std::move(GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>::createComment(results));
+  return GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>::createComment(results);
 }
 
 template <PhzDataModel::RegionResultType GridType>
@@ -118,14 +118,15 @@ GridSamplerScale<GridType>::drawSample(std::size_t sample_number, const std::map
   using SamplerPtrType       = std::unique_ptr<MathUtils::NdSampler<double, double, double, int, int>>;
   using InterpolationPtrType = std::unique_ptr<MathUtils::InterpN<double, double, int, int>>;
 
-  std::vector<SamplerPtrType>                        samplers;
-  std::vector<InterpolationPtrType>                  scaling_grid, scaling_sigma_grid;
-  std::vector<std::string>                           region_names;
-  std::vector<double>                                r_cumulative;
-  std::vector<std::vector<XYDataset::QualifiedName>> sed_names, red_names;
-  std::vector<size_t>                                nsamples_scale;
+  std::vector<SamplerPtrType>                                        samplers;
+  std::vector<std::pair<InterpolationPtrType, InterpolationPtrType>> scaling_grid, scaling_sigma_grid;
+  std::vector<std::string>                                           region_names;
+  std::vector<double>                                                r_cumulative;
+  std::vector<std::vector<XYDataset::QualifiedName>>                 sed_names, red_names;
+  std::vector<size_t>                                                nsamples_scale;
   samplers.reserve(results.size());
   scaling_grid.reserve(results.size());
+  scaling_sigma_grid.reserve(results.size());
   region_names.reserve(results.size());
   r_cumulative.reserve(results.size());
   nsamples_scale.reserve(results.size());
@@ -157,9 +158,9 @@ GridSamplerScale<GridType>::drawSample(std::size_t sample_number, const std::map
     // Build sampler
     samplers.emplace_back(std::move(createSamplerFromGrid(grid, scale_axis, z_axis, ebv_axis, red_idxs, sed_idxs)));
 
-    // Build scale interpolator
-    scaling_grid.emplace_back(std::move(createInterpolatorFromGrid(scale_grid, z_axis, ebv_axis, red_idxs, sed_idxs)));
-    scaling_sigma_grid.emplace_back(std::move(createInterpolatorFromGrid(sigma_scale_grid, z_axis, ebv_axis, red_idxs, sed_idxs)));
+    // Build scale interpolators
+    scaling_grid.emplace_back(std::move(createInterpolatorFromGrid(scale_grid, m_correction_factor_map.at(pair.first), z_axis, ebv_axis, red_idxs, sed_idxs)));
+    scaling_sigma_grid.emplace_back(std::move(createInterpolatorFromGrid(sigma_scale_grid, m_correction_factor_map.at(pair.first), z_axis, ebv_axis, red_idxs, sed_idxs)));
 
     // Information about the grid
     region_names.emplace_back(pair.first);
@@ -196,13 +197,22 @@ GridSamplerScale<GridType>::drawSample(std::size_t sample_number, const std::map
       std::tie(s.alpha, s.z, s.ebv, s.red_index, s.sed_index) = d;
       s.sed                                                   = sed_names[region_index][s.sed_index];
 
+
+
       // Alpha contains an interpolated, normalized, value
       // The scale mean and sigma grids need to be used to get the actual value
-      double scale_mean  = (*scaling_grid[s.region_index])(s.z, s.ebv, s.red_index, s.sed_index);
-      double scale_sigma = (*scaling_sigma_grid[s.region_index])(s.z, s.ebv, s.red_index, s.sed_index);
 
-      // Transform the normalized sample to a "true" luminosity sample
+      auto& mean_alpha_lum_pair = scaling_grid[s.region_index];
+	  double scale_mean = (*(mean_alpha_lum_pair.first))(s.z, s.ebv, s.red_index, s.sed_index);
+	  double lum_mean = (*(mean_alpha_lum_pair.second))(s.z, s.ebv, s.red_index, s.sed_index);
+
+	  auto& sigma_alpha_lum_pair = scaling_grid[s.region_index];
+	  double scale_sigma = (*(sigma_alpha_lum_pair.first))(s.z, s.ebv, s.red_index, s.sed_index);
+	  double lum_sigma = (*(sigma_alpha_lum_pair.second))(s.z, s.ebv, s.red_index, s.sed_index);
+
+      // Transform the normalized sample to a "true" scale / luminosity sample
       s.alpha = getLuminosity(scale_mean, scale_sigma, nsamples_scale[s.region_index], s.alpha);
+      s.obs_lum = getLuminosity(lum_mean, lum_sigma, nsamples_scale[s.region_index], s.alpha);
     }
   }
 

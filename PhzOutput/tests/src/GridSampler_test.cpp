@@ -28,6 +28,7 @@
 #include <thread>
 
 #include "PhzDataModel/DoubleGrid.h"
+#include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhzModel.h"
 #include "PhzDataModel/RegionResults.h"
 #include "PhzDataModel/SourceResults.h"
@@ -80,7 +81,6 @@ BOOST_FIXTURE_TEST_CASE(test_creatComment, GridSampler_fixture) {
 //-----------------------------------------------------------------------------
 BOOST_FIXTURE_TEST_CASE(test_computeEnclosingVolumeOfCells, GridSampler_fixture) {
   // Given
-  auto handler = PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>{};
 
   // CASE 1: 1 point in Z & 1 point in E(B-V)
   // when
@@ -89,13 +89,22 @@ BOOST_FIXTURE_TEST_CASE(test_computeEnclosingVolumeOfCells, GridSampler_fixture)
   GridContainer::GridAxis<XYDataset::QualifiedName> red_axis_1{"Reddening Curve", {{"Curve1"}}};
   GridContainer::GridAxis<XYDataset::QualifiedName> sed_axis_1{"SED", {{"SED_1"}, {"SED_2"}}};
   PhzDataModel::DoubleGrid                          grid_likelihood_1{z_axis_1, ebv_axis_1, red_axis_1, sed_axis_1};
-  auto                                              iter_grid_1 = grid_likelihood_1.begin();
-  *iter_grid_1                                                  = 0.5;
+
+  auto iter_grid_1 = grid_likelihood_1.begin();
+  *iter_grid_1     = 0.5;
   ++iter_grid_1;
   *iter_grid_1 = 0.1;
+
+  std::shared_ptr<std::vector<std::string>> filter_1 =
+      std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filter1", "filter2"});
+  auto axes = Euclid::PhzDataModel::createAxesTuple({0.0}, {0.0}, {{"Curve1"}}, {{"SED_1"}, {"SED_2"}});
+  Euclid::PhzDataModel::PhotometryGrid                grid_model_1{axes, *filter_1};
+  std::map<std::string, PhzDataModel::PhotometryGrid> model_grid_map;
+  model_grid_map.emplace("one", std::move(grid_model_1));
+  auto handler = PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>{model_grid_map};
+
   PhzDataModel::RegionResults results_1{};
   results_1.set<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>(std::move(grid_likelihood_1));
-
   auto computed = handler.computeEnclosingVolumeOfCells(results_1);
   // Then
 
@@ -128,8 +137,9 @@ BOOST_FIXTURE_TEST_CASE(test_computeEnclosingVolumeOfCells, GridSampler_fixture)
   GridContainer::GridAxis<XYDataset::QualifiedName> red_axis_3{"Reddening Curve", {{"Curve1"}}};
   GridContainer::GridAxis<XYDataset::QualifiedName> sed_axis_3{"SED", {{"SED_1"}}};
   PhzDataModel::DoubleGrid                          grid_likelihood_3{z_axis_3, ebv_axis_3, red_axis_3, sed_axis_3};
-  auto                                              iter_grid_3 = grid_likelihood_3.begin();
-  *iter_grid_3                                                  = 0.2;
+
+  auto iter_grid_3 = grid_likelihood_3.begin();
+  *iter_grid_3     = 0.2;
   ++iter_grid_3;
   *iter_grid_3 = 0.1;
   ++iter_grid_3;
@@ -173,11 +183,25 @@ BOOST_FIXTURE_TEST_CASE(test_Sample, GridSampler_fixture) {
   std::copy(likelihood_values.begin(), likelihood_values.end(), grid_likelihood.begin());
   std::fill(grid_scaling.begin(), grid_scaling.end(), 1.);
 
-  PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID> handler;
+  std::shared_ptr<std::vector<std::string>> filter_1 =
+      std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filter1", "filter2"});
+  auto axes = Euclid::PhzDataModel::createAxesTuple({0.0, 1.5, 2.0}, {0.0, 0.7, 1.0}, {{"Curve1"}, {"Curve_2"}},
+                                                    {{"SED_1"}, {"SED_2"}});
+  Euclid::PhzDataModel::PhotometryGrid grid_model{axes, *filter_1};
+
+  // Fill the grid with correction factor 0.5
+  for (auto iter_m_grid = grid_model.begin(); iter_m_grid != grid_model.end(); ++iter_m_grid) {
+    *iter_m_grid = Euclid::SourceCatalog::Photometry(filter_1, {{0, 0.5}, {0, 0}});
+  }
+
+  std::map<std::string, PhzDataModel::PhotometryGrid> model_grid_map;
+  model_grid_map.emplace("Region0", std::move(grid_model));
+
+  PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID> handler{model_grid_map};
   PhzDataModel::RegionResults                                                 results;
   results.set<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>(std::move(grid_likelihood));
   results.set<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>(std::move(grid_scaling));
-
+  BOOST_CHECK(true);
   auto samples = handler.drawSample(100, {{"Region0", 1.}}, {{"Region0", results}}, rng);
   BOOST_CHECK_EQUAL(samples.size(), 100);
 
@@ -187,6 +211,7 @@ BOOST_FIXTURE_TEST_CASE(test_Sample, GridSampler_fixture) {
   std::for_each(samples.begin(), samples.end(), [&](const GridSample& sample) {
     BOOST_CHECK_EQUAL(sample.region_index, 0);
     BOOST_CHECK_EQUAL(sample.alpha, 1.);
+    BOOST_CHECK_CLOSE(sample.obs_lum, 0.5, 0.01);
     z_mean += sample.z;
     ebv_mean += sample.ebv;
     ++red_count[sample.red_index];

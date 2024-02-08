@@ -9,7 +9,9 @@
 
 #include "PhzDataModel/RegionResults.h"
 #include "PhzOutput/OutputHandler.h"
+#include "PhzDataModel/PhotometryGrid.h"
 #include <boost/filesystem.hpp>
+#include "NdArray/NdArray.h"
 #include <map>
 #include <random>
 #include <tuple>
@@ -46,7 +48,7 @@ template <PhzDataModel::RegionResultType GridType>
 class GridSamplerScale {
 
 public:
-  explicit GridSamplerScale();
+  explicit GridSamplerScale(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid);
 
   virtual ~GridSamplerScale() = default;
 
@@ -70,6 +72,9 @@ public:
   std::vector<GridSample> drawSample(std::size_t sample_number, const std::map<std::string, double>& region_volume,
                                      const std::map<std::string, PhzDataModel::RegionResults>& results,
                                      std::mt19937&                                             gen);
+private:
+
+  const std::map<std::string, NdArray::NdArray<double>> m_correction_factor_map{};
 };
 
 }  // end of namespace PhzOutput
