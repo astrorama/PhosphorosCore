@@ -9,6 +9,7 @@
 
 #include "PhzDataModel/RegionResults.h"
 #include "PhzDataModel/PPConfig.h"
+#include "PhzDataModel/PhotometryGrid.h"
 #include "PhzOutput/GridSampler.h"
 #include "PhzOutput/OutputHandler.h"
 #include <boost/filesystem.hpp>
@@ -28,6 +29,7 @@ public:
   LikelihoodHandler(
       boost::filesystem::path out_dir,
       const std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>>& param_config,
+	  const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid,
       bool do_sample,
 	  size_t sample_number = 1000,
 	  size_t chunk_size = 10000);

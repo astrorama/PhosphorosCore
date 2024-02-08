@@ -23,10 +23,13 @@
  */
 
 #include "PhzOutput/PhzColumnHandlers/BestModel.h"
+#include "ElementsKernel/Logging.h"
 
 namespace Euclid {
 namespace PhzOutput {
 namespace ColumnHandlers {
+
+static Elements::Logging logger = Elements::Logging::getLogger("BestModel");
 
 std::vector<Table::ColumnInfo::info_type> BestModel::getColumnInfoList() const {
   return std::vector<Table::ColumnInfo::info_type>{
@@ -39,25 +42,34 @@ std::vector<Table::ColumnInfo::info_type> BestModel::getColumnInfoList() const {
       Table::ColumnInfo::info_type(m_column_prefix + "E(B-V)-Index", typeid(int64_t)),
       Table::ColumnInfo::info_type(m_column_prefix + "Z", typeid(double)),
       Table::ColumnInfo::info_type(m_column_prefix + "Z-Index", typeid(int64_t)),
-      Table::ColumnInfo::info_type(m_column_prefix + "Scale", typeid(double))};
+      Table::ColumnInfo::info_type(m_column_prefix + "Scale", typeid(double)),
+      Table::ColumnInfo::info_type(m_column_prefix + "Corr", typeid(double)),
+      Table::ColumnInfo::info_type(m_column_prefix + "Reference-Luminosity", typeid(double))};
 }
 
 std::vector<Table::Row::cell_type> BestModel::convertResults(const SourceCatalog::Source&,
                                                              const PhzDataModel::SourceResults& results) const {
   int64_t                                      region_index = m_region_index_functior(results);
   PhzDataModel::PhotometryGrid::const_iterator best_model   = m_model_iterator_functor(results);
-  auto    sed             = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
-  int64_t sed_index       = best_model.axisIndex<PhzDataModel::ModelParameter::SED>();
-  auto    reddening_curve = best_model.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>().qualifiedName();
-  int64_t red_index       = best_model.axisIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>();
-  auto    ebv             = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
-  int64_t ebv_index       = best_model.axisIndex<PhzDataModel::ModelParameter::EBV>();
-  auto    z               = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
-  int64_t z_index         = best_model.axisIndex<PhzDataModel::ModelParameter::Z>();
-  auto    scale           = m_scale_functor(results);
+  auto    sed               = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
+  int64_t sed_index         = best_model.axisIndex<PhzDataModel::ModelParameter::SED>();
+  auto    reddening_curve   = best_model.axisValue<PhzDataModel::ModelParameter::REDDENING_CURVE>().qualifiedName();
+  int64_t red_index         = best_model.axisIndex<PhzDataModel::ModelParameter::REDDENING_CURVE>();
+  auto    ebv               = best_model.axisValue<PhzDataModel::ModelParameter::EBV>();
+  int64_t ebv_index         = best_model.axisIndex<PhzDataModel::ModelParameter::EBV>();
+  auto    z                 = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
+  int64_t z_index           = best_model.axisIndex<PhzDataModel::ModelParameter::Z>();
+  auto    scale             = m_scale_functor(results);
+  double  correction_factor = (*(*best_model).begin()).error;
+  // For retro-compatibility with existing grids
+  if (correction_factor == 0) {
+    // logger.info()<< "Source has best_model with correction factor 0";
+    correction_factor = 1.0;
+  }
+  double ref_lum = scale * correction_factor;
 
-  return std::vector<Table::Row::cell_type>{region_index, sed,       sed_index, reddening_curve, red_index,
-                                            ebv,          ebv_index, z,         z_index,         scale};
+  return std::vector<Table::Row::cell_type>{region_index, sed, sed_index, reddening_curve, red_index,         ebv,
+                                            ebv_index,    z,   z_index,   scale,           correction_factor, ref_lum};
 }
 
 BestModel::BestModel(PhzDataModel::GridType grid_type) {

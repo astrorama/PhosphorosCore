@@ -27,7 +27,9 @@
 
 #include "PhzDataModel/RegionResults.h"
 #include "PhzOutput/OutputHandler.h"
+#include "PhzDataModel/PhotometryGrid.h"
 #include <boost/filesystem.hpp>
+#include "NdArray/NdArray.h"
 #include <map>
 #include <random>
 #include <utility>
@@ -47,8 +49,9 @@ struct GridSample {
   float                    ebv;
   float                    z;
   float                    alpha;
+  float                    obs_lum;
 
-  GridSample() : region_index(0), sed_index(0), sed(DefaultQualifiedName), red_index(0), ebv(-1.), z(-1.), alpha(-1.) {}
+  GridSample() : region_index(0), sed_index(0), sed(DefaultQualifiedName), red_index(0), ebv(-1.), z(-1.), alpha(-1.), obs_lum(-1.) {}
 };
 
 /**
@@ -63,7 +66,7 @@ template <PhzDataModel::RegionResultType GridType>
 class GridSampler {
 
 public:
-  GridSampler();
+  GridSampler(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid);
 
   virtual ~GridSampler() = default;
 
@@ -100,6 +103,7 @@ public:
                                      std::mt19937&                                             gen);
 
 private:
+  const std::map<std::string, NdArray::NdArray<double>> m_correction_factor_map{};
 };
 
 }  // end of namespace PhzOutput

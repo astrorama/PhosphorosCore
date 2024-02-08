@@ -70,7 +70,9 @@ public:
 
 template <PhzDataModel::RegionResultType GridType, typename Sampler>
 LikelihoodHandler<GridType, Sampler>::LikelihoodHandler(
-    boost::filesystem::path out_dir, const  std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>>& param_config,
+    boost::filesystem::path out_dir,
+	const  std::map<std::string, std::map<std::string, PhzDataModel::PPConfig>>& param_config,
+	const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid,
     bool do_sample, size_t sample_number, size_t chunk_size)
     : m_out_dir{std::move(out_dir)}
     , m_param_config{param_config}
@@ -78,7 +80,7 @@ LikelihoodHandler<GridType, Sampler>::LikelihoodHandler(
     , m_sample_number{sample_number}
     , m_chunk_size{chunk_size}
     , m_counter(0)
-    , m_grid_sampler{} {
+    , m_grid_sampler{model_grid}{
 
   // loggerPhz.info()<<"Consctuctor call";
   Euclid::PhzUtils::checkCreateDirectoryOnly(m_out_dir.string());
@@ -107,6 +109,7 @@ void LikelihoodHandler<GridType, Sampler>::createColumnsLists(const SourceCatalo
 	        Euclid::Table::ColumnInfo::info_type("REDSHIFT", typeid(float)),
 	        Euclid::Table::ColumnInfo::info_type("RED_CURVE_INDEX", typeid(int)),
 	        Euclid::Table::ColumnInfo::info_type("EB_V", typeid(float)),
+	        Euclid::Table::ColumnInfo::info_type("SCALE", typeid(float)),
 	        Euclid::Table::ColumnInfo::info_type("LUMINOSITY", typeid(float))};
 	for (auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
 	      loggerPhz.info() << "Creating sampler columns adding " << iter->first;
@@ -162,6 +165,8 @@ void LikelihoodHandler<GridType, Sampler>::exportFullGrid(const SourceCatalog::S
   std::string filename = (m_out_dir / (id + ".fits")).string();
   fs::remove(filename);
 
+
+
   // Grid container cannot export grid of vector + we should store alpha and sigma grid along to be able to recompute the scaling
   // axis... so exporting the non-sampled grid...
   for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
@@ -188,7 +193,24 @@ void LikelihoodHandler<GridType, Sampler>::exportFullGrid(const SourceCatalog::S
   }
 
   loggerPhz.debug() << "Created file " << filename << " for source " << id;
-}
+
+  std::string scale_filename = (m_out_dir / (id + "_scaling.fits")).string();
+  fs::remove(scale_filename);
+  for (auto& pair : results.get<PhzDataModel::SourceResultType::REGION_RESULTS_MAP>()) {
+       auto& grid = pair.second.get<PhzDataModel::RegionResultType::SCALE_FACTOR_GRID>();
+       GridContainer::gridFitsExport(scale_filename, pair.first, grid);
+       CCfits::FITS fits(scale_filename, CCfits::Write);
+       auto&        array_hdu = fits.extension(fits.extension().size() - grid.axisNumber());
+
+       HduIdVisitor visitor{array_hdu};
+       auto         source_id = source.getId();
+       boost::apply_visitor(visitor, source_id);
+
+   }
+
+   loggerPhz.debug() << "Created file " << scale_filename << " for scaling of the source " << id;
+ }
+
 
 template <PhzDataModel::RegionResultType GridType, typename Sampler>
 std::vector<Table::Row>
@@ -204,10 +226,10 @@ LikelihoodHandler<GridType, Sampler>::drawSample(SourceCatalog::Source::id_type 
   for (auto& s : sample) {
     const auto&                        sed_qualified = s.sed.qualifiedName();
 
-    std::vector<Table::Row::cell_type> values{source_id, s.region_index, s.sed_index, s.z, s.red_index, s.ebv, s.alpha};
+    std::vector<Table::Row::cell_type> values{source_id, s.region_index, s.sed_index, s.z, s.red_index, s.ebv, s.alpha, s.obs_lum};
     for (auto& param : m_param_config) {
       float param_value =
-          float((param.second.at(sed_qualified)).apply(s.alpha));
+          float((param.second.at(sed_qualified)).apply(s.obs_lum));
       values.push_back(param_value);
     }
 

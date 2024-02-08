@@ -10,6 +10,7 @@
 #include "MathUtils/PDF/NdSampler.h"
 #include "MathUtils/PDF/NdSamplerFromGrid.h"
 #include "NdArray/NdArray.h"
+#include "NdArray/Operations.h"
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzDataModel/PhzModel.h"
 #include "PhzOutput/GridSampler.h"
@@ -25,8 +26,43 @@ namespace PhzOutput {
 
 static Elements::Logging loggerPhzGridSampler = Elements::Logging::getLogger("GridSampler");
 
+
+
+const std::map<std::string, NdArray::NdArray<double>> convertModelGrid(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid) {
+	std::map<std::string, NdArray::NdArray<double>> correction_factor_map{};
+	for (auto& pair : model_grid) {
+
+	    auto&  axis = pair.second.getAxesTuple();
+		loggerPhzGridSampler.debug() << "Converting grid region '" << pair.first <<"' with dim : "<<std::get<0>(axis).size() <<"x"<<std::get<1>(axis).size()<<"x"<<std::get<2>(axis).size()<<"x"<<std::get<3>(axis).size();
+
+		auto correction_factor_array = NdArray::NdArray<double>{std::get<3>(axis).size(),
+			                                                 std::get<2>(axis).size(),
+															 std::get<1>(axis).size(),
+															 std::get<0>(axis).size()};
+		for (size_t sed_index = 0; sed_index < std::get<3>(axis).size(); ++sed_index) {
+		   for (size_t red_index = 0; red_index < std::get<2>(axis).size(); ++red_index) {
+		      for (size_t ebv_index = 0; ebv_index < std::get<1>(axis).size(); ++ebv_index) {
+		        for (size_t z_index = 0; z_index <  std::get<0>(axis).size(); ++z_index) {
+		        	auto correction_factor = (*pair.second(z_index, ebv_index, red_index, sed_index).begin()).error;
+		        	//For retro-compatibility with existing grids
+		        	if (correction_factor == 0){
+		        		//loggerPhzGridSampler.info()<< "Source has best_model with correction factor 0";
+		        	    correction_factor = 1.0;
+		        	}
+		        	correction_factor_array.at(sed_index, red_index, ebv_index, z_index) = correction_factor;
+		        }
+		      }
+		   }
+		}
+		correction_factor_map.emplace(pair.first, std::move(correction_factor_array));
+	}
+	return correction_factor_map;
+}
+
 template <PhzDataModel::RegionResultType GridType>
-GridSampler<GridType>::GridSampler() {}
+GridSampler<GridType>::GridSampler(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid): m_correction_factor_map{convertModelGrid(model_grid)} {
+
+}
 
 template <PhzDataModel::RegionResultType GridType>
 std::string GridSampler<GridType>::createComment(const PhzDataModel::SourceResults& results) {
@@ -112,14 +148,22 @@ double GridSampler<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::
   return total_cell_vol;
 }
 
-static std::unique_ptr<MathUtils::InterpN<double, double, int, int>>
-createInterpolatorFromGrid(const PhzDataModel::DoubleGrid& grid, const std::vector<double>& z_axis,
-                           const std::vector<double>& ebv_axis, const std::vector<int>& red_axis,
+static std::pair<std::unique_ptr<MathUtils::InterpN<double, double, int, int>>, std::unique_ptr<MathUtils::InterpN<double, double, int, int>>>
+createInterpolatorFromGrid(const PhzDataModel::DoubleGrid& grid,
+		                   const NdArray::NdArray<double>& correction_factor_map,
+		                   const std::vector<double>& z_axis,
+                           const std::vector<double>& ebv_axis,
+						   const std::vector<int>& red_axis,
                            const std::vector<int>& sed_axis) {
   auto                     knots = std::make_tuple(z_axis, ebv_axis, red_axis, sed_axis);
   std::vector<size_t>      values_shape{sed_axis.size(), red_axis.size(), ebv_axis.size(), z_axis.size()};
   NdArray::NdArray<double> values(values_shape, grid.begin(), grid.end());
-  return Euclid::make_unique<MathUtils::InterpN<double, double, int, int>>(std::move(knots), std::move(values), true);
+
+  NdArray::NdArray<double> multiplied = NdArray::multiplyElements(values, correction_factor_map);
+
+  return std::make_pair(
+		  Euclid::make_unique<MathUtils::InterpN<double, double, int, int>>(knots, std::move(values), true),
+		  Euclid::make_unique<MathUtils::InterpN<double, double, int, int>>(std::move(knots), std::move(multiplied), true));
 }
 
 std::unique_ptr<MathUtils::NdSampler<double, double, int, int>>
@@ -140,10 +184,10 @@ GridSampler<GridType>::drawSample(std::size_t sample_number, const std::map<std:
   using SamplerPtrType       = std::unique_ptr<MathUtils::NdSampler<double, double, int, int>>;
   using InterpolationPtrType = std::unique_ptr<MathUtils::InterpN<double, double, int, int>>;
 
-  std::vector<SamplerPtrType>                        samplers;
-  std::vector<InterpolationPtrType>                  scaling_grid;
-  std::vector<std::string>                           region_names;
-  std::vector<double>                                r_cumulative;
+  std::vector<SamplerPtrType>                                        samplers;
+  std::vector<std::pair<InterpolationPtrType, InterpolationPtrType>> scaling_grid;
+  std::vector<std::string>                                           region_names;
+  std::vector<double>                                                r_cumulative;
   std::vector<std::vector<XYDataset::QualifiedName>> sed_names, red_names;
   samplers.reserve(results.size());
   scaling_grid.reserve(results.size());
@@ -173,8 +217,12 @@ GridSampler<GridType>::drawSample(std::size_t sample_number, const std::map<std:
     // Build sampler
     samplers.emplace_back(std::move(createSamplerFromGrid(grid, z_axis, ebv_axis, red_idxs, sed_idxs)));
 
+    loggerPhzGridSampler.info() << "Prepare sampling for region with name :"<<pair.first;
+    loggerPhzGridSampler.info() << "sclae grid dim :"<<z_axis.size() <<"x"<<ebv_axis.size()<<"x"<<red_idxs.size()<<"x"<<sed_idxs.size();
+
+
     // Build scale interpolator
-    scaling_grid.emplace_back(std::move(createInterpolatorFromGrid(scale_grid, z_axis, ebv_axis, red_idxs, sed_idxs)));
+    scaling_grid.emplace_back(std::move(createInterpolatorFromGrid(scale_grid, m_correction_factor_map.at(pair.first), z_axis, ebv_axis, red_idxs, sed_idxs)));
 
     // Information about the grid
     region_names.emplace_back(pair.first);
@@ -204,6 +252,7 @@ GridSampler<GridType>::drawSample(std::size_t sample_number, const std::map<std:
     // Use the sampler for that region for all except alpha
     auto output = samplers[region_index]->draw(ndraws, gen);
 
+
     for (auto& d : output) {
       auto& s        = sample[i++];
       s.region_index = region_index;
@@ -211,8 +260,10 @@ GridSampler<GridType>::drawSample(std::size_t sample_number, const std::map<std:
       std::tie(s.z, s.ebv, s.red_index, s.sed_index) = d;
       s.sed                                          = sed_names[region_index][s.sed_index];
 
-      // Compute alpha from its grid
-      s.alpha = (*scaling_grid[s.region_index])(s.z, s.ebv, s.red_index, s.sed_index);
+      // Compute alpha and luminosity from its grids
+	  auto& alpha_lum_pair = scaling_grid[s.region_index];
+      s.alpha = (*(alpha_lum_pair.first))(s.z, s.ebv, s.red_index, s.sed_index);
+      s.obs_lum =(*(alpha_lum_pair.second))(s.z, s.ebv, s.red_index, s.sed_index);
     }
   }
 
