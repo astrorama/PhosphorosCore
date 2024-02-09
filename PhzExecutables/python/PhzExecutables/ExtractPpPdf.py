@@ -18,7 +18,7 @@
 
 
 """
-File: python/PhzExecutable/ExtractPpPdf.py
+File: python/PhzExecutables/ExtractPpPdf.py
 
 Created on: 2022/06/15
 Author: fdubath
