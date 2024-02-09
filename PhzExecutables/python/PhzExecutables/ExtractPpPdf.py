@@ -67,7 +67,7 @@ def defineSpecificProgramOptions():
 
 #--------------------------
 def parsePdfList(pp, user_input):
-    ''' 
+    '''
     Returns the lists of 1d and 2d pdfs to be computed.
 
             Parameters:
@@ -75,8 +75,8 @@ def parsePdfList(pp, user_input):
                     user_input (array): A list describing the pdf to be computed in the form <pp1>,<pp1>_<pp2>,..
 
             Returns:
-                    pdf_1d (array): List of pp for which 1D pdf should be computed 
-                    pdf_2d (array): list of pair of pp for which 2D pdf should be computed 
+                    pdf_1d (array): List of pp for which 1D pdf should be computed
+                    pdf_2d (array): list of pair of pp for which 2D pdf should be computed
     '''
     full_list = pp[:]
     pdf_1d = []
@@ -110,13 +110,13 @@ def parsePdfList(pp, user_input):
 
 #--------------------------
 def parsePdfBin(pp, user_input):
-    ''' 
-    Returns the list of sampling number for the pp. If a given pp is not specified 
+    '''
+    Returns the list of sampling number for the pp. If a given pp is not specified
     in the user_input the default values (50) is used.
 
             Parameters:
                     pp (array): The list of available physical parameter
-                    user_input (array): A list describing the number of bin for the  
+                    user_input (array): A list describing the number of bin for the
                                         pps in the form <ppname>:<number>,<ppname>:<number>,...
 
 
@@ -142,15 +142,15 @@ def parsePdfBin(pp, user_input):
 
 #--------------------------
 def parsePdfRange(pp, min_data, max_data, user_input):
-    ''' 
-    Returns the list of range for the pp. If a given pp is not specified in the user_input the 
+    '''
+    Returns the list of range for the pp. If a given pp is not specified in the user_input the
     default values is the range min_data, max_data for the given pp.
 
             Parameters:
                     pp (array): The list of available physical parameter
                     min_data (dict): Dictionary containing the minimal value taken by each pp
                     max_data (dict): Dictionary containing the maximum value taken by each pp
-                    user_input (array): A list describing the min/max values for the pps in the form  
+                    user_input (array): A list describing the min/max values for the pps in the form
                                        <ppname>:<min>:<max>,<ppname>:<min>:<max>,...
 
             Returns:
@@ -177,11 +177,11 @@ def parsePdfRange(pp, min_data, max_data, user_input):
 def getPP(res_dir, pp_conf_file):
     '''
     Returns the list of physical parameters (pp) and a dictionary storing the units for each pp
-    
+
             Parameters:
                 res_dir (str): folder containing the result files of a Phosphoros run
                 pp_conf_file (str): name of the file containing the configuration of the pp
-                
+
             Returns:
                     pp (array): A list containing the names of the available pp.
                     units (dict): A dictionary storing the units for each pp.
@@ -203,13 +203,13 @@ def getPP(res_dir, pp_conf_file):
 def getSampleFileList(res_dir, sample_folder, index_file):
     '''
     Returns the list of files containing full pdf sampling (with pp)
-    
+
             Parameters:
                 res_dir (str): folder containing the result files of a Phosphoros run
                 sample_folder (str): name of the folder into which the sample files are stored
-                index_file (str): name of the file containing the list of objects and in 
+                index_file (str): name of the file containing the list of objects and in
                                   which file the sampling are stored
-                
+
             Returns:
                     filelist (array): list of files containing full pdf sampling.
     '''
@@ -223,16 +223,16 @@ def getSampleFileList(res_dir, sample_folder, index_file):
 def getData(pp, filelist, res_dir, sample_folder, get_sample):
     '''
     Returns the samples and the min/max values for each pp
-    
+
             Parameters:
                 pp (array): The list of available physical parameter
                 filelist (array): list of files containing full pdf sampling.
                 res_dir (str): folder containing the result files of a Phosphoros run
                 sample_folder (str): name of the folder into which the sample files are stored
                 get_sample (bool): switch to return or not the sampling (min/max are always returned)
-                
+
             Returns:
-                    samples (dict(dict)): Dictionary which key is the pp and value is a dictionary 
+                    samples (dict(dict)): Dictionary which key is the pp and value is a dictionary
                                           which key is the object id and value the list of sampling.
                     min_data (dict): Dictionary containing the minimal value taken by each pp
                     max_data (dict): Dictionary containing the maximum value taken by each pp
@@ -251,8 +251,8 @@ def getData(pp, filelist, res_dir, sample_folder, get_sample):
         sampling_table = Table.read(join(res_dir,sample_folder,str(fl)))
         for param in pp:
             if (get_sample):
-                ''' 
-                The sampling files contains a column "OBJECT_ID". In this columns we have a repetition 
+                '''
+                The sampling files contains a column "OBJECT_ID". In this columns we have a repetition
                 (one for each sample of the source). Looking for the position of the change in this column
                 we can split the table in subset: one for each object.
                 '''
@@ -286,12 +286,12 @@ def computeHisto1d(pp, samples, pdf_range, pdf_bin):
     '''
     Returns the 1D pdfs
             Parameters:
-                pp (array): The list of physical parameter for which the 1D pdf must be computed 
-                samples (dict(dict)): Dictionary which key is the pp and value is a dictionary 
+                pp (array): The list of physical parameter for which the 1D pdf must be computed
+                samples (dict(dict)): Dictionary which key is the pp and value is a dictionary
                                           which key is the object id and value the list of sampling.
                 pdf_range (dict): a dictionary which key is the pp and value is the couple min, max value for this pp.
                 pdf_bin (dict): a dictionary which key is the pp and value is the number of sample for this pp.
-                    
+
             Returns:
                     histo (dict): A dictionary which key is the pp and values is a list of 1D histogram for each source
     '''
@@ -314,12 +314,12 @@ def computeHisto2d(pdf_2d, samples, pdf_range, pdf_bin):
     '''
     Returns the 2D pdfs
             Parameters:
-                pdf_2d (array): The list of physical parameter for which the 2D pdf must be computed 
-                samples (dict(dict)): Dictionary which key is the pp and value is a dictionary 
+                pdf_2d (array): The list of physical parameter for which the 2D pdf must be computed
+                samples (dict(dict)): Dictionary which key is the pp and value is a dictionary
                                           which key is the object id and value the list of sampling.
                 pdf_range (dict): a dictionary which key is the pp and value is the couple min, max value for this pp.
                 pdf_bin (dict): a dictionary which key is the pp and value is the number of sample for this pp.
-                    
+
             Returns:
                     histo (dict): A dictionary which key is the pp couple and values is a list of 2D histogram for each source
     '''
@@ -375,9 +375,9 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
     '''
     Outputs the pdfs into a fits file
             Parameters:
-                pdf_1d (array): The list of physical parameter for which the 1D pdf must be computed 
-                pdf_2d (array): The list of physical parameter for which the 2D pdf must be computed 
-                samples (dict(dict)): Dictionary which key is the pp and value is a dictionary 
+                pdf_1d (array): The list of physical parameter for which the 1D pdf must be computed
+                pdf_2d (array): The list of physical parameter for which the 2D pdf must be computed
+                samples (dict(dict)): Dictionary which key is the pp and value is a dictionary
                                           which key is the object id and value the list of sampling.
                 histo1d (dict): A dictionary which key is the pp couple and values is a list of 1D histogram for each source
                 histo2d (dict): A dictionary which key is the pp couple and values is a list of 2D histogram for each source
@@ -413,7 +413,7 @@ def outputPDF(pdf_1d, pdf_2d, samples, histo1d, histo2d, min_data, max_data, pdf
         np_array = np.reshape(np_array,
                               (np_array.shape[0], (np_array.shape[1] * np_array.shape[2])))
         outTable.append(fits.Column(out_key, array=np_array, format=npDtype2FitsTForm(np_array)))
-        
+
         comments['TDIM'+str(col_index)] = shapes
 
     hdul = fits.HDUList(hdus=[fits.PrimaryHDU(), fits.BinTableHDU.from_columns(outTable)])
