@@ -67,15 +67,16 @@ def extract_sub_sample(zs, first, max_number):
 
 def group_z(zs, min_step):
     zs_extracted = {}
-    for z in zs if np.isfinite(z):
-        found = False
-        for z_know in zs_extracted.keys():
-            if np.isclose(z, z_know, atol=min_step):
-                zs_extracted[z_know].append(z)
-                foud=True
-                break
-        if not found:
-            zs_extracted[z]=[z]
+    for z in zs:
+        if np.isfinite(z):
+           found = False
+           for z_know in zs_extracted.keys():
+               if np.isclose(z, z_know, atol=min_step):
+                   zs_extracted[z_know].append(z)
+                   foud=True
+                   break
+           if not found:
+               zs_extracted[z]=[z]
     return zs_extracted
 
 def get_out_table(zs_extracted):
