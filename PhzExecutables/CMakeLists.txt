@@ -78,5 +78,6 @@ elements_install_python_modules()
 #                             ElementsExamples.PythonProgramExample)
 #===============================================================================
 elements_add_python_program(PhosphorosExtractPpPdf PhzExecutables.ExtractPpPdf)
+elements_add_python_program(PhosphorosExtractZList PhzExecutables.ExtractZList)
 
 elements_install_conf_files()
