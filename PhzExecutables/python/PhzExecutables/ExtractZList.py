@@ -48,6 +48,8 @@ def defineSpecificProgramOptions():
                         help='Name of the column containing the reference redshift (default = Z_TRUE)')
     parser.add_argument('-zf','--min_z_step', type=float, default=0.0001,
                         help='minimal redshift step (default = 0.0001)')
+    parser.add_argument('-zt','--scale_min_z_step', type=bool,
+                        help='If set multiply the minimal redshift step by (1+z)')
     parser.add_argument('-sf','--skip_n_first', type=int, default='0',
                         help='Skip n first entry of the catalog (default n=0)')
     parser.add_argument('-mr','--max_record', type=int, default='-1',
@@ -65,13 +67,13 @@ def extract_sub_sample(zs, first, max_number):
        zs_l=zs_l[0:max_number]
     return zs_l
 
-def group_z(zs, min_step):
+def group_z(zs, min_step, do_scale_step=False):
     zs_extracted = {}
     for z in zs:
         if np.isfinite(z):
            found = False
            for z_know in zs_extracted.keys():
-               if np.isclose(z, z_know, atol=min_step):
+               if np.isclose(z, z_know, atol=min_step*(1+do_scale_step*z_know)):
                    zs_extracted[z_know].append(z)
                    foud=True
                    break
@@ -94,6 +96,6 @@ def mainMethod(args):
     zs_extracted = group_z(zs, args.min_z_step)
     logger.info(f'Found {len(zs_extracted)} distinct zs (with tolerence {args.min_z_step}')
 
-    out_t = get_out_table(zs_extracted)
+    out_t = get_out_table(zs_extracted, args.scale_min_z_step)
     out_t.write(args.output_file, overwrite=True)
     logger.info(f'Output writen to {args.output_file}')

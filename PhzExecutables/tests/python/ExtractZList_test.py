@@ -63,6 +63,7 @@ class TestExtractPpPdf(object):
             assert '--skip_n_first' in help_txt
             assert '--max_record' in help_txt
             assert '--output_file' in help_txt
+            assert '--scale_min_z_step' in help_txt
 
         args = parser.parse_args(['--input_catalog','test_path'])
         #check the default values
@@ -72,6 +73,7 @@ class TestExtractPpPdf(object):
         assert args.skip_n_first == 0
         assert args.max_record == -1
         assert args.output_file == ''
+        assert not args.scale_min_z_step
 
     def test_extract_sub_sample(self):
         # given
@@ -119,6 +121,16 @@ class TestExtractPpPdf(object):
 
         zs = [1,2,10,11,20,21,11,10]
         step = 5
+        extracted = worker.group_z(zs, step)
+        assert len(extracted)==3
+        for z in [1,10,20]:
+            assert z in extracted.keys()
+        assert len(extracted[1])==2
+        assert len(extracted[10])==4
+        assert len(extracted[20])==2
+
+        zs = [1,1.15,10,11,20,22,11,10]
+        step = 0.1
         extracted = worker.group_z(zs, step)
         assert len(extracted)==3
         for z in [1,10,20]:
