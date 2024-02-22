@@ -55,7 +55,7 @@ def defineSpecificProgramOptions():
     parser.add_argument('-mr','--max_record', type=int, default='-1',
                         help='If>0 limit the number of object taken into account (default n=-1)')
     parser.add_argument('-of','--output_file', type=str, default='',
-                        help='Path to the fits file containing the redshift list')
+                        help='Path to the file containing the redshift list (format based on the extention to be in [.fits,.csv,.dat]')
 
     return parser
 
@@ -69,16 +69,21 @@ def extract_sub_sample(zs, first, max_number):
 
 def group_z(zs, min_step, do_scale_step=False):
     zs_extracted = {}
+    total=len(zs)
+    counter=0
     for z in zs:
         if np.isfinite(z):
            found = False
            for z_know in zs_extracted.keys():
                if np.isclose(z, z_know, atol=min_step*(1+do_scale_step*z_know)):
                    zs_extracted[z_know].append(z)
-                   foud=True
+                   found=True
                    break
            if not found:
                zs_extracted[z]=[z]
+        counter+=1
+        if counter%20==0:
+            logger.info(f'Processed {counter}/{total} sources.')
     return zs_extracted
 
 def get_out_table(zs_extracted):
@@ -89,13 +94,26 @@ def get_out_table(zs_extracted):
 
 #--------------------------
 def mainMethod(args):
-
+    _, ext = os.path.splitext(args.output_file)
+    if ext not in ['.fits','.dat','.csv']:
+       raise ValueError(f'Unrecognised output file extention ({ext})')
     zs = extract_sub_sample(Table.read(args.input_catalog)[args.ref_z_col], args.skip_n_first, args.max_record)
     logger.info(f'Read {len(zs)} records from file {args.input_catalog} starting at record {args.skip_n_first}')
 
-    zs_extracted = group_z(zs, args.min_z_step)
-    logger.info(f'Found {len(zs_extracted)} distinct zs (with tolerence {args.min_z_step}')
+    do_scale=0
+    if args.scale_min_z_step:
+        do_scale=1
 
-    out_t = get_out_table(zs_extracted, args.scale_min_z_step)
-    out_t.write(args.output_file, overwrite=True)
+    zs_extracted = group_z(zs, args.min_z_step, do_scale)
+    logger.info(f'Found {len(zs_extracted)} distinct zs (with tolerence {args.min_z_step})')
+
+    out_t = get_out_table(zs_extracted)
+
+    if ext == '.fits':
+        out_t.write(args.output_file, format='fits', overwrite=True)
+    elif  ext == '.dat':
+        out_t.write(args.output_file, format='ascii.no_header', overwrite=True)
+    else:
+        out_t.write(args.output_file, format='csv', overwrite=True)
+
     logger.info(f'Output writen to {args.output_file}')
