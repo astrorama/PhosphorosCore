@@ -102,12 +102,13 @@ GalacticCorrectionSingleGridCreator::GalacticCorrectionSingleGridCreator(
     std::shared_ptr<Euclid::XYDataset::XYDatasetProvider>       reddening_curve_provider,
     const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
     IgmAbsorptionFunction igm_absorption_function, NormalizationFunction normalization_function,
-    XYDataset::QualifiedName milky_way_reddening)
+    NormalizationFunction normalization_pp_function, XYDataset::QualifiedName milky_way_reddening)
     : m_sed_provider{sed_provider}
     , m_reddening_curve_provider{reddening_curve_provider}
     , m_filter_provider(filter_provider)
     , m_igm_absorption_function{igm_absorption_function}
     , m_normalization_function{normalization_function}
+    , m_pp_normalization_function{normalization_pp_function}
     , m_milky_way_reddening{milky_way_reddening} {}
 
 GalacticCorrectionSingleGridCreator::~GalacticCorrectionSingleGridCreator() {
@@ -215,7 +216,7 @@ GalacticCorrectionSingleGridCreator::createGrid(const PhzDataModel::ModelAxesTup
 
   auto reddening_curve_list = std::get<PhzDataModel::ModelParameter::REDDENING_CURVE>(parameter_space);
   auto reddening_curve_map  = convertToFunction(
-       buildMap(*m_reddening_curve_provider, reddening_curve_list.begin(), reddening_curve_list.end()));
+      buildMap(*m_reddening_curve_provider, reddening_curve_list.begin(), reddening_curve_list.end()));
 
   // Define the functions and the algorithms based on the Functors
   PhzModeling::ModelDatasetGrid::ReddeningFunction reddening_function{PhzModeling::ExtinctionFunctor{}};
@@ -224,7 +225,7 @@ GalacticCorrectionSingleGridCreator::createGrid(const PhzDataModel::ModelAxesTup
   // Create the model grid
   auto model_grid = PhzModeling::ModelDatasetGrid(parameter_space, std::move(sed_map), std::move(reddening_curve_map),
                                                   reddening_function, redshift_function, m_igm_absorption_function,
-                                                  m_normalization_function);
+                                                  m_normalization_function, m_normalization_function);
 
   // Create the photometry Grid
   auto correction_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list);

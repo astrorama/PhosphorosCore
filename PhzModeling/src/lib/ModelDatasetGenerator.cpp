@@ -24,19 +24,19 @@
  */
 
 #include "PhzModeling/ModelDatasetGenerator.h"
-#include "XYDataset/XYDataset.h"
 #include "PhzDataModel/Sed.h"
+#include "XYDataset/XYDataset.h"
 
 namespace Euclid {
 namespace PhzModeling {
 
-
 ModelDatasetGenerator::ModelDatasetGenerator(
     const PhzDataModel::ModelAxesTuple&                                             parameter_space,
-    const std::map<XYDataset::QualifiedName, PhzDataModel::Sed>&                 sed_map,
+    const std::map<XYDataset::QualifiedName, PhzDataModel::Sed>&                    sed_map,
     const std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>>& reddening_curve_map,
     size_t current_index, const ReddeningFunction& reddening_function, const RedshiftFunction& redshift_function,
-    const IgmAbsorptionFunction& igm_function, const NormalizationFunction& normalization_function)
+    const IgmAbsorptionFunction& igm_function, const NormalizationFunction& normalization_function,
+    const NormalizationFunction& pp_normalization_function)
     : m_index_helper{GridContainer::makeGridIndexHelper(parameter_space)}
     , m_parameter_space(parameter_space)
     , m_current_index{current_index}
@@ -46,7 +46,8 @@ ModelDatasetGenerator::ModelDatasetGenerator(
     , m_reddening_function(reddening_function)
     , m_redshift_function(redshift_function)
     , m_igm_function(igm_function)
-    , m_normalization_function(normalization_function) {}
+    , m_normalization_function(normalization_function)
+    , m_pp_normalization_function(pp_normalization_function) {}
 
 ModelDatasetGenerator::ModelDatasetGenerator(const ModelDatasetGenerator& other)
     : m_index_helper{GridContainer::makeGridIndexHelper(other.m_parameter_space)}
@@ -58,7 +59,8 @@ ModelDatasetGenerator::ModelDatasetGenerator(const ModelDatasetGenerator& other)
     , m_reddening_function(other.m_reddening_function)
     , m_redshift_function(other.m_redshift_function)
     , m_igm_function(other.m_igm_function)
-    , m_normalization_function(other.m_normalization_function) {}
+    , m_normalization_function(other.m_normalization_function)
+    , m_pp_normalization_function(other.m_pp_normalization_function) {}
 
 ModelDatasetGenerator& ModelDatasetGenerator::operator=(const ModelDatasetGenerator& other) {
   m_current_index = other.m_current_index;
@@ -139,11 +141,13 @@ PhzDataModel::Sed& ModelDatasetGenerator::operator*() {
   size_t new_z_index = m_index_helper.axisIndex(PhzDataModel::ModelParameter::Z, m_current_index);
 
   // We check if we need to recalculate the SED (for the scaling)
-   if (new_sed_index != m_current_sed_index || !m_current_sed) {
-	   auto& sed_name = std::get<PhzDataModel::ModelParameter::SED>(m_parameter_space)[new_sed_index];
-	   auto norm_sed = m_normalization_function(PhzDataModel::Sed(m_sed_map.at(sed_name)));
-	   m_current_sed.reset(new PhzDataModel::Sed(norm_sed));
-   }
+  if (new_sed_index != m_current_sed_index || !m_current_sed || !m_current_pp_norm_sed) {
+    auto& sed_name = std::get<PhzDataModel::ModelParameter::SED>(m_parameter_space)[new_sed_index];
+    auto  norm_sed = m_normalization_function(PhzDataModel::Sed(m_sed_map.at(sed_name)));
+    m_current_sed.reset(new PhzDataModel::Sed(norm_sed));
+    auto pp_norm_sed = m_pp_normalization_function(PhzDataModel::Sed(m_sed_map.at(sed_name)));
+    m_current_pp_norm_sed.reset(new PhzDataModel::Sed(pp_norm_sed));
+  }
 
   // We check if we need to recalculate the reddened SED
   if (new_sed_index != m_current_sed_index || new_reddening_curve_index != m_current_reddening_curve_index ||
@@ -162,12 +166,12 @@ PhzDataModel::Sed& ModelDatasetGenerator::operator*() {
   }
   if (new_sed_index != m_current_sed_index || new_reddening_curve_index != m_current_reddening_curve_index ||
       new_ebv_index != m_current_ebv_index || new_z_index != m_current_z_index || !m_current_redshifted_sed) {
-    double               z              = std::get<PhzDataModel::ModelParameter::Z>(m_parameter_space)[new_z_index];
+    double            z              = std::get<PhzDataModel::ModelParameter::Z>(m_parameter_space)[new_z_index];
     PhzDataModel::Sed redshifted_sed = m_redshift_function(*m_current_reddened_sed, z);
 
     auto igm_sed = m_igm_function(redshifted_sed, z);
     igm_sed.setScaling(m_current_reddened_sed->getScaling());
-    igm_sed.setDiffScaling(m_current_sed->getScaling());
+    igm_sed.setDiffScaling(m_current_pp_norm_sed->getScaling());
     m_current_redshifted_sed.reset(new PhzDataModel::Sed(igm_sed));
   }
   m_current_sed_index             = new_sed_index;

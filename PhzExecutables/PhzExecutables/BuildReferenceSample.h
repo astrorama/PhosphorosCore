@@ -30,13 +30,13 @@
 #include <functional>
 
 #include "MathUtils/function/Function.h"
+#include "PhzDataModel/Sed.h"
 #include "PhzModeling/PhotometryGridCreator.h"
 #include "PhzModeling/RedshiftFunctor.h"
 #include "PhzReferenceSample/ReferenceSample.h"
 #include "Table/TableReader.h"
 #include "XYDataset/QualifiedName.h"
 #include "XYDataset/XYDataset.h"
-#include "PhzDataModel/Sed.h"
 
 namespace Euclid {
 namespace PhzExecutables {
@@ -69,8 +69,9 @@ private:
                                                                   const XYDataset::XYDataset&     curve_data);
 
   void processCatalog(Euclid::Table::TableReader& reader, ReferenceSample::ReferenceSample& ref_sample,
-                      const PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction&        igm_function,
+                      const PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction&  igm_function,
                       const std::function<PhzDataModel::Sed(const PhzDataModel::Sed&)>& normalizer_functor,
+                      const std::function<PhzDataModel::Sed(const PhzDataModel::Sed&)>& normalizer_pp_functor,
                       XYDataset::XYDatasetProvider& reddening_provider, XYDataset::XYDatasetProvider& sed_provider,
                       const PhzModeling::RedshiftFunctor& redshiftFunctor, const std::vector<double>& pdz_bins,
                       size_t total, int64_t& i);

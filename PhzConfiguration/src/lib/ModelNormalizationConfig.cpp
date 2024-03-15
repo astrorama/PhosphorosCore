@@ -43,6 +43,7 @@ namespace PhzConfiguration {
 static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
 
 static const std::string NORMALIZATION_FILTER{"normalization-filter"};
+static const std::string NORMALIZATION_PP_FILTER{"normalization-pp-filter"};
 static const std::string NORMALIZATION_SED{"normalization-solar-sed"};
 
 ModelNormalizationConfig::ModelNormalizationConfig(long manager_id) : Configuration(manager_id) {
@@ -53,7 +54,11 @@ ModelNormalizationConfig::ModelNormalizationConfig(long manager_id) : Configurat
 
 auto ModelNormalizationConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"Model normalization options",
-           {{NORMALIZATION_FILTER.c_str(), po::value<std::string>(), "The Filter for which the normalization is done"},
+           {{NORMALIZATION_FILTER.c_str(), po::value<std::string>(),
+             "The Filter for which the normalization is done for Luminosity computation"},
+            {NORMALIZATION_PP_FILTER.c_str(), po::value<std::string>(),
+             "The Filter for which the normalization is done for PP Luminosity computation if not specified the "
+             "normalization-filter is used instead"},
             {NORMALIZATION_SED.c_str(), po::value<std::string>(),
              "Solar SED @10pc used as a reference for Models normalization"}}}};
 }
@@ -63,6 +68,14 @@ void ModelNormalizationConfig::initialize(const UserValues& args) {
     m_band = XYDataset::QualifiedName(args.find(NORMALIZATION_FILTER)->second.as<std::string>());
   } else {
     throw Elements::Exception() << "Missing " << NORMALIZATION_FILTER << " option ";
+  }
+
+  if (args.count(NORMALIZATION_PP_FILTER) > 0) {
+    m_pp_band = XYDataset::QualifiedName(args.find(NORMALIZATION_PP_FILTER)->second.as<std::string>());
+  } else {
+    logger.info() << "No " << NORMALIZATION_PP_FILTER << " provided: use the value of " << NORMALIZATION_FILTER << "("
+                  << m_band << ")";
+    m_pp_band = XYDataset::QualifiedName(args.find(NORMALIZATION_FILTER)->second.as<std::string>());
   }
 
   if (args.count(NORMALIZATION_SED) > 0) {
@@ -84,6 +97,17 @@ void ModelNormalizationConfig::initialize(const UserValues& args) {
   auto flux = normalizer_functor.getReferenceFlux();
 
   m_solar_MAG_AB = -2.5 * log10(flux / 3.631E9);
+
+  if (m_band == m_pp_band) {
+    m_pp_solar_MAG_AB = m_solar_MAG_AB;
+  } else {
+    PhzModeling::NormalizationFunctor normalizer_pp_functor =
+        PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(
+            filter_provider, m_pp_band, sun_sed_provider, m_solar_sed);
+    auto flux = normalizer_functor.getReferenceFlux();
+
+    m_pp_solar_MAG_AB = -2.5 * log10(flux / 3.631E9);
+  }
 }
 
 // Returns the band of the luminosity normalization
@@ -92,6 +116,13 @@ const XYDataset::QualifiedName& ModelNormalizationConfig::getNormalizationFilter
     throw Elements::Exception() << "Call to getNormalizationFilter() on a not initialized instance.";
   }
   return m_band;
+}
+
+const XYDataset::QualifiedName& ModelNormalizationConfig::getPpNormalizationFilter() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getPpNormalizationFilter() on a not initialized instance.";
+  }
+  return m_pp_band;
 }
 
 // Returns the band of the luminosity normalization
@@ -107,6 +138,13 @@ double ModelNormalizationConfig::getSolarMagAB() const {
     throw Elements::Exception() << "Call to getSolarMagAB() on a not initialized instance.";
   }
   return m_solar_MAG_AB;
+}
+
+double ModelNormalizationConfig::getPpSolarMagAB() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getPpSolarMagAB() on a not initialized instance.";
+  }
+  return m_pp_solar_MAG_AB;
 }
 
 }  // namespace PhzConfiguration

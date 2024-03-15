@@ -68,16 +68,22 @@ public:
     auto& igm_abs_func = config_manager.template getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
     auto  cosmology    = config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
 
+    auto sun_sed_name = config_manager.template getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
     auto lum_filter_name =
         config_manager.template getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
-    auto sun_sed_name = config_manager.template getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
+    auto lum_pp_filter_name =
+        config_manager.template getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter();
 
     auto normalizer_functor =
         Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
             filter_provider, lum_filter_name, sed_provider, sun_sed_name);
 
-    Euclid::PhzModeling::SparseGridCreator creator{sed_provider, reddening_provider, filter_provider, igm_abs_func,
-                                                   normalizer_functor};
+    auto normalizer_pp_functor =
+        Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
+            filter_provider, lum_pp_filter_name, sed_provider, sun_sed_name);
+
+    Euclid::PhzModeling::SparseGridCreator creator{sed_provider, reddening_provider, filter_provider,
+                                                   igm_abs_func, normalizer_functor, normalizer_pp_functor};
 
     auto param_space_map = ComputeModelGridTraits::getParameterSpaceRegions(config_manager);
     auto results         = creator.createGrid(param_space_map, filter_list, cosmology,

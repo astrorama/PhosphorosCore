@@ -56,6 +56,9 @@ void save(Archive& ar, const Euclid::PhzDataModel::PhotometryGridInfo& t, const 
   // Store the Luminosity Filter
   ar << t.luminosity_filter_name.qualifiedName();
 
+  // Store the PP Luminosity Filter
+  ar << t.luminosity_pp_filter_name.qualifiedName();
+
   // Store the names of the filters as strings
   std::vector<std::string> filter_names_as_strings{};
   for (auto& name : t.filter_names) {
@@ -82,7 +85,12 @@ void load(Archive& ar, Euclid::PhzDataModel::PhotometryGridInfo& t, const unsign
   std::string lum_filter;
   ar >> lum_filter;
   t.luminosity_filter_name = Euclid::XYDataset::QualifiedName(lum_filter);
+  // Read PP Luminosity filter
+  std::string lum_pp_filter;
+  ar >> lum_pp_filter;
+  t.luminosity_pp_filter_name = Euclid::XYDataset::QualifiedName(lum_pp_filter);
   // Read the photometry filters
+
   std::vector<std::string> names_as_strings;
   ar >> names_as_strings;
   for (auto& name : names_as_strings) {

@@ -58,7 +58,8 @@ public:
                                    std::shared_ptr<Euclid::XYDataset::XYDatasetProvider>       reddening_curve_provider,
                                    const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
                                    IgmAbsorptionFunction                                       igm_absorption_function,
-                                   NormalizationFunction normalization_function, std::vector<double> delta_lambda);
+                                   NormalizationFunction                                       normalization_function,
+                                   NormalizationFunction normalization_pp_function, std::vector<double> delta_lambda);
 
   virtual ~FilterVariationSingleGridCreator();
 
@@ -98,6 +99,7 @@ private:
   std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> m_filter_provider;
   IgmAbsorptionFunction                                 m_igm_absorption_function;
   NormalizationFunction                                 m_normalization_function;
+  NormalizationFunction                                 m_pp_normalization_function;
 
   std::vector<double> m_delta_lambda;
 };

@@ -37,7 +37,7 @@ class QualifiedName;
 }  // namespace XYDataset
 
 namespace PhzDataModel {
- class Sed;
+class Sed;
 }
 
 namespace PhzModeling {
@@ -95,7 +95,8 @@ public:
       const std::map<XYDataset::QualifiedName, PhzDataModel::Sed>&                    sed_map,
       const std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>>& reddening_curve_map,
       size_t current_index, const ReddeningFunction& reddening_function, const RedshiftFunction& redshift_function,
-      const IgmAbsorptionFunction& igm_function, const NormalizationFunction& normalization_function);
+      const IgmAbsorptionFunction& igm_function, const NormalizationFunction& normalization_function,
+      const NormalizationFunction& pp_normalization_function);
 
   /**
    * @brief Copy constructor.
@@ -255,6 +256,7 @@ private:
 
   // The latest calculated reddened and redshifted SEDs
   std::unique_ptr<PhzDataModel::Sed> m_current_sed;
+  std::unique_ptr<PhzDataModel::Sed> m_current_pp_norm_sed;
   std::unique_ptr<PhzDataModel::Sed> m_current_reddened_sed;
   std::unique_ptr<PhzDataModel::Sed> m_current_redshifted_sed;
 
@@ -268,6 +270,7 @@ private:
   RedshiftFunction      m_redshift_function;
   IgmAbsorptionFunction m_igm_function;
   NormalizationFunction m_normalization_function;
+  NormalizationFunction m_pp_normalization_function;
 
 };  // End of ModelDatasetGenerator class
 

@@ -67,15 +67,22 @@ public:
   // Returns the band of the luminosity normalization
   const XYDataset::QualifiedName& getNormalizationFilter() const;
 
+  // Returns the band of the PP luminosity normalization
+  const XYDataset::QualifiedName& getPpNormalizationFilter() const;
+
   // Returns the solar SED at 10 pc use as reference for luminosity normalization
   const XYDataset::QualifiedName& getReferenceSolarSed() const;
 
   double getSolarMagAB() const;
 
+  double getPpSolarMagAB() const;
+
 private:
   XYDataset::QualifiedName m_band{"uninitialized"};
+  XYDataset::QualifiedName m_pp_band{"uninitialized"};
   XYDataset::QualifiedName m_solar_sed{"uninitialized"};
-  double                   m_solar_MAG_AB = 0;
+  double                   m_solar_MAG_AB    = 0;
+  double                   m_pp_solar_MAG_AB = 0;
 
 }; /* End of ComputeModelGridConfig class */
 
