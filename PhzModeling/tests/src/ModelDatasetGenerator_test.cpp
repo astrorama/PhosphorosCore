@@ -60,7 +60,7 @@ struct ModelDatasetGenerator_Fixture {
 
   class DummyNormalizing {
   public:
-    DummyNormalizing(double factor) : m_factor{factor} {}
+    DummyNormalizing(double factor, double scaling = 3.0) : m_factor{factor}, m_scaling{scaling} {}
 
     virtual ~DummyNormalizing() = default;
     Euclid::PhzDataModel::Sed operator()(const Euclid::PhzDataModel::Sed& sed) const {
@@ -68,11 +68,12 @@ struct ModelDatasetGenerator_Fixture {
       for (auto& sed_pair : sed) {
         normalized_values.push_back(std::make_pair(sed_pair.first, sed_pair.second * m_factor));
       }
-      return Euclid::PhzDataModel::Sed{std::move(normalized_values), 3.0, 5.0};
+      return Euclid::PhzDataModel::Sed::factory(std::move(normalized_values), m_scaling, 5.0);
     }
 
   private:
-    double m_factor = 1.0;
+    double m_factor  = 1.0;
+    double m_scaling = 1.0;
   };
 
   class NoReddening {
@@ -142,6 +143,8 @@ struct ModelDatasetGenerator_Fixture {
       std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&)>(DummyNormalizing{1.0});
   std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&)> m_norm_function_11 =
       std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&)>(DummyNormalizing{11.0});
+  std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&)> m_norm_function_11_5 =
+      std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&)>(DummyNormalizing{11.0, 5.0});
 
   std::function<Euclid::PhzDataModel::Sed(const Euclid::PhzDataModel::Sed&, const Euclid::MathUtils::Function&, double)>
       m_no_reddening_function = std::function<Euclid::PhzDataModel::Sed(
@@ -356,4 +359,32 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
   }
 }
 
+BOOST_FIXTURE_TEST_CASE(diff_scaling_test, ModelDatasetGenerator_Fixture) {
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing differential scaling");
+  BOOST_TEST_MESSAGE(" ");
+  std::vector<std::vector<std::pair<double, double>>> arg_seds{sed1, sed2, sed3};
+  std::vector<DummyExtinctionFunction>                extinction_functions{red1, red2, red3};
+
+  Euclid::PhzModeling::ModelDatasetGenerator normalized_model_generator = {
+      parameter_space, m_sed_map,         m_reddening_curve_map, 0, m_reddening_function, m_no_redshift_function,
+      m_igm_function,  m_norm_function_1, m_norm_function_11_5};
+  for (auto& sed : arg_seds) {
+    for (auto& reddening : extinction_functions) {
+      for (auto& ebv : ebvs) {
+        for (size_t i = 0; i < zs.size(); ++i) {
+
+          auto& dataset_0 = *normalized_model_generator;
+
+          BOOST_CHECK_EQUAL(3, dataset_0.size());
+
+          BOOST_CHECK_CLOSE(dataset_0.getScaling(), 3.0, 0.001);
+          BOOST_CHECK_CLOSE(dataset_0.getDiffScaling(), 5.0, 0.001);
+
+          ++normalized_model_generator;
+        }
+      }
+    }
+  }
+}
 BOOST_AUTO_TEST_SUITE_END()
