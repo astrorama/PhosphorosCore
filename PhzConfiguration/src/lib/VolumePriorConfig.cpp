@@ -24,6 +24,7 @@
 
 #include "PhzConfiguration/VolumePriorConfig.h"
 #include "ElementsKernel/Exception.h"
+#include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
@@ -34,6 +35,8 @@ namespace po = boost::program_options;
 
 namespace Euclid {
 namespace PhzConfiguration {
+
+static Elements::Logging logger = Elements::Logging::getLogger("VolumePriorConfig");
 
 static const std::string VOLUME_PRIOR{"volume-prior"};
 static const std::string VOLUME_PRIOR_EFFECTIVENESS{"volume-prior-effectiveness"};
@@ -65,9 +68,20 @@ void VolumePriorConfig::preInitialize(const UserValues& args) {
 }
 
 void VolumePriorConfig::initialize(const UserValues& args) {
+  m_effectiveness = args.at(VOLUME_PRIOR_EFFECTIVENESS).as<double>();
   if (args.at(VOLUME_PRIOR).as<std::string>() == "YES") {
-    double           effectiveness = args.at(VOLUME_PRIOR_EFFECTIVENESS).as<double>();
-    auto&            cosmology     = getDependency<CosmologicalParameterConfig>().getCosmologicalParam();
+    internal_initialization();
+  }
+}
+
+void VolumePriorConfig::forceOn() {
+  internal_initialization();
+}
+
+void VolumePriorConfig::internal_initialization() {
+  if (!m_added) {
+    logger.info() << "Adding the Volume prior";
+    auto&            cosmology = getDependency<CosmologicalParameterConfig>().getCosmologicalParam();
     std::set<double> zs{};
     for (auto& pair : getDependency<PhotometryGridConfig>().getPhotometryGridInfo().region_axes_map) {
       for (auto z : std::get<PhzDataModel::ModelParameter::Z>(pair.second)) {
@@ -75,7 +89,11 @@ void VolumePriorConfig::initialize(const UserValues& args) {
       }
     }
     std::vector<double> expected_redshifts{zs.begin(), zs.end()};
-    getDependency<PriorConfig>().addPrior(PhzLikelihood::VolumePrior(cosmology, expected_redshifts, effectiveness));
+    getDependency<PriorConfig>().addPrior(PhzLikelihood::VolumePrior(cosmology, expected_redshifts, m_effectiveness));
+
+    m_added = true;
+  } else {
+    logger.info() << "Volume prior already added";
   }
 }
 

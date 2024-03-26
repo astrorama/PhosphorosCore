@@ -42,16 +42,16 @@ VolumePrior::VolumePrior(const PhysicsUtils::CosmologicalParameters& cosmology,
     }
   }
 
-  // Normalize so the peak is at 1 and everything is shifted by (1-effectiveness)
-  for (auto& pair : m_precomputed) {
-    pair.second = (1 - effectiveness) + pair.second * effectiveness / max;
-  }
-
   // The zero redshift will have zero volume, which will make the prior rejecting
   // all models at rest frame. To avoid that we compute the volume prior for a
   // slightly bigger value.
   if (m_precomputed.count(0) > 0 && m_precomputed[0] == 0) {
     m_precomputed[0] = PhysicsUtils::CosmologicalDistances{}.dimensionlessComovingVolumeElement(1E-4, cosmology);
+  }
+
+  // Normalize so the peak is at 1 and everything is shifted by (1-effectiveness)
+  for (auto& pair : m_precomputed) {
+    pair.second = (1 - effectiveness) + pair.second * effectiveness / max;
   }
 
   // We convert the precomputed to log space

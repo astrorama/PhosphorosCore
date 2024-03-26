@@ -46,6 +46,14 @@ public:
 
   void initialize(const UserValues& args) override;
 
+  void forceOn();
+
+private:
+  void internal_initialization();
+
+  double m_effectiveness;
+  bool   m_added = false;
+
   /**
    * @brief Destructor
    */

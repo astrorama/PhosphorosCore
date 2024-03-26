@@ -33,6 +33,7 @@
 #include "PhzConfiguration/LuminositySedGroupConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
+#include "PhzConfiguration/VolumePriorConfig.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include <PhzDataModel/ArchiveFormat.h>
 #include <boost/archive/binary_iarchive.hpp>
@@ -60,6 +61,7 @@ namespace PhzConfiguration {
 
 static const std::string LUMINOSITY_PRIOR{"luminosity-prior"};
 static const std::string LUMINOSITY_PRIOR_EFFECTIVENESS{"luminosity-prior-effectiveness"};
+static const std::string LUMINOSITY_PRIOR_PERMPC3{"luminosity-prior-per-mpc3"};
 
 static Elements::Logging logger = Elements::Logging::getLogger("LuminosityPriorConfig");
 
@@ -73,6 +75,7 @@ LuminosityPriorConfig::LuminosityPriorConfig(long manager_id) : Configuration(ma
   declareDependency<CosmologicalParameterConfig>();
   declareDependency<ScaleFactorMarginalizationConfig>();
   declareDependency<ModelNormalizationConfig>();
+  declareDependency<VolumePriorConfig>();
 }
 
 auto LuminosityPriorConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -80,7 +83,9 @@ auto LuminosityPriorConfig::getProgramOptions() -> std::map<std::string, OptionD
            {{LUMINOSITY_PRIOR.c_str(), po::value<std::string>()->default_value("NO"),
              "If added, turn Luminosity Prior on  (YES/NO, default: NO)"},
             {LUMINOSITY_PRIOR_EFFECTIVENESS.c_str(), po::value<double>()->default_value(1.),
-             "A value in the range [0,1] showing how strongly to apply the prior"}}}};
+             "A value in the range [0,1] showing how strongly to apply the prior"},
+            {LUMINOSITY_PRIOR_PERMPC3.c_str(), po::value<std::string>()->default_value("YES"),
+             "Set if the luminosity function is in 1/mpc³ (YES/NO, default: YES)"}}}};
 }
 
 void LuminosityPriorConfig::preInitialize(const UserValues& args) {
@@ -103,6 +108,9 @@ void LuminosityPriorConfig::preInitialize(const UserValues& args) {
 void LuminosityPriorConfig::initialize(const UserValues& args) {
   m_is_configured =
       args.count(LUMINOSITY_PRIOR) == 1 && args.find(LUMINOSITY_PRIOR)->second.as<std::string>().compare("YES") == 0;
+
+  m_permpc3 = args.count(LUMINOSITY_PRIOR_PERMPC3) == 1 &&
+              args.find(LUMINOSITY_PRIOR_PERMPC3)->second.as<std::string>().compare("YES") == 0;
 
   if (m_is_configured) {
 
@@ -133,6 +141,14 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
 
     getDependency<PriorConfig>().addPrior(prior);
   }
+
+  // Volume prior manipulation
+  if (m_is_configured && m_permpc3) {
+    // force the volume prior on
+    logger.info()
+        << "Luminosity Prior defined in 1/mpc³ need the Volume Prior on to be meaningful. Forcing the Volume Prior on.";
+    getDependency<VolumePriorConfig>().forceOn();
+  }
 }
 
 const PhzDataModel::PhotometryGrid& LuminosityPriorConfig::getLuminosityModelGrid() {
@@ -153,6 +169,14 @@ bool LuminosityPriorConfig::getIsLuminosityPriorEnabled() {
   }
 
   return m_is_configured;
+}
+
+bool LuminosityPriorConfig::getPerMpc3() {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getPerMpc3() on a not initialized instance.";
+  }
+
+  return m_permpc3;
 }
 
 }  // namespace PhzConfiguration
