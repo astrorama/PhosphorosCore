@@ -96,7 +96,7 @@ public:
       const std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>>& reddening_curve_map,
       size_t current_index, const ReddeningFunction& reddening_function, const RedshiftFunction& redshift_function,
       const IgmAbsorptionFunction& igm_function, const NormalizationFunction& normalization_function,
-      const NormalizationFunction& pp_normalization_function);
+      const NormalizationFunction& pp_normalization_function, double sed_normalization_value);
 
   /**
    * @brief Copy constructor.
@@ -271,6 +271,7 @@ private:
   IgmAbsorptionFunction m_igm_function;
   NormalizationFunction m_normalization_function;
   NormalizationFunction m_pp_normalization_function;
+  double                m_sed_normalization_value;
 
 };  // End of ModelDatasetGenerator class
 

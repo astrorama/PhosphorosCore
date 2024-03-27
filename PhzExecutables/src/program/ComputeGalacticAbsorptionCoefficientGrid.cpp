@@ -109,6 +109,11 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
         Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
             filter_provider, lum_pp_filter_name, sed_provider, sun_sed_name);
 
+    double pp_normalization_value = 0;
+    if (!config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter()) {
+      pp_normalization_value = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationValue();
+    }
+
     std::map<std::string, PhzDataModel::PhotometryGrid> result_map{};
 
     // Compute the total number of models
@@ -118,8 +123,8 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
     }
 
     PhzGalacticCorrection::GalacticCorrectionSingleGridCreator grid_creator{
-        sed_provider,       reddening_provider,    filter_provider,         igm_abs_func,
-        normalizer_functor, normalizer_pp_functor, miky_way_reddening_curve};
+        sed_provider,       reddening_provider,    filter_provider,        igm_abs_func,
+        normalizer_functor, normalizer_pp_functor, pp_normalization_value, miky_way_reddening_curve};
     Euclid::PhzExecutables::ProgressReporter progress_listener{logger, false};
     size_t                                   already_done = 0;
     for (auto& grid_pair : model_phot_grid.region_axes_map) {

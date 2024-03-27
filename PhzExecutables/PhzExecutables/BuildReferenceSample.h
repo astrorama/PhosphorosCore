@@ -72,9 +72,9 @@ private:
                       const PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction&  igm_function,
                       const std::function<PhzDataModel::Sed(const PhzDataModel::Sed&)>& normalizer_functor,
                       const std::function<PhzDataModel::Sed(const PhzDataModel::Sed&)>& normalizer_pp_functor,
-                      XYDataset::XYDatasetProvider& reddening_provider, XYDataset::XYDatasetProvider& sed_provider,
-                      const PhzModeling::RedshiftFunctor& redshiftFunctor, const std::vector<double>& pdz_bins,
-                      size_t total, int64_t& i);
+                      double pp_normalization_value, XYDataset::XYDatasetProvider& reddening_provider,
+                      XYDataset::XYDatasetProvider& sed_provider, const PhzModeling::RedshiftFunctor& redshiftFunctor,
+                      const std::vector<double>& pdz_bins, size_t total, int64_t& i);
 };  // End of ComputeReferenceSample class
 
 }  // namespace PhzExecutables

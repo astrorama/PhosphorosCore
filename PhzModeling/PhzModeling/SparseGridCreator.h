@@ -80,7 +80,7 @@ public:
                     std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> reddening_curve_provider,
                     std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
                     IgmAbsorptionFunction igm_absorption_function, NormalizationFunction normalization_function,
-                    NormalizationFunction pp_normalization_function);
+                    NormalizationFunction pp_normalization_function, double pp_normalization_value);
   /**
    * @brief destructor.
    */
@@ -120,6 +120,7 @@ private:
   IgmAbsorptionFunction                                 m_igm_absorption_function;
   NormalizationFunction                                 m_normalization_function;
   NormalizationFunction                                 m_pp_normalization_function;
+  double                                                m_pp_normalization_value;
 };
 
 }  // namespace PhzModeling

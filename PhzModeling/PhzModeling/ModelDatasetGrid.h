@@ -116,7 +116,7 @@ public:
                    std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> reddening_curve_map,
                    ReddeningFunction reddening_function, RedshiftFunction redshift_function,
                    IgmAbsorptionFunction igm_function, NormalizationFunction normalization_function,
-                   NormalizationFunction pp_normalization_function);
+                   NormalizationFunction pp_normalization_function, double pp_normalization_value);
 
   /**
    * @brief begin function for the iteration.
@@ -138,6 +138,7 @@ private:
   IgmAbsorptionFunction                                                    m_igm_function;
   NormalizationFunction                                                    m_normalization_function;
   NormalizationFunction                                                    m_pp_normalization_function;
+  double                                                                   m_pp_normalization_value;
 };
 
 }  // namespace PhzModeling

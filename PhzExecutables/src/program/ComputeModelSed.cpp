@@ -93,15 +93,23 @@ class ComputeModelSed : public Elements::Program {
     auto normalizer_function =
         Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
             filter_provider, lum_filter_name, sun_sed_provider, sun_sed_name);
+
     auto normalizer_pp_function =
         Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
             filter_provider, lum_pp_filter_name, sun_sed_provider, sun_sed_name);
+
     auto normalizer_functor = Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(
         filter_provider, lum_filter_name, sun_sed_provider, sun_sed_name);
 
+    double pp_normalization_value = 0;
+    if (!config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter()) {
+      pp_normalization_value = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationValue();
+    }
+
     auto             redshiftFunctor = config_manager.getConfiguration<RedshiftFunctorConfig>().getRedshiftFunctor();
-    ModelDatasetGrid grid{grid_axes,       std::move(sed_map), std::move(red_curve_map), ExtinctionFunctor{},
-                          redshiftFunctor, igm_function,       normalizer_function,      normalizer_pp_function};
+    ModelDatasetGrid grid{grid_axes,           std::move(sed_map),     std::move(red_curve_map),
+                          ExtinctionFunctor{}, redshiftFunctor,        igm_function,
+                          normalizer_function, normalizer_pp_function, pp_normalization_value};
 
     ModelScalingGrid scaling_grid{grid_axes, std::move(sed_map_2), std::move(red_curve_map_2), ExtinctionFunctor{},
                                   normalizer_functor};

@@ -33,7 +33,8 @@ ModelDatasetGrid::ModelDatasetGrid(
     std::map<XYDataset::QualifiedName, XYDataset::XYDataset>                 sed_map,
     std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> reddening_curve_map,
     ReddeningFunction reddening_function, RedshiftFunction redshift_function, IgmAbsorptionFunction igm_function,
-    NormalizationFunction normalization_function, NormalizationFunction pp_normalization_function)
+    NormalizationFunction normalization_function, NormalizationFunction pp_normalization_function,
+    double pp_normalization_value)
     : PhzDataModel::PhzGrid<ModelDatasetCellManager>(parameter_space) {
 
   m_sed_map = std::map<XYDataset::QualifiedName, PhzDataModel::Sed>{};
@@ -52,6 +53,7 @@ ModelDatasetGrid::ModelDatasetGrid(
   size_t reddening_curve_size = std::get<PhzDataModel::ModelParameter::REDDENING_CURVE>(parameter_space).size();
   size_t sed_size             = std::get<PhzDataModel::ModelParameter::SED>(parameter_space).size();
   m_size                      = z_size * ebv_size * reddening_curve_size * sed_size;
+  m_pp_normalization_value    = pp_normalization_value;
 }
 
 PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator ModelDatasetGrid::begin() {
@@ -59,14 +61,14 @@ PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator ModelDatasetGrid::begin
   return PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator(
       *this, ModelDatasetGenerator(getAxesTuple(), m_sed_map, m_reddening_curve_map, 0, m_reddening_function,
                                    m_redshift_function, m_igm_function, m_normalization_function,
-                                   m_pp_normalization_function));
+                                   m_pp_normalization_function, m_pp_normalization_value));
 }
 
 PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator ModelDatasetGrid::end() {
   return PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator(
       *this, ModelDatasetGenerator(getAxesTuple(), m_sed_map, m_reddening_curve_map, m_size, m_reddening_function,
                                    m_redshift_function, m_igm_function, m_normalization_function,
-                                   m_pp_normalization_function));
+                                   m_pp_normalization_function, m_pp_normalization_value));
 }
 
 }  // namespace PhzModeling

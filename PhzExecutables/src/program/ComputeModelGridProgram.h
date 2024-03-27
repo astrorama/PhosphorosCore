@@ -82,8 +82,14 @@ public:
         Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
             filter_provider, lum_pp_filter_name, sed_provider, sun_sed_name);
 
-    Euclid::PhzModeling::SparseGridCreator creator{sed_provider, reddening_provider, filter_provider,
-                                                   igm_abs_func, normalizer_functor, normalizer_pp_functor};
+    double pp_normalization_value = 0;
+    if (!config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter()) {
+      pp_normalization_value = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationValue();
+    }
+
+    Euclid::PhzModeling::SparseGridCreator creator{sed_provider,          reddening_provider, filter_provider,
+                                                   igm_abs_func,          normalizer_functor, normalizer_pp_functor,
+                                                   pp_normalization_value};
 
     auto param_space_map = ComputeModelGridTraits::getParameterSpaceRegions(config_manager);
     auto results         = creator.createGrid(param_space_map, filter_list, cosmology,

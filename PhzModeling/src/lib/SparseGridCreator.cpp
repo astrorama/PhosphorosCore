@@ -53,13 +53,14 @@ SparseGridCreator::SparseGridCreator(std::shared_ptr<XYDataset::XYDatasetProvide
                                      std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider,
                                      IgmAbsorptionFunction                         igm_absorption_function,
                                      NormalizationFunction                         normalization_function,
-                                     NormalizationFunction                         pp_normalization_function)
+                                     NormalizationFunction pp_normalization_function, double pp_normalization_value)
     : m_sed_provider{sed_provider}
     , m_reddening_curve_provider{reddening_curve_provider}
     , m_filter_provider(filter_provider)
     , m_igm_absorption_function{igm_absorption_function}
     , m_normalization_function{normalization_function}
-    , m_pp_normalization_function{pp_normalization_function} {}
+    , m_pp_normalization_function{pp_normalization_function}
+    , m_pp_normalization_value{pp_normalization_value} {}
 
 std::map<std::string, PhzDataModel::PhotometryGrid>
 SparseGridCreator::createGrid(const std::map<std::string, PhzDataModel::ModelAxesTuple>& parameter_space_map,
@@ -71,7 +72,8 @@ SparseGridCreator::createGrid(const std::map<std::string, PhzDataModel::ModelAxe
 
   PhzModeling::PhotometryGridCreator creator{std::move(m_sed_provider),    std::move(m_reddening_curve_provider),
                                              std::move(m_filter_provider), std::move(m_igm_absorption_function),
-                                             m_normalization_function,     m_normalization_function};
+                                             m_normalization_function,     m_normalization_function,
+                                             m_pp_normalization_value};
 
   // Compute the total number of models
   size_t total = 0;
