@@ -83,8 +83,11 @@ public:
 
   bool getIsLuminosityPriorEnabled();
 
+  bool getPerMpc3();
+
 private:
   bool                                          m_is_configured         = false;
+  bool                                          m_permpc3               = false;
   std::shared_ptr<PhzDataModel::PhotometryGrid> m_luminosity_model_grid = nullptr;
 
 }; /* End of LuminosityPriorConfig class */

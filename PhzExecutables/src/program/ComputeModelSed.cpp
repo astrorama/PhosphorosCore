@@ -37,8 +37,8 @@
 #include "PhzModeling/ExtinctionFunctor.h"
 #include "PhzModeling/ModelDatasetGrid.h"
 #include "PhzModeling/ModelScalingGrid.h"
-#include "PhzModeling/NormalizationFunctorFactory.h"
 #include "PhzModeling/NormalizationFunctor.h"
+#include "PhzModeling/NormalizationFunctorFactory.h"
 
 using std::cout;
 using std::map;
@@ -84,23 +84,35 @@ class ComputeModelSed : public Elements::Program {
     }
     auto& igm_function = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
 
-    auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
-    auto sun_sed_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
+    auto lum_filter_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
+    auto lum_pp_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter();
+    auto sun_sed_name       = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
 
     auto filter_provider  = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
     auto sun_sed_provider = config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider();
     auto normalizer_function =
         Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
             filter_provider, lum_filter_name, sun_sed_provider, sun_sed_name);
-    auto normalizer_functor =
-           Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(
-               filter_provider, lum_filter_name, sun_sed_provider, sun_sed_name);
+
+    auto normalizer_pp_function =
+        Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
+            filter_provider, lum_pp_filter_name, sun_sed_provider, sun_sed_name);
+
+    auto normalizer_functor = Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(
+        filter_provider, lum_filter_name, sun_sed_provider, sun_sed_name);
+
+    double pp_normalization_value = 0;
+    if (!config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter()) {
+      pp_normalization_value = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationValue();
+    }
 
     auto             redshiftFunctor = config_manager.getConfiguration<RedshiftFunctorConfig>().getRedshiftFunctor();
-    ModelDatasetGrid grid{grid_axes, std::move(sed_map), std::move(red_curve_map), ExtinctionFunctor{},
-                          redshiftFunctor, igm_function,       normalizer_function};
+    ModelDatasetGrid grid{grid_axes,           std::move(sed_map),     std::move(red_curve_map),
+                          ExtinctionFunctor{}, redshiftFunctor,        igm_function,
+                          normalizer_function, normalizer_pp_function, pp_normalization_value};
 
-    ModelScalingGrid scaling_grid{grid_axes, std::move(sed_map_2), std::move(red_curve_map_2), ExtinctionFunctor{}, normalizer_functor};
+    ModelScalingGrid scaling_grid{grid_axes, std::move(sed_map_2), std::move(red_curve_map_2), ExtinctionFunctor{},
+                                  normalizer_functor};
 
     auto iter_scaling = scaling_grid.begin();
     for (auto iter = grid.begin(); iter != grid.end(); ++iter) {
@@ -111,7 +123,8 @@ class ComputeModelSed : public Elements::Program {
       cout << "Z        " << iter.axisValue<ModelParameter::Z>() << '\n';
       cout << "IGM      " << config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionType() << '\n';
       double value = *iter_scaling;
-      cout << "Model Scaling (number which have been multiplied to the reddened SED for normalizing it): " << value << '\n';
+      cout << "Model Scaling (number which have been multiplied to the reddened SED for normalizing it): " << value
+           << '\n';
       cout << "\nData:\n";
       for (auto& pair : *iter) {
         cout << pair.first << '\t' << pair.second << '\n';

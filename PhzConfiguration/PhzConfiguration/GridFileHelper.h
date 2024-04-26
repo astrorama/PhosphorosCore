@@ -45,7 +45,7 @@ namespace PhzConfiguration {
 
 template <typename OArchive>
 static void outputFunction(const std::string& filename, PhzConfiguration::IgmConfig& igm_config,
-                           XYDataset::QualifiedName&                                  luminosity_filter,
+                           XYDataset::QualifiedName& luminosity_filter, XYDataset::QualifiedName& luminosity_pp_filter,
                            const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
   auto                                  local_logger = Elements::Logging::getLogger("PhzOutput");
   std::ofstream                         out{filename};
@@ -54,7 +54,8 @@ static void outputFunction(const std::string& filename, PhzConfiguration::IgmCon
   std::copy(filter_names_str.begin(), filter_names_str.end(), std::back_inserter(filter_list));
   OArchive boa{out};
   // Store the info object describing the grids
-  PhzDataModel::PhotometryGridInfo info{grid_map, igm_config.getIgmAbsorptionType(), luminosity_filter, filter_list};
+  PhzDataModel::PhotometryGridInfo info{grid_map, igm_config.getIgmAbsorptionType(), luminosity_filter,
+                                        luminosity_pp_filter, filter_list};
   boa << info;
   // Store the grids themselves
   for (auto& pair : grid_map) {

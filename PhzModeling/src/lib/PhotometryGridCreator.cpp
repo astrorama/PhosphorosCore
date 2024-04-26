@@ -119,12 +119,16 @@ PhotometryGridCreator::PhotometryGridCreator(std::shared_ptr<XYDataset::XYDatase
                                              std::shared_ptr<XYDataset::XYDatasetProvider> reddening_curve_provider,
                                              std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider,
                                              IgmAbsorptionFunction                         igm_absorption_function,
-                                             NormalizationFunction                         normalization_function)
+                                             NormalizationFunction                         normalization_function,
+                                             NormalizationFunction                         pp_normalization_function,
+                                             double                                        pp_normalization_value)
     : m_sed_provider{sed_provider}
     , m_reddening_curve_provider{reddening_curve_provider}
     , m_filter_provider(filter_provider)
     , m_igm_absorption_function{igm_absorption_function}
-    , m_normalization_function{normalization_function} {}
+    , m_normalization_function{normalization_function}
+    , m_pp_normalization_function{pp_normalization_function}
+    , m_pp_normalization_value{pp_normalization_value} {}
 
 PhotometryGridCreator::~PhotometryGridCreator() {
   // The multithreaded job is done, so reset the stop threads flag
@@ -181,7 +185,7 @@ PhotometryGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&           
   auto sed_map              = buildMap(*m_sed_provider, sed_name_list.begin(), sed_name_list.end());
   auto reddening_curve_list = std::get<PhzDataModel::ModelParameter::REDDENING_CURVE>(parameter_space);
   auto reddening_curve_map  = convertToFunction(
-       buildMap(*m_reddening_curve_provider, reddening_curve_list.begin(), reddening_curve_list.end()));
+      buildMap(*m_reddening_curve_provider, reddening_curve_list.begin(), reddening_curve_list.end()));
 
   // Define the functions and the algorithms based on the Functors
   ModelDatasetGrid::ReddeningFunction     reddening_function{ExtinctionFunctor{}};
@@ -190,9 +194,9 @@ PhotometryGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&           
   ModelFluxAlgorithm                      flux_model_algo{std::move(apply_filter_function)};
 
   // Create the model grid
-  auto model_grid =
-      ModelDatasetGrid(parameter_space, std::move(sed_map), std::move(reddening_curve_map), reddening_function,
-                       redshift_function, m_igm_absorption_function, m_normalization_function);
+  auto model_grid = ModelDatasetGrid(parameter_space, std::move(sed_map), std::move(reddening_curve_map),
+                                     reddening_function, redshift_function, m_igm_absorption_function,
+                                     m_normalization_function, m_pp_normalization_function, m_pp_normalization_value);
 
   // Create the photometry Grid
   auto photometry_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list);

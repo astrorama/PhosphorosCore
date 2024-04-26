@@ -160,9 +160,9 @@ BOOST_FIXTURE_TEST_CASE(constructor_test, ModelDatasetGrid_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing constructor");
   BOOST_TEST_MESSAGE(" ");
 
-  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space, std::move(m_sed_map),
-                                                   std::move(m_reddening_curve_map), m_reddening_function,
-                                                   m_redshift_function, m_igm_function, m_norm_function);
+  Euclid::PhzModeling::ModelDatasetGrid model_grid(
+      parameter_space, std::move(m_sed_map), std::move(m_reddening_curve_map), m_reddening_function,
+      m_redshift_function, m_igm_function, m_norm_function, m_norm_function, 0);
 
   BOOST_CHECK_EQUAL(4, model_grid.axisNumber());
   BOOST_CHECK_EQUAL(990, model_grid.size());  // 3*3*11*10
@@ -173,9 +173,9 @@ BOOST_FIXTURE_TEST_CASE(iterator_test, ModelDatasetGrid_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing iterator");
   BOOST_TEST_MESSAGE(" ");
 
-  Euclid::PhzModeling::ModelDatasetGrid model_grid(parameter_space, std::move(m_sed_map),
-                                                   std::move(m_reddening_curve_map), m_reddening_function,
-                                                   m_redshift_function, m_igm_function, m_norm_function);
+  Euclid::PhzModeling::ModelDatasetGrid model_grid(
+      parameter_space, std::move(m_sed_map), std::move(m_reddening_curve_map), m_reddening_function,
+      m_redshift_function, m_igm_function, m_norm_function, m_norm_function, 0);
 
   auto iterator = model_grid.begin();
 

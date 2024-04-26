@@ -39,12 +39,15 @@ namespace {
 
 static const std::string NORMALIZATION_FILTER{"normalization-filter"};
 static const std::string NORMALIZATION_SED{"normalization-solar-sed"};
+static const std::string NORMALIZATION_PP_FILTER{"normalization-pp-filter"};
+static const std::string NORMALIZATION_PP_VALUE{"normalization-pp-value"};
 
 }  // namespace
 
 struct ModelNormalizationConfig_fixture : public ConfigManager_fixture {
-  std::string                               solar_sed  = "solar_sed";
-  std::string                               ref_filter = "ref_filter";
+  std::string                               solar_sed     = "solar_sed";
+  std::string                               ref_filter    = "ref_filter";
+  std::string                               ref_filter_pp = "ref_filter_pp";
   std::map<std::string, po::variable_value> options_map{};
 
   ModelNormalizationConfig_fixture() {
@@ -52,6 +55,8 @@ struct ModelNormalizationConfig_fixture : public ConfigManager_fixture {
     options_map["aux-data-dir"].value() = boost::any(Elements::getAuxiliaryPath("Phosphoros/AuxiliaryData").native());
     auto path_filter_1 =
         (Elements::getAuxiliaryPath("Phosphoros/AuxiliaryData/Filters") / std::string(ref_filter + ".txt")).string();
+    auto path_filter_2 =
+        (Elements::getAuxiliaryPath("Phosphoros/AuxiliaryData/Filters") / std::string(ref_filter_pp + ".txt")).string();
 
     std::ofstream filter_data_file(path_filter_1);
     if (filter_data_file.is_open()) {
@@ -62,6 +67,19 @@ struct ModelNormalizationConfig_fixture : public ConfigManager_fixture {
       filter_data_file << 5490 << " " << 0.0 << std::endl;
       filter_data_file << 11000 << " " << 0.0 << std::endl;
       filter_data_file.close();
+    } else {
+      throw new Elements::Exception("Unable to create the ref filter file");
+    }
+
+    std::ofstream filter_data_file_2(path_filter_2);
+    if (filter_data_file_2.is_open()) {
+      filter_data_file_2 << 3000 << " " << 0.0 << std::endl;
+      filter_data_file_2 << 3970 << " " << 0.0 << std::endl;
+      filter_data_file_2 << 3980 << " " << 1.0 << std::endl;
+      filter_data_file_2 << 5480 << " " << 1.0 << std::endl;
+      filter_data_file_2 << 5490 << " " << 0.0 << std::endl;
+      filter_data_file_2 << 11000 << " " << 0.0 << std::endl;
+      filter_data_file_2.close();
     } else {
       throw new Elements::Exception("Unable to create the ref filter file");
     }
@@ -95,6 +113,8 @@ BOOST_FIXTURE_TEST_CASE(check_options, ModelNormalizationConfig_fixture) {
   // Then
   BOOST_CHECK_NO_THROW(options.find(NORMALIZATION_FILTER, false));
   BOOST_CHECK_NO_THROW(options.find(NORMALIZATION_SED, false));
+  BOOST_CHECK_NO_THROW(options.find(NORMALIZATION_PP_FILTER, false));
+  BOOST_CHECK_NO_THROW(options.find(NORMALIZATION_PP_VALUE, false));
 }
 
 //-----------------------------------------------------------------------------
@@ -112,11 +132,62 @@ BOOST_FIXTURE_TEST_CASE(missing_value_sed, ModelNormalizationConfig_fixture) {
   BOOST_CHECK_THROW(config_manager.initialize(options_map), Elements::Exception);
 }
 
-BOOST_FIXTURE_TEST_CASE(values_value, ModelNormalizationConfig_fixture) {
+BOOST_FIXTURE_TEST_CASE(values_value_filter, ModelNormalizationConfig_fixture) {
 
   // When
   std::string filter                             = ref_filter;
   options_map["normalization-filter"].value()    = boost::any(filter);
+  std::string sed                                = solar_sed;
+  options_map["normalization-solar-sed"].value() = boost::any(sed);
+  config_manager.initialize(options_map);
+  // Then
+  BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed().qualifiedName(),
+                    sed);
+  BOOST_CHECK_EQUAL(
+      config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter().qualifiedName(), filter);
+  BOOST_CHECK(config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter());
+  BOOST_CHECK_EQUAL(
+      config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter().qualifiedName(), filter);
+  BOOST_CHECK_THROW(config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationValue(),
+                    Elements::Exception);
+}
+
+BOOST_FIXTURE_TEST_CASE(values_value_filter_pp, ModelNormalizationConfig_fixture) {
+
+  // When
+  std::string filter                             = ref_filter;
+  options_map["normalization-filter"].value()    = boost::any(filter);
+  std::string filter_pp                          = ref_filter_pp;
+  options_map["normalization-pp-filter"].value() = boost::any(filter_pp);
+  std::string sed                                = solar_sed;
+  options_map["normalization-solar-sed"].value() = boost::any(sed);
+  BOOST_CHECK(true);
+  config_manager.initialize(options_map);
+  BOOST_CHECK(true);
+  // Then
+  BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed().qualifiedName(),
+                    sed);
+  BOOST_CHECK(true);
+  BOOST_CHECK_EQUAL(
+      config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter().qualifiedName(), filter);
+  BOOST_CHECK(true);
+  BOOST_CHECK(config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter());
+  BOOST_CHECK(true);
+  BOOST_CHECK_EQUAL(
+      config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter().qualifiedName(),
+      filter_pp);
+  BOOST_CHECK(true);
+  BOOST_CHECK_THROW(config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationValue(),
+                    Elements::Exception);
+}
+
+BOOST_FIXTURE_TEST_CASE(values_value_value, ModelNormalizationConfig_fixture) {
+
+  // When
+  std::string filter                             = ref_filter;
+  options_map["normalization-filter"].value()    = boost::any(filter);
+  double value_pp                                = 100.0;
+  options_map["normalization-pp-value"].value()  = boost::any(value_pp);
   std::string sed                                = solar_sed;
   options_map["normalization-solar-sed"].value() = boost::any(sed);
 
@@ -127,6 +198,10 @@ BOOST_FIXTURE_TEST_CASE(values_value, ModelNormalizationConfig_fixture) {
                     sed);
   BOOST_CHECK_EQUAL(
       config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter().qualifiedName(), filter);
+  BOOST_CHECK(!config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter());
+  BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationValue(), value_pp);
+
+  BOOST_CHECK_NO_THROW(config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter());
 }
 
 //-----------------------------------------------------------------------------
