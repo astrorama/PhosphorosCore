@@ -45,6 +45,9 @@ static const std::string NZ_PRIOR{"Nz-prior"};
 static const std::string NZ_PRIOR_BFILTER{"Nz-prior_B_Filter"};
 static const std::string NZ_PRIOR_IFILTER{"Nz-prior_I_Filter"};
 
+static const std::string NZ_PRIOR_BI_BREAK_1{"Nz-prior_BI_break_1"};
+static const std::string NZ_PRIOR_BI_BREAK_2{"Nz-prior_BI_break_2"};
+
 static const std::string NZ_PRIOR_Z0T1{"Nz-prior_z0_T1"};
 static const std::string NZ_PRIOR_Z0T2{"Nz-prior_z0_T2"};
 static const std::string NZ_PRIOR_Z0T3{"Nz-prior_z0_T3"};
@@ -86,6 +89,11 @@ auto NzPriorConfig::getProgramOptions() -> std::map<std::string, OptionDescripti
                {NZ_PRIOR_IFILTER.c_str(), po::value<std::string>()->default_value(""),
                 "Name of the I fiter to be used by the N(z) prior for classifying SED and compute sources MAG_I. "
                 "It must be part of the sources Photometric filters"},
+
+               {NZ_PRIOR_BI_BREAK_1.c_str(), po::value<double>()->default_value(0.945),
+                "SED classification: B-I boundary value between T3 and T2 classes (Default=0.945)"},
+               {NZ_PRIOR_BI_BREAK_2.c_str(), po::value<double>()->default_value(1.285),
+                "SED classification: B-I boundary value between T2 and T1 classes (Default=1.285)"},
 
                {NZ_PRIOR_Z0T1.c_str(), po::value<double>()->default_value(0.431),
                 "Value for the Z0 param for T1 region (Default=0.431)"},
@@ -154,7 +162,9 @@ void NzPriorConfig::initialize(const UserValues& args) {
     // Configure the SED classifier
     auto sed_data_provider    = getDependency<SedProviderConfig>().getSedDatasetProvider();
     auto filter_data_provider = getDependency<FilterProviderConfig>().getFilterDatasetProvider();
-    auto sed_classifier       = PhzNzPrior::SedClassifier(filter_data_provider, sed_data_provider);
+    auto sed_classifier =
+        PhzNzPrior::SedClassifier(filter_data_provider, sed_data_provider, args.at(NZ_PRIOR_BI_BREAK_1).as<double>(),
+                                  args.at(NZ_PRIOR_BI_BREAK_2).as<double>());
 
     // Configure the prior parameters
     double z0_t1 = args.at(NZ_PRIOR_Z0T1).as<double>();
