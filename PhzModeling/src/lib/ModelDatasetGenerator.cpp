@@ -24,8 +24,10 @@
  */
 
 #include "PhzModeling/ModelDatasetGenerator.h"
+#include "ElementsKernel/Exception.h"
 #include "PhzDataModel/Sed.h"
 #include "XYDataset/XYDataset.h"
+#include <cmath>
 
 namespace Euclid {
 namespace PhzModeling {
@@ -171,11 +173,25 @@ PhzDataModel::Sed& ModelDatasetGenerator::operator*() {
     double            z              = std::get<PhzDataModel::ModelParameter::Z>(m_parameter_space)[new_z_index];
     PhzDataModel::Sed redshifted_sed = m_redshift_function(*m_current_reddened_sed, z);
     auto              igm_sed        = m_igm_function(redshifted_sed, z);
-    igm_sed.setScaling(m_current_reddened_sed->getScaling());
+    double            scalling       = m_current_reddened_sed->getScaling();
+    if (!std::isfinite(1.0 / scalling) || !std::isfinite(scalling)) {
+      auto& sed_name = std::get<PhzDataModel::ModelParameter::SED>(m_parameter_space)[new_sed_index];
+      throw Elements::Exception()
+          << "The normalisation of a model for SED=" << sed_name
+          << " failed. The root cause could be that the normalization filter do not overlap the SED.";
+    }
+    igm_sed.setScaling(scalling);
     if (m_sed_normalization_value > 0) {
       igm_sed.setDiffScaling(m_sed_normalization_value);
     } else {
-      igm_sed.setDiffScaling(m_current_pp_norm_sed->getScaling());
+      double pp_scalling = m_current_pp_norm_sed->getScaling();
+      if (!std::isfinite(1.0 / pp_scalling) || !std::isfinite(pp_scalling)) {
+        auto& sed_name = std::get<PhzDataModel::ModelParameter::SED>(m_parameter_space)[new_sed_index];
+        throw Elements::Exception()
+            << "The PP normalisation of a model for SED=" << sed_name
+            << " failed. The root cause could be that the PP normalization filter do not overlap the SED.";
+      }
+      igm_sed.setDiffScaling(pp_scalling);
     }
 
     m_current_redshifted_sed.reset(new PhzDataModel::Sed(igm_sed));
