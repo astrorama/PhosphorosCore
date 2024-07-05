@@ -210,7 +210,7 @@ PhzDataModel::DoubleGrid LuminosityPrior::createPriorGrid(const PhzDataModel::Do
 
 void LuminosityPrior::applyEffectiveness(PhzDataModel::DoubleGrid& prior_grid, double max) const {
   for (auto& v : prior_grid) {
-    v = max * (1 - m_effectiveness) + m_effectiveness * v;
+    v = std::pow(v / max, m_effectiveness);
   }
 }
 

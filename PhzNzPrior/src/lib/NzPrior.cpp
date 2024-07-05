@@ -3,8 +3,8 @@
  * @date 2019-03-15
  * @author Florian dubath
  */
- 
- // From: Benitez https://arxiv.org/abs/astro-ph/9811189v1
+
+// From: Benitez https://arxiv.org/abs/astro-ph/9811189v1
 
 #include "PhzNzPrior/NzPrior.h"
 
@@ -148,10 +148,19 @@ void NzPrior::operator()(PhzDataModel::RegionResults& results) {
       computeP_T_z__m0(coeffs, coeff_index, prior_grid);
     }
 
+    // Find the maximum value
+    float max_value = 0;
+    for (auto grid_iter = prior_grid.begin(); grid_iter != prior_grid.end(); ++grid_iter) {
+      if (*grid_iter > max_value) {
+        max_value = *grid_iter;
+      }
+    }
+
     // Apply the effectiveness to the prior.
-    std::transform(prior_grid.begin(), prior_grid.end(), prior_grid.begin(), [this](double v) {
-      return (1 - m_effectiveness) + m_effectiveness * v;
-    });
+    for (auto& v : prior_grid) {
+      v = std::pow(v / max_value, m_effectiveness);
+    }
+
   } else {
     // The flux needed for computing the N(Z) prior is missing => use a flat prior and flag the source
     results.get<PhzDataModel::RegionResultType::FLAGS>().insert({MISSING_FLUX_FOR_NZ_FLAG, true});

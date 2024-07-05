@@ -49,9 +49,9 @@ VolumePrior::VolumePrior(const PhysicsUtils::CosmologicalParameters& cosmology,
     m_precomputed[0] = PhysicsUtils::CosmologicalDistances{}.dimensionlessComovingVolumeElement(1E-4, cosmology);
   }
 
-  // Normalize so the peak is at 1 and everything is shifted by (1-effectiveness)
+  // Normalize so the peak is at 1 and everything is scalled according to effectiveness
   for (auto& pair : m_precomputed) {
-    pair.second = (1 - effectiveness) + pair.second * effectiveness / max;
+    pair.second = std::pow(pair.second / max, effectiveness);
   }
 
   // We convert the precomputed to log space
