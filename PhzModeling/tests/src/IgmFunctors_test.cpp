@@ -16,12 +16,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "PhzModeling/InoueCgmIgmFunctor.h"
 #include "PhzModeling/InoueIgmFunctor.h"
 #include "PhzModeling/MadauIgmFunctor.h"
 #include "PhzModeling/MeiksinIgmFunctor.h"
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
 
+using Euclid::PhzModeling::InoueCgmIgmFunctor;
 using Euclid::PhzModeling::InoueIgmFunctor;
 using Euclid::PhzModeling::MadauIgmFunctor;
 using Euclid::PhzModeling::MeiksinIgmFunctor;
@@ -33,7 +35,7 @@ struct IgmFixture {
   double z{2.5};
 };
 
-using IgmFunctors = boost::mpl::list<InoueIgmFunctor, MadauIgmFunctor, MeiksinIgmFunctor>;
+using IgmFunctors = boost::mpl::list<InoueIgmFunctor, InoueCgmIgmFunctor, MadauIgmFunctor, MeiksinIgmFunctor>;
 
 //-----------------------------------------------------------------------------
 

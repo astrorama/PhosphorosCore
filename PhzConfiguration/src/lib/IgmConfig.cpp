@@ -25,6 +25,7 @@
 #include "PhzConfiguration/IgmConfig.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
+#include "PhzModeling/InoueCgmIgmFunctor.h"
 #include "PhzModeling/InoueIgmFunctor.h"
 #include "PhzModeling/MadauIgmFunctor.h"
 #include "PhzModeling/MeiksinIgmFunctor.h"
@@ -47,11 +48,11 @@ IgmConfig::IgmConfig(long manager_id) : Configuration(manager_id) {}
 auto IgmConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"IGM absorption options",
            {{IGM_ABSORPTION_TYPE.c_str(), po::value<std::string>()->default_value("OFF"),
-             "The type of IGM absorption to apply (one of OFF, MADAU, MEIKSIN, INOUE)"}}}};
+             "The type of IGM absorption to apply (one of OFF, MADAU, MEIKSIN, INOUE, INOUECGM)"}}}};
 }
 
 void IgmConfig::preInitialize(const UserValues& args) {
-  std::set<std::string> types{"OFF", "MADAU", "MEIKSIN", "INOUE"};
+  std::set<std::string> types{"OFF", "MADAU", "MEIKSIN", "INOUE", "INOUECGM"};
   if (args.count(IGM_ABSORPTION_TYPE) == 0) {
     throw Elements::Exception() << "Missing " << IGM_ABSORPTION_TYPE << " option ";
   }
@@ -79,6 +80,10 @@ void IgmConfig::initialize(const UserValues& args) {
   if (input_type == "INOUE") {
     m_absorption_type     = "INOUE";
     m_absorption_function = PhzModeling::InoueIgmFunctor{};
+  }
+  if (input_type == "INOUECGM") {
+    m_absorption_type     = "INOUECGM";
+    m_absorption_function = PhzModeling::InoueCgmIgmFunctor{};
   }
 }
 
