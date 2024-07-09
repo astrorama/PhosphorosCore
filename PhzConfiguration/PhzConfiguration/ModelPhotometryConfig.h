@@ -16,52 +16,34 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/**
- * @file PhzConfiguration/VolumePriorConfig.h
- * @date 11/27/15
- * @author nikoapos
+/*
+ * @fileModelPhotometryConfig.h
+ * @author dubathf
  */
 
-#ifndef _PHZCONFIGURATION_VOLUMEPRIORCONFIG_H
-#define _PHZCONFIGURATION_VOLUMEPRIORCONFIG_H
+#ifndef PHZCONFIGURATION_MODELPHOTOMETRYCONFIG_H
+#define PHZCONFIGURATION_MODELPHOTOMETRYCONFIG_H
 
 #include "Configuration/Configuration.h"
 
 namespace Euclid {
 namespace PhzConfiguration {
 
-/**
- * @class VolumePriorConfig
- * @brief
- *
- */
-class VolumePriorConfig : public Configuration::Configuration {
+class ModelPhotometryConfig : public Configuration::Configuration {
 
 public:
-  VolumePriorConfig(long manager_id);
+  ModelPhotometryConfig(long manager_id);
+
+  virtual ~ModelPhotometryConfig() = default;
 
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
   void preInitialize(const UserValues& args) override;
 
   void initialize(const UserValues& args) override;
+};
 
-  void forceOn();
+}  // end of namespace PhzConfiguration
+}  // end of namespace Euclid
 
-private:
-  void internal_initialization();
-
-  double m_effectiveness;
-  bool   m_added = false;
-
-  /**
-   * @brief Destructor
-   */
-  virtual ~VolumePriorConfig() = default;
-
-}; /* End of VolumePriorConfig class */
-
-} /* namespace PhzConfiguration */
-} /* namespace Euclid */
-
-#endif
+#endif /* PHZCONFIGURATION_MODELPHOTOMETRYCONFIG_H */

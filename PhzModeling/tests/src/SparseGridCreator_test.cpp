@@ -102,9 +102,10 @@ BOOST_FIXTURE_TEST_CASE(createGrid_test, SparseGridCreatorFixture) {
     last_total = total;
   };
 
-  SparseGridCreator grid_creator(sed_provider, red_provider, filter_provider, MockIGM, MockNorm);
-  auto              grid_map = grid_creator.createGrid({{"REGION1", axes}}, {QualifiedName{"F1"}, QualifiedName{"F2"}},
-                                                       Euclid::PhysicsUtils::CosmologicalParameters{}, progress);
+  SparseGridCreator grid_creator(sed_provider, red_provider, filter_provider, MockIGM, MockNorm, MockNorm, 0);
+  BOOST_CHECK(true);
+  auto grid_map = grid_creator.createGrid({{"REGION1", axes}}, {QualifiedName{"F1"}, QualifiedName{"F2"}},
+                                          Euclid::PhysicsUtils::CosmologicalParameters{}, progress);
 
   BOOST_CHECK_EQUAL(grid_map.size(), 1);
 

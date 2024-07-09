@@ -10,6 +10,8 @@
 /build.*
 /sonar-project.properties
 
+*~
 # Python
 __pycache__/
 *.py[cod]
+*~

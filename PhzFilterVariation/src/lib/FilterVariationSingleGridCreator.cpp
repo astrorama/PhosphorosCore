@@ -236,12 +236,14 @@ FilterVariationSingleGridCreator::FilterVariationSingleGridCreator(
     std::shared_ptr<Euclid::XYDataset::XYDatasetProvider>       reddening_curve_provider,
     const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
     IgmAbsorptionFunction igm_absorption_function, NormalizationFunction normalization_function,
-    std::vector<double> delta_lambda)
+    NormalizationFunction normalization_pp_function, double pp_normalization_value, std::vector<double> delta_lambda)
     : m_sed_provider{sed_provider}
     , m_reddening_curve_provider{reddening_curve_provider}
     , m_filter_provider(filter_provider)
     , m_igm_absorption_function{igm_absorption_function}
     , m_normalization_function{normalization_function}
+    , m_pp_normalization_function{normalization_pp_function}
+    , m_pp_normalization_value{pp_normalization_value}
     , m_delta_lambda{std::move(delta_lambda)} {}
 
 FilterVariationSingleGridCreator::~FilterVariationSingleGridCreator() {
@@ -265,7 +267,7 @@ FilterVariationSingleGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&
 
   auto reddening_curve_list = std::get<PhzDataModel::ModelParameter::REDDENING_CURVE>(parameter_space);
   auto reddening_curve_map  = convertToFunction(
-       buildMap(*m_reddening_curve_provider, reddening_curve_list.begin(), reddening_curve_list.end()));
+      buildMap(*m_reddening_curve_provider, reddening_curve_list.begin(), reddening_curve_list.end()));
 
   // Precompute the shifted transmissions
   std::map<XYDataset::QualifiedName, FilterInfo>                      filter_map;
@@ -287,9 +289,9 @@ FilterVariationSingleGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&
   PhzModeling::ModelDatasetGrid::RedshiftFunction  redshift_function{PhzModeling::RedshiftFunctor{cosmology}};
 
   // Create the model grid
-  auto model_grid = PhzModeling::ModelDatasetGrid(parameter_space, std::move(sed_map), std::move(reddening_curve_map),
-                                                  reddening_function, redshift_function, m_igm_absorption_function,
-                                                  m_normalization_function);
+  auto model_grid = PhzModeling::ModelDatasetGrid(
+      parameter_space, std::move(sed_map), std::move(reddening_curve_map), reddening_function, redshift_function,
+      m_igm_absorption_function, m_normalization_function, m_pp_normalization_function, m_pp_normalization_value);
 
   // Create the photometry Grid
   auto correction_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list);

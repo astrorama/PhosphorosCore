@@ -77,7 +77,7 @@ static std::vector<double> getPdzBins(std::string comment) {
   std::string              bins_str{z_bins.begin() + 10, z_bins.end() - 1};
   std::vector<std::string> bins;
   boost::split(bins, bins_str, boost::is_any_of("\t\n ,"));
-  std::vector<double> v(bins.size());  	 
+  std::vector<double> v(bins.size());
   std::transform(bins.begin(), bins.end(), v.begin(), boost::lexical_cast<double, const std::string&>);
 
   return v;
@@ -93,13 +93,21 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_mana
 
   auto& igm_function = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
 
-  auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
-  auto sun_sed_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
+  auto lum_filter_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
+  auto lum_pp_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter();
+  auto sun_sed_name       = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
 
   auto filter_provider  = config_manager.getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
   auto sun_sed_provider = config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider();
   auto normalizer_functor =
       NormalizationFunctorFactory::GetFunction(filter_provider, lum_filter_name, sun_sed_provider, sun_sed_name);
+  auto normalizer_pp_functor =
+      NormalizationFunctorFactory::GetFunction(filter_provider, lum_pp_filter_name, sun_sed_provider, sun_sed_name);
+
+  double pp_normalization_value = 0;
+  if (!config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter()) {
+    pp_normalization_value = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationValue();
+  }
 
   XYDataset::CachedProvider reddening_provider{
       config_manager.getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider()};
@@ -111,25 +119,26 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_mana
   auto ref_sample_path   = ref_sample_config.getReferenceSamplePath();
 
   logger.info() << "Creating Reference Sample dir";
-  if (boost::filesystem::exists(ref_sample_path)){
-	  if (ref_sample_config.overwrite()) {
-		 std::vector<boost::filesystem::path> paths;
-		 for (auto const & entry : boost::filesystem::recursive_directory_iterator(ref_sample_path)) {
+  if (boost::filesystem::exists(ref_sample_path)) {
+    if (ref_sample_config.overwrite()) {
+      std::vector<boost::filesystem::path> paths;
+      for (auto const& entry : boost::filesystem::recursive_directory_iterator(ref_sample_path)) {
 
-			 if (entry.path().extension() == ".npy") {
-				 paths.emplace_back(entry);
-			 }
-		 }
-		 logger.info() << "Clearing the Reference Sample dir of "<< paths.size() << " *.npy files";
-		 for (auto const & path : paths) {
-			 boost::filesystem::remove(path);
-		 }
+        if (entry.path().extension() == ".npy") {
+          paths.emplace_back(entry);
+        }
+      }
+      logger.info() << "Clearing the Reference Sample dir of " << paths.size() << " *.npy files";
+      for (auto const& path : paths) {
+        boost::filesystem::remove(path);
+      }
 
-	  } else {
-		  throw Elements::Exception() << "The directory already exists: " << ref_sample_path;
-	  }
+    } else {
+      throw Elements::Exception() << "The directory already exists: " << ref_sample_path;
+    }
   }
-  auto ref_sample = ReferenceSample::create(ref_sample_config.getReferenceSamplePath(), false, ref_sample_config.getMaxSize());
+  auto ref_sample =
+      ReferenceSample::create(ref_sample_config.getReferenceSamplePath(), false, ref_sample_config.getMaxSize());
 
   logger.info() << "Reading the Phosphoros catalog";
   auto phosphoros_readers = ref_sample_config.getPhosphorosCatalogReader();
@@ -140,16 +149,16 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_mana
   size_t              total = 0;
   for (auto& reader : phosphoros_readers) {
     total += reader->rowsLeft();
-   logger.info() << "total="<< total;
+    logger.info() << "total=" << total;
     auto cat_pdz_bins = getPdzBins(reader->getComment());
-   logger.info() << "DZ BIN read";
+    logger.info() << "DZ BIN read";
     if (pdz_bins.empty()) {
       pdz_bins = cat_pdz_bins;
     } else if (pdz_bins != cat_pdz_bins) {
       throw Elements::Exception() << "All catalogs must have the same PDZ bins";
     }
   }
-  
+
   logger.info() << "PDZ BIN read II";
 
   if (pdz_bins.empty()) {
@@ -164,28 +173,27 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_mana
   int64_t i = 0;
   for (auto& reader : phosphoros_readers) {
     logger.info() << "Processing input catalog with " << reader->rowsLeft() << " sources";
- 
-    processCatalog(*reader, ref_sample, igm_function, normalizer_functor, reddening_provider, sed_provider,
-                   redshiftFunctor, pdz_bins, total, i);
+
+    processCatalog(*reader, ref_sample, igm_function, normalizer_functor, normalizer_pp_functor, pp_normalization_value,
+                   reddening_provider, sed_provider, redshiftFunctor, pdz_bins, total, i);
   }
 
   logger.info() << "Optimizing the reference sample index";
   ref_sample.optimize();
 }
 
-void BuildReferenceSample::processCatalog(Table::TableReader& reader, ReferenceSample& ref_sample,
-                                          const PhotometryGridCreator::IgmAbsorptionFunction& igm_function,
-                                          const NormalizationFunction&                        normalizer_functor,
-                                          XYDataset::XYDatasetProvider&                       reddening_provider,
-                                          XYDataset::XYDatasetProvider&                       sed_provider,
-                                          const RedshiftFunctor& redshiftFunctor, const std::vector<double>& pdz_bins,
-                                          size_t total, int64_t& i) {
+void BuildReferenceSample::processCatalog(
+    Table::TableReader& reader, ReferenceSample& ref_sample,
+    const PhotometryGridCreator::IgmAbsorptionFunction& igm_function, const NormalizationFunction& normalizer_functor,
+    const NormalizationFunction& normalizer_pp_functor, double pp_normalization_value,
+    XYDataset::XYDatasetProvider& reddening_provider, XYDataset::XYDatasetProvider& sed_provider,
+    const RedshiftFunctor& redshiftFunctor, const std::vector<double>& pdz_bins, size_t total, int64_t& i) {
   while (reader.hasMoreRows()) {
     auto phosphoros_table = reader.read(10000);
     logger.info() << phosphoros_table.size() << " entries loaded";
 
     for (auto& object : phosphoros_table) {
-      auto                     obj_id = i; // boost::get<int64_t>(object["ID"]);
+      auto                     obj_id = i;  // boost::get<int64_t>(object["ID"]);
       auto                     z      = boost::get<double>(object["Z"]);
       auto                     ebv    = boost::get<double>(object["E(B-V)"]);
       auto                     scale  = boost::get<double>(object["Scale"]);
@@ -210,9 +218,9 @@ void BuildReferenceSample::processCatalog(Table::TableReader& reader, ReferenceS
           std::make_pair(red_curve_name, interpolatedReddeningCurve(red_curve_name, *red_curve)));
 
       ModelAxesTuple   grid_axes{createAxesTuple({z}, {ebv}, {red_curve_name}, {sed_name})};
-      ModelDatasetGrid grid{grid_axes,           std::move(sed_map), std::move(reddening_curve_map),
-                            ExtinctionFunctor{}, redshiftFunctor,    igm_function,
-                            normalizer_functor};
+      ModelDatasetGrid grid{grid_axes,           std::move(sed_map),    std::move(reddening_curve_map),
+                            ExtinctionFunctor{}, redshiftFunctor,       igm_function,
+                            normalizer_functor,  normalizer_pp_functor, pp_normalization_value};
 
       for (auto& cell : grid) {
         std::vector<std::pair<double, double>> scaled_data{};

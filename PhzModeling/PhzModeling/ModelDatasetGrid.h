@@ -26,9 +26,9 @@
 #ifndef PHZMODELING_MODELDATASETGRID_H_
 #define PHZMODELING_MODELDATASETGRID_H_
 
+#include "PhzDataModel/Sed.h"
 #include "PhzModeling/ModelDatasetGenerator.h"
 #include "XYDataset/XYDataset.h"
-#include "PhzDataModel/Sed.h"
 
 namespace Euclid {
 namespace PhzModeling {
@@ -46,8 +46,8 @@ namespace GridContainer {
 template <>
 struct GridCellManagerTraits<PhzModeling::ModelDatasetCellManager> {
   typedef PhzDataModel::Sed data_type;
-  typedef data_type*           pointer_type;
-  typedef data_type&           reference_type;
+  typedef data_type*        pointer_type;
+  typedef data_type&        reference_type;
 
   typedef PhzModeling::ModelDatasetGenerator                   iterator;
   static std::unique_ptr<PhzModeling::ModelDatasetCellManager> factory(size_t size) {
@@ -114,10 +114,9 @@ public:
   ModelDatasetGrid(const PhzDataModel::ModelAxesTuple&                                      parameter_space,
                    std::map<XYDataset::QualifiedName, XYDataset::XYDataset>                 sed_map,
                    std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> reddening_curve_map,
-                   ReddeningFunction                                                        reddening_function,
-				   RedshiftFunction                                                         redshift_function,
-                   IgmAbsorptionFunction                                                    igm_function,
-				   NormalizationFunction                                                    normalization_function);
+                   ReddeningFunction reddening_function, RedshiftFunction redshift_function,
+                   IgmAbsorptionFunction igm_function, NormalizationFunction normalization_function,
+                   NormalizationFunction pp_normalization_function, double pp_normalization_value);
 
   /**
    * @brief begin function for the iteration.
@@ -138,6 +137,8 @@ private:
   RedshiftFunction                                                         m_redshift_function;
   IgmAbsorptionFunction                                                    m_igm_function;
   NormalizationFunction                                                    m_normalization_function;
+  NormalizationFunction                                                    m_pp_normalization_function;
+  double                                                                   m_pp_normalization_value;
 };
 
 }  // namespace PhzModeling

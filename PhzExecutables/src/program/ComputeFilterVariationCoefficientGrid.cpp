@@ -132,12 +132,21 @@ class ComputeFilterVariationCoefficientGrid : public Elements::Program {
         config_manager.template getConfiguration<FilterVariationCoefficientGridOutputConfig>().getOutputFunction();
     auto delta_lambda = config_manager.template getConfiguration<FilterVariationConfig>().getSampling();
     auto cosmology    = config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
-    auto lum_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
-    auto sun_sed_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
+    auto lum_filter_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
+    auto lum_pp_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter();
+    auto sun_sed_name       = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
 
     auto normalizer_functor =
         Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
             filter_provider, lum_filter_name, sed_provider, sun_sed_name);
+    auto normalizer_pp_functor =
+        Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
+            filter_provider, lum_pp_filter_name, sed_provider, sun_sed_name);
+
+    double pp_normalization_value = 0;
+    if (!config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter()) {
+      pp_normalization_value = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationValue();
+    }
 
     std::map<std::string, PhzDataModel::PhotometryGrid> result_map{};
 
@@ -147,10 +156,11 @@ class ComputeFilterVariationCoefficientGrid : public Elements::Program {
       total += GridContainer::makeGridIndexHelper(pair.second).m_axes_index_factors.back();
     }
 
-    PhzFilterVariation::FilterVariationSingleGridCreator grid_creator{sed_provider, reddening_provider, filter_provider,
-                                                                      igm_abs_func, normalizer_functor, delta_lambda};
-    ProgressReporter                                     progress_listener{logger};
-    size_t                                               already_done = 0;
+    PhzFilterVariation::FilterVariationSingleGridCreator grid_creator{
+        sed_provider,       reddening_provider,    filter_provider,        igm_abs_func,
+        normalizer_functor, normalizer_pp_functor, pp_normalization_value, delta_lambda};
+    ProgressReporter progress_listener{logger};
+    size_t           already_done = 0;
     for (auto& grid_pair : model_phot_grid.region_axes_map) {
       logger.info() << "Filter variation coefficients computation for region '" << grid_pair.first << "'";
       SparseProgressReporter reporter{progress_listener, already_done, total};

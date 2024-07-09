@@ -82,7 +82,7 @@ static std::string getFilenameFromOptions(const std::map<std::string, po::variab
 
 template <typename OArchive>
 static void outputFunction(const std::string& filename, IgmConfig& igm_config,
-                           XYDataset::QualifiedName&                                  luminosity_filter,
+                           XYDataset::QualifiedName& luminosity_filter, XYDataset::QualifiedName& luminosity_pp_filter,
                            const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
   auto                                  local_logger = Elements::Logging::getLogger("PhzOutput");
   std::ofstream                         out{filename};
@@ -91,7 +91,8 @@ static void outputFunction(const std::string& filename, IgmConfig& igm_config,
   std::copy(filter_names_str.begin(), filter_names_str.end(), std::back_inserter(filter_list));
   OArchive boa{out};
   // Store the info object describing the grids
-  PhzDataModel::PhotometryGridInfo info{grid_map, igm_config.getIgmAbsorptionType(), luminosity_filter, filter_list};
+  PhzDataModel::PhotometryGridInfo info{grid_map, igm_config.getIgmAbsorptionType(), luminosity_filter,
+                                        luminosity_pp_filter, filter_list};
   boa << info;
   // Store the grids themselves
   for (auto& pair : grid_map) {
@@ -109,7 +110,7 @@ void FilterVariationCoefficientGridOutputConfig::initialize(const UserValues& ar
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
-  typedef std::function<void(const std::string&, IgmConfig&, XYDataset::QualifiedName&,
+  typedef std::function<void(const std::string&, IgmConfig&, XYDataset::QualifiedName&, XYDataset::QualifiedName&,
                              const std::map<std::string, PhzDataModel::PhotometryGrid>&)>
       InnerOutputFunction;
 
@@ -134,11 +135,12 @@ void FilterVariationCoefficientGridOutputConfig::initialize(const UserValues& ar
 
   m_output_function = [this, filename,
                        inner_output_function](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
-    auto local_logger = Elements::Logging::getLogger("PhzOutput");
-    auto igm_config   = getDependency<IgmConfig>();
-    auto lum_filter   = getDependency<ModelNormalizationConfig>().getNormalizationFilter();
+    auto local_logger  = Elements::Logging::getLogger("PhzOutput");
+    auto igm_config    = getDependency<IgmConfig>();
+    auto lum_filter    = getDependency<ModelNormalizationConfig>().getNormalizationFilter();
+    auto lum_pp_filter = getDependency<ModelNormalizationConfig>().getPpNormalizationFilter();
 
-    inner_output_function(filename, igm_config, lum_filter, grid_map);
+    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, grid_map);
     local_logger.info() << "Created the model grid in file " << filename;
   };
 }

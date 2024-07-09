@@ -43,6 +43,7 @@
 #include "PhzConfiguration/LuminosityPriorConfig.h"
 #include "PhzConfiguration/LuminositySedGroupConfig.h"
 #include "PhzConfiguration/MarginalizationConfig.h"
+#include "PhzConfiguration/ModelPhotometryConfig.h"
 #include "PhzConfiguration/MultithreadConfig.h"
 #include "PhzConfiguration/NzPriorConfig.h"
 #include "PhzConfiguration/OutputCatalogConfig.h"
@@ -131,6 +132,7 @@ ComputeRedshiftsConfig::ComputeRedshiftsConfig(long manager_id) : Configuration(
   declareDependency<OutputStatisticsConfig>();
   declareDependency<CopyColumnsConfig>();
   declareDependency<CorrectedPhotometryConfig>();
+  declareDependency<ModelPhotometryConfig>();
   declareDependency<ErrorAdjustmentConfig>();
 
   declareDependency<ObservationConditionColumnConfig>();

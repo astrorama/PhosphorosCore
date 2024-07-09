@@ -88,7 +88,7 @@ void CorrectionCoefficientGridOutputConfig::initialize(const UserValues& args) {
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
-  typedef std::function<void(const std::string&, IgmConfig&, XYDataset::QualifiedName&,
+  typedef std::function<void(const std::string&, IgmConfig&, XYDataset::QualifiedName&, XYDataset::QualifiedName&,
                              const std::map<std::string, PhzDataModel::PhotometryGrid>&)>
       InnerOutputFunction;
 
@@ -113,11 +113,12 @@ void CorrectionCoefficientGridOutputConfig::initialize(const UserValues& args) {
 
   m_output_function = [this, filename,
                        inner_output_function](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
-    auto local_logger = Elements::Logging::getLogger("PhzOutput");
-    auto igm_config   = getDependency<IgmConfig>();
-    auto lum_filter   = getDependency<ModelNormalizationConfig>().getNormalizationFilter();
+    auto local_logger  = Elements::Logging::getLogger("PhzOutput");
+    auto igm_config    = getDependency<IgmConfig>();
+    auto lum_filter    = getDependency<ModelNormalizationConfig>().getNormalizationFilter();
+    auto lum_pp_filter = getDependency<ModelNormalizationConfig>().getPpNormalizationFilter();
 
-    inner_output_function(filename, igm_config, lum_filter, grid_map);
+    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, grid_map);
     local_logger.info() << "Created the model grid in file " << filename;
   };
 }
