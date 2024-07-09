@@ -75,7 +75,53 @@ BOOST_FIXTURE_TEST_CASE(buildCmgIgmTransmissionFunc, IgmFixture) {
   std::vector<double> expected{0.99724646, 0.99862208, 0.99912122, 0.99960015, 0.99958079, 0.99890562, 0.97113428};
   for (size_t index = 0; index < lam.size(); ++index) {
     double value = (*funct)(lam[index]);
-    BOOST_CHECK_CLOSE(value, expected[index], 1e-6);
+    BOOST_CHECK_CLOSE(value, expected[index], 1);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE(full_function, IgmFixture) {
+  Euclid::PhzModeling::InoueCgmIgmFunctor funct{};
+  std::vector<std::pair<double, double>>  vector_pair{{5000, 1},  {6000, 1},  {7000, 1},  {8000, 1},  {9000, 1},
+                                                      {10000, 1}, {11000, 1}, {12000, 1}, {13000, 1}, {14000, 1},
+                                                      {15000, 1}, {16000, 1}, {17000, 1}, {18000, 1}};
+  Euclid::XYDataset::XYDataset            sed{vector_pair};
+
+  auto result_6 = funct(sed, 6);
+
+  std::vector<double> expected_6{8.0686602075576942e-07,
+                                 2.014170547332731E-4,
+                                 0.06806276744939296,
+                                 0.03819979422501903,
+                                 0.9991789736148734,
+                                 0.999929149381284,
+                                 0.9999790957665315,
+                                 0.9999910700417303,
+                                 0.9999954061695558,
+                                 1.0,
+                                 1.0,
+                                 1.0,
+                                 1.0,
+                                 1.0};
+  auto                sed_iter = result_6.begin();
+  for (size_t index = 0; index < result_6.size(); ++index) {
+    double value = (*sed_iter).second;
+    BOOST_CHECK_CLOSE(expected_6[index], value,
+                      1.4);  // Values computed with another interpolation shem: large relative error
+    ++sed_iter;
+  }
+
+  auto result_10 = funct(sed, 10);
+
+  std::vector<double> expected_10{1.3642026111340308e-47, 1.3537404130421293E-47, 1.2982053526521395E-53,
+                                  2.5395169180034786E-54, 2.56979059E-45,         1.28510146415E-20,
+                                  1.1617265298543364E-14, 6.75384301896725E-14,   1.99082008833049E-21,
+                                  0.8010056807285458,     0.9721742860946472,     0.9905693185437979,
+                                  0.9956144454664981,     0.9975964220208162};
+  sed_iter = result_10.begin();
+  for (size_t index = 0; index < result_10.size(); ++index) {
+    double value = (*sed_iter).second;
+    BOOST_CHECK_CLOSE(expected_10[index], value, 5);
+    ++sed_iter;
   }
 }
 

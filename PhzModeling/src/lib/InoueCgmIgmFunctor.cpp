@@ -57,8 +57,11 @@ std::unique_ptr<MathUtils::Function> InoueCgmIgmFunctor::buildCmgIgmTransmission
   std::vector<double> x_list{};
   std::vector<double> y_list{};
 
+  x_list.push_back(0.0);
+  y_list.push_back(0.0);
+
   double lambda_min   = 1000;
-  double lambda_max   = 15000;
+  double lambda_max   = 20000;
   double delta_lambda = 3;
 
   for (double lambda = lambda_min; lambda <= lambda_max; lambda += delta_lambda) {
@@ -66,6 +69,9 @@ std::unique_ptr<MathUtils::Function> InoueCgmIgmFunctor::buildCmgIgmTransmission
     double tau_i = N_HI * sigma_alpha(3e18 * (1 + z) / lambda, 6.255486e8, 2.46607e15, 6.9029528e22);
     y_list.push_back(std::exp(-tau_i));
   }
+
+  x_list.push_back(100000000);
+  y_list.push_back(1.0);
 
   return MathUtils::interpolate(x_list, y_list, MathUtils::InterpolationType::LINEAR);
 }
@@ -94,8 +100,8 @@ XYDataset::XYDataset InoueCgmIgmFunctor::operator()(const XYDataset::XYDataset& 
 
     for (auto& sed_pair : sed_inoue) {
       absorbed_values.emplace_back(sed_pair.first,
-                                   sed_pair.second * igm_func(0.1 * sed_pair.first));  // Computation is in Angstrom
-                                                                                       // while SED are in nm
+                                   sed_pair.second * igm_func(sed_pair.first));  // Computation is in Angstrom
+                                                                                 // while SED are in nm
     }
 
     return XYDataset::XYDataset{std::move(absorbed_values)};
