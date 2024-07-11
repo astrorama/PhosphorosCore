@@ -17,12 +17,11 @@
  */
 
 /**
- * @file InoueCgmIgmFunctor.cpp
- * @date May 6, 2015
- * @author Nikolaos Apostolakos
+ * @file CgmIgmFunctor.cpp
+ * @date 2024/07/11
+ * @author DubathF
  */
 
-#include "PhzModeling/InoueCgmIgmFunctor.h"
 #include "ElementsKernel/Logging.h"
 #include "MathUtils/interpolation/interpolation.h"
 #include "PhzModeling/InoueIgmFunctor.h"
@@ -31,28 +30,33 @@
 #include <map>
 #include <mutex>
 #include <vector>
-
 #include <iostream>
 
 namespace Euclid {
 namespace PhzModeling {
 
-static Elements::Logging logger = Elements::Logging::getLogger("InoueCgmIgmFunctor");
+static Elements::Logging logger = Elements::Logging::getLogger("CgmIgmFunctor");
 
 constexpr double pi = 3.14159265358979323846;
 
-double InoueCgmIgmFunctor::sigmoid(double z, double A, double a, double c) {
+template<typename BaseIgmFunctor>
+CgmIgmFunctor<BaseIgmFunctor>::CgmIgmFunctor(double A, double a, double c):m_A{A},m_a{a},m_c{c}{};
+
+template<typename BaseIgmFunctor>
+double CgmIgmFunctor<BaseIgmFunctor>::sigmoid(double z, double A, double a, double c) {
   return c + A / (1.0 + std::exp(-a * (z - 6.0)));
 }
 
-double InoueCgmIgmFunctor::sigma_alpha(double nu_rest, double lambda_a, double nu_lyalpha, double C) {
+template<typename BaseIgmFunctor>
+double CgmIgmFunctor<BaseIgmFunctor>::sigma_alpha(double nu_rest, double lambda_a, double nu_lyalpha, double C) {
   return 1e-16 * C * std::pow(nu_rest / nu_lyalpha, 4) /
          (4 * std::pow(pi * (nu_rest - nu_lyalpha), 2) +
           0.25 * lambda_a * lambda_a * std::pow(nu_rest / nu_lyalpha, 6));
 }
 
-std::unique_ptr<MathUtils::Function> InoueCgmIgmFunctor::buildCmgIgmTransmissionFunc(double z) {
-  double N_HI = std::pow(10, sigmoid(z, 4.92919285, 0.76313514, 17.54936014));
+template<typename BaseIgmFunctor>
+std::unique_ptr<MathUtils::Function> CgmIgmFunctor<BaseIgmFunctor>::buildCmgIgmTransmissionFunc(double z, double A, double a, double c) {
+  double N_HI = std::pow(10, sigmoid(z, A, a, c));
 
   std::vector<double> x_list{};
   std::vector<double> y_list{};
@@ -79,24 +83,26 @@ std::unique_ptr<MathUtils::Function> InoueCgmIgmFunctor::buildCmgIgmTransmission
 static std::map<double, std::unique_ptr<MathUtils::Function>> igm_cmg_transmission_map{};
 static std::mutex                                             igm_cmg_func_mutex{};
 
-static MathUtils::Function& getCgmIgmTransmissionFunc(double z) {
+template<typename BaseIgmFunctor>
+static MathUtils::Function& getCgmIgmTransmissionFunc(double z, double A, double a, double c) {
   std::lock_guard<std::mutex> guard{igm_cmg_func_mutex};
   auto&                       func_ptr = igm_cmg_transmission_map[z];
   if (func_ptr == nullptr) {
-    func_ptr = InoueCgmIgmFunctor::buildCmgIgmTransmissionFunc(z);
+    func_ptr = CgmIgmFunctor<BaseIgmFunctor>::buildCmgIgmTransmissionFunc(z, A, a, c);
   }
   return *func_ptr;
 }
 
-XYDataset::XYDataset InoueCgmIgmFunctor::operator()(const XYDataset::XYDataset& sed, double z) const {
+template<typename BaseIgmFunctor>
+XYDataset::XYDataset CgmIgmFunctor<BaseIgmFunctor>::operator()(const XYDataset::XYDataset& sed, double z) const {
 
-  auto sed_inoue = m_InoueIgmFunctor(sed, z);
+  auto sed_inoue = m_BaseIgmFunctor(sed, z);
 
   if (z < 6) {
     return sed_inoue;
   } else {
     std::vector<std::pair<double, double>> absorbed_values{};
-    MathUtils::Function&                   igm_func = getCgmIgmTransmissionFunc(z);
+    MathUtils::Function&                   igm_func = getCgmIgmTransmissionFunc<BaseIgmFunctor>(z, m_A, m_a, m_c);
 
     for (auto& sed_pair : sed_inoue) {
       absorbed_values.emplace_back(sed_pair.first,

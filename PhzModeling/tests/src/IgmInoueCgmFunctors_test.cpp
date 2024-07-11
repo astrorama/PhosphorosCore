@@ -16,7 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "PhzModeling/InoueCgmIgmFunctor.h"
+#include "PhzModeling/CgmIgmFunctor.h"
+#include "PhzModeling/InoueIgmFunctor.h"
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
 
@@ -41,12 +42,13 @@ BOOST_FIXTURE_TEST_CASE(sigmoid_test, IgmFixture) {
                                21.598494682315597, 22.02504650201098,  22.25620736854175,  22.372337388711188,
                                22.428458804578387, 22.455071571095026, 22.467577985189465, 22.473430326691734};
 
-  BOOST_CHECK_CLOSE(Euclid::PhzModeling::InoueCgmIgmFunctor::InoueCgmIgmFunctor::sigmoid(0, 1, 1, 0),
-                    0.0024726231566347743, 1e-6);
+  BOOST_CHECK_CLOSE(
+      Euclid::PhzModeling::CgmIgmFunctor<Euclid::PhzModeling::InoueIgmFunctor>::CgmIgmFunctor::sigmoid(0, 1, 1, 0),
+      0.0024726231566347743, 1e-6);
 
   for (size_t index = 0; index < z.size(); ++index) {
-    double value = Euclid::PhzModeling::InoueCgmIgmFunctor::InoueCgmIgmFunctor::sigmoid(z[index], 4.92919285,
-                                                                                        0.76313514, 17.54936014);
+    double value = Euclid::PhzModeling::CgmIgmFunctor<Euclid::PhzModeling::InoueIgmFunctor>::CgmIgmFunctor::sigmoid(
+        z[index], 4.92919285, 0.76313514, 17.54936014);
     BOOST_CHECK_CLOSE(value, expected[index], 1e-6);
   }
 }
@@ -63,14 +65,16 @@ BOOST_FIXTURE_TEST_CASE(sigma_alpha, IgmFixture) {
                                7.773968332592582e-72};
 
   for (size_t index = 0; index < nu.size(); ++index) {
-    double value = Euclid::PhzModeling::InoueCgmIgmFunctor::InoueCgmIgmFunctor::sigma_alpha(nu[index], 6.255486e8,
-                                                                                            2.46607e15, 6.9029528e22);
+    double value = Euclid::PhzModeling::CgmIgmFunctor<Euclid::PhzModeling::InoueIgmFunctor>::CgmIgmFunctor::sigma_alpha(
+        nu[index], 6.255486e8, 2.46607e15, 6.9029528e22);
     BOOST_CHECK_CLOSE(value, expected[index], 1e-6);
   }
 }
 
 BOOST_FIXTURE_TEST_CASE(buildCmgIgmTransmissionFunc, IgmFixture) {
-  auto                funct = Euclid::PhzModeling::InoueCgmIgmFunctor::buildCmgIgmTransmissionFunc(7);
+  auto funct = Euclid::PhzModeling::CgmIgmFunctor<
+      Euclid::PhzModeling::InoueIgmFunctor>::CgmIgmFunctor::buildCmgIgmTransmissionFunc(7, 4.92919285, 0.76313514,
+                                                                                        17.54936014);
   std::vector<double> lam{1000, 1500, 2000, 4000, 6000, 8000, 10000};
   std::vector<double> expected{0.99724646, 0.99862208, 0.99912122, 0.99960015, 0.99958079, 0.99890562, 0.97113428};
   for (size_t index = 0; index < lam.size(); ++index) {
@@ -80,11 +84,11 @@ BOOST_FIXTURE_TEST_CASE(buildCmgIgmTransmissionFunc, IgmFixture) {
 }
 
 BOOST_FIXTURE_TEST_CASE(full_function, IgmFixture) {
-  Euclid::PhzModeling::InoueCgmIgmFunctor funct{};
-  std::vector<std::pair<double, double>>  vector_pair{{5000, 1},  {6000, 1},  {7000, 1},  {8000, 1},  {9000, 1},
-                                                      {10000, 1}, {11000, 1}, {12000, 1}, {13000, 1}, {14000, 1},
-                                                      {15000, 1}, {16000, 1}, {17000, 1}, {18000, 1}};
-  Euclid::XYDataset::XYDataset            sed{vector_pair};
+  Euclid::PhzModeling::CgmIgmFunctor<Euclid::PhzModeling::InoueIgmFunctor> funct{};
+  std::vector<std::pair<double, double>> vector_pair{{5000, 1},  {6000, 1},  {7000, 1},  {8000, 1},  {9000, 1},
+                                                     {10000, 1}, {11000, 1}, {12000, 1}, {13000, 1}, {14000, 1},
+                                                     {15000, 1}, {16000, 1}, {17000, 1}, {18000, 1}};
+  Euclid::XYDataset::XYDataset           sed{vector_pair};
 
   auto result_6 = funct(sed, 6);
 
