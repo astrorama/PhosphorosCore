@@ -54,8 +54,15 @@ static void outputFunction(const std::string& filename, PhzConfiguration::IgmCon
   std::copy(filter_names_str.begin(), filter_names_str.end(), std::back_inserter(filter_list));
   OArchive boa{out};
   // Store the info object describing the grids
-  PhzDataModel::PhotometryGridInfo info{grid_map, igm_config.getIgmAbsorptionType(), luminosity_filter,
-                                        luminosity_pp_filter, filter_list};
+  PhzDataModel::PhotometryGridInfo info{grid_map,
+                                        igm_config.getIgmAbsorptionType(),
+                                        luminosity_filter,
+                                        luminosity_pp_filter,
+                                        filter_list,
+                                        igm_config.getCgmEnabled(),
+                                        igm_config.getCGMAParam(),
+                                        igm_config.getCGMaParam(),
+                                        igm_config.getCGMcParam()};
   boa << info;
   // Store the grids themselves
   for (auto& pair : grid_map) {

@@ -133,11 +133,40 @@ const PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction& IgmConfig::getI
   return m_absorption_function;
 }
 
-const std::string& IgmConfig::getIgmAbsorptionType() {
+const std::string& IgmConfig::getIgmAbsorptionType() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
     throw Elements::Exception() << "Call to getIgmAbsorptionType() on a not initialized instance.";
   }
   return m_absorption_type;
+}
+
+bool IgmConfig::getCgmEnabled() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getCgmEnabled() on a not initialized instance.";
+  }
+  return m_add_cgm;
+}
+
+double IgmConfig::getCGMAParam() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getCGMAParam() on a not initialized instance.";
+  }
+  return m_cgm_au;
+}
+
+double IgmConfig::getCGMaParam() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getCGMaParam() on a not initialized instance.";
+  }
+  return m_cgm_al;
+}
+
+double IgmConfig::getCGMcParam() const {
+
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getCGMcParam() on a not initialized instance.";
+  }
+  return m_cgm_c;
 }
 
 }  // namespace PhzConfiguration

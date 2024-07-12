@@ -77,7 +77,12 @@ public:
   /**
    * @brief Return the Igm Absorption type
    */
-  const std::string& getIgmAbsorptionType();
+  const std::string& getIgmAbsorptionType() const;
+
+  bool   getCgmEnabled() const;
+  double getCGMAParam() const;
+  double getCGMaParam() const;
+  double getCGMcParam() const;
 
 private:
   PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction m_absorption_function;

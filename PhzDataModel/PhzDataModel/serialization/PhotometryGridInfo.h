@@ -52,6 +52,10 @@ void save(Archive& ar, const Euclid::PhzDataModel::PhotometryGridInfo& t, const 
   }
   // Store the IGM type
   ar << t.igm_method;
+  ar << t.cgm;
+  ar << t.cgm_A;
+  ar << t.cgm_a;
+  ar << t.cgm_c;
 
   // Store the Luminosity Filter
   ar << t.luminosity_filter_name.qualifiedName();
@@ -80,6 +84,10 @@ void load(Archive& ar, Euclid::PhzDataModel::PhotometryGridInfo& t, const unsign
   }
   // Read the IGM type
   ar >> t.igm_method;
+  ar >> t.cgm;
+  ar >> t.cgm_A;
+  ar >> t.cgm_a;
+  ar >> t.cgm_c;
 
   // Read Luminosity filter
   std::string lum_filter;
