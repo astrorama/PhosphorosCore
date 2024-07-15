@@ -47,6 +47,10 @@ BOOST_FIXTURE_TEST_CASE(getProgramOptions_test, ConfigManager_fixture) {
 
   // Then
   BOOST_CHECK_NO_THROW(options.find("igm-absorption-type", false));
+  BOOST_CHECK_NO_THROW(options.find("igm-absorption-add-cgm", false));
+  BOOST_CHECK_NO_THROW(options.find("igm-absorption-cgm-A", false));
+  BOOST_CHECK_NO_THROW(options.find("igm-absorption-cgm-a", false));
+  BOOST_CHECK_NO_THROW(options.find("igm-absorption-cgm-c", false));
 }
 
 //-----------------------------------------------------------------------------
@@ -88,14 +92,21 @@ BOOST_FIXTURE_TEST_CASE(Nominal_test, ConfigManager_fixture) {
 
   std::string known_type                     = "OFF";
   options_map["igm-absorption-type"].value() = boost::any(known_type);
-
   // When
   config_manager.initialize(options_map);
   auto type_result = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionType();
+  auto cgm_on      = config_manager.getConfiguration<IgmConfig>().getCgmEnabled();
+  auto cgm_A       = config_manager.getConfiguration<IgmConfig>().getCGMAParam();
+  auto cgm_a       = config_manager.getConfiguration<IgmConfig>().getCGMaParam();
+  auto cgm_c       = config_manager.getConfiguration<IgmConfig>().getCGMcParam();
   auto result      = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
 
   // Then
   BOOST_CHECK_EQUAL(type_result, "OFF");
+  BOOST_CHECK(!cgm_on);
+  BOOST_CHECK_CLOSE(cgm_A, 4.92919285, 1e-4);
+  BOOST_CHECK_CLOSE(cgm_a, 0.76313514, 1e-4);
+  BOOST_CHECK_CLOSE(cgm_c, 17.54936014, 1e-4);
 
   std::vector<std::pair<double, double>> values{};
   values.push_back(std::make_pair(1., 1.));
