@@ -77,11 +77,20 @@ public:
   /**
    * @brief Return the Igm Absorption type
    */
-  const std::string& getIgmAbsorptionType();
+  const std::string& getIgmAbsorptionType() const;
+
+  bool   getCgmEnabled() const;
+  double getCGMAParam() const;
+  double getCGMaParam() const;
+  double getCGMcParam() const;
 
 private:
   PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction m_absorption_function;
   std::string                                               m_absorption_type;
+  bool                                                      m_add_cgm = false;
+  double                                                    m_cgm_au  = 4.92919285;
+  double                                                    m_cgm_al  = 0.76313514;
+  double                                                    m_cgm_c   = 17.54936014;
 
 }; /* End of IgmConfig class */
 

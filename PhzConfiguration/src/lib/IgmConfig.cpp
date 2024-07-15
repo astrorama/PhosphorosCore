@@ -25,6 +25,7 @@
 #include "PhzConfiguration/IgmConfig.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
+#include "PhzModeling/CgmIgmFunctor.h"
 #include "PhzModeling/InoueIgmFunctor.h"
 #include "PhzModeling/MadauIgmFunctor.h"
 #include "PhzModeling/MeiksinIgmFunctor.h"
@@ -40,25 +41,55 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 static const std::string IGM_ABSORPTION_TYPE{"igm-absorption-type"};
+static const std::string IGM_ABSORPTION_ADD_CGM{"igm-absorption-add-cgm"};
+static const std::string IGM_ABSORPTION_CGM_AU{"igm-absorption-cgm-A"};
+static const std::string IGM_ABSORPTION_CGM_AL{"igm-absorption-cgm-a"};
+static const std::string IGM_ABSORPTION_CGM_C{"igm-absorption-cgm-c"};
+
 static Elements::Logging logger = Elements::Logging::getLogger("IgmConfig");
 
 IgmConfig::IgmConfig(long manager_id) : Configuration(manager_id) {}
 
 auto IgmConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
   return {{"IGM absorption options",
-           {{IGM_ABSORPTION_TYPE.c_str(), po::value<std::string>()->default_value("OFF"),
-             "The type of IGM absorption to apply (one of OFF, MADAU, MEIKSIN, INOUE)"}}}};
+           {
+               {IGM_ABSORPTION_TYPE.c_str(), po::value<std::string>()->default_value("OFF"),
+                "The type of IGM absorption to apply (one of OFF, MADAU, MEIKSIN, INOUE)"},
+               {IGM_ABSORPTION_ADD_CGM.c_str(), po::value<std::string>()->default_value("NO"),
+                "If YES add CGM to IGM (YES/NO default NO)"},
+               {IGM_ABSORPTION_CGM_AU.c_str(), po::value<double>()->default_value(4.92919285),
+                "CGM parameter A, default value=4.92919285"},
+               {IGM_ABSORPTION_CGM_AL.c_str(), po::value<double>()->default_value(0.76313514),
+                "CGM parameter a, default value=0.76313514"},
+               {IGM_ABSORPTION_CGM_C.c_str(), po::value<double>()->default_value(17.54936014),
+                "CGM parameter c, default value=17.54936014"},
+           }}};
 }
 
 void IgmConfig::preInitialize(const UserValues& args) {
+
   std::set<std::string> types{"OFF", "MADAU", "MEIKSIN", "INOUE"};
   if (args.count(IGM_ABSORPTION_TYPE) == 0) {
     throw Elements::Exception() << "Missing " << IGM_ABSORPTION_TYPE << " option ";
   }
-  auto input_type = args.find(IGM_ABSORPTION_TYPE)->second.as<std::string>();
 
-  if (types.find(input_type) == types.end()) {
-    throw Elements::Exception() << "Unknown " << IGM_ABSORPTION_TYPE << " option \"" << input_type << "\"";
+  m_absorption_type = args.find(IGM_ABSORPTION_TYPE)->second.as<std::string>();
+  if (types.find(m_absorption_type) == types.end()) {
+    throw Elements::Exception() << "Unknown " << IGM_ABSORPTION_TYPE << " option \"" << m_absorption_type << "\"";
+  }
+
+  if (args.count(IGM_ABSORPTION_ADD_CGM) == 1 && args.find(IGM_ABSORPTION_ADD_CGM)->second.as<std::string>() == "YES") {
+    m_add_cgm = true;
+  }
+
+  if (args.count(IGM_ABSORPTION_CGM_AU) == 1) {
+    m_cgm_au = args.find(IGM_ABSORPTION_CGM_AU)->second.as<double>();
+  }
+  if (args.count(IGM_ABSORPTION_CGM_AL) == 1) {
+    m_cgm_al = args.find(IGM_ABSORPTION_CGM_AL)->second.as<double>();
+  }
+  if (args.count(IGM_ABSORPTION_CGM_C) == 1) {
+    m_cgm_c = args.find(IGM_ABSORPTION_CGM_C)->second.as<double>();
   }
 }
 
@@ -68,17 +99,30 @@ void IgmConfig::initialize(const UserValues& args) {
     m_absorption_type     = "OFF";
     m_absorption_function = PhzModeling::NoIgmFunctor{};
   }
+
   if (input_type == "MADAU") {
-    m_absorption_type     = "MADAU";
-    m_absorption_function = PhzModeling::MadauIgmFunctor{};
+    m_absorption_type = "MADAU";
+    if (m_add_cgm) {
+      m_absorption_function = PhzModeling::CgmIgmFunctor<PhzModeling::MadauIgmFunctor>(m_cgm_au, m_cgm_al, m_cgm_c);
+    } else {
+      m_absorption_function = PhzModeling::MadauIgmFunctor{};
+    }
   }
   if (input_type == "MEIKSIN") {
-    m_absorption_type     = "MEIKSIN";
-    m_absorption_function = PhzModeling::MeiksinIgmFunctor{};
+    m_absorption_type = "MEIKSIN";
+    if (m_add_cgm) {
+      m_absorption_function = PhzModeling::CgmIgmFunctor<PhzModeling::MeiksinIgmFunctor>(m_cgm_au, m_cgm_al, m_cgm_c);
+    } else {
+      m_absorption_function = PhzModeling::MeiksinIgmFunctor{};
+    }
   }
   if (input_type == "INOUE") {
-    m_absorption_type     = "INOUE";
-    m_absorption_function = PhzModeling::InoueIgmFunctor{};
+    m_absorption_type = "INOUE";
+    if (m_add_cgm) {
+      m_absorption_function = PhzModeling::CgmIgmFunctor<PhzModeling::InoueIgmFunctor>(m_cgm_au, m_cgm_al, m_cgm_c);
+    } else {
+      m_absorption_function = PhzModeling::InoueIgmFunctor{};
+    }
   }
 }
 
@@ -89,11 +133,40 @@ const PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction& IgmConfig::getI
   return m_absorption_function;
 }
 
-const std::string& IgmConfig::getIgmAbsorptionType() {
+const std::string& IgmConfig::getIgmAbsorptionType() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
     throw Elements::Exception() << "Call to getIgmAbsorptionType() on a not initialized instance.";
   }
   return m_absorption_type;
+}
+
+bool IgmConfig::getCgmEnabled() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getCgmEnabled() on a not initialized instance.";
+  }
+  return m_add_cgm;
+}
+
+double IgmConfig::getCGMAParam() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getCGMAParam() on a not initialized instance.";
+  }
+  return m_cgm_au;
+}
+
+double IgmConfig::getCGMaParam() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getCGMaParam() on a not initialized instance.";
+  }
+  return m_cgm_al;
+}
+
+double IgmConfig::getCGMcParam() const {
+
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getCGMcParam() on a not initialized instance.";
+  }
+  return m_cgm_c;
 }
 
 }  // namespace PhzConfiguration
