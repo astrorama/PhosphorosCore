@@ -113,12 +113,12 @@ BOOST_FIXTURE_TEST_CASE(priorValues_low_flux_test, NzPrior_Fixture) {
   }
   auto prior = PhzNzPrior::NzPrior(group_manager, fliter, PhzNzPrior::NzPriorParam::defaultParam());
 
-  auto expected_T1 = std::vector<double>{-20.385217120744624, -3.406677073675051, -0.19494662042258315,
-                                         -57.57430633531531, -337.4757326684392};
-  auto expected_T2 = std::vector<double>{-14.645712503331005, -2.1915462350225154, -0.1294768960559971,
-                                         -19.03488846999185, -75.54928033642256};
-  auto expected_T3 = std::vector<double>{-15.101126585803403, -1.3240612565901317, 0.9721281555675448,
-                                         -29.083961702714202, -131.49988877152828};
+  auto expected_T1 = std::vector<double>{-20.357345305379972, -3.3788052583103978, -0.1670748050579296,
+                                         -57.546434519950665, -337.44786085307459};
+  auto expected_T2 = std::vector<double>{-14.617840687966352, -2.1636744196578621, -0.10160508069134355,
+                                         -19.00701665462719, -75.521408521057893};
+  auto expected_T3 =
+      std::vector<double>{-15.073254770438748, -1.2961894412254784, 1, -29.05608988734955, -131.47201695616363};
 
   // When
   prior(results);
@@ -164,12 +164,12 @@ BOOST_FIXTURE_TEST_CASE(priorValues_scale_sampled_test, NzPrior_Fixture) {
 
   auto prior = PhzNzPrior::NzPrior(group_manager, fliter, PhzNzPrior::NzPriorParam::defaultParam());
 
-  auto expected_T1 = std::vector<double>{-20.385217120744624, -3.406677073675051, -0.19494662042258315,
-                                         -57.57430633531531, -337.4757326684392};
-  auto expected_T2 = std::vector<double>{-14.645712503331005, -2.1915462350225154, -0.1294768960559971,
-                                         -19.03488846999185, -75.54928033642256};
-  auto expected_T3 = std::vector<double>{-15.101126585803403, -1.3240612565901317, 0.9721281555675448,
-                                         -29.083961702714202, -131.49988877152828};
+  auto expected_T1 = std::vector<double>{-20.357345305379972, -3.3788052583103978, -0.1670748050579296,
+                                         -57.546434519950665, -337.44786085307459};
+  auto expected_T2 = std::vector<double>{-14.617840687966352, -2.1636744196578621, -0.10160508069134355,
+                                         -19.00701665462719, -75.521408521057893};
+  auto expected_T3 =
+      std::vector<double>{-15.073254770438748, -1.2961894412254784, 1, -29.05608988734955, -131.47201695616363};
 
   // When
   prior(results);

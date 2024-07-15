@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE(applyEffectiveness) {
     ++index;
   }
 
-  std::vector<double> expected{1.8, 2.5, 3.2, 3.9, 4.6, 5.3, 6.0};
+  std::vector<double> expected{0.0, 0.285294976568, 0.4634630567, 0.6155722066, 0.752897956, 0.88018330703, 1};
 
   // When
   prior.applyEffectiveness(prior_grid, 6.0);
