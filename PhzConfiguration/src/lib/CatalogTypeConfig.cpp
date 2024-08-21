@@ -45,10 +45,14 @@ auto CatalogTypeConfig::getProgramOptions() -> std::map<std::string, OptionDescr
 
 void CatalogTypeConfig::preInitialize(const UserValues& args) {
   regex expr{"[0-9a-zA-Z_]+"};
-  auto  type = args.at(CATALOG_TYPE).as<std::string>();
-  if (!regex_match(type, expr)) {
-    throw Elements::Exception() << "Malformed " << CATALOG_TYPE << " value (" << type
-                                << "). Only letters numbers and the underscore are allowed.";
+  if (args.count(CATALOG_TYPE) > 0) {
+    auto type = args.at(CATALOG_TYPE).as<std::string>();
+    if (!regex_match(type, expr)) {
+      throw Elements::Exception() << "Malformed " << CATALOG_TYPE << " value (" << type
+                                  << "). Only letters numbers and the underscore are allowed.";
+    }
+  } else {
+    throw Elements::Exception() << "Missing " << CATALOG_TYPE << " value.";
   }
 }
 

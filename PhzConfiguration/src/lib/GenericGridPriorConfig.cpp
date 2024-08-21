@@ -22,16 +22,21 @@
  * @author nikoapos
  */
 
-#include "PhzConfiguration/GenericGridPriorConfig.h"
+#include <filesystem>
+
 #include "ElementsKernel/Logging.h"
 #include "GridContainer/serialize.h"
 #include "PhzConfiguration/AuxDataDirConfig.h"
+#include "PhzConfiguration/GenericGridPriorConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzDataModel/DoubleGrid.h"
 #include "PhzLikelihood/GenericGridPrior.h"
 #include "PhzLikelihood/SharedPriorAdapter.h"
 #include <CCfits/CCfits>
 #include <boost/filesystem.hpp>
+
+#include "PhzConfiguration/CatalogTypeConfig.h"
+#include "PhzConfiguration/IntermediateDirConfig.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -45,7 +50,8 @@ namespace PhzConfiguration {
 
 GenericGridPriorConfig::GenericGridPriorConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PriorConfig>();
-  declareDependency<AuxDataDirConfig>();
+  declareDependency<CatalogTypeConfig>();
+  declareDependency<IntermediateDirConfig>();
 }
 
 auto GenericGridPriorConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -78,8 +84,23 @@ void GenericGridPriorConfig::initialize(const UserValues& args) {
     for (auto& name : args.at(GENERIC_GRID_PRIOR).as<std::vector<std::string>>()) {
       fs::path filename{name};
       if (!filename.is_absolute()) {
-        auto& aux_dir = getDependency<AuxDataDirConfig>().getAuxDataDir();
-        filename      = aux_dir / "GenericPriors" / filename;
+        auto intermediate_dir = getDependency<IntermediateDirConfig>().getIntermediateDir();
+        auto catalog_type     = getDependency<CatalogTypeConfig>().getCatalogType();
+        auto aux_dir          = getDependency<AuxDataDirConfig>().getAuxDataDir();
+        if (std::filesystem::exists(filename.string())) {
+          // Local file
+          logger.info("Find a file for the generic grid prior with path " + filename.string());
+        } else if (std::filesystem::exists((intermediate_dir / catalog_type / "GenericPriors" / filename).string())) {
+          // Intermediate result file
+          filename = intermediate_dir / catalog_type / "GenericPriors" / filename;
+          logger.info("Find a file for the generic grid prior with path " + filename.string());
+        } else if (std::filesystem::exists((aux_dir / "GenericPriors" / filename).string())) {
+          // Aux dir file (legacy)
+          filename = aux_dir / "GenericPriors" / filename;
+          logger.info("Find a file for the generic grid prior with path " + filename.string());
+        } else {
+          logger.error("No file was found for the generic grid prior");
+        }
       }
       std::vector<PhzDataModel::DoubleGrid> grids = readGridsFromFile(filename);
       getDependency<PriorConfig>().addPrior(SharedPriorAdapter<GenericGridPrior>::factory(std::move(grids)));

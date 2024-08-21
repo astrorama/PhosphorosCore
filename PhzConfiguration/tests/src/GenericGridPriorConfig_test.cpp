@@ -77,6 +77,8 @@ struct GenericGridPriorConfig_fixture : public ConfigManager_fixture {
 
     options_map                             = registerConfigAndGetDefaultOptionsMap<GenericGridPriorConfig>();
     options_map[GENERIC_GRID_PRIOR].value() = boost::any{std::vector<std::string>{prior_file}};
+    std::string toto{"toto"};
+    options_map["catalog-type"].value() = boost::any{toto};
   }
 };
 
