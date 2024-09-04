@@ -84,8 +84,8 @@ auto LuminosityPriorConfig::getProgramOptions() -> std::map<std::string, OptionD
              "If added, turn Luminosity Prior on  (YES/NO, default: NO)"},
             {LUMINOSITY_PRIOR_EFFECTIVENESS.c_str(), po::value<double>()->default_value(1.),
              "A value in the range [0,1] showing how strongly to apply the prior"},
-            {LUMINOSITY_PRIOR_PERMPC3.c_str(), po::value<std::string>()->default_value("YES"),
-             "Set if the luminosity function is in 1/mpc³ (YES/NO, default: YES)"}}}};
+            {LUMINOSITY_PRIOR_PERMPC3.c_str(), po::value<std::string>()->default_value(""),
+             "Set if the luminosity function is in 1/Mpc³ (YES/NO)"}}}};
 }
 
 void LuminosityPriorConfig::preInitialize(const UserValues& args) {
@@ -109,11 +109,8 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
   m_is_configured =
       args.count(LUMINOSITY_PRIOR) == 1 && args.find(LUMINOSITY_PRIOR)->second.as<std::string>().compare("YES") == 0;
 
-  m_permpc3 = args.count(LUMINOSITY_PRIOR_PERMPC3) == 1 &&
-              args.find(LUMINOSITY_PRIOR_PERMPC3)->second.as<std::string>().compare("YES") == 0;
-
   if (m_is_configured) {
-
+    logger.info() << "Luminosity Prior Configured";
     bool inMag = getDependency<LuminosityFunctionConfig>().isExpressedInMagnitude();
 
     double scale_sampling_range_sigma = getDependency<ScaleFactorMarginalizationConfig>().getRangeInSigma();
@@ -140,13 +137,22 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
     PhzLikelihood::SharedPriorAdapter<PhzLuminosity::LuminosityPrior> prior{prior_ptr};
 
     getDependency<PriorConfig>().addPrior(prior);
+
+    if (args.count(LUMINOSITY_PRIOR_PERMPC3) != 1 ||
+        !(args.find(LUMINOSITY_PRIOR_PERMPC3)->second.as<std::string>().compare("YES") == 0 ||
+          args.find(LUMINOSITY_PRIOR_PERMPC3)->second.as<std::string>().compare("NO") == 0)) {
+      logger.error() << "Missing " << LUMINOSITY_PRIOR_PERMPC3 << " parameter.";
+      throw Elements::Exception() << "Missing " << LUMINOSITY_PRIOR_PERMPC3 << " parameter.";
+    } else {
+      m_permpc3 = args.find(LUMINOSITY_PRIOR_PERMPC3)->second.as<std::string>().compare("YES") == 0;
+    }
   }
 
   // Volume prior manipulation
   if (m_is_configured && m_permpc3) {
     // force the volume prior on
     logger.info()
-        << "Luminosity Prior defined in 1/mpc³ need the Volume Prior on to be meaningful. Forcing the Volume Prior on.";
+        << "Luminosity Prior defined in 1/Mpc³ need the Volume Prior on to be meaningful. Forcing the Volume Prior on.";
     getDependency<VolumePriorConfig>().forceOn();
   }
 }
