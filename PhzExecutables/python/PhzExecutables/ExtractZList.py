@@ -55,7 +55,10 @@ def defineSpecificProgramOptions():
     parser.add_argument('-mr','--max_record', type=int, default='-1',
                         help='If>0 limit the number of object taken into account (default n=-1)')
     parser.add_argument('-of','--output_file', type=str, default='',
-                        help='Path to the file containing the redshift list (format based on the extention to be in [.fits,.csv,.dat]')
+                        help='Path to the file containing the redshift list (format based on the extention to be in [.fits,.csv,.dat,.conf]) if a *.conf is provided the list will be in a format to be used in Phosphoros CR')
+    parser.add_argument('-cg','--config_group', type=str, default='<group>',
+                        help='if provided and the output file is a .conf, list the coma separated model groups to be configured (ex: <group1>,<group2>)')
+
 
     return parser
 
@@ -95,7 +98,7 @@ def get_out_table(zs_extracted):
 #--------------------------
 def mainMethod(args):
     _, ext = os.path.splitext(args.output_file)
-    if ext not in ['.fits','.dat','.csv']:
+    if ext not in ['.fits','.dat','.csv','.conf']:
        raise ValueError(f'Unrecognised output file extention ({ext})')
     zs = extract_sub_sample(Table.read(args.input_catalog)[args.ref_z_col], args.skip_n_first, args.max_record)
     logger.info(f'Read {len(zs)} records from file {args.input_catalog} starting at record {args.skip_n_first}')
@@ -113,6 +116,14 @@ def mainMethod(args):
         out_t.write(args.output_file, format='fits', overwrite=True)
     elif  ext == '.dat':
         out_t.write(args.output_file, format='ascii.no_header', overwrite=True)
+    elif  ext == '.conf':
+        groups = args.config_group.split(',')
+
+        with open(args.output_file,"w") as f:
+            for grp in groups:
+                for z in zs_extracted:
+                    line = f'z-value-{grp}={z}\n'
+                    f.write(line)
     else:
         out_t.write(args.output_file, format='csv', overwrite=True)
 
