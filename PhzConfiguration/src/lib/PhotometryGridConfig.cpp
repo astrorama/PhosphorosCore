@@ -26,6 +26,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <fstream>
+#include <list>
 
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
@@ -130,9 +131,11 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
 
     if (!same) {
       // Check that we have all the catalog photometries in the grid
+      auto iter = m_info.filter_names.begin();
       for (auto& f : *filter_names) {
-        if (std::count(m_info.filter_names.begin(), m_info.filter_names.end(), f) == 0) {
-          throw Elements::Exception() << "Filter " << f << " missing from the model grid";
+        iter = std::find(iter, m_info.filter_names.end(), f);
+        if (iter == m_info.filter_names.end()) {
+          throw Elements::Exception() << "Filter " << f << " missing from the model grid or not in the right order";
         }
       }
 
