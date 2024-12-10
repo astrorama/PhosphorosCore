@@ -26,8 +26,12 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/AuxDataDirConfig.h"
+#include <filesystem>
+
+#include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/FilterConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
+#include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/SedConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
@@ -44,7 +48,8 @@ static const std::string SED_WEIGHT_OUTPUT{"SED-Weight-Output"};
 static const std::string SED_WEIGHT_SAMPLING{"SED-Weight-sampling"};
 
 ComputeSedWeightConfig::ComputeSedWeightConfig(long manager_id) : Configuration(manager_id) {
-  declareDependency<AuxDataDirConfig>();
+  declareDependency<CatalogTypeConfig>();
+  declareDependency<IntermediateDirConfig>();
   declareDependency<PhotometryGridConfig>();
   declareDependency<SedProviderConfig>();
   declareDependency<FilterConfig>();
@@ -57,9 +62,9 @@ auto ComputeSedWeightConfig::getProgramOptions() -> std::map<std::string, Option
 
                {SED_WEIGHT_OUTPUT.c_str(), po::value<std::string>()->default_value("SedWeight.ascii"),
                 "Path of the file into which output the SED weights. Relative path are relative to "
-                "<AuxDataDir>/GenericPriors/SedWeight/"},
-	           {SED_WEIGHT_SAMPLING.c_str(), po::value<int>()->default_value(100000),
-	                "Number of sample for computing SED weight, if put to 0 all weight are set to 1"}
+                "<intermediate_dir>/<catalog_type>/GenericPriors/SedWeight/"},
+               {SED_WEIGHT_SAMPLING.c_str(), po::value<int>()->default_value(100000),
+                "Number of sample for computing SED weight, if put to 0 all weight are set to 1"}
 
            }}};
 }
@@ -72,9 +77,21 @@ void ComputeSedWeightConfig::initialize(const UserValues& args) {
     m_output_file = file_name;
   } else {
     // relative to
-    boost::filesystem::path dir(getDependency<AuxDataDirConfig>().getAuxDataDir() / "GenericPriors" / "SedWeight");
-    boost::filesystem::create_directory(dir);
-    fs::path result = getDependency<AuxDataDirConfig>().getAuxDataDir() / "GenericPriors" / "SedWeight" / file_name;
+
+    boost::filesystem::path outer_dir(getDependency<IntermediateDirConfig>().getIntermediateDir() /
+                                      getDependency<CatalogTypeConfig>().getCatalogType() / "GenericPriors");
+
+    if (!std::filesystem::exists(outer_dir.string())) {
+      boost::filesystem::create_directory(outer_dir);
+    }
+
+    boost::filesystem::path dir(getDependency<IntermediateDirConfig>().getIntermediateDir() /
+                                getDependency<CatalogTypeConfig>().getCatalogType() / "GenericPriors" / "SedWeight");
+    if (!std::filesystem::exists(dir.string())) {
+      boost::filesystem::create_directory(dir);
+    }
+
+    fs::path result = dir / file_name;
     m_output_file   = result.string();
   }
 
@@ -94,7 +111,6 @@ int ComputeSedWeightConfig::getWeightSampling() const {
   }
   return m_sampling;
 }
-
 
 }  // namespace PhzConfiguration
 }  // namespace Euclid

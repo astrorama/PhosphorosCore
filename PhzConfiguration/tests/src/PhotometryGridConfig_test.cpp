@@ -49,9 +49,10 @@ struct PhotometryGridConfig_fixture : public ConfigManager_fixture {
   fs::path          intermediate_dir = temp_dir.path() / "Intermediate";
   std::string       catalog_type{"CatalogType"};
   std::string       filename{"model_grid.dat"};
-  fs::path          relative       = fs::path{"relative"} / filename;
-  fs::path          absolute       = temp_dir.path() / "absolute" / filename;
-  fs::path          filter_mapping = temp_dir.path() / "filter-mapping.txt";
+  fs::path          relative                 = fs::path{"relative"} / filename;
+  fs::path          absolute                 = temp_dir.path() / "absolute" / filename;
+  fs::path          filter_mapping           = temp_dir.path() / "filter-mapping.txt";
+  fs::path          filter_mapping_alt_order = temp_dir.path() / "filter-mapping-alt.txt";
 
   std::map<std::string, po::variable_value> options_map{};
 
@@ -92,6 +93,12 @@ struct PhotometryGridConfig_fixture : public ConfigManager_fixture {
       stream << "Filter1 FLUX_FILTER1 FLUXERR_FILTER1 0 3 NONE\n";
       stream << "Filter2 FLUX_FILTER1 FLUXERR_FILTER1 0 3 NONE\n";
       stream << "Filter3 FLUX_FILTER3 FLUXERR_FILTER3 0 3 NONE\n";
+    }
+    {
+      std::ofstream stream{filter_mapping_alt_order.string()};
+      stream << "Filter1 FLUX_FILTER1 FLUXERR_FILTER1 0 3 NONE\n";
+      stream << "Filter3 FLUX_FILTER3 FLUXERR_FILTER3 0 3 NONE\n";
+      stream << "Filter2 FLUX_FILTER1 FLUXERR_FILTER1 0 3 NONE\n";
     }
 
     options_map["intermediate-products-dir"].value() = boost::any(intermediate_dir.string());
@@ -216,6 +223,18 @@ BOOST_FIXTURE_TEST_CASE(withFilterMapping_test, PhotometryGridConfig_fixture) {
   auto& used_filters = result_grid.getCellManager().filterNames();
   std::vector<std::string> expected{"Filter1", "Filter2", "Filter3"};
   BOOST_CHECK_EQUAL_COLLECTIONS(expected.begin(), expected.end(), used_filters.begin(), used_filters.end());
+}
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(withFilterMapping_wrong_order_test, PhotometryGridConfig_fixture) {
+  config_manager.registerConfiguration<PhotometryGridConfig>();
+  config_manager.registerConfiguration<PhotometricBandMappingConfig>();
+  config_manager.closeRegistration();
+
+  options_map["filter-mapping-file"].value() = boost::any(filter_mapping_alt_order.string());
+  options_map["exclude-filter"].value()      = boost::any(std::vector<std::string>{});
+
+  BOOST_CHECK_THROW(config_manager.initialize(options_map), Elements::Exception);
 }
 
 //-----------------------------------------------------------------------------

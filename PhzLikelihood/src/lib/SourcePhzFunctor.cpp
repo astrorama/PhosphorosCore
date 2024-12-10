@@ -89,7 +89,10 @@ SourceCatalog::Photometry adjustErrors(const PhzDataModel::AdjustErrorParamMap& 
     SourceCatalog::FluxErrorPair new_flux_error{*iter};
     auto                         filter_name = iter.filterName();
     if (!new_flux_error.missing_photometry_flag) {
-      auto   aep   = aep_map.find(filter_name);
+      auto aep = aep_map.find(filter_name);
+      if (aep == aep_map.end()) {
+        throw Elements::Exception() << "Error-adjustment config do not contains parameter for filter " << filter_name;
+      }
       double alpha = std::get<0>((*aep).second);
       double beta  = std::get<1>((*aep).second);
       double gamma = std::get<2>((*aep).second);

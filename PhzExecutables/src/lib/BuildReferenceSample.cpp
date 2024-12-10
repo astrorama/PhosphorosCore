@@ -37,6 +37,8 @@
 #include "MathUtils/interpolation/interpolation.h"
 #include "XYDataset/CachedProvider.h"
 
+#include <filesystem>
+
 namespace Euclid {
 namespace PhzExecutables {
 
@@ -122,10 +124,10 @@ void BuildReferenceSample::run(Euclid::Configuration::ConfigManager& config_mana
   if (boost::filesystem::exists(ref_sample_path)) {
     if (ref_sample_config.overwrite()) {
       std::vector<boost::filesystem::path> paths;
-      for (auto const& entry : boost::filesystem::recursive_directory_iterator(ref_sample_path)) {
+      for (auto const& entry : std::filesystem::recursive_directory_iterator(ref_sample_path.string())) {
 
         if (entry.path().extension() == ".npy") {
-          paths.emplace_back(entry);
+          paths.emplace_back(boost::filesystem::path(entry.path().string()));
         }
       }
       logger.info() << "Clearing the Reference Sample dir of " << paths.size() << " *.npy files";
