@@ -123,6 +123,19 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
   }
 
   if (filter_names != nullptr) {
+
+    logger.info() << "Lists of filters:";
+    logger.info() << "==============================";
+    logger.info() << "In the grid (" << m_info.filter_names.size() << ")";
+    for (const auto& grid_filter : m_info.filter_names) {
+      logger.info() << " - " << grid_filter;
+    }
+    logger.info() << "In the mapping (" << m_info.filter_names.size() << ")";
+    for (const auto& mapping_filter : *filter_names) {
+      logger.info() << " - " << mapping_filter;
+    }
+    logger.info() << "==============================";
+
     // Check if we need to change the photometries
     bool same = filter_names->size() == m_info.filter_names.size();
     if (same) {
