@@ -124,18 +124,6 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
 
   if (filter_names != nullptr) {
 
-    logger.info() << "Lists of filters:";
-    logger.info() << "==============================";
-    logger.info() << "In the grid (" << m_info.filter_names.size() << ")";
-    for (const auto& grid_filter : m_info.filter_names) {
-      logger.info() << " - " << grid_filter;
-    }
-    logger.info() << "In the mapping (" << m_info.filter_names.size() << ")";
-    for (const auto& mapping_filter : *filter_names) {
-      logger.info() << " - " << mapping_filter;
-    }
-    logger.info() << "==============================";
-
     // Check if we need to change the photometries
     bool same = filter_names->size() == m_info.filter_names.size();
     if (same) {
@@ -148,6 +136,18 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
       for (auto& f : *filter_names) {
         iter = std::find(iter, m_info.filter_names.end(), f);
         if (iter == m_info.filter_names.end()) {
+          logger.error() << "Lists of filters:";
+          logger.error() << "==============================";
+          logger.error() << "In the grid (" << m_info.filter_names.size() << ")";
+          for (const auto& grid_filter : m_info.filter_names) {
+            logger.error() << " - " << grid_filter;
+          }
+          logger.error() << "In the mapping (" << m_info.filter_names.size() << ")";
+          for (const auto& mapping_filter : *filter_names) {
+            logger.error() << " - " << mapping_filter;
+          }
+          logger.error() << "==============================";
+
           throw Elements::Exception() << "Filter " << f << " missing from the model grid or not in the right order";
         }
       }
