@@ -24,6 +24,7 @@
 
 #include "ConfigManager_fixture.h"
 #include "Configuration/ConfigManager.h"
+#include "ElementsKernel/Auxiliary.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Temporary.h"
 #include "PhzConfiguration/PhysicalParametersConfig.h"
@@ -31,6 +32,8 @@
 #include "Table/FitsWriter.h"
 #include "Table/Table.h"
 #include <boost/test/unit_test.hpp>
+#include <fstream>
+#include <iostream>
 #include <thread>
 
 using namespace Euclid;
@@ -63,7 +66,9 @@ BOOST_AUTO_TEST_CASE(readConfig_test) {
 
   std::map<std::string, po::variable_value> options_map{};
 
-  std::string file_path                                 = (temp_dir.path() / "config_test.fits").native();
+  std::string file_path =
+      (Elements::Kernel::getAuxiliaryPath("PhzConfiguration/PhysicalParameterConfig.fits")).native();
+
   options_map["physical_parameter_config_file"].value() = boost::any(file_path);
 
   config_manager.initialize(options_map);
@@ -144,7 +149,9 @@ BOOST_AUTO_TEST_CASE(readConfig_log_test) {
 
   std::map<std::string, po::variable_value> options_map{};
 
-  std::string file_path                                 = (temp_dir.path() / "config_test_log.fits").native();
+  std::string file_path =
+      (Elements::Kernel::getAuxiliaryPath("PhzConfiguration/PhysicalParameterConfig.fits")).native();
+
   options_map["physical_parameter_config_file"].value() = boost::any(file_path);
 
   config_manager.initialize(options_map);
@@ -162,10 +169,10 @@ BOOST_AUTO_TEST_CASE(readConfig_log_test) {
 
   std::shared_ptr<Euclid::Table::ColumnInfo> column_info{new Euclid::Table::ColumnInfo{info_list}};
 
-  std::vector<Euclid::Table::Row::cell_type> values0{std::string{"MASS"}, std::string{"SED1"}, 1E30, 0.0, 0.0, 1.0,
+  std::vector<Euclid::Table::Row::cell_type> values0{std::string{"MASS"},      std::string{"SED1"}, 1E30, 0.0, 0.0, 1.0,
                                                      std::string("Solar Mass")};
   Euclid::Table::Row                         row0{values0, column_info};
-  std::vector<Euclid::Table::Row::cell_type> values1{std::string{"MASS"}, std::string{"SED2"}, 2E30, 0.0, 1.0, 2.0,
+  std::vector<Euclid::Table::Row::cell_type> values1{std::string{"MASS"},      std::string{"SED2"}, 2E30, 0.0, 1.0, 2.0,
                                                      std::string("Solar Mass")};
   Euclid::Table::Row                         row1{values1, column_info};
   std::vector<Euclid::Table::Row::cell_type> values2{std::string{"AGE"}, std::string{"SED1"}, 0.0, 1E10, 2.0, 3.0,
