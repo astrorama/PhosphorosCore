@@ -264,6 +264,15 @@ GridSampler<GridType>::drawSample(std::size_t sample_number, const std::map<std:
 	  auto& alpha_lum_pair = scaling_grid[s.region_index];
       s.alpha = (*(alpha_lum_pair.first))(s.z, s.ebv, s.red_index, s.sed_index);
       s.obs_lum =(*(alpha_lum_pair.second))(s.z, s.ebv, s.red_index, s.sed_index);
+
+      if (GridType == PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID || GridType == PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_LOG_GRID) {
+          auto& grid_region = results.at(region_names[s.region_index]).get<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>();
+          s.prob = grid_region(s.z, s.ebv, s.red_index, s.sed_index);
+      } else {
+          auto& grid_region = results.at(region_names[s.region_index]).get<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID>();
+          s.prob = grid_region(s.z, s.ebv, s.red_index, s.sed_index);
+      }
+
     }
   }
 

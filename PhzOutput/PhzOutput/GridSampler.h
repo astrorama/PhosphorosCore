@@ -25,11 +25,11 @@
 #ifndef PHZOUTPUT_GRIDSAMPLER_H
 #define PHZOUTPUT_GRIDSAMPLER_H
 
+#include "NdArray/NdArray.h"
+#include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/RegionResults.h"
 #include "PhzOutput/OutputHandler.h"
-#include "PhzDataModel/PhotometryGrid.h"
 #include <boost/filesystem.hpp>
-#include "NdArray/NdArray.h"
 #include <map>
 #include <random>
 #include <utility>
@@ -50,8 +50,18 @@ struct GridSample {
   float                    z;
   float                    alpha;
   float                    obs_lum;
+  float                    prob;
 
-  GridSample() : region_index(0), sed_index(0), sed(DefaultQualifiedName), red_index(0), ebv(-1.), z(-1.), alpha(-1.), obs_lum(-1.) {}
+  GridSample()
+      : region_index(0)
+      , sed_index(0)
+      , sed(DefaultQualifiedName)
+      , red_index(0)
+      , ebv(-1.)
+      , z(-1.)
+      , alpha(-1.)
+      , obs_lum(-1.)
+      , prob(-1.) {}
 };
 
 /**
