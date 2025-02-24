@@ -158,7 +158,7 @@ BOOST_FIXTURE_TEST_CASE(test_PosteriorGridZ, LikelihoodFixture) {
   result.readAllKeys();
 
   BOOST_CHECK_EQUAL(result.rows(), 20);
-  BOOST_CHECK_EQUAL(result.numCols(), 9);
+  BOOST_CHECK_EQUAL(result.numCols(), 10);
 
   BOOST_CHECK_EQUAL(result.column(1).name(), "OBJECT_ID");
   BOOST_CHECK_EQUAL(result.column(2).name(), "GRID_REGION_INDEX");
@@ -169,6 +169,7 @@ BOOST_FIXTURE_TEST_CASE(test_PosteriorGridZ, LikelihoodFixture) {
   BOOST_CHECK_EQUAL(result.column(7).name(), "SCALE");
   BOOST_CHECK_EQUAL(result.column(8).name(), "LUMINOSITY");
   BOOST_CHECK_EQUAL(result.column(9).name(), "POSTERIOR-LOG");
+  BOOST_CHECK_EQUAL(result.column(10).name(), "TOTAL-POSTERIOR");
 
   BOOST_CHECK_EQUAL(result.column(1).format(), "6A");
   BOOST_CHECK_EQUAL(result.column(2).format(), "J");
@@ -179,6 +180,7 @@ BOOST_FIXTURE_TEST_CASE(test_PosteriorGridZ, LikelihoodFixture) {
   BOOST_CHECK_EQUAL(result.column(7).format(), "E");
   BOOST_CHECK_EQUAL(result.column(8).format(), "E");
   BOOST_CHECK_EQUAL(result.column(9).format(), "E");
+  BOOST_CHECK_EQUAL(result.column(10).format(), "D");
 
   std::vector<std::string> str_data{};
   result.column(1).read(str_data, 1, 20);
@@ -258,7 +260,7 @@ BOOST_FIXTURE_TEST_CASE(test_PosteriorGridZ_int, LikelihoodFixture) {
   result.readAllKeys();
 
   BOOST_CHECK_EQUAL(result.rows(), 20);
-  BOOST_CHECK_EQUAL(result.numCols(), 9);
+  BOOST_CHECK_EQUAL(result.numCols(), 10);
 
   BOOST_CHECK_EQUAL(result.column(1).name(), "OBJECT_ID");
   BOOST_CHECK_EQUAL(result.column(2).name(), "GRID_REGION_INDEX");
@@ -269,6 +271,7 @@ BOOST_FIXTURE_TEST_CASE(test_PosteriorGridZ_int, LikelihoodFixture) {
   BOOST_CHECK_EQUAL(result.column(7).name(), "SCALE");
   BOOST_CHECK_EQUAL(result.column(8).name(), "LUMINOSITY");
   BOOST_CHECK_EQUAL(result.column(9).name(), "POSTERIOR-LOG");
+  BOOST_CHECK_EQUAL(result.column(10).name(), "TOTAL-POSTERIOR");
 
   BOOST_CHECK_EQUAL(result.column(1).format(), "K");
   BOOST_CHECK_EQUAL(result.column(2).format(), "J");
@@ -279,6 +282,7 @@ BOOST_FIXTURE_TEST_CASE(test_PosteriorGridZ_int, LikelihoodFixture) {
   BOOST_CHECK_EQUAL(result.column(7).format(), "E");
   BOOST_CHECK_EQUAL(result.column(8).format(), "E");
   BOOST_CHECK_EQUAL(result.column(9).format(), "E");
+  BOOST_CHECK_EQUAL(result.column(10).format(), "D");
 
   std::vector<long> l_data{};
   result.column(1).read(l_data, 1, 20);

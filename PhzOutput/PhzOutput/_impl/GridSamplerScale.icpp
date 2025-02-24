@@ -225,6 +225,7 @@ GridSamplerScale<GridType>::drawSample(std::size_t sample_number, const std::map
       }
       auto   linear = Euclid::MathUtils::interpolate(nodes, grid_values, Euclid::MathUtils::InterpolationType::LINEAR, false);
       s.prob = (*linear)(interp_alpha);
+      s.total_volume = total_volume;
     }
   }
 

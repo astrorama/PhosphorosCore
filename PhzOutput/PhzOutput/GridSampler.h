@@ -51,6 +51,7 @@ struct GridSample {
   float                    alpha;
   float                    obs_lum;
   float                    prob;
+  double                   total_volume;
 
   GridSample()
       : region_index(0)
@@ -61,7 +62,8 @@ struct GridSample {
       , z(-1.)
       , alpha(-1.)
       , obs_lum(-1.)
-      , prob(-1.) {}
+      , prob(-1.)
+      , total_volume(-1) {}
 };
 
 /**
