@@ -49,6 +49,8 @@ elements_add_executable(PhosphorosComputeSedWeight src/program/ComputeSedWeight.
         LINK_LIBRARIES ElementsKernel PhzExecutables)
 elements_add_executable(PhosphorosBuildPPConfig src/program/BuildPPConfig.cpp
         LINK_LIBRARIES ElementsKernel PhzExecutables)
+elements_add_executable(PhosphorosGridSplitter src/program/GridSplitter.cpp
+        LINK_LIBRARIES ElementsKernel PhzExecutables)
 
 if (TARGET PhzReferenceSample)
     elements_add_executable(PhosphorosBuildReferenceSample src/program/BuildReferenceSample.cpp

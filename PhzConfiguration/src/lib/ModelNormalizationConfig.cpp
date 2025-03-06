@@ -114,9 +114,9 @@ void ModelNormalizationConfig::initialize(const UserValues& args) {
     PhzModeling::NormalizationFunctor normalizer_pp_functor =
         PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(
             filter_provider, m_pp_band, sun_sed_provider, m_solar_sed);
-    auto flux = normalizer_functor.getReferenceFlux();
+    auto pp_flux = normalizer_functor.getReferenceFlux();
 
-    m_pp_solar_MAG_AB = -2.5 * log10(flux / 3.631E9);
+    m_pp_solar_MAG_AB = -2.5 * log10(pp_flux / 3.631E9);
   }
 }
 
@@ -128,7 +128,7 @@ const XYDataset::QualifiedName& ModelNormalizationConfig::getNormalizationFilter
   return m_band;
 }
 
-const bool ModelNormalizationConfig::getPpNormalizationFromFilter() const {
+bool ModelNormalizationConfig::getPpNormalizationFromFilter() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
     throw Elements::Exception() << "Call to getPpNormalizationFromFilter() on a not initialized instance.";
   }
@@ -142,7 +142,7 @@ const XYDataset::QualifiedName& ModelNormalizationConfig::getPpNormalizationFilt
   return m_pp_band;
 }
 
-const double ModelNormalizationConfig::getPpNormalizationValue() const {
+double ModelNormalizationConfig::getPpNormalizationValue() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
     throw Elements::Exception() << "Call to getPpNormalizationValue() on a not initialized instance.";
   }

@@ -73,53 +73,57 @@ void IgmConfig::preInitialize(const UserValues& args) {
     throw Elements::Exception() << "Missing " << IGM_ABSORPTION_TYPE << " option ";
   }
 
-  m_absorption_type = args.find(IGM_ABSORPTION_TYPE)->second.as<std::string>();
-  if (types.find(m_absorption_type) == types.end()) {
-    throw Elements::Exception() << "Unknown " << IGM_ABSORPTION_TYPE << " option \"" << m_absorption_type << "\"";
+  m_config.absorption_type = args.find(IGM_ABSORPTION_TYPE)->second.as<std::string>();
+  if (types.find(m_config.absorption_type) == types.end()) {
+    throw Elements::Exception() << "Unknown " << IGM_ABSORPTION_TYPE << " option \"" << m_config.absorption_type
+                                << "\"";
   }
 
   if (args.count(IGM_ABSORPTION_ADD_CGM) == 1 && args.find(IGM_ABSORPTION_ADD_CGM)->second.as<std::string>() == "YES") {
-    m_add_cgm = true;
+    m_config.add_cgm = true;
   }
 
   if (args.count(IGM_ABSORPTION_CGM_AU) == 1) {
-    m_cgm_au = args.find(IGM_ABSORPTION_CGM_AU)->second.as<double>();
+    m_config.cgm_au = args.find(IGM_ABSORPTION_CGM_AU)->second.as<double>();
   }
   if (args.count(IGM_ABSORPTION_CGM_AL) == 1) {
-    m_cgm_al = args.find(IGM_ABSORPTION_CGM_AL)->second.as<double>();
+    m_config.cgm_al = args.find(IGM_ABSORPTION_CGM_AL)->second.as<double>();
   }
   if (args.count(IGM_ABSORPTION_CGM_C) == 1) {
-    m_cgm_c = args.find(IGM_ABSORPTION_CGM_C)->second.as<double>();
+    m_config.cgm_c = args.find(IGM_ABSORPTION_CGM_C)->second.as<double>();
   }
 }
 
 void IgmConfig::initialize(const UserValues& args) {
   auto input_type = args.find(IGM_ABSORPTION_TYPE)->second.as<std::string>();
   if (input_type == "OFF") {
-    m_absorption_type     = "OFF";
-    m_absorption_function = PhzModeling::NoIgmFunctor{};
+    m_config.absorption_type = "OFF";
+    m_absorption_function    = PhzModeling::NoIgmFunctor{};
   }
 
   if (input_type == "MADAU") {
-    m_absorption_type = "MADAU";
-    if (m_add_cgm) {
-      m_absorption_function = PhzModeling::CgmIgmFunctor<PhzModeling::MadauIgmFunctor>(m_cgm_au, m_cgm_al, m_cgm_c);
+    m_config.absorption_type = "MADAU";
+    if (m_config.add_cgm) {
+      m_absorption_function =
+          PhzModeling::CgmIgmFunctor<PhzModeling::MadauIgmFunctor>(m_config.cgm_au, m_config.cgm_al, m_config.cgm_c);
     } else {
       m_absorption_function = PhzModeling::MadauIgmFunctor{};
     }
   }
   if (input_type == "MEIKSIN") {
-    m_absorption_type = "MEIKSIN";
-    if (m_add_cgm) {
-      m_absorption_function = PhzModeling::CgmIgmFunctor<PhzModeling::MeiksinIgmFunctor>(m_cgm_au, m_cgm_al, m_cgm_c);
+    m_config.absorption_type = "MEIKSIN";
+    if (m_config.add_cgm) {
+      m_absorption_function =
+          PhzModeling::CgmIgmFunctor<PhzModeling::MeiksinIgmFunctor>(m_config.cgm_au, m_config.cgm_al, m_config.cgm_c);
     } else {
       m_absorption_function = PhzModeling::MeiksinIgmFunctor{};
     }
   }
   if (input_type == "INOUE") {
-    m_absorption_type = "INOUE";
-    if (m_add_cgm) {
-      m_absorption_function = PhzModeling::CgmIgmFunctor<PhzModeling::InoueIgmFunctor>(m_cgm_au, m_cgm_al, m_cgm_c);
+    m_config.absorption_type = "INOUE";
+    if (m_config.add_cgm) {
+      m_absorption_function =
+          PhzModeling::CgmIgmFunctor<PhzModeling::InoueIgmFunctor>(m_config.cgm_au, m_config.cgm_al, m_config.cgm_c);
     } else {
       m_absorption_function = PhzModeling::InoueIgmFunctor{};
     }
@@ -137,28 +141,28 @@ const std::string& IgmConfig::getIgmAbsorptionType() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
     throw Elements::Exception() << "Call to getIgmAbsorptionType() on a not initialized instance.";
   }
-  return m_absorption_type;
+  return m_config.absorption_type;
 }
 
 bool IgmConfig::getCgmEnabled() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
     throw Elements::Exception() << "Call to getCgmEnabled() on a not initialized instance.";
   }
-  return m_add_cgm;
+  return m_config.add_cgm;
 }
 
 double IgmConfig::getCGMAParam() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
     throw Elements::Exception() << "Call to getCGMAParam() on a not initialized instance.";
   }
-  return m_cgm_au;
+  return m_config.cgm_au;
 }
 
 double IgmConfig::getCGMaParam() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
     throw Elements::Exception() << "Call to getCGMaParam() on a not initialized instance.";
   }
-  return m_cgm_al;
+  return m_config.cgm_al;
 }
 
 double IgmConfig::getCGMcParam() const {
@@ -166,7 +170,14 @@ double IgmConfig::getCGMcParam() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
     throw Elements::Exception() << "Call to getCGMcParam() on a not initialized instance.";
   }
-  return m_cgm_c;
+  return m_config.cgm_c;
+}
+
+const IgmConfigStruct& IgmConfig::getIgmConfigStruct() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getIgmConfigStruct() on a not initialized instance.";
+  }
+  return m_config;
 }
 
 }  // namespace PhzConfiguration
