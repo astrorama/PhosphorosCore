@@ -64,6 +64,11 @@ public:
 
   const boost::filesystem::path& getOutputListPath() const;
 
+  static std::string convertValToString(double input) {
+    std::string num_text = std::to_string(input);
+    return num_text.substr(0, num_text.find(".") + 6);
+  }
+
 private:
   int                                                         m_splitting_dim;
   std::map<boost::filesystem::path, std::vector<std::string>> m_slice_def;
