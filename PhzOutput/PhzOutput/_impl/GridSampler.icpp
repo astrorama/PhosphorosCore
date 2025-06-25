@@ -26,7 +26,21 @@ namespace PhzOutput {
 
 static Elements::Logging loggerPhzGridSampler = Elements::Logging::getLogger("GridSampler");
 
-
+NdArray::NdArray<double> sliceNdArrayatZIndex(const NdArray::NdArray<double>& array, size_t fixed_z_index){
+    auto shape = array.shape();
+    shape[3]=1;
+    auto slice = NdArray::NdArray<double>{shape};
+    for (size_t sed_index = 0; sed_index <  shape[0]; ++sed_index) {
+       for (size_t red_index = 0; red_index <  shape[1]; ++red_index) {
+          for (size_t ebv_index = 0; ebv_index <  shape[2]; ++ebv_index) {
+              slice.at(sed_index, red_index, ebv_index, 0) = array.at(sed_index, red_index, ebv_index, fixed_z_index);
+          }
+        }
+     }
+     return slice;
+  
+    
+}
 
 const std::map<std::string, NdArray::NdArray<double>> convertModelGrid(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid) {
 	std::map<std::string, NdArray::NdArray<double>> correction_factor_map{};
@@ -35,10 +49,7 @@ const std::map<std::string, NdArray::NdArray<double>> convertModelGrid(const std
 	    auto&  axis = pair.second.getAxesTuple();
 		loggerPhzGridSampler.debug() << "Converting grid region '" << pair.first <<"' with dim : "<<std::get<0>(axis).size() <<"x"<<std::get<1>(axis).size()<<"x"<<std::get<2>(axis).size()<<"x"<<std::get<3>(axis).size();
 
-		auto correction_factor_array = NdArray::NdArray<double>{std::get<3>(axis).size(),
-			                                                 std::get<2>(axis).size(),
-															 std::get<1>(axis).size(),
-															 std::get<0>(axis).size()};
+		auto correction_factor_array = NdArray::NdArray<double>{std::get<3>(axis).size(),std::get<2>(axis).size(),std::get<1>(axis).size(), std::get<0>(axis).size()};
 		for (size_t sed_index = 0; sed_index < std::get<3>(axis).size(); ++sed_index) {
 		   for (size_t red_index = 0; red_index < std::get<2>(axis).size(); ++red_index) {
 		      for (size_t ebv_index = 0; ebv_index < std::get<1>(axis).size(); ++ebv_index) {
@@ -60,9 +71,20 @@ const std::map<std::string, NdArray::NdArray<double>> convertModelGrid(const std
 }
 
 template <PhzDataModel::RegionResultType GridType>
-GridSampler<GridType>::GridSampler(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid): m_correction_factor_map{convertModelGrid(model_grid)} {
-
+const std::map<std::string, GridContainer::GridAxis<double>> GridSampler<GridType>::getZAxisMap(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid) {
+   std::map<std::string, GridContainer::GridAxis<double>> full_z_axis_map{};
+   for (auto& pair : model_grid) {
+      auto&  axis = pair.second.getAxesTuple();
+      full_z_axis_map.emplace(pair.first, std::get<0>(axis));
+   }
+   return full_z_axis_map;
 }
+
+
+template <PhzDataModel::RegionResultType GridType>
+GridSampler<GridType>::GridSampler(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid): 
+          m_correction_factor_map{convertModelGrid(model_grid)}, 
+          m_full_z_axis_map{getZAxisMap(model_grid)} {}
 
 template <PhzDataModel::RegionResultType GridType>
 std::string GridSampler<GridType>::createComment(const PhzDataModel::SourceResults& results) {
@@ -150,16 +172,40 @@ double GridSampler<GridType>::computeEnclosingVolumeOfCells(const PhzDataModel::
 
 static std::pair<std::unique_ptr<MathUtils::InterpN<double, double, int, int>>, std::unique_ptr<MathUtils::InterpN<double, double, int, int>>>
 createInterpolatorFromGrid(const PhzDataModel::DoubleGrid& grid,
-		                   const NdArray::NdArray<double>& correction_factor_map,
-		                   const std::vector<double>& z_axis,
+	                   const NdArray::NdArray<double>& correction_factor,
+	                   const GridContainer::GridAxis<double>& full_z_axis,
+	                   const std::vector<double>& z_axis,
                            const std::vector<double>& ebv_axis,
-						   const std::vector<int>& red_axis,
-                           const std::vector<int>& sed_axis) {
+			   const std::vector<int>& red_axis,
+                          const std::vector<int>& sed_axis) {
   auto                     knots = std::make_tuple(z_axis, ebv_axis, red_axis, sed_axis);
   std::vector<size_t>      values_shape{sed_axis.size(), red_axis.size(), ebv_axis.size(), z_axis.size()};
   NdArray::NdArray<double> values(values_shape, grid.begin(), grid.end());
+  NdArray::NdArray<double> multiplied{1};
+  if (z_axis.size()==1 && full_z_axis.size()>z_axis.size()){
+      // We are in the case of a slice of the grid (Phosphoros running at fixed redshift from a catalog column) we need to slice the correction factor
 
-  NdArray::NdArray<double> multiplied = NdArray::multiplyElements(values, correction_factor_map);
+      // 1) find the redshift position
+      size_t max_index = full_z_axis.size()-1;
+      size_t fixed_index = max_index;
+      for (size_t index=0; index<max_index; ++index){
+          double bound = (full_z_axis[index]+full_z_axis[index+1])/2.0;
+          if (fixed_index==max_index && bound>z_axis[0]){
+              fixed_index=index;
+              break;
+          }
+      }
+      
+      // 2) slice the ND array
+      NdArray::NdArray<double> sliced_correction_factor=sliceNdArrayatZIndex(correction_factor,fixed_index);
+
+      // 3) do the multiplication
+      multiplied = NdArray::multiplyElements(values, sliced_correction_factor);
+      
+  } else {
+      multiplied = NdArray::multiplyElements(values, correction_factor);
+  }
+
 
   return std::make_pair(
 		  Euclid::make_unique<MathUtils::InterpN<double, double, int, int>>(knots, std::move(values), true),
@@ -217,12 +263,13 @@ GridSampler<GridType>::drawSample(std::size_t sample_number, const std::map<std:
     // Build sampler
     samplers.emplace_back(std::move(createSamplerFromGrid(grid, z_axis, ebv_axis, red_idxs, sed_idxs)));
 
-    loggerPhzGridSampler.info() << "Prepare sampling for region with name :"<<pair.first;
-    loggerPhzGridSampler.info() << "sclae grid dim :"<<z_axis.size() <<"x"<<ebv_axis.size()<<"x"<<red_idxs.size()<<"x"<<sed_idxs.size();
+    loggerPhzGridSampler.debug() << "Prepare sampling for region with name :"<<pair.first;
+    loggerPhzGridSampler.debug() << "scale grid dim :"<<z_axis.size() <<"x"<<ebv_axis.size()<<"x"<<red_idxs.size()<<"x"<<sed_idxs.size();
+    loggerPhzGridSampler.debug() << "Full grid Z axis dim :"<<m_full_z_axis_map.at(pair.first).size() ;
 
 
     // Build scale interpolator
-    scaling_grid.emplace_back(std::move(createInterpolatorFromGrid(scale_grid, m_correction_factor_map.at(pair.first), z_axis, ebv_axis, red_idxs, sed_idxs)));
+    scaling_grid.emplace_back(std::move(createInterpolatorFromGrid(scale_grid, m_correction_factor_map.at(pair.first), m_full_z_axis_map.at(pair.first), z_axis, ebv_axis, red_idxs, sed_idxs)));
 
     // Information about the grid
     region_names.emplace_back(pair.first);

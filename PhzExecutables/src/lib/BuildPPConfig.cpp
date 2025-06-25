@@ -85,14 +85,12 @@ std::map<std::string, PhzDataModel::PPConfig> BuildPPConfig::getParamMap(std::st
               logger.debug("parsing C in '" + log_p + "'");
               log_p.replace(log_p.find("L"), 2, "");
               log_p.replace(log_p.find("*"), 1, "");
-              logger.info(log_p);
               c = std::stod(log_p);
             } else if (log_p.find("(") != std::string::npos) {
               logger.debug("parsing D in '" + log_p + "'");
               log_p.replace(log_p.find("L"), 1, "");
               log_p.replace(log_p.find("*"), 1, "");
               log_p.replace(log_p.find("("), 1, "");
-              logger.info(log_p);
               d = std::stod(log_p);
             }
           }

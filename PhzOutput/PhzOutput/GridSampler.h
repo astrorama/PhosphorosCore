@@ -30,6 +30,7 @@
 #include "PhzDataModel/RegionResults.h"
 #include "PhzOutput/OutputHandler.h"
 #include <boost/filesystem.hpp>
+#include "GridContainer/GridAxis.h"
 #include <map>
 #include <random>
 #include <utility>
@@ -81,6 +82,8 @@ public:
   GridSampler(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid);
 
   virtual ~GridSampler() = default;
+  
+   static const std::map<std::string, GridContainer::GridAxis<double>> getZAxisMap(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid);
 
   /**
    * @brief
@@ -116,6 +119,7 @@ public:
 
 private:
   const std::map<std::string, NdArray::NdArray<double>> m_correction_factor_map{};
+  const std::map<std::string, GridContainer::GridAxis<double>> m_full_z_axis_map{};
 };
 
 }  // end of namespace PhzOutput
