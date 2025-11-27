@@ -90,6 +90,29 @@ BOOST_FIXTURE_TEST_CASE(test_precondition, FixRedshiftProcessModelGridFunctor_Fi
 
 //-----------------------------------------------------------------------------
 
+BOOST_FIXTURE_TEST_CASE(test_getFixedZIndex, FixRedshiftProcessModelGridFunctor_Fixture) {
+  // Given
+  FixRedshiftProcessModelGridFunctor functor{};
+
+  // When
+
+  std::size_t index_bellow      = functor.getFixedZIndex(photo_grid, -0.1);
+  std::size_t index_low         = functor.getFixedZIndex(photo_grid, 0.0);
+  std::size_t index_middle_low  = functor.getFixedZIndex(photo_grid, 0.02);
+  std::size_t index_middle_high = functor.getFixedZIndex(photo_grid, 0.08);
+  std::size_t index_high        = functor.getFixedZIndex(photo_grid, 0.1);
+  std::size_t index_above       = functor.getFixedZIndex(photo_grid, 0.2);
+
+  // Then
+
+  BOOST_CHECK(index_bellow == 0);
+  BOOST_CHECK(index_low == 0);
+  BOOST_CHECK(index_middle_low == 0);
+  BOOST_CHECK(index_middle_high == 1);
+  BOOST_CHECK(index_high == 1);
+  BOOST_CHECK(index_above == 1);
+}
+
 BOOST_FIXTURE_TEST_CASE(test_nominal, FixRedshiftProcessModelGridFunctor_Fixture) {
   // Given
   FixRedshiftProcessModelGridFunctor functor{};

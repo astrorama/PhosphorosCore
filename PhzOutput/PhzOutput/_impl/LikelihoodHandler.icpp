@@ -30,12 +30,24 @@ struct FullGridOutputTraits<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>
   static std::string filename() {
     return "likelihood";
   }
+  static std::string outputColumn() {
+    return "LIKELIHOOD-LOG";
+  }
+  static std::string volumeColumn() {
+    return "TOTAL-LIKELIHOOD";
+  }
 };
 
 template <>
 struct FullGridOutputTraits<PhzDataModel::RegionResultType::POSTERIOR_LOG_GRID> {
   static std::string filename() {
     return "posterior";
+  }
+  static std::string outputColumn() {
+    return "POSTERIOR-LOG";
+  }
+  static std::string volumeColumn() {
+    return "TOTAL-POSTERIOR";
   }
 };
 
@@ -44,12 +56,24 @@ struct FullGridOutputTraits<PhzDataModel::RegionResultType::LIKELIHOOD_SCALING_L
   static std::string filename() {
     return "likelihood";
   }
+  static std::string outputColumn() {
+    return "LIKELIHOOD-LOG";
+  }
+  static std::string volumeColumn() {
+    return "TOTAL-LIKELIHOOD";
+  }
 };
 
 template <>
 struct FullGridOutputTraits<PhzDataModel::RegionResultType::POSTERIOR_SCALING_LOG_GRID> {
   static std::string filename() {
     return "posterior";
+  }
+  static std::string outputColumn() {
+    return "POSTERIOR-LOG";
+  }
+  static std::string volumeColumn() {
+    return "TOTAL-POSTERIOR";
   }
 };
 
@@ -110,7 +134,10 @@ void LikelihoodHandler<GridType, Sampler>::createColumnsLists(const SourceCatalo
 	        Euclid::Table::ColumnInfo::info_type("RED_CURVE_INDEX", typeid(int)),
 	        Euclid::Table::ColumnInfo::info_type("EB_V", typeid(float)),
 	        Euclid::Table::ColumnInfo::info_type("SCALE", typeid(float)),
-	        Euclid::Table::ColumnInfo::info_type("LUMINOSITY", typeid(float))};
+	        Euclid::Table::ColumnInfo::info_type("LUMINOSITY", typeid(float)),
+	        Euclid::Table::ColumnInfo::info_type(FullGridOutputTraits<GridType>::outputColumn(), typeid(float)),
+	        Euclid::Table::ColumnInfo::info_type(FullGridOutputTraits<GridType>::volumeColumn(), typeid(double))};
+
 	for (auto iter = m_param_config.begin(); iter != m_param_config.end(); ++iter) {
 	      loggerPhz.info() << "Creating sampler columns adding " << iter->first;
 	      info_list.push_back(Table::ColumnInfo::info_type(iter->first, typeid(float)));
@@ -164,8 +191,6 @@ void LikelihoodHandler<GridType, Sampler>::exportFullGrid(const SourceCatalog::S
   std::string id       = boost::lexical_cast<std::string>(source.getId());
   std::string filename = (m_out_dir / (id + ".fits")).string();
   fs::remove(filename);
-
-
 
   // Grid container cannot export grid of vector + we should store alpha and sigma grid along to be able to recompute the scaling
   // axis... so exporting the non-sampled grid...
@@ -226,7 +251,7 @@ LikelihoodHandler<GridType, Sampler>::drawSample(SourceCatalog::Source::id_type 
   for (auto& s : sample) {
     const auto&                        sed_qualified = s.sed.qualifiedName();
 
-    std::vector<Table::Row::cell_type> values{source_id, s.region_index, s.sed_index, s.z, s.red_index, s.ebv, s.alpha, s.obs_lum};
+    std::vector<Table::Row::cell_type> values{source_id, s.region_index, s.sed_index, s.z, s.red_index, s.ebv, s.alpha, s.obs_lum, s.prob, s.total_volume};
     for (auto& param : m_param_config) {
       float param_value =
           float((param.second.at(sed_qualified)).apply(s.obs_lum));

@@ -68,13 +68,13 @@ public:
   const XYDataset::QualifiedName& getNormalizationFilter() const;
 
   // Returns the type of PP normalization
-  const bool getPpNormalizationFromFilter() const;
+  bool getPpNormalizationFromFilter() const;
 
   // Returns the band of the PP luminosity normalization
   const XYDataset::QualifiedName& getPpNormalizationFilter() const;
 
   // Returns the normalization value for the PP
-  const double getPpNormalizationValue() const;
+  double getPpNormalizationValue() const;
 
   // Returns the solar SED at 10 pc use as reference for luminosity normalization
   const XYDataset::QualifiedName& getReferenceSolarSed() const;

@@ -6,6 +6,7 @@
 
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
+#include "MathUtils/interpolation/interpolation.h"
 #include "GridContainer/serialize.h"
 #include "MathUtils/PDF/NdSampler.h"
 #include "NdArray/NdArray.h"
@@ -20,9 +21,10 @@
 
 namespace Euclid {
 namespace PhzOutput {
+static Elements::Logging loggerPhzGridSamplerScale = Elements::Logging::getLogger("GridSamplerScale");
 
 template <PhzDataModel::RegionResultType GridType>
-GridSamplerScale<GridType>::GridSamplerScale(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid) : m_correction_factor_map{convertModelGrid(model_grid)} {
+GridSamplerScale<GridType>::GridSamplerScale(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid) : m_correction_factor_map{convertModelGrid(model_grid)}, m_full_z_axis_map{GridSampler<GridType>::getZAxisMap(model_grid)} {
 
 }
 
@@ -159,8 +161,8 @@ GridSamplerScale<GridType>::drawSample(std::size_t sample_number, const std::map
     samplers.emplace_back(std::move(createSamplerFromGrid(grid, scale_axis, z_axis, ebv_axis, red_idxs, sed_idxs)));
 
     // Build scale interpolators
-    scaling_grid.emplace_back(std::move(createInterpolatorFromGrid(scale_grid, m_correction_factor_map.at(pair.first), z_axis, ebv_axis, red_idxs, sed_idxs)));
-    scaling_sigma_grid.emplace_back(std::move(createInterpolatorFromGrid(sigma_scale_grid, m_correction_factor_map.at(pair.first), z_axis, ebv_axis, red_idxs, sed_idxs)));
+    scaling_grid.emplace_back(std::move(createInterpolatorFromGrid(scale_grid, m_correction_factor_map.at(pair.first), m_full_z_axis_map.at(pair.first), z_axis, ebv_axis, red_idxs, sed_idxs)));
+    scaling_sigma_grid.emplace_back(std::move(createInterpolatorFromGrid(sigma_scale_grid, m_correction_factor_map.at(pair.first), m_full_z_axis_map.at(pair.first), z_axis, ebv_axis, red_idxs, sed_idxs)));
 
     // Information about the grid
     region_names.emplace_back(pair.first);
@@ -194,8 +196,9 @@ GridSamplerScale<GridType>::drawSample(std::size_t sample_number, const std::map
       auto& s        = sample[i++];
       s.region_index = region_index;
 
-      std::tie(s.alpha, s.z, s.ebv, s.red_index, s.sed_index) = d;
-      s.sed                                                   = sed_names[region_index][s.sed_index];
+      double interp_alpha=0;
+      std::tie(interp_alpha, s.z, s.ebv, s.red_index, s.sed_index) = d;
+      s.sed = sed_names[region_index][s.sed_index];
 
 
 
@@ -203,16 +206,26 @@ GridSamplerScale<GridType>::drawSample(std::size_t sample_number, const std::map
       // The scale mean and sigma grids need to be used to get the actual value
 
       auto& mean_alpha_lum_pair = scaling_grid[s.region_index];
-	  double scale_mean = (*(mean_alpha_lum_pair.first))(s.z, s.ebv, s.red_index, s.sed_index);
-	  double lum_mean = (*(mean_alpha_lum_pair.second))(s.z, s.ebv, s.red_index, s.sed_index);
+      double scale_mean = (*(mean_alpha_lum_pair.first))(s.z, s.ebv, s.red_index, s.sed_index);
+      double lum_mean = (*(mean_alpha_lum_pair.second))(s.z, s.ebv, s.red_index, s.sed_index);
 
-	  auto& sigma_alpha_lum_pair = scaling_grid[s.region_index];
-	  double scale_sigma = (*(sigma_alpha_lum_pair.first))(s.z, s.ebv, s.red_index, s.sed_index);
-	  double lum_sigma = (*(sigma_alpha_lum_pair.second))(s.z, s.ebv, s.red_index, s.sed_index);
+      auto& sigma_alpha_lum_pair = scaling_sigma_grid[s.region_index];
+      double scale_sigma = (*(sigma_alpha_lum_pair.first))(s.z, s.ebv, s.red_index, s.sed_index);
+      double lum_sigma = (*(sigma_alpha_lum_pair.second))(s.z, s.ebv, s.red_index, s.sed_index);
 
       // Transform the normalized sample to a "true" scale / luminosity sample
-      s.alpha = getLuminosity(scale_mean, scale_sigma, nsamples_scale[s.region_index], s.alpha);
-      s.obs_lum = getLuminosity(lum_mean, lum_sigma, nsamples_scale[s.region_index], s.alpha);
+      s.alpha = getLuminosity(scale_mean, scale_sigma, nsamples_scale[s.region_index], interp_alpha);
+      s.obs_lum = getLuminosity(lum_mean, lum_sigma, nsamples_scale[s.region_index], interp_alpha);
+
+      // Get the interpolated grid value:
+      auto& grid_values = results.at(region_names[s.region_index]).get<GridType>()(s.z, s.ebv, s.red_index, s.sed_index);
+      std::vector<double> nodes{};
+      for (size_t alpha_index=0; alpha_index<grid_values.size();alpha_index++){
+          nodes.push_back(alpha_index);
+      }
+      auto   linear = Euclid::MathUtils::interpolate(nodes, grid_values, Euclid::MathUtils::InterpolationType::LINEAR, false);
+      s.prob = (*linear)(interp_alpha);
+      s.total_volume = total_volume;
     }
   }
 

@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.5)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.25)
 
 
 #---------------------------------------------------------------
@@ -12,4 +12,4 @@ set(CXX_SUGGEST_OVERRIDE ON
 
 
 # Declare project name and version
-elements_project(PhosphorosCore 2.2 USE Alexandria 2.31.3)
+elements_project(PhosphorosCore 2.1.13 USE Alexandria 2.31.3)

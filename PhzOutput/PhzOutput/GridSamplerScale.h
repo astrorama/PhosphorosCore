@@ -10,6 +10,7 @@
 #include "PhzDataModel/RegionResults.h"
 #include "PhzOutput/OutputHandler.h"
 #include "PhzDataModel/PhotometryGrid.h"
+#include "GridContainer/GridAxis.h"
 #include <boost/filesystem.hpp>
 #include "NdArray/NdArray.h"
 #include <map>
@@ -75,6 +76,8 @@ public:
 private:
 
   const std::map<std::string, NdArray::NdArray<double>> m_correction_factor_map{};
+  const std::map<std::string, GridContainer::GridAxis<double>> m_full_z_axis_map{};
+  
 };
 
 }  // end of namespace PhzOutput

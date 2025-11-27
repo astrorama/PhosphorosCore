@@ -89,8 +89,9 @@ def group_z(zs, min_step, do_scale_step=False):
             logger.info(f'Processed {counter}/{total} sources.')
     return zs_extracted
 
-def get_out_table(zs_extracted):
+def get_out_table(zs_extracted, min_step, do_scale):
     z_mean = np.sort([np.mean(zs_extracted[z_know]) for z_know in zs_extracted.keys()])
+    z_mean.append(z_mean[-1] + min_step*(1+do_scale*z_mean[-1]));
     out_t = Table()
     out_t['Z']=z_mean
     return out_t
@@ -110,7 +111,7 @@ def mainMethod(args):
     zs_extracted = group_z(zs, args.min_z_step, do_scale)
     logger.info(f'Found {len(zs_extracted)} distinct zs (with tolerence {args.min_z_step})')
 
-    out_t = get_out_table(zs_extracted)
+    out_t = get_out_table(zs_extracted, args.min_z_step, do_scale)
 
     if ext == '.fits':
         out_t.write(args.output_file, format='fits', overwrite=True)

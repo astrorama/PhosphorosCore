@@ -506,13 +506,16 @@ BOOST_FIXTURE_TEST_CASE(ChiSquareUpperLimit_flag_true_test, ChiSquareLikelihoodL
 BOOST_AUTO_TEST_CASE(ChiSquareMissingData_test) {
 
   // Given
-  vector<SourceCatalog::FluxErrorPair> sources{
-      {1, .1, false, false}, {2, .2, false, false}, {3, .3, true, false}, {4, .4, false, false}, {5, .5, true, false}};
+  vector<SourceCatalog::FluxErrorPair>    sources{{1, .1, false, false},
+                                                  {2, .2, false, false},
+                                                  {3, .3, true, false},
+                                                  {4, .4, false, false},
+                                                  {5, std::nan("1"), true, false}};
   vector<SourceCatalog::FluxErrorPair>    models{{.01, 0, false, false},
-                                              {.02, 0, false, false},
-                                              {.03, 0, false, false},
-                                              {.04, 0, false, false},
-                                              {.05, 0, false, false}};
+                                                 {.02, 0, false, false},
+                                                 {.03, 0, false, false},
+                                                 {.04, 0, false, false},
+                                                 {.05, 0, false, false}};
   vector<double>                          scales{0.001, 0.002, 0.003, 0.004, 0.005};
   vector<double>                          expected{10, 20, 0, 40, 0};
   ChiSquareMissingData<TestChiSquareFunc> missing_data_functor{};

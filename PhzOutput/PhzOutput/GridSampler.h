@@ -25,11 +25,12 @@
 #ifndef PHZOUTPUT_GRIDSAMPLER_H
 #define PHZOUTPUT_GRIDSAMPLER_H
 
+#include "NdArray/NdArray.h"
+#include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/RegionResults.h"
 #include "PhzOutput/OutputHandler.h"
-#include "PhzDataModel/PhotometryGrid.h"
 #include <boost/filesystem.hpp>
-#include "NdArray/NdArray.h"
+#include "GridContainer/GridAxis.h"
 #include <map>
 #include <random>
 #include <utility>
@@ -50,8 +51,20 @@ struct GridSample {
   float                    z;
   float                    alpha;
   float                    obs_lum;
+  float                    prob;
+  double                   total_volume;
 
-  GridSample() : region_index(0), sed_index(0), sed(DefaultQualifiedName), red_index(0), ebv(-1.), z(-1.), alpha(-1.), obs_lum(-1.) {}
+  GridSample()
+      : region_index(0)
+      , sed_index(0)
+      , sed(DefaultQualifiedName)
+      , red_index(0)
+      , ebv(-1.)
+      , z(-1.)
+      , alpha(-1.)
+      , obs_lum(-1.)
+      , prob(-1.)
+      , total_volume(-1) {}
 };
 
 /**
@@ -69,6 +82,8 @@ public:
   GridSampler(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid);
 
   virtual ~GridSampler() = default;
+  
+   static const std::map<std::string, GridContainer::GridAxis<double>> getZAxisMap(const std::map<std::string, PhzDataModel::PhotometryGrid>& model_grid);
 
   /**
    * @brief
@@ -104,6 +119,7 @@ public:
 
 private:
   const std::map<std::string, NdArray::NdArray<double>> m_correction_factor_map{};
+  const std::map<std::string, GridContainer::GridAxis<double>> m_full_z_axis_map{};
 };
 
 }  // end of namespace PhzOutput

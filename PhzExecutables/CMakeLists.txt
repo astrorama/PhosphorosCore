@@ -17,11 +17,6 @@ elements_depends_on_subdirs(PhzFilterVariation)
 
 file(GLOB BIN_SRC src/lib/*.cpp)
 
-if (NOT TARGET PhzReferenceSample)
-    file(GLOB REF_BIN_SRC src/lib/BuildReferenceSample.cpp)
-    list(REMOVE_ITEM BIN_SRC ${REF_BIN_SRC})
-endif ()
-
 elements_add_library(PhzExecutables ${BIN_SRC}
         LINK_LIBRARIES
         ElementsKernel PhzConfiguration PhzDataModel PhzModeling PhzLikelihood
@@ -49,13 +44,15 @@ elements_add_executable(PhosphorosComputeSedWeight src/program/ComputeSedWeight.
         LINK_LIBRARIES ElementsKernel PhzExecutables)
 elements_add_executable(PhosphorosBuildPPConfig src/program/BuildPPConfig.cpp
         LINK_LIBRARIES ElementsKernel PhzExecutables)
+elements_add_executable(PhosphorosGridSplitter src/program/GridSplitter.cpp
+        LINK_LIBRARIES ElementsKernel PhzExecutables)
 
-if (TARGET PhzReferenceSample)
-    elements_add_executable(PhosphorosBuildReferenceSample src/program/BuildReferenceSample.cpp
-            LINK_LIBRARIES ElementsKernel PhzExecutables)
-    elements_add_executable(PhosphorosBuildPhotometry src/program/BuildPhotometry.cpp
-            LINK_LIBRARIES PhzExecutables)
-endif ()
+
+elements_add_executable(PhosphorosBuildReferenceSample src/program/BuildReferenceSample.cpp
+        LINK_LIBRARIES ElementsKernel PhzExecutables)
+elements_add_executable(PhosphorosBuildPhotometry src/program/BuildPhotometry.cpp
+        LINK_LIBRARIES PhzExecutables)
+
 
 elements_add_unit_test(ComputeSedWeight_test tests/src/ComputeSedWeight_test.cpp
         LINK_LIBRARIES PhzExecutables

@@ -40,18 +40,25 @@
 namespace Euclid {
 namespace PhzLikelihood {
 
-std::size_t getFixedZIndex(const PhzDataModel::PhotometryGrid& grid, double fixed_z) {
-  auto& z_axis = grid.getAxis<PhzDataModel::ModelParameter::Z>();
-  int   i      = 0;
+std::size_t FixRedshiftProcessModelGridFunctor::getFixedZIndex(const PhzDataModel::PhotometryGrid& grid,
+                                                               double                              fixed_z) const {
+  auto&       z_axis = grid.getAxis<PhzDataModel::ModelParameter::Z>();
+  std::size_t i      = 0;
   for (auto& z : z_axis) {
     if (z >= fixed_z) {
       break;
     }
     ++i;
   }
+
   if (i != 0 && (fixed_z - z_axis[i - 1]) < (z_axis[i] - fixed_z)) {
     --i;
   }
+
+  if (i == z_axis.size()) {
+    --i;
+  }
+
   return i;
 }
 

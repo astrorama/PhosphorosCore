@@ -141,9 +141,10 @@ class TestExtractPpPdf(object):
 
     def get_out_table_test(self):
         extracted = {10:[9,10,11], 1:[1,2,3]}
-        t =worker. get_out_table(extracted)
+        t =worker. get_out_table(extracted, 1, False)
         assert 'Z' in t.colnames
         assert len(t.colnames)==0
-        assert len(t)==2
+        assert len(t)==3
         assert t[0]==2
         assert t[1]==10
+        assert t[2]==11

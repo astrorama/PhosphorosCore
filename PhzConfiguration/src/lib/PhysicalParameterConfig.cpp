@@ -49,7 +49,8 @@ auto PhysicalParametersConfig::getProgramOptions() -> std::map<std::string, Opti
   return {{"Physical parameters options",
            {{PP_CONFIG_FILE.c_str(), po::value<std::string>(),
              "Path to the FITS file containing the physical parameter configuration in a table with columns : "
-             "PARAM_NAME, SED, A, B, C, D and Units. (C and D are optional) For each parameter a line must be present for each used SED and the param. "
+             "PARAM_NAME, SED, A, B, C, D and Units. (C and D are optional) For each parameter a line must be present "
+             "for each used SED and the param. "
              "value is p= A*L0 + B + C*LOG(D*L0)"}}}};
 }
 
@@ -61,7 +62,7 @@ PhysicalParametersConfig::readConfig(fs::path path) const {
   CCfits::FITS::setVerboseMode(true);
 
   // Check file exists
-  if (sfile) {
+  if (sfile.is_open()) {
     try {
       // Read first HDU
       auto table = Table::FitsReader{path.generic_string(), 1}.read();
@@ -75,24 +76,29 @@ PhysicalParametersConfig::readConfig(fs::path path) const {
         double      param_C    = 0;
         double      param_D    = 0;
         std::string param_unit = "";
-        if ( col_number==5){
-        	param_unit = boost::get<std::string>(row[4]);
-        } else if (col_number==7) {
-            param_C    = boost::get<double>(row[4]);
-            param_D    = boost::get<double>(row[5]);
-        	param_unit = boost::get<std::string>(row[6]);
+        if (col_number == 5) {
+          param_unit = boost::get<std::string>(row[4]);
+        } else if (col_number == 7) {
+          param_C    = boost::get<double>(row[4]);
+          param_D    = boost::get<double>(row[5]);
+          param_unit = boost::get<std::string>(row[6]);
         }
 
         if (results.find(param_name) == results.end()) {
           results.insert(std::make_pair(param_name, std::map<std::string, PhzDataModel::PPConfig>()));
         }
 
-        results.at(param_name).insert(std::make_pair(sed_name, PhzDataModel::PPConfig(param_A, param_B, param_C, param_D, param_unit)));
+        results.at(param_name)
+            .insert(std::make_pair(sed_name, PhzDataModel::PPConfig(param_A, param_B, param_C, param_D, param_unit)));
       }
     } catch (CCfits::FitsException& fits_except) {
       throw Elements::Exception() << "FitsException catched! File: " << path.generic_string();
     }
+  } else {
+    throw Elements::Exception() << "The PP configuration file '" << path.generic_string()
+                                << "' cannot be open. It may be missing. ";
   }
+
   return results;
 }
 
