@@ -57,6 +57,7 @@
 #include "PhzPhotometricCorrection/FindWeightedMeanPhotometricCorrectionsFunctor.h"
 #include "PhzPhotometricCorrection/FindWeightedMedianPhotometricCorrectionsFunctor.h"
 #include "PhzUtils/FileUtils.h"
+#include "PhzConfiguration/CatalogSliceConfig.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -88,6 +89,7 @@ ComputePhotometricCorrectionsConfig::ComputePhotometricCorrectionsConfig(long ma
   declareDependency<AxisWeightPriorConfig>();
   declareDependency<GenericGridPriorConfig>();
   declareDependency<ErrorAdjustmentConfig>();
+  declareDependency<CatalogSliceConfig>();
 
   declareDependency<ObservationConditionColumnConfig>();
   declareDependency<CorrectionCoefficientGridConfig>();
