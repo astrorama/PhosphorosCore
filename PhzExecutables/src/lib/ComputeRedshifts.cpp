@@ -37,6 +37,8 @@
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzConfiguration/ScaleFactorMarginalizationConfig.h"
+#include "PhzConfiguration/CatalogSliceConfig.h"
+
 #include "PhzExecutables/ComputeRedshifts.h"
 #include "PhzLikelihood/ParallelCatalogHandler.h"
 #include "PhzUtils/ProgressReporter.h"
@@ -90,8 +92,8 @@ void ComputeRedshifts::doRun(ConfigManager& config_manager) {
   auto out_ptr = config_manager.getConfiguration<ComputeRedshiftsConfig>().getOutputHandler();
 
   std::size_t chunk_size  = config_manager.getConfiguration<ComputeRedshiftsConfig>().getInputBufferSize();
-  std::size_t skip        = config_manager.getConfiguration<ComputeRedshiftsConfig>().getSkipFirstNumber();
-  std::size_t max_process = config_manager.getConfiguration<ComputeRedshiftsConfig>().getProcessMaxNumber();
+  std::size_t skip        = config_manager.getConfiguration<CatalogSliceConfig>().getSkipFirstNumber();
+  std::size_t max_process = config_manager.getConfiguration<CatalogSliceConfig>().getProcessMaxNumber();
 
   auto total_size = table_reader->rowsLeft();
 

@@ -17,13 +17,13 @@
  */
 
 /**
- * @file PhzConfiguration/ComputeRedshiftsConfig.h
+ * @file PhzConfiguration/CatalogSliceConfig.h
  * @date 2015/11/16
  * @author Florian Dubath
  */
 
-#ifndef PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIG_H
-#define PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIG_H
+#ifndef PHZCONFIGURATION_CATALOGSLICECONFIG_H
+#define PHZCONFIGURATION_CATALOGSLICECONFIG_H
 
 #include "Configuration/Configuration.h"
 #include "PhzLikelihood/CatalogHandler.h"
@@ -36,59 +36,44 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 /**
- * @class ComputeRedshiftsConfig
+ * @class CatalogSliceConfig
  *
  */
-class ComputeRedshiftsConfig : public Configuration::Configuration {
+class CatalogSliceConfig : public Configuration::Configuration {
 
 public:
   /**
    * @brief constructor
    */
-  ComputeRedshiftsConfig(long manager_id);
+  CatalogSliceConfig(long manager_id);
 
   /**
    * @brief Destructor
    */
-  virtual ~ComputeRedshiftsConfig() = default;
+  virtual ~CatalogSliceConfig() = default;
 
   /**
    * @details
-   * Add the "input-catalog-file","axes-collapse-type","output-catalog-format",
-   * "phz-output-dir","input-catalog-file","create-output-catalog",
-   * "create-output-pdf","create-output-likelihoods" and
-   * "create-output-posteriors" options into the
-   * "Compute Redshifts options" group
+   * Add the "input-skip-head" and "input-process-max" options into the
+   * "Input catalog options" group
    */
   std::map<std::string, OptionDescriptionList> getProgramOptions() override;
 
   void preInitialize(const UserValues& args) override;
 
-  /**
-   * @details
-   */
+
   void initialize(const UserValues& args) override;
 
-  std::unique_ptr<PhzOutput::OutputHandler> getOutputHandler() const;
-
-  std::size_t getInputBufferSize() const;
+  std::size_t getSkipFirstNumber() const;
+  std::size_t getProcessMaxNumber() const;
 
 private:
-  bool m_cat_flag = false;
+  std::size_t m_input_skip_first  = 0;
+  std::size_t m_input_process_max = 0;
 
-  std::size_t             m_sampling_number      = 1000;
-  std::size_t             m_sources_per_file     = 10000;
-  bool                    m_do_sample_full_grids = true;
-  bool                    m_likelihood_flag      = false;
-  boost::filesystem::path m_out_likelihood_dir;
-  bool                    m_posterior_flag = false;
-  boost::filesystem::path m_out_posterior_dir;
-
-  std::size_t m_input_buffer_size = 5000;
-
-}; /* End of ComputeRedshiftsConfig class */
+}; /* End of CatalogSliceConfig class */
 
 }  // end of namespace PhzConfiguration
 }  // end of namespace Euclid
 
-#endif /* PHZCONFIGURATION_COMPUTEREDSHIFTSCONFIG_H */
+#endif /* PHZCONFIGURATION_CATALOGSLICECONFIG_H */

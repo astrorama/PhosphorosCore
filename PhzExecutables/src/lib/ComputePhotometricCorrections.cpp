@@ -29,6 +29,7 @@
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzConfiguration/ScaleFactorMarginalizationConfig.h"
+#include "PhzConfiguration/CatalogSliceConfig.h"
 
 #include "PhzConfiguration/ErrorAdjustmentConfig.h"
 #include "PhzPhotometricCorrection/CalculateScaleFactorMap.h"
@@ -69,7 +70,6 @@ ComputePhotometricCorrections::ComputePhotometricCorrections(ProgressListener pr
 
 void ComputePhotometricCorrections::run(ConfigManager& config_manager) {
 
-  auto  catalog              = config_manager.getConfiguration<CatalogConfig>().readAsCatalog();
   auto& model_phot_grid      = config_manager.getConfiguration<PhotometryGridConfig>().getPhotometryGrid();
   auto& likelihood_grid_func = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getLikelihoodGridFunction();
   auto  scale_factor_func    = config_manager.getConfiguration<LikelihoodGridFuncConfig>().getScaleFactorFunction();
@@ -81,6 +81,31 @@ void ComputePhotometricCorrections::run(ConfigManager& config_manager) {
   auto&  output_func     = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getOutputFunction();
   auto&  stop_criteria   = config_manager.getConfiguration<ComputePhotometricCorrectionsConfig>().getStopCriteria();
   double sampling_sigma_range = config_manager.getConfiguration<ScaleFactorMarginalizationConfig>().getSampleNumber();
+  std::size_t skip        = config_manager.getConfiguration<CatalogSliceConfig>().getSkipFirstNumber();
+  std::size_t max_process = config_manager.getConfiguration<CatalogSliceConfig>().getProcessMaxNumber();
+  
+  auto table_reader      = config_manager.getConfiguration<CatalogConfig>().getTableReader();
+  auto catalog_converter = config_manager.getConfiguration<CatalogConfig>().getTableToCatalogConverter();
+  auto total_size = table_reader->rowsLeft();
+
+  logger.info() << "Total input catalog size: " << total_size;
+  if (skip > 0) {
+    logger.info() << "Skipping the first " << skip << " sources.";
+    if (skip >= total_size) {
+      logger.info() << "No source to process.";
+      return;
+    }
+    total_size -= skip;
+    table_reader->read(skip);
+  }
+
+  if (max_process > 0 && total_size > max_process) {
+    logger.info() << "Process only " << max_process << " sources.";
+  } else {
+    max_process = total_size;
+  }
+  
+  auto  catalog = catalog_converter(table_reader->read(max_process));
 
   auto& threads = PhzUtils::getThreadNumber();
 
