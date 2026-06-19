@@ -133,6 +133,7 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
       result_map.emplace(
           std::make_pair(grid_pair.first,
                          grid_creator.createGrid(grid_pair.second, model_phot_grid.filter_names, cosmology, reporter)));
+       already_done += GridContainer::makeGridIndexHelper(grid_pair.second).m_axes_index_factors.back();
     }
     progress_listener(already_done, total);
 

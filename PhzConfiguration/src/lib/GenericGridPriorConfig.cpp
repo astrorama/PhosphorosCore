@@ -24,6 +24,7 @@
 
 #include <filesystem>
 
+#include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "GridContainer/serialize.h"
 #include "PhzConfiguration/AuxDataDirConfig.h"
@@ -100,6 +101,7 @@ void GenericGridPriorConfig::initialize(const UserValues& args) {
           logger.info("Find a file for the generic grid prior with path " + filename.string());
         } else {
           logger.error("No file was found for the generic grid prior");
+          throw Elements::Exception() << "Generic grid prior file (" << GENERIC_GRID_PRIOR << " option) does not exist: " << filename;
         }
       }
       std::vector<PhzDataModel::DoubleGrid> grids = readGridsFromFile(filename);
