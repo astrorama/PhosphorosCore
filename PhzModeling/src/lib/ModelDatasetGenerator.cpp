@@ -144,6 +144,15 @@ PhzDataModel::Sed& ModelDatasetGenerator::operator*() {
 
   size_t new_z_index = m_index_helper.axisIndex(PhzDataModel::ModelParameter::Z, m_current_index);
 
+  // We check if we need to recalculate the SED (for the scaling)
+  if (new_sed_index != m_current_sed_index || !m_current_sed || !m_current_pp_norm_sed) {
+    auto& sed_name = std::get<PhzDataModel::ModelParameter::SED>(m_parameter_space)[new_sed_index];
+    auto  norm_sed = m_normalization_function(PhzDataModel::Sed(m_sed_map.at(sed_name)));
+    m_current_sed.reset(new PhzDataModel::Sed(norm_sed));
+    auto pp_norm_sed = m_pp_normalization_function(PhzDataModel::Sed(m_sed_map.at(sed_name)));
+    m_current_pp_norm_sed.reset(new PhzDataModel::Sed(pp_norm_sed));
+  }
+
   // We check if we need to recalculate the reddened SED
   if (new_sed_index != m_current_sed_index || new_reddening_curve_index != m_current_reddening_curve_index ||
       new_ebv_index != m_current_ebv_index || !m_current_reddened_sed) {
@@ -158,9 +167,6 @@ PhzDataModel::Sed& ModelDatasetGenerator::operator*() {
     auto reddened = PhzDataModel::Sed(
         m_reddening_function(m_sed_map.at(sed_name), *(m_reddening_curve_map.at(reddening_curve_name)), ebv));
     m_current_reddened_sed.reset(new PhzDataModel::Sed(m_normalization_function(reddened)));
-    
-    // Compute the normalization (Scaling) for PP
-    m_current_pp_norm_sed.reset(new PhzDataModel::Sed(m_pp_normalization_function(reddened)));
   }
   if (new_sed_index != m_current_sed_index || new_reddening_curve_index != m_current_reddening_curve_index ||
       new_ebv_index != m_current_ebv_index || new_z_index != m_current_z_index || !m_current_redshifted_sed) {
