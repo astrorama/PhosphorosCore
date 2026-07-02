@@ -72,7 +72,7 @@ SparseGridCreator::createGrid(const std::map<std::string, PhzDataModel::ModelAxe
 
   PhzModeling::PhotometryGridCreator creator{std::move(m_sed_provider),    std::move(m_reddening_curve_provider),
                                              std::move(m_filter_provider), std::move(m_igm_absorption_function),
-                                             m_normalization_function,     m_normalization_function,
+                                             m_normalization_function,     m_pp_normalization_function,
                                              m_pp_normalization_value};
 
   // Compute the total number of models
