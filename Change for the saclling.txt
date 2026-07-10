@@ -1,0 +1,37 @@
+PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way grid information are strored in memory 
+* add private variables  
+       std::vector<std::string>                  m_scaling_filter_name;
+       std::vector<double>                       m_differential_scaling;
+       
+* change the constructors (to add the scaling_filter_name)
+* change overload of the factory  (to add the scaling_filter_name)
+
+--- BUILD ---
+ 
+ 
+ TODO
+ 
+* ScalingProxy to access the scaling from the cell
+
+* getter/setter for the scaling   
+
+* Grid Unit test
+
+* change the grid info (keeping the old pp in a first step
+
+* change the way the grid is persisted (serialization)
+
+* GridInfo/Serialization Unit test 
+
+* create the configuration for the scaling
+
+* modify the grid creation to add the scaling to the grid
+
+* /\ breaking compatibility /\: put the PP scaling as main scaling and the luminosity with the other scaling. Remove the pp spoofing
+
+* for the CR create a configuration to restrict the available scaling in the output
+
+* for the CR output the reddened ABS MAG
+
+* Integrate change into the UI
+

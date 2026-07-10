@@ -176,6 +176,8 @@ public:
 
     friend class PhotometryCellManager;
   };
+  
+  
 
   /**
    * Iterator class to iterate over the cells
@@ -245,7 +247,7 @@ public:
     friend class PhotometryCellManager;
   };
 
-  PhotometryCellManager(size_t size, std::vector<std::string> filter_names);
+  PhotometryCellManager(size_t size, std::vector<std::string> filter_names, std::vector<std::string> scaling_filter_names={});
 
   PhotometryCellManager(PhotometryCellManager&&) = default;
 
@@ -290,6 +292,10 @@ public:
 private:
   size_t                                    m_size;
   std::vector<std::string>                  m_filter_names;
+  
+  std::vector<std::string>                  m_scaling_filter_name;
+  std::vector<double>                       m_differentiel_scaling;
+  
   std::vector<SourceCatalog::FluxErrorPair> m_data;
   friend class PhotometryCellManager::iterator;
 };
@@ -327,10 +333,12 @@ struct GridCellManagerTraits<PhzDataModel::PhotometryCellManager> {
    *
    */
   static std::unique_ptr<PhzDataModel::PhotometryCellManager> factory(size_t                   size,
-                                                                      std::vector<std::string> filter_names);
+                                                                      std::vector<std::string> filter_names,
+                                                                      std::vector<std::string> scaling_filter_names={});
 
-  static std::unique_ptr<PhzDataModel::PhotometryCellManager>
-  factory(size_t size, std::vector<XYDataset::QualifiedName> filter_names);
+  static std::unique_ptr<PhzDataModel::PhotometryCellManager> factory(size_t size, 
+                                                                      std::vector<XYDataset::QualifiedName> filter_names, 
+                                                                      std::vector<XYDataset::QualifiedName> scaling_filter_names={});
 
   /**
    * @brief Initialize from another PhotometryCellManager
