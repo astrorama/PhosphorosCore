@@ -343,7 +343,7 @@ public:
     return m_filter_names;
   }
   
-  const std::vector<std::string>& ScalingFilterNames() const {
+  const std::vector<std::string>& scalingFilterNames() const {
     return m_scaling_filter_names;
   }
 

@@ -13,11 +13,15 @@ PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way 
     - scaling_cbegin(), scaling_cend()
     - scaling_size()
     - scaling_find(const std::string& scaling_filter)
+    in the PhotometryCellManager:  const std::vector<std::string>& scalingFilterNames()
     
+--- BUILD ---
+
+* Grid Unit test
+
 --- BUILD ---
     
 TODO   
-* Grid Unit test
 
 * change the grid info (keeping the old pp in a first step
 
