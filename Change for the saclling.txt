@@ -8,13 +8,15 @@ PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way 
 
 --- BUILD ---
  
- 
- TODO
- 
-* ScalingProxy to access the scaling from the cell
-
-* getter/setter for the scaling   
-
+* PhotometryProxy modified to access the scaling from the cell. New function in the PhotometryProxy :
+    - scaling_begin(), scaling_end()
+    - scaling_cbegin(), scaling_cend()
+    - scaling_size()
+    - scaling_find(const std::string& scaling_filter)
+    
+--- BUILD ---
+    
+TODO   
 * Grid Unit test
 
 * change the grid info (keeping the old pp in a first step

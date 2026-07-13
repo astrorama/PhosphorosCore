@@ -15,14 +15,14 @@ PhotometryCellManager::PhotometryCellManager(size_t size, std::vector<std::strin
     : m_size(size)
     , m_filter_names(std::move(filter_names))
     , m_data(size * m_filter_names.size(), SourceCatalog::FluxErrorPair(0, 0))
-    , m_scaling_filter_name(std::move(scaling_filter_names))
-    , m_differentiel_scaling(size * m_scaling_filter_name.size(), 1.0) {}
+    , m_scaling_filter_names(std::move(scaling_filter_names))
+    , m_differentiel_scaling(size * m_scaling_filter_names.size(), 1.0) {}
 
 PhotometryCellManager::PhotometryCellManager(const PhotometryCellManager& other)
     : m_size(other.m_size)
     , m_filter_names(other.m_filter_names)
     , m_data(other.m_data)
-    , m_scaling_filter_name(other.m_scaling_filter_name)
+    , m_scaling_filter_names(other.m_scaling_filter_names)
     , m_differentiel_scaling(other.m_differentiel_scaling)  {}
 
 }  // namespace PhzDataModel

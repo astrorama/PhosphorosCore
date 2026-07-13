@@ -31,9 +31,14 @@
 #include <cassert>
 #include <memory>
 #include <vector>
+#include <iterator>
 
 namespace Euclid {
 namespace PhzDataModel {
+
+
+
+
 
 /**
  * @brief Handle the cells storing the photometry values for the model grid
@@ -101,6 +106,40 @@ public:
     std::size_t size() const {
       return m_end - m_begin;
     }
+    
+    
+    // Access the scaling attached to the Grid Cell through iterators
+    
+    std::vector<double>::iterator scaling_begin() {
+        return std::vector<double>::iterator(m_scaling_begin);
+    }
+       
+    std::vector<double>::iterator scaling_end() {
+        return std::vector<double>::iterator(m_scaling_end);
+    } 
+    
+    std::vector<double>::const_iterator scaling_cbegin() {
+        return std::vector<double>::const_iterator(m_scaling_begin);
+    }
+       
+    std::vector<double>::const_iterator scaling_cend() {
+        return std::vector<double>::const_iterator(m_scaling_end);
+    }
+    
+    std::size_t scaling_size() const {
+      return m_scaling_end - m_scaling_begin;
+    }
+    
+    double scaling_find(const std::string& scaling_filter) const {
+      auto i = std::find(m_parent.m_scaling_filter_names.begin(), m_parent.m_scaling_filter_names.end(), scaling_filter);
+      if (i == m_parent.m_scaling_filter_names.end()) {
+        throw Elements::Exception() << "Scaling filter " << scaling_filter << " not found";
+      }
+      auto offset = i - m_parent.m_scaling_filter_names.begin();
+      return *(m_scaling_begin + offset);
+    }
+    // end: Access the scaling attached to the Grid Cell through iterators
+    
 
     /**
      * Since PhotometryProxy is the pointer-type, it needs to provide a dereference operator.
@@ -113,6 +152,7 @@ public:
 
     PhotometryProxy& operator=(const PhotometryProxy& other) {
       std::copy(other.m_begin, other.m_end, m_begin);
+      std::copy(other.m_scaling_begin, other.m_scaling_end, m_scaling_begin);
       return *this;
     }
 
@@ -153,6 +193,9 @@ public:
       auto offset = i - m_parent.m_filter_names.begin();
       return &(*(m_begin + offset));
     }
+    
+    
+    
 
   protected:
     using photometry_iterator = std::vector<SourceCatalog::FluxErrorPair>::iterator;
@@ -168,11 +211,12 @@ public:
      * @note
      *  Going back to the 2D analogy, begin should point to array.begin() + cell_index * n_filters
      */
-    PhotometryProxy(const PhotometryCellManager& parent, photometry_iterator begin_, photometry_iterator end_)
-        : m_parent(parent), m_begin(begin_), m_end(end_){};
+    PhotometryProxy(const PhotometryCellManager& parent, photometry_iterator begin_, photometry_iterator end_,  std::vector<double>::iterator scaling_begin,  std::vector<double>::iterator scaling_end)
+        : m_parent(parent), m_begin(begin_), m_end(end_), m_scaling_begin(scaling_begin), m_scaling_end(scaling_end) {};
 
     const PhotometryCellManager& m_parent;
     photometry_iterator          m_begin, m_end;
+    std::vector<double>::iterator m_scaling_begin, m_scaling_end;
 
     friend class PhotometryCellManager;
   };
@@ -190,7 +234,7 @@ public:
      * PhotometryProxy is the reference-type
      */
     PhotometryProxy operator*() const {
-      return {m_parent, m_position, m_position + m_stride};
+      return {m_parent, m_position, m_position + m_stride, m_scaling_position, m_scaling_position + m_scaling_stride};
     }
 
     /**
@@ -202,16 +246,18 @@ public:
      *  which returns a pointer to itself. This final pointer is usable to access the methods and attributes.
      */
     PhotometryProxy operator->() const {
-      return {m_parent, m_position, m_position + m_stride};
+      return {m_parent, m_position, m_position + m_stride, m_scaling_position, m_scaling_position + m_scaling_stride};
     }
 
     iterator& operator++() {
       m_position += m_stride;
+      m_scaling_position+= m_scaling_stride;
       return *this;
     }
 
     iterator& operator+=(ssize_t diff) {
       m_position += diff * m_stride;
+      m_scaling_position += diff * m_scaling_stride;
       return *this;
     }
 
@@ -237,12 +283,16 @@ public:
   protected:
     using flux_iterator = std::vector<SourceCatalog::FluxErrorPair>::iterator;
 
-    iterator(const PhotometryCellManager& parent, flux_iterator iter)
-        : m_parent(parent), m_position(iter), m_stride(parent.m_filter_names.size()){};
+    iterator(const PhotometryCellManager& parent, flux_iterator iter, std::vector<double>::iterator scaling_iter)
+        : m_parent(parent), m_position(iter), m_stride(parent.m_filter_names.size()), m_scaling_position(scaling_iter), m_scaling_stride(parent.m_scaling_filter_names.size()) {};
 
     const PhotometryCellManager& m_parent;
+    
     flux_iterator                m_position;
     ssize_t                      m_stride;
+    
+    std::vector<double>::iterator m_scaling_position;
+    ssize_t                      m_scaling_stride;
 
     friend class PhotometryCellManager;
   };
@@ -268,32 +318,42 @@ public:
   }
 
   iterator begin() {
-    return iterator(*this, m_data.begin());
+    return iterator(*this, m_data.begin(), m_differentiel_scaling.begin());
   }
 
   iterator end() {
-    return iterator(*this, m_data.end());
+    return iterator(*this, m_data.end(), m_differentiel_scaling.end());
   }
 
   PhotometryProxy operator[](size_t i) {
     auto _begin = m_data.begin() + i * m_filter_names.size();
     auto _end   = _begin + m_filter_names.size();
-    return {*this, _begin, _end};
+    auto scaling_begin =  m_differentiel_scaling.begin();
+    std::advance(scaling_begin, i * m_scaling_filter_names.size());
+    auto scaling_end(scaling_begin);
+    std::advance(scaling_end, m_scaling_filter_names.size());
+    return {*this, _begin, _end, scaling_begin, scaling_end};
   }
 
   const std::vector<std::string>& filterNames() const {
     return m_filter_names;
   }
-
+  
   const std::vector<std::string>& getConstructorParameters() const {
     return m_filter_names;
   }
+  
+  const std::vector<std::string>& ScalingFilterNames() const {
+    return m_scaling_filter_names;
+  }
+
+
 
 private:
   size_t                                    m_size;
   std::vector<std::string>                  m_filter_names;
   
-  std::vector<std::string>                  m_scaling_filter_name;
+  std::vector<std::string>                  m_scaling_filter_names;
   std::vector<double>                       m_differentiel_scaling;
   
   std::vector<SourceCatalog::FluxErrorPair> m_data;
