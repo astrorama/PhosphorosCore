@@ -115,7 +115,7 @@ void CorrectionCoefficientGridOutputConfig::initialize(const UserValues& args) {
                        inner_output_function](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
     auto local_logger  = Elements::Logging::getLogger("PhzOutput");
     auto igm_config    = getDependency<IgmConfig>();
-    auto lum_filter    = getDependency<ModelNormalizationConfig>().getNormalizationFilter();
+    auto lum_filter    = getDependency<ModelNormalizationConfig>().getNormalizationFilters()[0];
     auto lum_pp_filter = getDependency<ModelNormalizationConfig>().getPpNormalizationFilter();
 
     inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, grid_map);

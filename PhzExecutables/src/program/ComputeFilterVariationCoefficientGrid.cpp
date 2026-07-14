@@ -132,7 +132,7 @@ class ComputeFilterVariationCoefficientGrid : public Elements::Program {
         config_manager.template getConfiguration<FilterVariationCoefficientGridOutputConfig>().getOutputFunction();
     auto delta_lambda = config_manager.template getConfiguration<FilterVariationConfig>().getSampling();
     auto cosmology    = config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
-    auto lum_filter_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
+    auto lum_filter_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilters()[0];
     auto lum_pp_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter();
     auto sun_sed_name       = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
 

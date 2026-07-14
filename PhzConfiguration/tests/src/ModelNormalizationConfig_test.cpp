@@ -144,7 +144,7 @@ BOOST_FIXTURE_TEST_CASE(values_value_filter, ModelNormalizationConfig_fixture) {
   BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed().qualifiedName(),
                     sed);
   BOOST_CHECK_EQUAL(
-      config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter().qualifiedName(), filter);
+      config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilters()[0].qualifiedName(), filter);
   BOOST_CHECK(config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter());
   BOOST_CHECK_EQUAL(
       config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter().qualifiedName(), filter);
@@ -169,7 +169,7 @@ BOOST_FIXTURE_TEST_CASE(values_value_filter_pp, ModelNormalizationConfig_fixture
                     sed);
   BOOST_CHECK(true);
   BOOST_CHECK_EQUAL(
-      config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter().qualifiedName(), filter);
+      config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilters()[0].qualifiedName(), filter);
   BOOST_CHECK(true);
   BOOST_CHECK(config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter());
   BOOST_CHECK(true);
@@ -197,12 +197,43 @@ BOOST_FIXTURE_TEST_CASE(values_value_value, ModelNormalizationConfig_fixture) {
   BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed().qualifiedName(),
                     sed);
   BOOST_CHECK_EQUAL(
-      config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter().qualifiedName(), filter);
+      config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilters()[0].qualifiedName(), filter);
   BOOST_CHECK(!config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter());
   BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationValue(), value_pp);
 
   BOOST_CHECK_NO_THROW(config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter());
 }
+
+BOOST_FIXTURE_TEST_CASE(mag_ab_values, ModelNormalizationConfig_fixture) {
+
+  // When
+  std::string filter                             = ref_filter;
+  options_map["normalization-filter"].value()    = boost::any(filter);
+  double value_pp                                = 100.0;
+  options_map["normalization-pp-value"].value()  = boost::any(value_pp);
+  std::string sed                                = solar_sed;
+  options_map["normalization-solar-sed"].value() = boost::any(sed);
+  std::string filter_pp                          = ref_filter_pp;
+  std::vector<std::string> mag_filters{filter_pp,filter};
+  options_map["abs-mag-filters"].value()         = boost::any(mag_filters);
+
+  config_manager.initialize(options_map);
+
+  // Then
+  BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed().qualifiedName(),
+                    sed);
+  BOOST_CHECK_EQUAL(2, config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilters().size());
+  // filters have been re-ordoned
+  BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilters()[0].qualifiedName(), filter);
+  BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilters()[1].qualifiedName(), filter_pp);
+  
+  
+  BOOST_CHECK(!config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter());
+  BOOST_CHECK_EQUAL(config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationValue(), value_pp);
+
+  BOOST_CHECK_NO_THROW(config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter());
+}
+
 
 //-----------------------------------------------------------------------------
 

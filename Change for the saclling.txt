@@ -40,7 +40,6 @@ PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way 
    - (PhzOutput) GridSamplerScale_trest l88,117 same filters
    - (PhzOutput) CorrectedPhotometry_test l106  same filters
    - (PhzOutput) PhysicalParameter_test l46 same filters
-   - (PhzModeling) PhotometryGridCreator l202 same filters => input point for the configuration refactoring
    - (PhzLikelihood) FixRedshiftProcessModelGridFunctor
    - (PhzLikelihood) SourcePhzFunctor_test l66,67   same filters
    - (PhzLikelihood) SharedPriorAdapter_test l48 same filters
@@ -49,28 +48,44 @@ PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way 
    - (PhzLikelihood) FilterShiftProcessModelGridFunctor_test l43,53,54 same filters
    - (PhzPhotometricCorrection) FindBestFitModels_test l64,65 same filters
    - (PhzPhotometricCorrection) PhotometricCorrectionCalculator_test l254 same filters
-   - (PhzConfiguration) PhotometryGridConfig l160 get the scaling_filter_names from the info. TO BE CHEKED
    - (PhzConfiguration) PhotometryGridConfig_test l68 (same filters than the info)
    - (PhzConfiguration) ModelGridOutputConfig_test 243,298,349 same filters
    - (PhzConfiguration) LuminositySedGroupConfig_test l68 same filters
    - (PhzConfiguration) VolumePriorConfig_test l63 same filters (!=info)
    - (PhzConfiguration) AxisWeightPriorConfig_test l73 same filters  (!=info)
+   - (PhzExecutables) GridSplitter l185,267
+   - (PhzModeling) PhotometryGridCreator l202 same filters => input point for the configuration refactoring
    - (GalacticCorrection) GalacticCorrectionFactorSingleGridCreator l233  same filters => refactoring input point. TO BE CHEKED
    - (PhzFilterVariation) FilterVariationSingleGridCreator l297  same filters => refactoring input point. TO BE CHEKED
-   - (PhzExecutables) GridSplitter l185,267
+   - (PhzConfiguration) PhotometryGridConfig l160 get the scaling_filter_names from the info. TO BE CHEKED
    
 --- BUILD ---
 
 * GridInfo/Serialization Unit test 
+
+--- BUILD ---
+   
+* create the configuration for the scaling: refactor the ModelNormalizationConfig
+  -(PhzConfiguration) CorrectionCoefficientGridOutputConfig 118 =>Check if the other bands are needed downward
+  -(PhzConfiguration) FilterVariationCoefficientGridOutputConfig 148 =>Check if the other bands are needed downward
+  -(PhzConfiguration) LuminosityPriorConfig
+  -(PhzConfiguration) ModelGridOutputConfig 118 => must be changed along with the InnerOutputFunction
+  -(PhzConfiguration) ModelNormalizationConfig_test
+  -(PhzExecutables) lib/BuildReferenceSample 98 =>Check if the other bands are needed downward
+  -(PhzExecutables) ComputeModelGridProgram.h 73: input fopr the refactoring to pass the filter down
+  -(PhzExecutables) ComputeModelSed 87
+  -(PhzExecutables) ComputeGalacticAbsorptionCoefficientGrid 101=>Check if the other bands are needed downward
+  -(PhzExecutables) ComputeFilterVariationCoefficientGrid 135=>Check if the other bands are needed downward
+  
+--- BUILD ---
   
 TODO  
-   
-
-* create the configuration for the scaling
-
+  
 * modify the grid creation to add the scaling to the grid
 
 * /\ breaking compatibility /\: put the PP scaling as main scaling and the luminosity with the other scaling. Remove the pp spoofing
+
+* create a configuration to restrict the output + output ABS MAG
 
 * for the CR create a configuration to restrict the available scaling in the output
 

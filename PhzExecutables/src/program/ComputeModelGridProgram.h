@@ -70,7 +70,7 @@ public:
 
     auto sun_sed_name = config_manager.template getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
     auto lum_filter_name =
-        config_manager.template getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
+        config_manager.template getConfiguration<ModelNormalizationConfig>().getNormalizationFilters()[0];
     auto lum_pp_filter_name =
         config_manager.template getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter();
 

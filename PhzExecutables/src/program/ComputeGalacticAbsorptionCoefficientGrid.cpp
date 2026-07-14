@@ -98,7 +98,7 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
         config_manager.template getConfiguration<CorrectionCoefficientGridOutputConfig>().getOutputFunction();
     auto cosmology = config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
 
-    auto lum_filter_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
+    auto lum_filter_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilters()[0];
     auto lum_pp_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter();
     auto sun_sed_name       = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
 
