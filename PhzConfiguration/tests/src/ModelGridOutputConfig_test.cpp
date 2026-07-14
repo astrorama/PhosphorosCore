@@ -240,7 +240,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunction_test, T, archive_types, Model
   auto output_func = config_manager.getConfiguration<ModelGridOutputConfig>().getOutputFunction();
 
   auto                                 axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1};
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1, *filter_1};
   original_grid(0, 0, 0, 0) = photometry_1;
   original_grid(1, 0, 0, 0) = photometry_2;
   original_grid(0, 1, 0, 0) = photometry_3;
@@ -295,7 +295,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionRelative_test, T, archive_type
   auto output_func = config_manager.getConfiguration<ModelGridOutputConfig>().getOutputFunction();
 
   auto                                 axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1};
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1, *filter_1};
   original_grid(0, 0, 0, 0) = photometry_1;
   original_grid(1, 0, 0, 0) = photometry_2;
   original_grid(0, 1, 0, 0) = photometry_3;
@@ -346,7 +346,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionDefault_test, T, archive_types
   auto output_func = config_manager.getConfiguration<ModelGridOutputConfig>().getOutputFunction();
 
   auto                                 axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1};
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1, *filter_1};
   original_grid(0, 0, 0, 0) = photometry_1;
   original_grid(1, 0, 0, 0) = photometry_2;
   original_grid(0, 1, 0, 0) = photometry_3;

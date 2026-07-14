@@ -59,8 +59,8 @@ struct GalacticAbsorptionProcessModelGridFunctor_Fixture {
   SourceCatalog::Photometry coeff_1{filters, coeff};
 
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-  PhzDataModel::PhotometryGrid photo_grid{axes, *filters};
-  PhzDataModel::PhotometryGrid corr_grid{axes, *filters};
+  PhzDataModel::PhotometryGrid photo_grid{axes, *filters, *filters};
+  PhzDataModel::PhotometryGrid corr_grid{axes, *filters, *filters};
 
   std::vector<std::shared_ptr<SourceCatalog::Attribute>> attibuteVector_1{};
   std::vector<std::shared_ptr<SourceCatalog::Attribute>> attibuteVector_2{
@@ -105,7 +105,7 @@ BOOST_FIXTURE_TEST_CASE(test_nominal, GalacticAbsorptionProcessModelGridFunctor_
   GalacticAbsorptionProcessModelGridFunctor functor(map_grid, 1.018);
   std::string                               region = "region_1";
   // When
-  PhzDataModel::PhotometryGrid new_grid(photo_grid.getAxesTuple(), *filters);
+  PhzDataModel::PhotometryGrid new_grid(photo_grid.getAxesTuple(), *filters, *filters);
   std::copy(photo_grid.begin(), photo_grid.end(), new_grid.begin());
   functor(region, source_2, new_grid);
   // Then

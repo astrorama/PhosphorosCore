@@ -199,7 +199,7 @@ PhotometryGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&           
                                      m_normalization_function, m_pp_normalization_function, m_pp_normalization_value);
 
   // Create the photometry Grid
-  auto photometry_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list);
+  auto photometry_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list, filter_name_list);
 
   // Define the algo
 

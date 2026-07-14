@@ -230,7 +230,7 @@ GalacticCorrectionSingleGridCreator::createGrid(const PhzDataModel::ModelAxesTup
       m_igm_absorption_function, m_normalization_function, m_normalization_function, m_pp_normalization_value);
 
   // Create the photometry Grid
-  auto correction_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list);
+  auto correction_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list, filter_name_list);
 
   auto milky_way_reddening = (*m_reddening_curve_provider).getDataset(m_milky_way_reddening);
   if (nullptr == milky_way_reddening) {

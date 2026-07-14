@@ -98,7 +98,7 @@ BOOST_FIXTURE_TEST_CASE(test_computeEnclosingVolumeOfCells, GridSampler_fixture)
   std::shared_ptr<std::vector<std::string>> filter_1 =
       std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filter1", "filter2"});
   auto axes = Euclid::PhzDataModel::createAxesTuple({0.0}, {0.0}, {{"Curve1"}}, {{"SED_1"}, {"SED_2"}});
-  Euclid::PhzDataModel::PhotometryGrid                grid_model_1{axes, *filter_1};
+  Euclid::PhzDataModel::PhotometryGrid                grid_model_1{axes, *filter_1, *filter_1};
   std::map<std::string, PhzDataModel::PhotometryGrid> model_grid_map;
   model_grid_map.emplace("one", std::move(grid_model_1));
   auto handler = PhzOutput::GridSampler<PhzDataModel::RegionResultType::LIKELIHOOD_LOG_GRID>{model_grid_map};
@@ -187,7 +187,7 @@ BOOST_FIXTURE_TEST_CASE(test_Sample, GridSampler_fixture) {
       std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filter1", "filter2"});
   auto axes = Euclid::PhzDataModel::createAxesTuple({0.0, 1.5, 2.0}, {0.0, 0.7, 1.0}, {{"Curve1"}, {"Curve_2"}},
                                                     {{"SED_1"}, {"SED_2"}});
-  Euclid::PhzDataModel::PhotometryGrid grid_model{axes, *filter_1};
+  Euclid::PhzDataModel::PhotometryGrid grid_model{axes, *filter_1, *filter_1};
 
   // Fill the grid with correction factor 0.5
   for (auto iter_m_grid = grid_model.begin(); iter_m_grid != grid_model.end(); ++iter_m_grid) {

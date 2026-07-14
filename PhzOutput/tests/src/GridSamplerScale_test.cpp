@@ -17,7 +17,7 @@
  */
 
 /**
- * @file tests/src/LikelihoodHandler_test.cpp
+ * @file tests/src/GridSamplerScale_trest.cpp
  * @date 19/03/2021
  * @author dubathf
  */
@@ -85,7 +85,7 @@ BOOST_FIXTURE_TEST_CASE(test_getLuminosity, GridSamplerScale_fixture) {
       std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filter1", "filter2"});
   auto axes = Euclid::PhzDataModel::createAxesTuple({0.0, 1.5, 2.0}, {0.0, 0.7, 1.0}, {{"Curve1"}, {"Curve_2"}},
                                                     {{"SED_1"}, {"SED_2"}});
-  Euclid::PhzDataModel::PhotometryGrid                grid_model_1{axes, *filter_1};
+  Euclid::PhzDataModel::PhotometryGrid                grid_model_1{axes, *filter_1, *filter_1};
   std::map<std::string, PhzDataModel::PhotometryGrid> model_grid_map;
   model_grid_map.emplace("one", std::move(grid_model_1));
   auto handler =
@@ -114,7 +114,7 @@ BOOST_FIXTURE_TEST_CASE(test_computeEnclosingVolumeOfCells, GridSamplerScale_fix
   std::shared_ptr<std::vector<std::string>> filter_1 =
       std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filter1", "filter2"});
   auto axes = Euclid::PhzDataModel::createAxesTuple({0.0}, {0.0}, {{"Curve1"}}, {{"SED_1"}, {"SED_2"}});
-  Euclid::PhzDataModel::PhotometryGrid                grid_model_1{axes, *filter_1};
+  Euclid::PhzDataModel::PhotometryGrid                grid_model_1{axes, *filter_1, *filter_1};
   std::map<std::string, PhzDataModel::PhotometryGrid> model_grid_map;
   model_grid_map.emplace("one", std::move(grid_model_1));
   auto handler =

@@ -91,7 +91,7 @@ BOOST_FIXTURE_TEST_CASE(serializationException_test, PhzPhotometryGridName_Fixtu
   boost::archive::text_oarchive oa(stream);
 
   auto                                  axes = Euclid::PhzDataModel::createAxesTuple({}, ebvs, reddeing_curves, seds);
-  Euclid::PhzDataModel::PhotometryGrid  empty_grid(axes, *filter_1);
+  Euclid::PhzDataModel::PhotometryGrid  empty_grid(axes, *filter_1, *filter_2);
   Euclid::PhzDataModel::PhotometryGrid* grid_ptr = &empty_grid;
   // Get the empty grid exception
   BOOST_CHECK_THROW((oa << grid_ptr), Elements::Exception);
@@ -103,7 +103,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, T, archive_types, PhzPhotom
   BOOST_TEST_MESSAGE(" ");
 
   auto                                 axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1};
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1, *filter_2};
   original_grid(0, 0, 0, 0) = photometry_1;
   original_grid(1, 0, 0, 0) = photometry_2;
   original_grid(0, 1, 0, 0) = photometry_3;
@@ -144,7 +144,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, T, archive_types, PhzPhotom
 
 BOOST_FIXTURE_TEST_CASE(toTable_test, PhzPhotometryGridName_Fixture) {
   auto                                 axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1};
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1, *filter_2};
   original_grid(0, 0, 0, 0) = photometry_1;
   original_grid(1, 0, 0, 0) = photometry_2;
   original_grid(0, 1, 0, 0) = photometry_3;

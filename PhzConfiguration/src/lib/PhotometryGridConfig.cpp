@@ -155,9 +155,14 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
       // Here we now need to make new photometries and replace the members
       m_info.filter_names.clear();
       m_info.filter_names.insert(m_info.filter_names.begin(), filter_names->begin(), filter_names->end());
+      
+      std::vector<std::string> scaling_filters{};
+      for(auto& qualifiedname : m_info.scaling_filter_names) {
+         scaling_filters.push_back(qualifiedname.qualifiedName());
+      }
 
       for (auto& pair : m_grids) {
-        PhzDataModel::PhotometryGrid sliced_grid(pair.second.getAxesTuple(), *filter_names);
+        PhzDataModel::PhotometryGrid sliced_grid(pair.second.getAxesTuple(), *filter_names, scaling_filters);
         using PhotometryProxy = PhzDataModel::PhotometryCellManager::PhotometryProxy;
 
         // Note that the PhotometryGrid returns a proxy object when iterating, not the object.

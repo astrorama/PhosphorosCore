@@ -65,6 +65,19 @@ void save(Archive& ar, const Euclid::PhzDataModel::PhotometryGrid& grid, const u
       ar << (*phot_iter).error;
     }
   }
+  
+  // We store the Scaling filters (same for all the cells)
+  std::vector<std::string> scaling_filter_names = grid.getCellManager().scalingFilterNames();
+  ar << scaling_filter_names;
+  
+  // we store the scaling grid
+  for (auto& cell : grid) {
+    for (auto scaling_iter = cell.scaling_cbegin(); scaling_iter != cell.scaling_cend(); ++scaling_iter) {
+      ar << *scaling_iter;
+    }
+  }
+  
+  
 }
 
 /**
@@ -91,6 +104,23 @@ void load(Archive& ar, Euclid::PhzDataModel::PhotometryGrid& grid, const unsigne
       phot_values.push_back({flux, error});
     }
     cell = Euclid::SourceCatalog::Photometry{filter_names_ptr, std::move(phot_values)};
+  }
+  
+  // We load the Scaling filters 
+  std::vector<std::string> scaling_filter_names;
+  ar >> scaling_filter_names;
+  // and check they are the same than the one provided in the constructor
+  auto existing_scaling_filter_names = grid.getCellManager().scalingFilterNames();
+  if (!std::equal(scaling_filter_names.begin(), scaling_filter_names.end(), existing_scaling_filter_names.begin())){
+       throw Elements::Exception() << "Deserialization of grids of Photometries with "
+                                  << "scaling filters differents from the ones provided.";
+  }
+  
+  // we load the scaling grid
+  for (auto cell : grid) {
+    for (auto scaling_iter = cell.scaling_begin(); scaling_iter != cell.scaling_end(); ++scaling_iter) {
+      ar >> *scaling_iter;
+    }
   }
 }
 

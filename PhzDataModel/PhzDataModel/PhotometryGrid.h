@@ -118,11 +118,11 @@ public:
         return std::vector<double>::iterator(m_scaling_end);
     } 
     
-    std::vector<double>::const_iterator scaling_cbegin() {
+    std::vector<double>::const_iterator scaling_cbegin() const{
         return std::vector<double>::const_iterator(m_scaling_begin);
     }
        
-    std::vector<double>::const_iterator scaling_cend() {
+    std::vector<double>::const_iterator scaling_cend() const{
         return std::vector<double>::const_iterator(m_scaling_end);
     }
     
@@ -297,7 +297,7 @@ public:
     friend class PhotometryCellManager;
   };
 
-  PhotometryCellManager(size_t size, std::vector<std::string> filter_names, std::vector<std::string> scaling_filter_names={});
+  PhotometryCellManager(size_t size, std::vector<std::string> filter_names, std::vector<std::string> scaling_filter_names);
 
   PhotometryCellManager(PhotometryCellManager&&) = default;
 
@@ -339,8 +339,8 @@ public:
     return m_filter_names;
   }
   
-  const std::vector<std::string>& getConstructorParameters() const {
-    return m_filter_names;
+  const std::pair<std::vector<std::string>,std::vector<std::string>> getConstructorParameters() const {
+    return std::make_pair(m_filter_names, m_scaling_filter_names);
   }
   
   const std::vector<std::string>& scalingFilterNames() const {
@@ -375,7 +375,7 @@ namespace GridContainer {
  */
 template <>
 struct GridCellManagerTraits<PhzDataModel::PhotometryCellManager> {
-  typedef std::vector<std::string>                             constructor_parameters;
+  typedef std::pair<std::vector<std::string>,std::vector<std::string>>  constructor_parameters;
   typedef PhzDataModel::PhotometryCellManager::PhotometryProxy data_type;
   typedef PhzDataModel::PhotometryCellManager::PhotometryProxy pointer_type;
   typedef PhzDataModel::PhotometryCellManager::PhotometryProxy reference_type;
@@ -392,13 +392,19 @@ struct GridCellManagerTraits<PhzDataModel::PhotometryCellManager> {
    * A unique_ptr on the new PhotometryCellManager.
    *
    */
+   
+  static std::unique_ptr<PhzDataModel::PhotometryCellManager> factory(size_t                   size,
+                                                                      std::pair<std::vector<std::string>,std::vector<std::string>> all_filter_names);
+   
+  
+   
   static std::unique_ptr<PhzDataModel::PhotometryCellManager> factory(size_t                   size,
                                                                       std::vector<std::string> filter_names,
-                                                                      std::vector<std::string> scaling_filter_names={});
+                                                                      std::vector<std::string> scaling_filter_names);
 
   static std::unique_ptr<PhzDataModel::PhotometryCellManager> factory(size_t size, 
                                                                       std::vector<XYDataset::QualifiedName> filter_names, 
-                                                                      std::vector<XYDataset::QualifiedName> scaling_filter_names={});
+                                                                      std::vector<XYDataset::QualifiedName> scaling_filter_names);
 
   /**
    * @brief Initialize from another PhotometryCellManager

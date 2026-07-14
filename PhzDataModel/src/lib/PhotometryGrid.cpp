@@ -28,6 +28,12 @@ PhotometryCellManager::PhotometryCellManager(const PhotometryCellManager& other)
 }  // namespace PhzDataModel
 
 namespace GridContainer {
+std::unique_ptr<PhzDataModel::PhotometryCellManager> GridCellManagerTraits<PhzDataModel::PhotometryCellManager>::factory(size_t                   size,
+                                                            std::pair<std::vector<std::string>,std::vector<std::string>> all_filter_names) {
+      std::vector<std::string> filter_names = all_filter_names.first;
+      std::vector<std::string> scaling_filter_names = all_filter_names.second;    
+      return factory(size, filter_names, scaling_filter_names);                                                           
+}
 
 std::unique_ptr<PhzDataModel::PhotometryCellManager>
 GridCellManagerTraits<PhzDataModel::PhotometryCellManager>::factory(size_t                   size,

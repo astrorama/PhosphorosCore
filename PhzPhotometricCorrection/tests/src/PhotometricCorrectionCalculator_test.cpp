@@ -250,6 +250,7 @@ BOOST_AUTO_TEST_CASE(FunctorCallSuccess) {
                                                                                                         // Curves
                                                                              {{"SED1"}, {"SED2"}, {"SED3"}}  // SEDs
                                                                              ),
+                                               std::vector<std::string>{"Filter1", "Filter2"},
                                                std::vector<std::string>{"Filter1", "Filter2"}};
   map<std::string, Euclid::PhzDataModel::PhotometryGrid> model_grid_map{};
   model_grid_map.emplace(std::make_pair(std::string{""}, std::move(model_phot_grid)));

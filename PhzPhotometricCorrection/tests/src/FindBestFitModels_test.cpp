@@ -61,8 +61,8 @@ struct FindBestFitModels_Fixture {
   SourceCatalog::Photometry photometry_source{filters, vector<SourceCatalog::FluxErrorPair>{{0.1, 0.}, {0.2, 0.}}};
 
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-  PhzDataModel::PhotometryGrid photo_grid{axes, *filters};
-  PhzDataModel::PhotometryGrid ref_photo_grid{axes, *filters};
+  PhzDataModel::PhotometryGrid photo_grid{axes, *filters, *filters};
+  PhzDataModel::PhotometryGrid ref_photo_grid{axes, *filters, *filters};
 
   PhzDataModel::PhotometricCorrectionMap correctionMap{{XYDataset::QualifiedName{"Filter1"}, 1.0},
                                                        {XYDataset::QualifiedName{"Filter2"}, 2.0}};

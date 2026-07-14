@@ -20,7 +20,6 @@ PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way 
 * Grid Unit test
 
 --- BUILD ---
-    
  
 /\ Break compatibility with old grids
 * change the grid info /serialization (keeping the old pp in a first step) impact (to be refactored when the luminosity filter is put as ABS MAG):
@@ -33,11 +32,37 @@ PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way 
   - (PhzConfiguration) tests/src/ModelGridOutputConfig_test.cpp
   
 --- BUILD ---
-  
-TODO  
 
 * change the way the grid serialization
-
+   - (PhzOutput) BestModel_Test l44 same filters
+   - (PhzOutput) BestModelOnlyZ_Test l40 same filters
+   - (PhzOutput) GridSampler_test  l101, l190 same filters
+   - (PhzOutput) GridSamplerScale_trest l88,117 same filters
+   - (PhzOutput) CorrectedPhotometry_test l106  same filters
+   - (PhzOutput) PhysicalParameter_test l46 same filters
+   - (PhzModeling) PhotometryGridCreator l202 same filters => input point for the configuration refactoring
+   - (PhzLikelihood) FixRedshiftProcessModelGridFunctor
+   - (PhzLikelihood) SourcePhzFunctor_test l66,67   same filters
+   - (PhzLikelihood) SharedPriorAdapter_test l48 same filters
+   - (PhzLikelihood) FixRedshiftProcessModelGridFunctor_test l67,121 same filters
+   - (PhzLikelihood) GalacticAbsorptionProcessModelGridFunctor_test l62,63,108  same filters
+   - (PhzLikelihood) FilterShiftProcessModelGridFunctor_test l43,53,54 same filters
+   - (PhzPhotometricCorrection) FindBestFitModels_test l64,65 same filters
+   - (PhzPhotometricCorrection) PhotometricCorrectionCalculator_test l254 same filters
+   - (PhzConfiguration) PhotometryGridConfig l160 get the scaling_filter_names from the info. TO BE CHEKED
+   - (PhzConfiguration) PhotometryGridConfig_test l68 (same filters than the info)
+   - (PhzConfiguration) ModelGridOutputConfig_test 243,298,349 same filters
+   - (PhzConfiguration) LuminositySedGroupConfig_test l68 same filters
+   - (PhzConfiguration) VolumePriorConfig_test l63 same filters (!=info)
+   - (PhzConfiguration) AxisWeightPriorConfig_test l73 same filters  (!=info)
+   - (GalacticCorrection) GalacticCorrectionFactorSingleGridCreator l233  same filters => refactoring input point. TO BE CHEKED
+   - (PhzFilterVariation) FilterVariationSingleGridCreator l297  same filters => refactoring input point. TO BE CHEKED
+   - (PhzExecutables) GridSplitter l185,267
+   
+--- BUILD ---
+  
+TODO  
+   
 * GridInfo/Serialization Unit test 
 
 * create the configuration for the scaling

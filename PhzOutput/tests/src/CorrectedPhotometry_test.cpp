@@ -103,7 +103,7 @@ struct CorrectedPhotometry_fixture {
   SourceCatalog::Source source{"Source_ID", attributes};
 
   CorrectedPhotometry_fixture() {
-    grid_map.insert(std::make_pair("Region0", Euclid::PhzDataModel::PhotometryGrid(axes, *filter_1)));
+    grid_map.insert(std::make_pair("Region0", Euclid::PhzDataModel::PhotometryGrid(axes, *filter_1, *filter_1)));
 
     auto& grid       = grid_map.at("Region0");
     grid(0, 0, 0, 0) = photometry_1;

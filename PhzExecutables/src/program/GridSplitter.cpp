@@ -182,7 +182,7 @@ public:
               std::move(new_z_Axis), std::move(ebv_axis), std::move(red_axis), std::move(sed_axis));
 
           // create the grid
-          Euclid::PhzDataModel::PhotometryGrid sliced_grid(new_axes, gridinfo.filter_names);
+          Euclid::PhzDataModel::PhotometryGrid sliced_grid(new_axes, gridinfo.filter_names, gridinfo.scaling_filter_names);
 
           // copy values from the slices into the grid
           for (size_t value_index = 0; value_index < slice_iterator->second.size(); ++value_index) {
@@ -264,7 +264,7 @@ public:
                 Euclid::PhzDataModel::createAxesTuple(z_axis, ebv_axis, red_axis, new_SED_Axis);
 
             // create the grid
-            Euclid::PhzDataModel::PhotometryGrid sliced_grid(new_axes, gridinfo.filter_names);
+            Euclid::PhzDataModel::PhotometryGrid sliced_grid(new_axes, gridinfo.filter_names, gridinfo.scaling_filter_names);
 
             // copy values from the slices into the grid
 
