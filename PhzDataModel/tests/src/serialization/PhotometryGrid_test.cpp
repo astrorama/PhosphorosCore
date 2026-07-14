@@ -108,6 +108,16 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, T, archive_types, PhzPhotom
   original_grid(1, 0, 0, 0) = photometry_2;
   original_grid(0, 1, 0, 0) = photometry_3;
   original_grid(1, 1, 0, 0) = photometry_4;
+  
+  int index=0;
+  for(auto cell : original_grid) {
+      auto scaling_iter = cell.scaling_begin();
+      while(scaling_iter != cell.scaling_end()){
+          *scaling_iter = index *1.0;
+          ++scaling_iter;
+          ++index;
+      }
+  }
 
   std::stringstream stream;
   Euclid::GridContainer::gridExport<typename T::oarchive>(stream, original_grid);
@@ -140,6 +150,23 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, T, archive_types, PhzPhotom
                                     actual_filters.end());
     }
   }
+  
+  // check the scaling_filter_names
+  auto original_scaling_filters = original_grid.getCellManager().scalingFilterNames();
+  auto actual_scaling_filters   = retrived_grid.getCellManager().scalingFilterNames();
+  BOOST_CHECK_EQUAL_COLLECTIONS(original_scaling_filters.begin(), original_scaling_filters.end(), actual_scaling_filters.begin(),
+                                    actual_scaling_filters.end());
+                                    
+  // check the scaling
+  auto original_cell = original_grid.begin();
+  auto retrived_cell = retrived_grid.begin();
+  while (original_cell != original_grid.end()) {
+    BOOST_CHECK_EQUAL_COLLECTIONS((*original_cell).scaling_cbegin(), (*original_cell).scaling_cend(), (*retrived_cell).scaling_cbegin(),
+                                    (*retrived_cell).scaling_cend());
+    ++original_cell;
+    ++retrived_cell;
+  }
+  BOOST_CHECK_EQUAL(3, retrived_grid.getCellManager().scalingFilterNames().size());
 }
 
 BOOST_FIXTURE_TEST_CASE(toTable_test, PhzPhotometryGridName_Fixture) {

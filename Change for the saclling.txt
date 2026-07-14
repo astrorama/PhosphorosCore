@@ -60,10 +60,11 @@ PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way 
    - (PhzExecutables) GridSplitter l185,267
    
 --- BUILD ---
+
+* GridInfo/Serialization Unit test 
   
 TODO  
    
-* GridInfo/Serialization Unit test 
 
 * create the configuration for the scaling
 
