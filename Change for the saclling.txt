@@ -21,11 +21,22 @@ PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way 
 
 --- BUILD ---
     
-TODO   
+ 
+/\ Break compatibility with old grids
+* change the grid info /serialization (keeping the old pp in a first step) impact (to be refactored when the luminosity filter is put as ABS MAG):
+  - (PhzConfiguration) PhzConfiguration/GridFileHelper.h
+  - (PhzConfiguration) src/lib/FilterVariationCoefficientGridOutputConfig.cpp
+  - (PhzConfiguration) tests/src/PhotometryGridConfig_test.cpp
+  - (PhzConfiguration) tests/src/LuminositySedGroupConfig_test.cpp
+  - (PhzConfiguration) tests/src/VolumePriorConfig_test.cpp
+  - (PhzConfiguration) tests/src/AxisWeightPriorConfig_test.cpp
+  - (PhzConfiguration) tests/src/ModelGridOutputConfig_test.cpp
+  
+--- BUILD ---
+  
+TODO  
 
-* change the grid info (keeping the old pp in a first step
-
-* change the way the grid is persisted (serialization)
+* change the way the grid serialization
 
 * GridInfo/Serialization Unit test 
 

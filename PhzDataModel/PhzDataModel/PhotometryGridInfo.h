@@ -28,15 +28,21 @@ class PhotometryGridInfo {
 public:
   PhotometryGridInfo() = default;
 
-  PhotometryGridInfo(const std::map<std::string, PhotometryGrid>& grid_map, std::string arg_igm_method,
+  PhotometryGridInfo(const std::map<std::string, PhotometryGrid>& grid_map, 
+                     std::vector<XYDataset::QualifiedName> arg_filter_names,
+                     std::string arg_igm_method,
                      XYDataset::QualifiedName              arg_luminosity_filter_name,
                      XYDataset::QualifiedName              arg_luminosity_pp_filter_name,
-                     std::vector<XYDataset::QualifiedName> arg_filter_names, bool arg_cgm = false, double arg_cgm_A = 0,
-                     double arg_cgm_a = 0, double arg_cgm_c = 0)
-      : igm_method{std::move(arg_igm_method)}
+                     std::vector<XYDataset::QualifiedName> arg_scaling_filter_names,
+                     bool arg_cgm = false, 
+                     double arg_cgm_A = 0,
+                     double arg_cgm_a = 0, 
+                     double arg_cgm_c = 0)
+      : filter_names{std::move(arg_filter_names)}
+      , igm_method{std::move(arg_igm_method)}
       , luminosity_filter_name{std::move(arg_luminosity_filter_name)}
       , luminosity_pp_filter_name{std::move(arg_luminosity_pp_filter_name)}
-      , filter_names{std::move(arg_filter_names)}
+      , scaling_filter_names{std::move(arg_scaling_filter_names)}
       , cgm{arg_cgm}
       , cgm_A{arg_cgm_A}
       , cgm_a{arg_cgm_a}
@@ -47,13 +53,13 @@ public:
   };
 
   std::map<std::string, PhzDataModel::ModelAxesTuple> region_axes_map{};
-
+  std::vector<XYDataset::QualifiedName> filter_names{};
   std::string igm_method{};
-
+  
   XYDataset::QualifiedName luminosity_filter_name{"NotSet"};
   XYDataset::QualifiedName luminosity_pp_filter_name{"NotSet"};
-
-  std::vector<XYDataset::QualifiedName> filter_names{};
+  std::vector<XYDataset::QualifiedName> scaling_filter_names{};
+  
   bool                                  cgm   = false;
   double                                cgm_A = 0;
   double                                cgm_a = 0;

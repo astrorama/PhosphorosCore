@@ -53,10 +53,16 @@ static void outputFunctionIgmStruct(const std::string& filename, const PhzConfig
   std::vector<XYDataset::QualifiedName> filter_list;
   auto&                                 filter_names_str = grid_map.begin()->second.getCellManager().filterNames();
   std::copy(filter_names_str.begin(), filter_names_str.end(), std::back_inserter(filter_list));
+  
+  std::vector<XYDataset::QualifiedName> scaling_filter_list;
+  auto&                                 scaling_filter_names_str = grid_map.begin()->second.getCellManager().scalingFilterNames();
+  std::copy(scaling_filter_names_str.begin(), scaling_filter_names_str.end(), std::back_inserter(scaling_filter_list));
+  
+  
   OArchive boa{out};
   // Store the info object describing the grids
   PhzDataModel::PhotometryGridInfo info{
-      grid_map,           igm_config.absorption_type, luminosity_filter, luminosity_pp_filter, filter_list,
+      grid_map,    filter_list,       igm_config.absorption_type, luminosity_filter, luminosity_pp_filter, scaling_filter_list,
       igm_config.add_cgm, igm_config.cgm_au,          igm_config.cgm_al, igm_config.cgm_c};
   boa << info;
   // Store the grids themselves

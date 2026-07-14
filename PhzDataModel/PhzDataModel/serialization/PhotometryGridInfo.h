@@ -40,16 +40,32 @@ namespace serialization {
 
 template <typename Archive>
 void save(Archive& ar, const Euclid::PhzDataModel::PhotometryGridInfo& t, const unsigned int) {
+
   // Store a vector with the region names
   std::vector<std::string> region_names{};
-  for (auto& pair : t.region_axes_map) {
+  for (const auto& pair : t.region_axes_map) {
     region_names.push_back(pair.first);
-  }
+  }  
   ar << region_names;
   // Store the axes of each region
-  for (auto& name : region_names) {
+  for (const auto& name : region_names) {
     ar << t.region_axes_map.at(name);
   }
+  
+  // Store the names of the filters as strings
+  std::vector<std::string> filter_names_as_strings{};
+  for (const auto& name : t.filter_names) {
+    filter_names_as_strings.push_back(name.qualifiedName());
+  }
+  ar << filter_names_as_strings;
+
+ // Store the names of the scaling filters as strings
+  std::vector<std::string> scaling_filter_names_as_strings{};
+  for (const auto& name : t.scaling_filter_names) {
+    scaling_filter_names_as_strings.push_back(name.qualifiedName());
+  }
+  ar << scaling_filter_names_as_strings;
+
   // Store the IGM type
   ar << t.igm_method;
   ar << t.cgm;
@@ -62,26 +78,35 @@ void save(Archive& ar, const Euclid::PhzDataModel::PhotometryGridInfo& t, const 
 
   // Store the PP Luminosity Filter
   ar << t.luminosity_pp_filter_name.qualifiedName();
-
-  // Store the names of the filters as strings
-  std::vector<std::string> filter_names_as_strings{};
-  for (auto& name : t.filter_names) {
-    filter_names_as_strings.push_back(name.qualifiedName());
-  }
-  ar << filter_names_as_strings;
 }
 
 template <typename Archive>
 void load(Archive& ar, Euclid::PhzDataModel::PhotometryGridInfo& t, const unsigned int) {
+
   // Read the names of the regions
   std::vector<std::string> region_names{};
   ar >> region_names;
   // Read all the region axes
-  for (auto& name : region_names) {
+  for (const auto& name : region_names) {
     Euclid::PhzDataModel::ModelAxesTuple axes{{"", {}}, {"", {}}, {"", {}}, {"", {}}};
     ar >> axes;
     t.region_axes_map.emplace(std::make_pair(name, std::move(axes)));
   }
+  
+  // Read the photometry filters
+  std::vector<std::string> names_as_strings;
+  ar >> names_as_strings;
+  for (const auto& name : names_as_strings) {
+    t.filter_names.push_back(name);
+  }
+ 
+  // Read the scaling filters
+  std::vector<std::string> scaling_names_as_strings;
+  ar >> scaling_names_as_strings;
+  for (const auto& name : scaling_names_as_strings) {
+    t.scaling_filter_names.push_back(name);
+  }
+  
   // Read the IGM type
   ar >> t.igm_method;
   ar >> t.cgm;
@@ -97,13 +122,6 @@ void load(Archive& ar, Euclid::PhzDataModel::PhotometryGridInfo& t, const unsign
   std::string lum_pp_filter;
   ar >> lum_pp_filter;
   t.luminosity_pp_filter_name = Euclid::XYDataset::QualifiedName(lum_pp_filter);
-  // Read the photometry filters
-
-  std::vector<std::string> names_as_strings;
-  ar >> names_as_strings;
-  for (auto& name : names_as_strings) {
-    t.filter_names.push_back(name);
-  }
 }
 
 template <typename Archive>

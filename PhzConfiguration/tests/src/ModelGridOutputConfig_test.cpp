@@ -251,10 +251,12 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunction_test, T, archive_types, Model
   output_func(grid_map);
 
   // Read the binary file created
+  BOOST_WARN_MESSAGE(true, "Read the grid");
   std::ifstream ifs{};
   ifs.open(test_file.string(), std::ios::binary);
   typename T::iarchive                     ia(ifs);
   Euclid::PhzDataModel::PhotometryGridInfo info;
+  BOOST_WARN_MESSAGE(true, "Load the grid info");
   ia >> info;
   auto retrieved_grid = GridContainer::gridImport<PhzDataModel::PhotometryGrid, typename T::iarchive>(ifs);
 
