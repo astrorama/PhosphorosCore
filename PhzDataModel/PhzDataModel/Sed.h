@@ -27,6 +27,7 @@
 #define SED_H_
 
 
+#include <vector>
 #include "XYDataset/XYDataset.h"
 
 namespace Euclid {
@@ -35,10 +36,10 @@ namespace PhzDataModel {
 class Sed : public XYDataset::XYDataset {
 public:
 	/// constructor from values
-	Sed(std::vector<std::pair<double, double>> values, double scaling=1, double diff_scaling=1);
+	Sed(std::vector<std::pair<double, double>> values, double scaling=1, std::vector<double> diff_scaling={1});
 
 	/// Copy from Parent
-	Sed(const Euclid::XYDataset::XYDataset&, double scaling=1, double diff_scaling=1);
+	Sed(const Euclid::XYDataset::XYDataset&, double scaling=1, std::vector<double> diff_scaling={1});
 
 	/// Copy constructor
 	Sed(const Sed&) = default;
@@ -50,13 +51,13 @@ public:
 	 * @brief
 	 * Factory from a vector of pair of doubles
 	 */
-	static Sed factory(std::vector<std::pair<double, double>> vector_pair, double scaling=1, double diff_scaling=1);
+	static Sed factory(std::vector<std::pair<double, double>> vector_pair, double scaling=1, std::vector<double> diff_scaling={1});
 
 	/**
 	* @brief
 	* Factory from two vectors of doubles
 	*/
-	static Sed factory(const std::vector<double>& x, const std::vector<double>& y, double scaling=1, double diff_scaling=1);
+	static Sed factory(const std::vector<double>& x, const std::vector<double>& y, double scaling=1, std::vector<double> diff_scaling={1});
 
 	/**
 	* @brief Destructor
@@ -70,13 +71,16 @@ public:
 	void setScaling(double new_scaling);
 	const double& getScaling() const;
 
-	void setDiffScaling(double new_diff_scaling);
-	const double& getDiffScaling() const;
+	void setDiffScaling(size_t index, double new_diff_scaling);
+	void setDiffScalings(std::vector<double> new_diff_scalings);
+	
+	const double& getDiffScaling(size_t index) const;
+	const std::vector<double>& getDiffScalings() const;
 
 
 private:
   double m_scaling=1;
-  double m_diff_scaling=1;
+  std::vector<double> m_diff_scaling{1};
 };
 
 

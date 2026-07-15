@@ -164,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE(Constructor_test, PhotometryGridCreator_Fixture) {
                                                          std::move(reddening_provider),
                                                          std::move(filter_provider),
                                                          Euclid::PhzModeling::NoIgmFunctor{},
-                                                         m_norm_function,
+                                                         {m_norm_function, m_norm_function},
                                                          m_pp_norm_function,
                                                          0};
 }
@@ -187,8 +187,8 @@ BOOST_FIXTURE_TEST_CASE(throw_SED_test, PhotometryGridCreator_Fixture) {
   // throw because the SED is not into the provider
   BOOST_CHECK_THROW(Euclid::PhzModeling::PhotometryGridCreator(
                         std::move(sed_provider), std::move(reddening_provider), std::move(filter_provider),
-                        Euclid::PhzModeling::NoIgmFunctor{}, m_norm_function, m_pp_norm_function, 0)
-                        .createGrid(axes, filter_name_list, {}),
+                        Euclid::PhzModeling::NoIgmFunctor{}, {m_norm_function, m_norm_function}, m_pp_norm_function, 0)
+                        .createGrid(axes, filter_name_list, filter_name_list, {}),
                     Elements::Exception);
 }
 
@@ -210,8 +210,8 @@ BOOST_FIXTURE_TEST_CASE(throw_curve_test, PhotometryGridCreator_Fixture) {
   // throw because the reddening curve is not into the provider
   BOOST_CHECK_THROW(Euclid::PhzModeling::PhotometryGridCreator(
                         std::move(sed_provider), std::move(reddening_provider), std::move(filter_provider),
-                        Euclid::PhzModeling::NoIgmFunctor{}, m_norm_function, m_pp_norm_function, 0)
-                        .createGrid(axes, filter_name_list, {}),
+                        Euclid::PhzModeling::NoIgmFunctor{}, {m_norm_function, m_norm_function}, m_pp_norm_function, 0)
+                        .createGrid(axes, filter_name_list, filter_name_list, {}),
                     Elements::Exception);
 }
 
@@ -233,8 +233,8 @@ BOOST_FIXTURE_TEST_CASE(throw_filter_test, PhotometryGridCreator_Fixture) {
   // throw because the filter is not into the provider
   BOOST_CHECK_THROW(Euclid::PhzModeling::PhotometryGridCreator(
                         std::move(sed_provider), std::move(reddening_provider), std::move(filter_provider),
-                        Euclid::PhzModeling::NoIgmFunctor{}, m_norm_function, m_pp_norm_function, 0)
-                        .createGrid(axes, filter_name_list, {}),
+                        Euclid::PhzModeling::NoIgmFunctor{}, {m_norm_function, m_norm_function}, m_pp_norm_function, 0)
+                        .createGrid(axes, filter_name_list, filter_name_list, {}),
                     Elements::Exception);
 }
 
@@ -255,11 +255,11 @@ BOOST_FIXTURE_TEST_CASE(execution_test, PhotometryGridCreator_Fixture) {
                                                          std::move(reddening_provider),
                                                          std::move(filter_provider),
                                                          Euclid::PhzModeling::NoIgmFunctor{},
-                                                         m_norm_function,
+                                                         {m_norm_function, m_norm_function},
                                                          m_pp_norm_function,
                                                          0};
   double                                     sum_filter_1    = 0.;
-  auto                                       photometry_grid = gridCreator.createGrid(axes, filter_name_list, {});
+  auto                                       photometry_grid = gridCreator.createGrid(axes, filter_name_list, filter_name_list, {});
   for (auto photometry : photometry_grid) {
 
     auto filter_value = photometry.find("filter/filter_1");

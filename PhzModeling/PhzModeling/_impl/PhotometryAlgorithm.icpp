@@ -54,10 +54,10 @@ PhotometryAlgorithm<ModelFluxAlgo>::PhotometryAlgorithm(ModelFluxAlgo model_flux
 }
 
 template<typename ModelFluxAlgo>
-template<typename ModelIterator,typename PhotometryIterator, typename Monitor>
+template<typename ModelIterator,typename PhotometryIterator, typename ScalingIterator, typename Monitor>
 void PhotometryAlgorithm<ModelFluxAlgo>::operator()(
                             ModelIterator model_begin,ModelIterator model_end,
-                            PhotometryIterator photometry_begin, Monitor& monitor) const{
+                            PhotometryIterator photometry_begin, ScalingIterator scaling_begin, Monitor& monitor) const{
 
   while (model_begin!=model_end){
     if (PhzUtils::getStopThreadsFlag()) {
@@ -68,11 +68,14 @@ void PhotometryAlgorithm<ModelFluxAlgo>::operator()(
 
     m_model_flux_agorithm(*model_begin,m_filter_info_vector.begin(),m_filter_info_vector.end(),fluxes.begin());
 
-    // Store the differential scaling of the model in the first error
-    if (fluxes.size()>0){
-      	fluxes[0].error = (*model_begin).getScaling() / (*model_begin).getDiffScaling();
+    // Store the differential scaling of the model
+    auto d_scalings = (*model_begin).getDiffScalings();
+    double ref_scaling = (*model_begin).getScaling();
+    for(auto iter = d_scalings.begin(); iter != d_scalings.end(); ++iter){
+         *scaling_begin=(*iter)/ref_scaling;
+         ++scaling_begin;
     }
-
+    
     *photometry_begin=SourceCatalog::Photometry(m_filter_name_shared_vector, std::move(fluxes));
 
     ++model_begin;
@@ -82,12 +85,12 @@ void PhotometryAlgorithm<ModelFluxAlgo>::operator()(
 }
 
 template<typename ModelFluxAlgo>
-template<typename ModelIterator,typename PhotometryIterator>
+template<typename ModelIterator,typename PhotometryIterator, typename ScalingIterator>
 void PhotometryAlgorithm<ModelFluxAlgo>::operator()(
                             ModelIterator model_begin,ModelIterator model_end,
-                            PhotometryIterator photometry_begin) const {
+                            PhotometryIterator photometry_begin, ScalingIterator scaling_begin) const {
   int monitor {0};
-  this->operator()(model_begin, model_end, photometry_begin, monitor);
+  this->operator()(model_begin, model_end, photometry_begin, scaling_begin, monitor);
 }
 
 

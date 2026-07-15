@@ -68,7 +68,7 @@ struct ModelDatasetGenerator_Fixture {
       for (auto& sed_pair : sed) {
         normalized_values.push_back(std::make_pair(sed_pair.first, sed_pair.second * m_factor));
       }
-      return Euclid::PhzDataModel::Sed::factory(std::move(normalized_values), m_scaling, 5.0);
+      return Euclid::PhzDataModel::Sed::factory(std::move(normalized_values), m_scaling, {5.0});
     }
 
   private:
@@ -188,7 +188,7 @@ BOOST_FIXTURE_TEST_CASE(constructor_test, ModelDatasetGenerator_Fixture) {
 
   Euclid::PhzModeling::ModelDatasetGenerator model_generator{
       parameter_space, m_sed_map,         m_reddening_curve_map, 0, m_reddening_function, m_redshift_function,
-      m_igm_function,  m_norm_function_1, m_norm_function_1,     0};
+      m_igm_function, {m_norm_function_1}, m_norm_function_1,     0};
 
   BOOST_CHECK(model_generator == 0);
   BOOST_CHECK(model_generator != 1);
@@ -205,7 +205,7 @@ BOOST_FIXTURE_TEST_CASE(operator_int_test, ModelDatasetGenerator_Fixture) {
 
   Euclid::PhzModeling::ModelDatasetGenerator model_generator{
       parameter_space, m_sed_map,         m_reddening_curve_map, 0, m_reddening_function, m_redshift_function,
-      m_igm_function,  m_norm_function_1, m_norm_function_1,     0};
+      m_igm_function, {m_norm_function_1}, m_norm_function_1,     0};
 
   BOOST_CHECK(model_generator == 0);
   ++model_generator;
@@ -226,7 +226,7 @@ BOOST_FIXTURE_TEST_CASE(operator_generator_test, ModelDatasetGenerator_Fixture) 
 
   Euclid::PhzModeling::ModelDatasetGenerator model_generator{
       parameter_space, m_sed_map,         m_reddening_curve_map, 0, m_reddening_function, m_redshift_function,
-      m_igm_function,  m_norm_function_1, m_norm_function_1,     0};
+      m_igm_function,  {m_norm_function_1}, m_norm_function_1,     0};
   Euclid::PhzModeling::ModelDatasetGenerator other_model_generator{model_generator};
 
   BOOST_CHECK(model_generator == other_model_generator);
@@ -250,7 +250,7 @@ BOOST_FIXTURE_TEST_CASE(helper_function_test, ModelDatasetGenerator_Fixture) {
   auto norm_sed = m_norm_function_11(sed);
 
   BOOST_CHECK_CLOSE(norm_sed.getScaling(), 3.0, 0.001);
-  BOOST_CHECK_CLOSE(norm_sed.getDiffScaling(), 5.0, 0.001);
+  BOOST_CHECK_CLOSE(norm_sed.getDiffScaling(0), 5.0, 0.001);
 }
 
 BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
@@ -264,7 +264,7 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
   // check the loop with functions not modifying the seds
   Euclid::PhzModeling::ModelDatasetGenerator model_generator{
       parameter_space, m_sed_map,         m_reddening_curve_map, 0, m_no_reddening_function, m_no_redshift_function,
-      m_igm_function,  m_norm_function_1, m_norm_function_1,     0};
+      m_igm_function,  {m_norm_function_1}, m_norm_function_1,     0};
   for (auto& sed : arg_seds) {
     for (size_t i = 0; i < extinction_functions.size() * ebvs.size() * zs.size(); ++i) {
       auto& dataset_0 = *model_generator;
@@ -284,7 +284,7 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
   // check the loop with only the (dummy) redshift function
   Euclid::PhzModeling::ModelDatasetGenerator redshift_model_generator = {
       parameter_space, m_sed_map,         m_reddening_curve_map, 0, m_no_reddening_function, m_redshift_function,
-      m_igm_function,  m_norm_function_1, m_norm_function_1,     0};
+      m_igm_function,  {m_norm_function_1}, m_norm_function_1,     0};
   for (auto& sed : arg_seds) {
     for (size_t i = 0; i < extinction_functions.size() * ebvs.size(); ++i) {
       for (auto& redshift : zs) {
@@ -307,7 +307,7 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
   // check the loop with only the (dummy) reddening function
   Euclid::PhzModeling::ModelDatasetGenerator reddening_model_generator = {
       parameter_space, m_sed_map,         m_reddening_curve_map, 0, m_reddening_function, m_no_redshift_function,
-      m_igm_function,  m_norm_function_1, m_norm_function_1,     0};
+      m_igm_function,  {m_norm_function_1}, m_norm_function_1,     0};
   for (auto& sed : arg_seds) {
     for (auto& reddening : extinction_functions) {
       for (auto& ebv : ebvs) {
@@ -332,7 +332,7 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
   // check the loop with only the (dummy) normalizing function
   Euclid::PhzModeling::ModelDatasetGenerator normalized_model_generator = {
       parameter_space, m_sed_map,          m_reddening_curve_map, 0, m_reddening_function, m_no_redshift_function,
-      m_igm_function,  m_norm_function_11, m_norm_function_11,    0};
+      m_igm_function,  {m_norm_function_11}, m_norm_function_11,    0};
   for (auto& sed : arg_seds) {
     for (auto& reddening : extinction_functions) {
       for (auto& ebv : ebvs) {
@@ -343,7 +343,7 @@ BOOST_FIXTURE_TEST_CASE(dereferencing_test, ModelDatasetGenerator_Fixture) {
           BOOST_CHECK_EQUAL(3, dataset_0.size());
 
           BOOST_CHECK_CLOSE(dataset_0.getScaling(), 3.0, 0.001);
-          BOOST_CHECK_CLOSE(dataset_0.getDiffScaling(), 3.0, 0.001);
+          BOOST_CHECK_CLOSE(dataset_0.getDiffScaling(0), 3.0, 0.001);
 
           auto expected_iterator = sed.begin();
           for (auto& pair : dataset_0) {
@@ -368,7 +368,7 @@ BOOST_FIXTURE_TEST_CASE(diff_scaling_test, ModelDatasetGenerator_Fixture) {
 
   Euclid::PhzModeling::ModelDatasetGenerator normalized_model_generator = {
       parameter_space, m_sed_map,         m_reddening_curve_map, 0, m_reddening_function, m_no_redshift_function,
-      m_igm_function,  m_norm_function_1, m_norm_function_11_5,  0};
+      m_igm_function,  {m_norm_function_1}, m_norm_function_11_5,  0};
   for (auto& sed : arg_seds) {
     for (auto& reddening : extinction_functions) {
       for (auto& ebv : ebvs) {
@@ -378,8 +378,8 @@ BOOST_FIXTURE_TEST_CASE(diff_scaling_test, ModelDatasetGenerator_Fixture) {
 
           BOOST_CHECK_EQUAL(3, dataset_0.size());
 
-          BOOST_CHECK_CLOSE(dataset_0.getScaling(), 3.0, 0.001);
-          BOOST_CHECK_CLOSE(dataset_0.getDiffScaling(), 5.0, 0.001);
+          BOOST_CHECK_CLOSE(dataset_0.getScaling(), 5.0, 0.001);
+          BOOST_CHECK_CLOSE(dataset_0.getDiffScaling(0), 3.0, 0.001);
 
           ++normalized_model_generator;
         }
@@ -397,7 +397,7 @@ BOOST_FIXTURE_TEST_CASE(diff_scaling_value_test, ModelDatasetGenerator_Fixture) 
 
   Euclid::PhzModeling::ModelDatasetGenerator normalized_model_generator = {
       parameter_space, m_sed_map,         m_reddening_curve_map, 0,       m_reddening_function, m_no_redshift_function,
-      m_igm_function,  m_norm_function_1, m_norm_function_11_5,  3.141596};
+      m_igm_function,  {m_norm_function_1}, m_norm_function_11_5,  3.141596};
   for (auto& sed : arg_seds) {
     for (auto& reddening : extinction_functions) {
       for (auto& ebv : ebvs) {
@@ -407,8 +407,8 @@ BOOST_FIXTURE_TEST_CASE(diff_scaling_value_test, ModelDatasetGenerator_Fixture) 
 
           BOOST_CHECK_EQUAL(3, dataset_0.size());
 
-          BOOST_CHECK_CLOSE(dataset_0.getScaling(), 3.0, 0.001);
-          BOOST_CHECK_CLOSE(dataset_0.getDiffScaling(), 3.141596, 0.001);
+          BOOST_CHECK_CLOSE(dataset_0.getScaling(), 3.141596, 0.001);
+          BOOST_CHECK_CLOSE(dataset_0.getDiffScaling(0), 3.0, 0.001);
 
           ++normalized_model_generator;
         }

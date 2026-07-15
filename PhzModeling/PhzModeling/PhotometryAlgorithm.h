@@ -92,9 +92,9 @@ public:
    * A reference to an object to be notified with the progress of the job. Its
    * prefix ++ operator will be called every time a model is handled.
    */
-  template <typename ModelIterator, typename PhotometryIterator, typename Monitor>
+  template <typename ModelIterator, typename PhotometryIterator, typename ScalingIterator, typename Monitor>
   void operator()(ModelIterator model_begin, ModelIterator model_end, PhotometryIterator photometry_begin,
-                  Monitor& monitor) const;
+                  ScalingIterator scaling_begin, Monitor& monitor) const;
 
   /**
    * @brief Function Call Operator
@@ -110,8 +110,9 @@ public:
    * @param photometry_begin
    * An iterator over a Photometry container into which the computed photometry will be stored.
    */
-  template <typename ModelIterator, typename PhotometryIterator>
-  void operator()(ModelIterator model_begin, ModelIterator model_end, PhotometryIterator photometry_begin) const;
+  template <typename ModelIterator, typename PhotometryIterator, typename ScalingIterator>
+  void operator()(ModelIterator model_begin, ModelIterator model_end, PhotometryIterator photometry_begin,
+                  ScalingIterator scaling_begin) const;
 
 private:
   ModelFluxAlgo                             m_model_flux_agorithm;

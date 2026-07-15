@@ -152,11 +152,11 @@ BOOST_FIXTURE_TEST_CASE(execution_test, PhotometryAlgorithm_Fixture) {
 
   auto model_1 = Euclid::PhzDataModel::Sed{std::vector<std::pair<double, double>>{
       std::make_pair(10000., 0.001), std::make_pair(12000., 0.001), std::make_pair(14000., 0.001),
-      std::make_pair(16000., 0.001), std::make_pair(17000., 0.001)}, 1.0, 2.0};
+      std::make_pair(16000., 0.001), std::make_pair(17000., 0.001)}, 1.0, {2.0}};
 
   auto model_2 = Euclid::PhzDataModel::Sed{std::vector<std::pair<double, double>>{
       std::make_pair(10000., 0.002), std::make_pair(12000., 0.002), std::make_pair(14000., 0.002),
-      std::make_pair(16000., 0.002), std::make_pair(17000., 0.002), std::make_pair(18000., 0.002)}, 3.0, 5.0};
+      std::make_pair(16000., 0.002), std::make_pair(17000., 0.002), std::make_pair(18000., 0.002)}, 3.0, {5.0}};
 
   std::vector<Euclid::PhzDataModel::Sed> model_vector;
   model_vector.push_back(std::move(model_1));
@@ -170,11 +170,15 @@ BOOST_FIXTURE_TEST_CASE(execution_test, PhotometryAlgorithm_Fixture) {
       Euclid::SourceCatalog::Photometry(ptr, std::vector<Euclid::SourceCatalog::FluxErrorPair>{{1., 0.}}));
   photometry_vector.push_back(
       Euclid::SourceCatalog::Photometry(ptr, std::vector<Euclid::SourceCatalog::FluxErrorPair>{{1., 0.}}));
+      
+  std::vector<double> scaling_vector;
+  for (int index =0; index <photometry_vector.size();++index){
+      scaling_vector.push_back(0.0);
+  }
 
-  algo(model_vector.begin(), model_vector.end(), photometry_vector.begin());
+  algo(model_vector.begin(), model_vector.end(), photometry_vector.begin(), scaling_vector.begin());
 
-  std::vector<double> expected_scaling {0.5, 0.6};
-  auto iter_expected = expected_scaling.begin();
+ 
   auto model_vector_iterator = model_vector.begin();
   for (auto& photometry : photometry_vector) {
     // check that there is the right filters
@@ -188,11 +192,14 @@ BOOST_FIXTURE_TEST_CASE(execution_test, PhotometryAlgorithm_Fixture) {
     BOOST_CHECK_CLOSE(model_vector_iterator->size() / 31900000., filter2->flux * 1E-17, 1E-10);
     BOOST_CHECK_CLOSE((model_vector_iterator->size() - 1) / 69750000., filter5->flux * 1E-17, 1E-10);
 
-    // Check the scalling ratio is stored in the first filter error
-    BOOST_CHECK_CLOSE(filter2->error, *iter_expected, 0.001);
-    BOOST_CHECK_CLOSE(filter5->error, 0.0, 0.001);
     ++model_vector_iterator;
-    ++iter_expected;
+  }
+  
+  std::vector<double> expected_scaling {2, 1.66666666666666};
+  auto iter_expected = expected_scaling.begin();  
+  for(auto scaling : scaling_vector){
+       BOOST_CHECK_CLOSE(scaling, *iter_expected, 0.001);
+       ++iter_expected;
   }
 }
 

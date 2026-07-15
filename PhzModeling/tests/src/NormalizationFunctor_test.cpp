@@ -126,7 +126,7 @@ BOOST_FIXTURE_TEST_CASE(norm_test, NormalizationFunctor_Fixture) {
 
   BOOST_CHECK_CLOSE(fluxes[0].flux, 1000.0, 0.001);
   BOOST_CHECK_CLOSE(output_model.getScaling(), 4.2105218844727216e-30, 0.001);
-  BOOST_CHECK_CLOSE(output_model.getDiffScaling(), 1.0, 0.001);
+  BOOST_CHECK_CLOSE(output_model.getDiffScaling(0), 1.0, 0.001);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

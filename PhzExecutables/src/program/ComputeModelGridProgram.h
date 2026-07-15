@@ -69,15 +69,18 @@ public:
     auto  cosmology    = config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
 
     auto sun_sed_name = config_manager.template getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
-    auto lum_filter_name =
-        config_manager.template getConfiguration<ModelNormalizationConfig>().getNormalizationFilters()[0];
+    auto lum_filter_names =
+        config_manager.template getConfiguration<ModelNormalizationConfig>().getNormalizationFilters();
     auto lum_pp_filter_name =
         config_manager.template getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter();
 
-    auto normalizer_functor =
-        Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
+    std::vector<Euclid::PhzModeling::NormalizationFunction> normalizer_functors{};
+    for(auto& lum_filter_name : lum_filter_names) {
+        Euclid::PhzModeling::NormalizationFunction normalizer = Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
             filter_provider, lum_filter_name, sed_provider, sun_sed_name);
-
+        normalizer_functors.push_back(normalizer);
+    }
+    
     auto normalizer_pp_functor =
         Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
             filter_provider, lum_pp_filter_name, sed_provider, sun_sed_name);
@@ -88,11 +91,11 @@ public:
     }
 
     Euclid::PhzModeling::SparseGridCreator creator{sed_provider,          reddening_provider, filter_provider,
-                                                   igm_abs_func,          normalizer_functor, normalizer_pp_functor,
+                                                   igm_abs_func,          normalizer_functors, normalizer_pp_functor,
                                                    pp_normalization_value};
 
     auto param_space_map = ComputeModelGridTraits::getParameterSpaceRegions(config_manager);
-    auto results         = creator.createGrid(param_space_map, filter_list, cosmology,
+    auto results         = creator.createGrid(param_space_map, filter_list, lum_filter_names, cosmology,
                                               Euclid::PhzExecutables::ProgressReporter{logger, true});
 
     logger.info() << "Creating the output";

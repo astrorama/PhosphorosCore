@@ -102,13 +102,14 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, T, archive_types, PhzPhotom
   BOOST_TEST_MESSAGE("--> Testing the serialization of the Photometry Grid");
   BOOST_TEST_MESSAGE(" ");
 
-  auto                                 axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
+  auto axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
   Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1, *filter_2};
   original_grid(0, 0, 0, 0) = photometry_1;
   original_grid(1, 0, 0, 0) = photometry_2;
   original_grid(0, 1, 0, 0) = photometry_3;
   original_grid(1, 1, 0, 0) = photometry_4;
   
+  // access trough the grid cell object:
   int index=0;
   for(auto cell : original_grid) {
       auto scaling_iter = cell.scaling_begin();
@@ -118,6 +119,16 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, T, archive_types, PhzPhotom
           ++index;
       }
   }
+  
+  // trough the grid iterator:
+  index=0;
+  for (auto cell_iter=original_grid.begin(); cell_iter!=original_grid.end(); ++cell_iter){
+       for (auto  scaling_iter = (*cell_iter).scaling_begin(); scaling_iter != (*cell_iter).scaling_end();++scaling_iter){
+          *scaling_iter = index *1.0;
+          ++index;
+       }
+  }
+  
 
   std::stringstream stream;
   Euclid::GridContainer::gridExport<typename T::oarchive>(stream, original_grid);

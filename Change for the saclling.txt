@@ -82,10 +82,29 @@ PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way 
 TODO  
   
 * modify the grid creation to add the scaling to the grid
-
 * /\ breaking compatibility /\: put the PP scaling as main scaling and the luminosity with the other scaling. Remove the pp spoofing
+  PhzDataModel::Sed
+  PhzModeling PhotometryAlgorithm.icpp       WARN scaling/pp_Scaling  has not changed but the norm is now pp
+  PhzModeling ModelDatasetGenerator_test
+  PhotometryAlgorithm_test
+  NormalizationFunctor_test
+  PhotometryGridCreator_test 169, 190,191, 213,214, 236,237, 258,262 same filters
+  SparseGridCreator_test 105,108 same filters
+  
+  ModelDatasetGenerator_test
+  ModelDatasetGrid_test
+  
+  changing the tests to fit the new scaling schem (pp) => need to change the output later
+  -  PhotometryAlgorithm_test  
+  -  ModelDatasetGenerator_test
+  
+--- BUILD ---
+  
+TODO    
+  
+* change the output/luminosity correcting for the rescaling  /\ 
 
-* create a configuration to restrict the output + output ABS MAG
+* create a configuration to restrict the output + output ABS MAG with overrided names
 
 * for the CR create a configuration to restrict the available scaling in the output
 

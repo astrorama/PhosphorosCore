@@ -119,14 +119,14 @@ PhotometryGridCreator::PhotometryGridCreator(std::shared_ptr<XYDataset::XYDatase
                                              std::shared_ptr<XYDataset::XYDatasetProvider> reddening_curve_provider,
                                              std::shared_ptr<XYDataset::XYDatasetProvider> filter_provider,
                                              IgmAbsorptionFunction                         igm_absorption_function,
-                                             NormalizationFunction                         normalization_function,
+                                             std::vector<NormalizationFunction>            normalization_functions,
                                              NormalizationFunction                         pp_normalization_function,
                                              double                                        pp_normalization_value)
     : m_sed_provider{sed_provider}
     , m_reddening_curve_provider{reddening_curve_provider}
     , m_filter_provider(filter_provider)
     , m_igm_absorption_function{igm_absorption_function}
-    , m_normalization_function{normalization_function}
+    , m_normalization_functions{normalization_functions}
     , m_pp_normalization_function{pp_normalization_function}
     , m_pp_normalization_value{pp_normalization_value} {}
 
@@ -135,22 +135,29 @@ PhotometryGridCreator::~PhotometryGridCreator() {
   PhzUtils::getStopThreadsFlag() = false;
 }
 
+
+template <typename CellIter, typename ScalingIter>
 class ParallelJob {
 
 public:
-  ParallelJob(PhotometryAlgorithm<ModelFluxAlgorithm>& photometry_algo, ModelDatasetGrid::iterator model_begin,
-              ModelDatasetGrid::iterator model_end, PhzDataModel::PhotometryGrid::iterator photometry_begin,
-              std::atomic<size_t>& progress, std::atomic<uint>& done_counter)
+  ParallelJob(PhotometryAlgorithm<ModelFluxAlgorithm>& photometry_algo, 
+              ModelDatasetGrid::iterator model_begin,
+              ModelDatasetGrid::iterator model_end, 
+              CellIter photometry_begin,   
+              ScalingIter scaling_begin,
+              std::atomic<size_t>& progress, 
+              std::atomic<uint>& done_counter)
       : m_photometry_algo(photometry_algo)
       , m_model_begin(model_begin)
       , m_model_end(model_end)
       , m_photometry_begin(photometry_begin)
+      , m_scaling_begin(scaling_begin)
       , m_progress(progress)
       , m_done_counter(done_counter) {}
 
   void operator()() {
     DoneUpdater done_updater{m_done_counter};
-    m_photometry_algo(m_model_begin, m_model_end, m_photometry_begin, m_progress);
+    m_photometry_algo(m_model_begin, m_model_end, m_photometry_begin, m_scaling_begin, m_progress);
   }
 
 private:
@@ -168,7 +175,8 @@ private:
   PhotometryAlgorithm<ModelFluxAlgorithm>& m_photometry_algo;
   ModelDatasetGrid::iterator               m_model_begin;
   ModelDatasetGrid::iterator               m_model_end;
-  PhzDataModel::PhotometryGrid::iterator   m_photometry_begin;
+  CellIter                                 m_photometry_begin; 
+  ScalingIter                              m_scaling_begin; 
   std::atomic<size_t>&                     m_progress;
   std::atomic<uint>&                       m_done_counter;
 };
@@ -176,6 +184,7 @@ private:
 PhzDataModel::PhotometryGrid
 PhotometryGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&                  parameter_space,
                                   const std::vector<Euclid::XYDataset::QualifiedName>& filter_name_list,
+                                  const std::vector<Euclid::XYDataset::QualifiedName>& scaling_filter_name_list,
                                   const PhysicsUtils::CosmologicalParameters&          cosmology,
                                   ProgressListener                                     progress_listener) {
 
@@ -196,11 +205,11 @@ PhotometryGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&           
   // Create the model grid
   auto model_grid = ModelDatasetGrid(parameter_space, std::move(sed_map), std::move(reddening_curve_map),
                                      reddening_function, redshift_function, m_igm_absorption_function,
-                                     m_normalization_function, m_pp_normalization_function, m_pp_normalization_value);
+                                     m_normalization_functions, m_pp_normalization_function, m_pp_normalization_value);
 
   // Create the photometry Grid
-  auto photometry_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list, filter_name_list);
-
+  auto photometry_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list, scaling_filter_name_list);
+  
   // Define the algo
 
   auto photometry_algo = createPhotometryAlgorithm(std::move(flux_model_algo), std::move(filter_map), filter_name_list);
@@ -220,16 +229,20 @@ PhotometryGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&           
   auto        model_iter      = model_grid.begin();
   auto        end_model_iter  = model_grid.begin();
   auto        photometry_iter = photometry_grid.begin();
+  
+  // DBG testing access to the scaling see PhotometriyGridTest for comparison
+  auto scaling_iter = (*photometry_iter).scaling_begin();
+  
   std::size_t step            = total_models / threads;
   for (uint i = 0; i < threads; ++i) {
     std::advance(end_model_iter, step);
     futures.push_back(std::async(std::launch::async, ParallelJob{photometry_algo, model_iter, end_model_iter,
-                                                                 photometry_iter, progress, done_counter}));
+                                                                 photometry_iter, scaling_iter, progress, done_counter}));
     model_iter = end_model_iter;
     std::advance(photometry_iter, step);
   }
   futures.push_back(std::async(std::launch::async, ParallelJob{photometry_algo, model_iter, model_grid.end(),
-                                                               photometry_iter, progress, done_counter}));
+                                                               photometry_iter, scaling_iter, progress, done_counter}));
 
   // If we have a progress listener we create a thread to update it every .1 sec
   if (progress_listener) {

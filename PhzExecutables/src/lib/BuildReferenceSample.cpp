@@ -222,7 +222,7 @@ void BuildReferenceSample::processCatalog(
       ModelAxesTuple   grid_axes{createAxesTuple({z}, {ebv}, {red_curve_name}, {sed_name})};
       ModelDatasetGrid grid{grid_axes,           std::move(sed_map),    std::move(reddening_curve_map),
                             ExtinctionFunctor{}, redshiftFunctor,       igm_function,
-                            normalizer_functor,  normalizer_pp_functor, pp_normalization_value};
+                            {normalizer_functor},  normalizer_pp_functor, pp_normalization_value};
 
       for (auto& cell : grid) {
         std::vector<std::pair<double, double>> scaled_data{};

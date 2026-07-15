@@ -227,7 +227,7 @@ GalacticCorrectionSingleGridCreator::createGrid(const PhzDataModel::ModelAxesTup
   // Create the model grid
   auto model_grid = PhzModeling::ModelDatasetGrid(
       parameter_space, std::move(sed_map), std::move(reddening_curve_map), reddening_function, redshift_function,
-      m_igm_absorption_function, m_normalization_function, m_normalization_function, m_pp_normalization_value);
+      m_igm_absorption_function, {m_normalization_function}, m_normalization_function, m_pp_normalization_value);
 
   // Create the photometry Grid
   auto correction_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list, filter_name_list);

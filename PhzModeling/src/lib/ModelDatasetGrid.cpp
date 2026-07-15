@@ -33,7 +33,8 @@ ModelDatasetGrid::ModelDatasetGrid(
     std::map<XYDataset::QualifiedName, XYDataset::XYDataset>                 sed_map,
     std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> reddening_curve_map,
     ReddeningFunction reddening_function, RedshiftFunction redshift_function, IgmAbsorptionFunction igm_function,
-    NormalizationFunction normalization_function, NormalizationFunction pp_normalization_function,
+    std::vector<NormalizationFunction> normalization_functions, 
+    NormalizationFunction pp_normalization_function,
     double pp_normalization_value)
     : PhzDataModel::PhzGrid<ModelDatasetCellManager>(parameter_space) {
 
@@ -46,7 +47,7 @@ ModelDatasetGrid::ModelDatasetGrid(
   m_reddening_function        = std::move(reddening_function);
   m_redshift_function         = std::move(redshift_function);
   m_igm_function              = std::move(igm_function);
-  m_normalization_function    = std::move(normalization_function);
+  m_normalization_functions    = std::move(normalization_functions);
   m_pp_normalization_function = std::move(pp_normalization_function);
   size_t z_size               = std::get<PhzDataModel::ModelParameter::Z>(parameter_space).size();
   size_t ebv_size             = std::get<PhzDataModel::ModelParameter::EBV>(parameter_space).size();
@@ -60,14 +61,14 @@ PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator ModelDatasetGrid::begin
 
   return PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator(
       *this, ModelDatasetGenerator(getAxesTuple(), m_sed_map, m_reddening_curve_map, 0, m_reddening_function,
-                                   m_redshift_function, m_igm_function, m_normalization_function,
+                                   m_redshift_function, m_igm_function, m_normalization_functions,
                                    m_pp_normalization_function, m_pp_normalization_value));
 }
 
 PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator ModelDatasetGrid::end() {
   return PhzDataModel::PhzGrid<ModelDatasetCellManager>::iterator(
       *this, ModelDatasetGenerator(getAxesTuple(), m_sed_map, m_reddening_curve_map, m_size, m_reddening_function,
-                                   m_redshift_function, m_igm_function, m_normalization_function,
+                                   m_redshift_function, m_igm_function, m_normalization_functions,
                                    m_pp_normalization_function, m_pp_normalization_value));
 }
 
