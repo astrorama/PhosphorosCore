@@ -56,12 +56,14 @@ BOOST_FIXTURE_TEST_CASE(access_test, PhotometryGrid_Fixture) {
   
   auto scaling_iter = photo_proxy.scaling_begin();
   for (int index=0; index<3; index++) {
-      *scaling_iter = index*1.0;
+      *scaling_iter = (index+1)*10;
       scaling_iter++;
   }
-  BOOST_CHECK_EQUAL(2.0, photo_proxy.scaling_find("lsst/r"));
+  BOOST_CHECK_EQUAL(1.0, photo_proxy.scaling_find("euclid/Y")); // first filter must return 1.0 independently of the value
+  BOOST_CHECK_EQUAL(20, photo_proxy.scaling_find("lsst/g"));
+  BOOST_CHECK_EQUAL(30, photo_proxy.scaling_find("lsst/r"));
+  
+  BOOST_CHECK_EQUAL(10,*(photo_proxy.scaling_cbegin())); // value at the first place (for the PP scaling)
 }
-
-
 
 BOOST_AUTO_TEST_SUITE_END()

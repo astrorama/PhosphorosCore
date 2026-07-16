@@ -26,7 +26,6 @@
 #include "ElementsKernel/Logging.h"
 #include <math.h>
 
-
 namespace Euclid {
 namespace PhzOutput {
 namespace ColumnHandlers {
@@ -96,7 +95,7 @@ std::vector<Table::Row::cell_type> BestModel::convertResults(const SourceCatalog
   return row;
 }
 
-BestModel::BestModel(PhzDataModel::GridType grid_type, std::map<XYDataset::QualifiedName, std::string> abs_mag_mapping, double solar_MAG):m_solar_MAG{solar_MAG} {
+BestModel::BestModel(PhzDataModel::GridType grid_type, std::map<XYDataset::QualifiedName, std::string> abs_mag_mapping, double solar_MAG) : m_solar_MAG{solar_MAG} {
   switch (grid_type) {
   case PhzDataModel::GridType::LIKELIHOOD:
     m_column_prefix          = "LIKELIHOOD-";
@@ -111,7 +110,8 @@ BestModel::BestModel(PhzDataModel::GridType grid_type, std::map<XYDataset::Quali
     };
     break;
   case PhzDataModel::GridType::POSTERIOR:
-    m_abs_mag_mapping=m_abs_mag_mapping;
+  
+    m_abs_mag_mapping=abs_mag_mapping;
     m_column_prefix          = "";
     m_model_iterator_functor = [](const PhzDataModel::SourceResults& results) {
       return results.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();

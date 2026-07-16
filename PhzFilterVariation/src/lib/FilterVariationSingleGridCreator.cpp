@@ -294,7 +294,8 @@ FilterVariationSingleGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&
       m_igm_absorption_function, {m_normalization_function}, m_pp_normalization_function, m_pp_normalization_value);
 
   // Create the photometry Grid
-  auto correction_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list, filter_name_list);
+  std::vector<Euclid::XYDataset::QualifiedName> scaling_filters{};
+  auto correction_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list, scaling_filters);
 
   auto filter_functor = PhzModeling::ApplyFilterFunctor();
   auto integrate_dataset_function =

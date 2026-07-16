@@ -22,6 +22,8 @@
 #include <boost/test/unit_test.hpp>
 #include <set>
 
+#include "XYDataset/QualifiedName.h"
+
 using Euclid::GridContainer::GridAxis;
 using Euclid::PhzDataModel::DoubleGrid;
 using Euclid::PhzDataModel::GridType;
@@ -42,6 +44,8 @@ struct BestModelFixture {
   GridAxis<QualifiedName>  sed_axis{"SED", {{"SED_1"}, {"SED_2"}}};
   std::vector<std::string> filters{"vis", "Y", "J"};
   PhotometryGrid           model_grid{std::make_tuple(z_axis, ebv_axis, red_axis, sed_axis), filters, filters};
+  
+  
 
   std::set<std::string> columns_suffixes{"region-Index",
                                          "SED",
@@ -135,7 +139,7 @@ BOOST_FIXTURE_TEST_CASE(test_PosteriorGrid, BestModelFixture) {
 
   // Check that all expected columns, and nothing more, are there
   auto column_info = best_model.getColumnInfoList();
-
+  
   std::for_each(column_info.begin(), column_info.end(), [this](const Table::ColumnInfo::info_type& info) {
     auto iter = columns_suffixes.find(info.name);
     BOOST_CHECK(iter != columns_suffixes.end());
@@ -164,6 +168,60 @@ BOOST_FIXTURE_TEST_CASE(test_PosteriorGrid, BestModelFixture) {
   BOOST_CHECK_EQUAL(get_cell<int64_t>(row, column_info, "ReddeningCurve-Index"), 0);  // (22 // 9) % 2
   BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "E(B-V)"), 0.7);
   BOOST_CHECK_EQUAL(get_cell<int64_t>(row, column_info, "E(B-V)-Index"), 1);  // (22 // 3) % 3
+}
+
+//-----------------------------------------------------------------------------
+
+BOOST_FIXTURE_TEST_CASE(test_ABS_MAG, BestModelFixture) {
+  // set the grid scaling
+  auto best_cell = std::next(model_grid.begin(), 22);
+  int idx=2;
+  for (auto scal_iter = (*best_cell).scaling_begin(); scal_iter != (*best_cell).scaling_end(); ++scal_iter){
+      *scal_iter=idx;
+      ++idx;
+  }
+
+  std::map<Euclid::XYDataset::QualifiedName, std::string> abs_mag_mapping{};
+  abs_mag_mapping.insert({{"vis"}, "ABS_MAG_VIS"});
+  abs_mag_mapping.insert({{"J"}, "ABS_MAG_J"});
+
+  BestModel best_model{GridType::POSTERIOR, abs_mag_mapping, 2.0};
+
+  // Check that all expected columns, and nothing more, are there
+  auto column_info = best_model.getColumnInfoList();
+  columns_suffixes.insert("ABS_MAG_VIS");
+  columns_suffixes.insert("ABS_MAG_J");
+
+  std::for_each(column_info.begin(), column_info.end(), [this](const Table::ColumnInfo::info_type& info) {
+    auto iter = columns_suffixes.find(info.name);
+    BOOST_CHECK_MESSAGE(iter != columns_suffixes.end(), info.name);
+    columns_suffixes.erase(iter);
+  });
+
+  BOOST_CHECK(columns_suffixes.empty());
+
+  // Set result
+  results.set<SourceResultType::BEST_MODEL_ITERATOR>(std::next(model_grid.cbegin(), 22));
+  results.set<SourceResultType::BEST_MODEL_SCALE_FACTOR>(2.22);
+  results.set<SourceResultType::BEST_REGION>(589);
+
+  // Get row
+  auto row = best_model.convertResults(source, results);
+
+  BOOST_CHECK_EQUAL(get_cell<int64_t>(row, column_info, "region-Index"), 589);
+  BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "Scale"), 2.22);
+  BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "Corr"), 2.0);
+  BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "Reference-Luminosity"), 4.44);
+  BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "Z"), 1.5);
+  BOOST_CHECK_EQUAL(get_cell<int64_t>(row, column_info, "Z-Index"), 1);  // 22 % 3
+  BOOST_CHECK_EQUAL(get_cell<std::string>(row, column_info, "SED"), "SED_2");
+  BOOST_CHECK_EQUAL(get_cell<int64_t>(row, column_info, "SED-Index"), 1);  // (22 // 18)
+  BOOST_CHECK_EQUAL(get_cell<std::string>(row, column_info, "ReddeningCurve"), "Curve1");
+  BOOST_CHECK_EQUAL(get_cell<int64_t>(row, column_info, "ReddeningCurve-Index"), 0);  // (22 // 9) % 2
+  BOOST_CHECK_EQUAL(get_cell<double>(row, column_info, "E(B-V)"), 0.7);
+  BOOST_CHECK_EQUAL(get_cell<int64_t>(row, column_info, "E(B-V)-Index"), 1);  // (22 // 3) % 3
+  BOOST_CHECK_CLOSE(get_cell<double>(row, column_info, "ABS_MAG_VIS"), 1.1341176 ,0.00001);  // -2.5*log10(2.22*1.0)+2.0
+  BOOST_CHECK_CLOSE(get_cell<double>(row, column_info, "ABS_MAG_J"), -0.3710324, 0.00001);   // -2.5*log10(8.88*1.0)+2.0
 }
 
 //-----------------------------------------------------------------------------

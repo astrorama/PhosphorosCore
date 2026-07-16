@@ -22,7 +22,7 @@ PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way 
 --- BUILD ---
  
 /\ Break compatibility with old grids
-* change the grid info /serialization (keeping the old pp in a first step) impact (to be refactored when the luminosity filter is put as ABS MAG):
+* change the grid info /serialization (keeping the old pp in a first step) impact:
   - (PhzConfiguration) PhzConfiguration/GridFileHelper.h
   - (PhzConfiguration) src/lib/FilterVariationCoefficientGridOutputConfig.cpp
   - (PhzConfiguration) tests/src/PhotometryGridConfig_test.cpp
@@ -54,10 +54,8 @@ PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way 
    - (PhzConfiguration) VolumePriorConfig_test l63 same filters (!=info)
    - (PhzConfiguration) AxisWeightPriorConfig_test l73 same filters  (!=info)
    - (PhzExecutables) GridSplitter l185,267
-   - (PhzModeling) PhotometryGridCreator l202 same filters => input point for the configuration refactoring
-   - (GalacticCorrection) GalacticCorrectionFactorSingleGridCreator l233  same filters => refactoring input point. TO BE CHEKED
-   - (PhzFilterVariation) FilterVariationSingleGridCreator l297  same filters => refactoring input point. TO BE CHEKED
-   - (PhzConfiguration) PhotometryGridConfig l160 get the scaling_filter_names from the info. TO BE CHEKED
+   - (PhzModeling) PhotometryGridCreator l202 
+   - (PhzConfiguration) PhotometryGridConfig l160 
    
 --- BUILD ---
 
@@ -66,20 +64,18 @@ PhzDataModel/PhotometryGrid => PhotometryCellManager => déclaration of the way 
 --- BUILD ---
    
 * create the configuration for the scaling: refactor the ModelNormalizationConfig
-  -(PhzConfiguration) CorrectionCoefficientGridOutputConfig 118 =>Check if the other bands are needed downward
-  -(PhzConfiguration) FilterVariationCoefficientGridOutputConfig 148 =>Check if the other bands are needed downward
+  -(PhzConfiguration) CorrectionCoefficientGridOutputConfig 118 
+  -(PhzConfiguration) FilterVariationCoefficientGridOutputConfig 148 
   -(PhzConfiguration) LuminosityPriorConfig
-  -(PhzConfiguration) ModelGridOutputConfig 118 => must be changed along with the InnerOutputFunction
+  -(PhzConfiguration) ModelGridOutputConfig 118
   -(PhzConfiguration) ModelNormalizationConfig_test
   -(PhzExecutables) lib/BuildReferenceSample 98 =>Check if the other bands are needed downward
-  -(PhzExecutables) ComputeModelGridProgram.h 73: input fopr the refactoring to pass the filter down
+  -(PhzExecutables) ComputeModelGridProgram.h 73: 
   -(PhzExecutables) ComputeModelSed 87
-  -(PhzExecutables) ComputeGalacticAbsorptionCoefficientGrid 101=>Check if the other bands are needed downward
-  -(PhzExecutables) ComputeFilterVariationCoefficientGrid 135=>Check if the other bands are needed downward
+  -(PhzExecutables) ComputeGalacticAbsorptionCoefficientGrid 101
+  -(PhzExecutables) ComputeFilterVariationCoefficientGrid 135
   
---- BUILD ---
-  
-TODO  
+--- BUILD ---  
   
 * modify the grid creation to add the scaling to the grid
 * /\ breaking compatibility /\: put the PP scaling as main scaling and the luminosity with the other scaling. Remove the pp spoofing
@@ -94,7 +90,7 @@ TODO
   ModelDatasetGenerator_test
   ModelDatasetGrid_test
   
-  changing the tests to fit the new scaling schem (pp) => need to change the output later
+  changing the tests to fit the new scaling schem (pp) 
   -  PhotometryAlgorithm_test  
   -  ModelDatasetGenerator_test
   
@@ -110,13 +106,21 @@ Diff_scallings pp, then others abs Mag  to be tested in ModelDatasetGenerator_te
 
 --- BUILD ---
 
+
+ - BestModel_test /\ including the MAGABS test for the first and another filter
+ - scaling_find has a peculiar behavior and must be tested
+ - (GalacticCorrection) GalacticCorrectionFactorSingleGridCreator l233  remove the scaling filters
+ - (PhzFilterVariation) FilterVariationSingleGridCreator l297   remove the scaling filters
+ - Add atest to the PhotometryGrid_test to ensure empty scaling can be serialized
+ -(PhzConfiguration) ModelGridOutputConfig 118 => ok (see also PhzConfiguration/PhzConfiguration/GridFileHelper.h)
   
-  BestModel_test /\ include the MAGABS test
+--- BUILD ---
+
+ TODO 
   
-  scaling_find has a peculiar behavior and must be tested
-  
-TODO
-  
+ 
+  -(PhzExecutables) lib/BuildReferenceSample 98 =>Check if the other bands are needed downward
+
 
 
 

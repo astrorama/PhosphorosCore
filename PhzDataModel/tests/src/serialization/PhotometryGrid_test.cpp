@@ -48,6 +48,7 @@ struct PhzPhotometryGridName_Fixture {
       std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filtre1", "filter2", "filter3"});
   std::shared_ptr<std::vector<std::string>> filter_3 =
       std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{"filtre1", "filter3"});
+  std::shared_ptr<std::vector<std::string>> filter_0 = std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>{});
   std::vector<Euclid::SourceCatalog::FluxErrorPair> values_1{{1.1, 2.1}, {3.1, 4.1}};
   std::vector<Euclid::SourceCatalog::FluxErrorPair> values_2{{1.2, 2.2}, {3.2, 4.2}};
   std::vector<Euclid::SourceCatalog::FluxErrorPair> values_3{{1.3, 2.3}, {3.3, 4.3}};
@@ -179,6 +180,77 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, T, archive_types, PhzPhotom
   }
   BOOST_CHECK_EQUAL(3, retrived_grid.getCellManager().scalingFilterNames().size());
 }
+
+
+
+
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test_without_scaling, T, archive_types, PhzPhotometryGridName_Fixture) {
+  BOOST_TEST_MESSAGE(" ");
+  BOOST_TEST_MESSAGE("--> Testing the serialization of the Photometry Grid with no filters in the scaling part");
+  BOOST_TEST_MESSAGE(" ");
+
+  auto axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1, *filter_0};
+  original_grid(0, 0, 0, 0) = photometry_1;
+  original_grid(1, 0, 0, 0) = photometry_2;
+  original_grid(0, 1, 0, 0) = photometry_3;
+  original_grid(1, 1, 0, 0) = photometry_4;
+  
+  // access trough the grid cell object:
+  int index=0;
+  for(auto cell : original_grid) {
+      auto scaling_iter = cell.scaling_begin();
+      while(scaling_iter != cell.scaling_end()){
+          BOOST_CHECK_MESSAGE(false, "scaling colection is not empty");
+          ++scaling_iter;
+          ++index;
+      }
+  }
+  
+  std::stringstream stream;
+  Euclid::GridContainer::gridExport<typename T::oarchive>(stream, original_grid);
+  auto retrived_grid =
+      Euclid::GridContainer::gridImport<Euclid::PhzDataModel::PhotometryGrid, typename T::iarchive>(stream);
+
+  //-------------------------------------------------------------------
+  BOOST_CHECK_EQUAL(original_grid.size(), retrived_grid.size());
+  // Check values
+  for (int v_index = 0; v_index == 2; v_index++) {
+    for (int evb_index = 0; evb_index == 2; evb_index++) {
+      auto expected_photometry = original_grid(v_index, evb_index, 0, 0);
+      auto actual_photometry   = retrived_grid(v_index, evb_index, 0, 0);
+
+      auto expected_iterator = expected_photometry.begin();
+      for (auto actual_iterator : actual_photometry) {
+        BOOST_CHECK(Elements::isEqual((*expected_iterator).flux, actual_iterator.flux));
+        BOOST_CHECK(Elements::isEqual((*expected_iterator).error, actual_iterator.error));
+        ++expected_iterator;
+      }
+    }
+  }
+
+  // check filter names
+  for (int v_index = 0; v_index == 2; v_index++) {
+    for (int evb_index = 0; evb_index == 2; evb_index++) {
+      auto original_filters = original_grid.getCellManager().filterNames();
+      auto actual_filters   = retrived_grid.getCellManager().filterNames();
+      BOOST_CHECK_EQUAL_COLLECTIONS(original_filters.begin(), original_filters.end(), actual_filters.begin(),
+                                    actual_filters.end());
+    }
+  }
+  
+  // check the scaling_filter_names
+  auto actual_scaling_filters   = retrived_grid.getCellManager().scalingFilterNames();
+  BOOST_CHECK_EQUAL(0, actual_scaling_filters.size());
+                                    
+  // check the scaling
+  auto retrived_cell = retrived_grid.begin();
+  while (retrived_cell != retrived_grid.end()) {
+    BOOST_CHECK( (*retrived_cell).scaling_cbegin() == (*retrived_cell).scaling_cend());
+    ++retrived_cell;
+  }
+}
+
 
 BOOST_FIXTURE_TEST_CASE(toTable_test, PhzPhotometryGridName_Fixture) {
   auto                                 axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
