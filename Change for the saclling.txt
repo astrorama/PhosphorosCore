@@ -100,15 +100,25 @@ TODO
   
 --- BUILD ---
   
-TODO    
+Diff_scallings pp, then others abs Mag  to be tested in ModelDatasetGenerator_test
   
-* change the output/luminosity correcting for the rescaling  /\ 
-
+* change the output/luminosity correcting for the rescaling  
+  - output
+  - pp
 * create a configuration to restrict the output + output ABS MAG with overrided names
-
-* for the CR create a configuration to restrict the available scaling in the output
-
 * for the CR output the reddened ABS MAG
+
+--- BUILD ---
+
+  
+  BestModel_test /\ include the MAGABS test
+  
+  scaling_find has a peculiar behavior and must be tested
+  
+TODO
+  
+
+
 
 * Integrate change into the UI
 

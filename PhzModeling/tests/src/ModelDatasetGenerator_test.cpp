@@ -378,8 +378,8 @@ BOOST_FIXTURE_TEST_CASE(diff_scaling_test, ModelDatasetGenerator_Fixture) {
 
           BOOST_CHECK_EQUAL(3, dataset_0.size());
 
-          BOOST_CHECK_CLOSE(dataset_0.getScaling(), 5.0, 0.001);
-          BOOST_CHECK_CLOSE(dataset_0.getDiffScaling(0), 3.0, 0.001);
+          BOOST_CHECK_CLOSE(dataset_0.getScaling(), 3.0, 0.001);
+          BOOST_CHECK_CLOSE(dataset_0.getDiffScaling(0), 5.0, 0.001);
 
           ++normalized_model_generator;
         }
@@ -407,8 +407,8 @@ BOOST_FIXTURE_TEST_CASE(diff_scaling_value_test, ModelDatasetGenerator_Fixture) 
 
           BOOST_CHECK_EQUAL(3, dataset_0.size());
 
-          BOOST_CHECK_CLOSE(dataset_0.getScaling(), 3.141596, 0.001);
-          BOOST_CHECK_CLOSE(dataset_0.getDiffScaling(0), 3.0, 0.001);
+          BOOST_CHECK_CLOSE(dataset_0.getScaling(), 3.0, 0.001);
+          BOOST_CHECK_CLOSE(dataset_0.getDiffScaling(0), 3.141596, 0.001);
 
           ++normalized_model_generator;
         }

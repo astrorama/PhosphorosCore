@@ -183,6 +183,7 @@ PhzDataModel::Sed& ModelDatasetGenerator::operator*() {
     }
     m_current_reddened_sed->setDiffScalings(scallings);
   }
+  
   if (new_sed_index != m_current_sed_index || new_reddening_curve_index != m_current_reddening_curve_index ||
       new_ebv_index != m_current_ebv_index || new_z_index != m_current_z_index || !m_current_redshifted_sed) {
     double            z              = std::get<PhzDataModel::ModelParameter::Z>(m_parameter_space)[new_z_index];
@@ -195,20 +196,28 @@ PhzDataModel::Sed& ModelDatasetGenerator::operator*() {
           << "The normalisation of a model for SED=" << sed_name
           << " failed. The root cause could be that the normalization filter do not overlap the SED.";
     }
+    
+    double pp_scalling = m_current_pp_norm_sed->getScaling();
     if (m_sed_normalization_value > 0) {
-      igm_sed.setScaling(m_sed_normalization_value);
+      pp_scalling = m_sed_normalization_value;
     } else {
-      double pp_scalling = m_current_pp_norm_sed->getScaling();
       if (!std::isfinite(1.0 / pp_scalling) || !std::isfinite(pp_scalling)) {
         auto& sed_name = std::get<PhzDataModel::ModelParameter::SED>(m_parameter_space)[new_sed_index];
         throw Elements::Exception()
             << "The PP normalisation of a model for SED=" << sed_name
             << " failed. The root cause could be that the PP normalization filter do not overlap the SED.";
       }
-      igm_sed.setScaling(pp_scalling);
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////////////
+    /// To avoid propagating the model grid to the luminosity prior, we keep the scaling as 
+    /// the luminosity scaling. We put the pp_scaling at the first of the diff scaling. 
+    /// To implement this we swap the first element of the d_scalings with the pp_scaling 
+    /////////////////////////////////////////////////////////////////////////////////////////
+    double scaling = d_scallings[0];
+    d_scallings[0] = pp_scalling;
+    igm_sed.setScaling(scaling);
     igm_sed.setDiffScalings(d_scallings);
-    ///////
     m_current_redshifted_sed.reset(new PhzDataModel::Sed(igm_sed));
   }
   m_current_sed_index             = new_sed_index;

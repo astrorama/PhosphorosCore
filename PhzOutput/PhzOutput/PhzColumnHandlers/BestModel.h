@@ -29,6 +29,9 @@
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzOutput/PhzColumnHandlers/ColumnHandler.h"
 #include <functional>
+#include "XYDataset/QualifiedName.h"
+#include <string>
+#include <map>
 
 namespace Euclid {
 namespace PhzOutput {
@@ -47,7 +50,7 @@ public:
   using ScaleFunctor      = std::function<double(const PhzDataModel::SourceResults&)>;
   using RegonIndexFunctor = std::function<int(const PhzDataModel::SourceResults&)>;
 
-  BestModel(PhzDataModel::GridType grid_type);
+  BestModel(PhzDataModel::GridType grid_type, std::map<XYDataset::QualifiedName, std::string> abs_mag_mapping={}, double solar_MAG=0.0);
 
   /**
    * @brief Destructor
@@ -64,6 +67,8 @@ private:
   ModelIteratorFunctor m_model_iterator_functor;
   ScaleFunctor         m_scale_functor;
   RegonIndexFunctor    m_region_index_functior;
+  std::map<XYDataset::QualifiedName, std::string> m_abs_mag_mapping{};
+  double m_solar_MAG;
 
 }; /* End of BestModel class */
 

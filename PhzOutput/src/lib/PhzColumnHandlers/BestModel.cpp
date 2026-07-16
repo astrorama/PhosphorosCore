@@ -24,6 +24,8 @@
 
 #include "PhzOutput/PhzColumnHandlers/BestModel.h"
 #include "ElementsKernel/Logging.h"
+#include <math.h>
+
 
 namespace Euclid {
 namespace PhzOutput {
@@ -32,7 +34,7 @@ namespace ColumnHandlers {
 static Elements::Logging logger = Elements::Logging::getLogger("BestModel");
 
 std::vector<Table::ColumnInfo::info_type> BestModel::getColumnInfoList() const {
-  return std::vector<Table::ColumnInfo::info_type>{
+  auto columns = std::vector<Table::ColumnInfo::info_type>{
       Table::ColumnInfo::info_type(m_column_prefix + "region-Index", typeid(int64_t)),
       Table::ColumnInfo::info_type(m_column_prefix + "SED", typeid(std::string)),
       Table::ColumnInfo::info_type(m_column_prefix + "SED-Index", typeid(int64_t)),
@@ -45,6 +47,16 @@ std::vector<Table::ColumnInfo::info_type> BestModel::getColumnInfoList() const {
       Table::ColumnInfo::info_type(m_column_prefix + "Scale", typeid(double)),
       Table::ColumnInfo::info_type(m_column_prefix + "Corr", typeid(double)),
       Table::ColumnInfo::info_type(m_column_prefix + "Reference-Luminosity", typeid(double))};
+      
+  for (auto mapping : m_abs_mag_mapping) {
+     columns.push_back(Table::ColumnInfo::info_type(mapping.second, typeid(double)));
+  }
+      
+  return columns;
+}
+
+double getMagFromSolarLum(double solarLum, double ref_solar_mag) {
+  return -2.5 * std::log10(solarLum) + ref_solar_mag;
 }
 
 std::vector<Table::Row::cell_type> BestModel::convertResults(const SourceCatalog::Source&,
@@ -60,19 +72,31 @@ std::vector<Table::Row::cell_type> BestModel::convertResults(const SourceCatalog
   auto    z                 = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
   int64_t z_index           = best_model.axisIndex<PhzDataModel::ModelParameter::Z>();
   auto    scale             = m_scale_functor(results);
-  double  correction_factor = (*(*best_model).begin()).error;
-  // For retro-compatibility with existing grids
-  if (correction_factor == 0) {
-    // logger.info()<< "Source has best_model with correction factor 0";
-    correction_factor = 1.0;
+  
+  
+  auto correction_iter_begin = (*best_model).scaling_cbegin();
+  auto correction_iter_end = (*best_model).scaling_cend();
+  double correction_factor = 1.0; // For retro-compatibility 
+  if (correction_iter_begin != correction_iter_end) {   
+    // logger.info()<< "Correction factor 0";
+    correction_factor = *correction_iter_begin;  // the PP correction factor is the first of the Diff_scaling
   }
+
   double ref_lum = scale * correction_factor;
 
-  return std::vector<Table::Row::cell_type>{region_index, sed, sed_index, reddening_curve, red_index,         ebv,
-                                            ebv_index,    z,   z_index,   scale,           correction_factor, ref_lum};
+  auto row = std::vector<Table::Row::cell_type>{region_index, sed, sed_index, reddening_curve, red_index,         ebv,
+                                                ebv_index, z, z_index, scale, correction_factor, ref_lum};
+                                            
+  for (auto mapping : m_abs_mag_mapping) {
+     double correction = (*best_model).scaling_find(mapping.first.qualifiedName());
+     double luminosity = scale * correction;
+     double mag = getMagFromSolarLum(luminosity, m_solar_MAG);
+     row.push_back(mag);
+  } 
+  return row;
 }
 
-BestModel::BestModel(PhzDataModel::GridType grid_type) {
+BestModel::BestModel(PhzDataModel::GridType grid_type, std::map<XYDataset::QualifiedName, std::string> abs_mag_mapping, double solar_MAG):m_solar_MAG{solar_MAG} {
   switch (grid_type) {
   case PhzDataModel::GridType::LIKELIHOOD:
     m_column_prefix          = "LIKELIHOOD-";
@@ -87,6 +111,7 @@ BestModel::BestModel(PhzDataModel::GridType grid_type) {
     };
     break;
   case PhzDataModel::GridType::POSTERIOR:
+    m_abs_mag_mapping=m_abs_mag_mapping;
     m_column_prefix          = "";
     m_model_iterator_functor = [](const PhzDataModel::SourceResults& results) {
       return results.get<PhzDataModel::SourceResultType::BEST_MODEL_ITERATOR>();

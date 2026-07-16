@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_SUITE(BestModel_test)
 
 BOOST_FIXTURE_TEST_CASE(test_PhotometryGrid, BestModelFixture) {
   try {
-    BestModel best_model{GridType::PHOTOMETRY};
+    BestModel best_model{GridType::PHOTOMETRY,{},1.0};
     BOOST_FAIL("GridType::PHOTOMETRY must throw");
   } catch (const Elements::Exception&) {
     BOOST_CHECK(true);
@@ -131,7 +131,7 @@ BOOST_FIXTURE_TEST_CASE(test_LikelihoodGrid, BestModelFixture) {
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE(test_PosteriorGrid, BestModelFixture) {
-  BestModel best_model{GridType::POSTERIOR};
+  BestModel best_model{GridType::POSTERIOR,{},1.0};
 
   // Check that all expected columns, and nothing more, are there
   auto column_info = best_model.getColumnInfoList();

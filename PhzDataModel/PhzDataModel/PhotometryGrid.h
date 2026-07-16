@@ -135,8 +135,17 @@ public:
       if (i == m_parent.m_scaling_filter_names.end()) {
         throw Elements::Exception() << "Scaling filter " << scaling_filter << " not found";
       }
-      auto offset = i - m_parent.m_scaling_filter_names.begin();
-      return *(m_scaling_begin + offset);
+      
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /// the first filter is the one used to normalize the Model: the value to return is 1.0. 
+      /// Furthermore the first slot value store the PP correction factor.
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      if (i==m_parent.m_scaling_filter_names.begin()){ 
+        return 1.0;
+      } else {
+        auto offset = i - m_parent.m_scaling_filter_names.begin();
+        return *(m_scaling_begin + offset);
+      }
     }
     // end: Access the scaling attached to the Grid Cell through iterators
     

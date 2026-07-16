@@ -28,6 +28,8 @@
 #include "PhzConfiguration/PhysicalParametersConfig.h"
 #include "PhzOutput/PhzColumnHandlers/BestModelOnlyZ.h"
 #include <PhzOutput/PhzColumnHandlers/BestModel.h>
+#include "PhzConfiguration/AbsMagOutConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
 
 namespace po = boost::program_options;
 
@@ -39,6 +41,8 @@ static const std::string CREATE_OUTPUT_BEST_MODEL_FLAG{"create-output-best-model
 BestModelOutputConfig::BestModelOutputConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PhysicalParametersConfig>();
   declareDependency<OutputCatalogConfig>();
+  declareDependency<ModelNormalizationConfig>();
+  declareDependency<AbsMagOutConfig>();
 }
 
 auto BestModelOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -59,13 +63,20 @@ void BestModelOutputConfig::preInitialize(const UserValues& args) {
 void BestModelOutputConfig::initialize(const UserValues& args) {
 
   if (args.at(CREATE_OUTPUT_BEST_MODEL_FLAG).as<std::string>() == "YES") {
+  
+    auto abs_mag_config = getDependency<AbsMagOutConfig>().getAbsMagMapping();
+    double solar_MAG     = getDependency<ModelNormalizationConfig>().getSolarMagAB();
+  
+  
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        Euclid::make_unique<PhzOutput::ColumnHandlers::BestModel>(PhzDataModel::GridType::POSTERIOR));
+        Euclid::make_unique<PhzOutput::ColumnHandlers::BestModel>(PhzDataModel::GridType::POSTERIOR, abs_mag_config, solar_MAG));
 
     if (getDependency<PhysicalParametersConfig>().getParamConfig().size() > 0) {
       getDependency<OutputCatalogConfig>().addColumnHandler(
           std::move(getDependency<PhysicalParametersConfig>().getPosteriorOutputHandler()));
     }
+    
+    
 
   } else {
     // If the user does not want the full best model information we still give

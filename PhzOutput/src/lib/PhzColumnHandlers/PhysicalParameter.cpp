@@ -51,11 +51,12 @@ std::vector<Table::Row::cell_type> PhysicalParameter::convertResults(const Sourc
   PhzDataModel::PhotometryGrid::const_iterator best_model = m_model_iterator_functor(results);
   const auto sed               = best_model.axisValue<PhzDataModel::ModelParameter::SED>().qualifiedName();
   auto       scale             = m_scale_functor(results);
-  double     correction_factor = (*(*best_model).begin()).error;
-  // For retro-compatibility with existing grids
-  if (correction_factor == 0) {
+  auto correction_iter_begin = (*best_model).scaling_cbegin();
+  auto correction_iter_end = (*best_model).scaling_cend();
+  double correction_factor = 1.0; // For retro-compatibility 
+  if (correction_iter_begin != correction_iter_end) {   
     // logger.info()<< "Correction factor 0";
-    correction_factor = 1.0;
+    correction_factor = *correction_iter_begin;  // the PP correction factor is the first of the Diff_scaling
   }
 
   std::vector<Table::Row::cell_type> res_list{};
