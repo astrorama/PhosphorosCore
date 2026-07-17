@@ -77,27 +77,27 @@ std::pair<XYDataset::QualifiedName, std::string> AbsMagOutConfig::parseConfig(st
 }
 
 void AbsMagOutConfig::initialize(const UserValues& args) {
-
  std::string flag = args.at(ABS_MAG_BREAK).as<std::string>();
  m_throw_on_missing = flag == "YES";
  
  auto& available_filters = getDependency<PhotometryGridConfig>().getPhotometryGridInfo().scaling_filter_names;
- 
- auto mapping_list = args.find(ABS_MAG_MAPPING)->second.as<std::vector<std::string>>();
-    for (auto& mapping : mapping_list) {
-        auto pair = parseConfig(mapping);
-        auto it = std::find(available_filters.begin(), available_filters.end(), pair.first);
-        if (it != available_filters.end()) {
-            m_abs_mag_mapping.insert(pair) ;
-        } else {
-            if (m_throw_on_missing) {
-                throw Elements::Exception() << " The filter '" << pair.first.qualifiedName() << "' is not one of the 'abs-mag-filters' of the Photometry Grid.";
-            } else {
-               logger.warn() << " The filter '" << pair.first.qualifiedName() << "' is not one of the 'abs-mag-filters' of the Photometry Grid. The column " 
-                             << pair.second << " will not be computed.";
-            }
-        }
-    }
+ if (args.count(ABS_MAG_MAPPING) > 0) {
+   auto mapping_list = args.find(ABS_MAG_MAPPING)->second.as<std::vector<std::string>>();
+      for (auto& mapping : mapping_list) {
+          auto pair = parseConfig(mapping);
+          auto it = std::find(available_filters.begin(), available_filters.end(), pair.first);
+          if (it != available_filters.end()) {
+              m_abs_mag_mapping.insert(pair) ;
+          } else {
+              if (m_throw_on_missing) {
+                  throw Elements::Exception() << " The filter '" << pair.first.qualifiedName() << "' is not one of the 'abs-mag-filters' of the Photometry Grid.";
+              } else {
+                 logger.warn() << " The filter '" << pair.first.qualifiedName() << "' is not one of the 'abs-mag-filters' of the Photometry Grid. The column " 
+                               << pair.second << " will not be computed.";
+              }
+          }
+      }
+  }
 }
 
 const std::map<XYDataset::QualifiedName, std::string>& AbsMagOutConfig::getAbsMagMapping() const {
