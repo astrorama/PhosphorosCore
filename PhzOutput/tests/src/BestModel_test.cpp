@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_SUITE(BestModel_test)
 
 BOOST_FIXTURE_TEST_CASE(test_PhotometryGrid, BestModelFixture) {
   try {
-    BestModel best_model{GridType::PHOTOMETRY,{},1.0};
+    BestModel best_model{GridType::PHOTOMETRY};
     BOOST_FAIL("GridType::PHOTOMETRY must throw");
   } catch (const Elements::Exception&) {
     BOOST_CHECK(true);
@@ -135,7 +135,7 @@ BOOST_FIXTURE_TEST_CASE(test_LikelihoodGrid, BestModelFixture) {
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE(test_PosteriorGrid, BestModelFixture) {
-  BestModel best_model{GridType::POSTERIOR,{},1.0};
+  BestModel best_model{GridType::POSTERIOR,{},{}};
 
   // Check that all expected columns, and nothing more, are there
   auto column_info = best_model.getColumnInfoList();
@@ -184,8 +184,12 @@ BOOST_FIXTURE_TEST_CASE(test_ABS_MAG, BestModelFixture) {
   std::map<Euclid::XYDataset::QualifiedName, std::string> abs_mag_mapping{};
   abs_mag_mapping.insert({{"vis"}, "ABS_MAG_VIS"});
   abs_mag_mapping.insert({{"J"}, "ABS_MAG_J"});
+  
+  std::map<Euclid::XYDataset::QualifiedName, double> solar_mag_mapping{};
+  solar_mag_mapping.insert({{"vis"}, 2.0});
+  solar_mag_mapping.insert({{"J"}, 2.0});
 
-  BestModel best_model{GridType::POSTERIOR, abs_mag_mapping, 2.0};
+  BestModel best_model{GridType::POSTERIOR, abs_mag_mapping, solar_mag_mapping};
 
   // Check that all expected columns, and nothing more, are there
   auto column_info = best_model.getColumnInfoList();

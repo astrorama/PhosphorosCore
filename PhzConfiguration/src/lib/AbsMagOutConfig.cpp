@@ -26,6 +26,7 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
+#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include <utility>
 
 
@@ -42,6 +43,8 @@ static Elements::Logging logger = Elements::Logging::getLogger("AbsMagOutConfig"
 
 AbsMagOutConfig::AbsMagOutConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PhotometryGridConfig>();
+  declareDependency<ModelNormalizationConfig>();
+  
 }
 
 auto AbsMagOutConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -77,18 +80,26 @@ std::pair<XYDataset::QualifiedName, std::string> AbsMagOutConfig::parseConfig(st
 }
 
 void AbsMagOutConfig::initialize(const UserValues& args) {
+ logger.debug()<<"initialize AbsMagOutConfig";
  std::string flag = args.at(ABS_MAG_BREAK).as<std::string>();
  m_throw_on_missing = flag == "YES";
  
  auto& available_filters = getDependency<PhotometryGridConfig>().getPhotometryGridInfo().scaling_filter_names;
+ logger.debug() << "Filter defined in the grid for scaling "<< available_filters.size();
  if (args.count(ABS_MAG_MAPPING) > 0) {
    auto mapping_list = args.find(ABS_MAG_MAPPING)->second.as<std::vector<std::string>>();
+   logger.debug() << "Mapping in the config "<< mapping_list.size();
       for (auto& mapping : mapping_list) {
           auto pair = parseConfig(mapping);
           auto it = std::find(available_filters.begin(), available_filters.end(), pair.first);
           if (it != available_filters.end()) {
+              logger.debug() << "Adding "<< pair.first << " : " <<pair.second;
               m_abs_mag_mapping.insert(pair) ;
+              m_solar_mag_ab_map.insert(std::make_pair(pair.first, getDependency<ModelNormalizationConfig>().getSolarMagAB( pair.first)));
+              
           } else {
+          
+              logger.debug() << "filter "<< pair.first << " not found";
               if (m_throw_on_missing) {
                   throw Elements::Exception() << " The filter '" << pair.first.qualifiedName() << "' is not one of the 'abs-mag-filters' of the Photometry Grid.";
               } else {
@@ -99,6 +110,15 @@ void AbsMagOutConfig::initialize(const UserValues& args) {
       }
   }
 }
+
+  
+ const std::map<XYDataset::QualifiedName,double>& AbsMagOutConfig::getSolarMagABMap() const{
+   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getSolarMagABList() on a not initialized instance.";
+  }
+
+  return m_solar_mag_ab_map;
+ }
 
 const std::map<XYDataset::QualifiedName, std::string>& AbsMagOutConfig::getAbsMagMapping() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {

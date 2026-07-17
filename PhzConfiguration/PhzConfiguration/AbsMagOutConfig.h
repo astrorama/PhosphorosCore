@@ -76,12 +76,15 @@ public:
    * A map of QualifiedName (filter) : string (column name) 
    */
   const std::map<XYDataset::QualifiedName, std::string>& getAbsMagMapping() const;
+  
+  const std::map<XYDataset::QualifiedName,double>& getSolarMagABMap() const;
 
 
   static std::pair<XYDataset::QualifiedName, std::string> parseConfig(std::string config);
 private:
   std::map<XYDataset::QualifiedName, std::string> m_abs_mag_mapping;
   bool m_throw_on_missing = false;
+  std::map<XYDataset::QualifiedName, double> m_solar_mag_ab_map{};
 
 }; /* End of AbsMagOutConfig class */
 

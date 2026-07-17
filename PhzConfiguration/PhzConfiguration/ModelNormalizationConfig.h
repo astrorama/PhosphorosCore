@@ -82,6 +82,8 @@ public:
   double getSolarMagAB() const;
 
   double getPpSolarMagAB() const;
+  
+  double getSolarMagAB(XYDataset::QualifiedName& filter);
 
 private:
   XYDataset::QualifiedName m_solar_sed{"uninitialized"};

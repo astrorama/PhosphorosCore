@@ -117,6 +117,8 @@ Diff_scallings pp, then others abs Mag  to be tested in ModelDatasetGenerator_te
 --- BUILD ---
 
  TODO 
+ 
+   THE solar MAG has to be computed for each filters!
   
  
   -(PhzExecutables) lib/BuildReferenceSample 98 =>Check if the other bands are needed downward

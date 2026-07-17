@@ -89,13 +89,13 @@ std::vector<Table::Row::cell_type> BestModel::convertResults(const SourceCatalog
   for (auto mapping : m_abs_mag_mapping) {
      double correction = (*best_model).scaling_find(mapping.first.qualifiedName());
      double luminosity = scale * correction;
-     double mag = getMagFromSolarLum(luminosity, m_solar_MAG);
+     double mag = getMagFromSolarLum(luminosity, m_solar_MAG_map.at(mapping.first));
      row.push_back(mag);
   } 
   return row;
 }
 
-BestModel::BestModel(PhzDataModel::GridType grid_type, std::map<XYDataset::QualifiedName, std::string> abs_mag_mapping, double solar_MAG) : m_solar_MAG{solar_MAG} {
+BestModel::BestModel(PhzDataModel::GridType grid_type, std::map<XYDataset::QualifiedName, std::string> abs_mag_mapping,  std::map<XYDataset::QualifiedName,double> solar_MAG_map) : m_solar_MAG_map{solar_MAG_map} {
   switch (grid_type) {
   case PhzDataModel::GridType::LIKELIHOOD:
     m_column_prefix          = "LIKELIHOOD-";

@@ -83,6 +83,18 @@ std::vector<XYDataset::QualifiedName> addNormalisationFilter(XYDataset::Qualifie
     return output;
 }
 
+double ModelNormalizationConfig::getSolarMagAB(XYDataset::QualifiedName& filter) {
+  auto filter_provider  = getDependency<FilterProviderConfig>().getFilterDatasetProvider();
+  auto sun_sed_provider = getDependency<SedProviderConfig>().getSedDatasetProvider();
+  
+  PhzModeling::NormalizationFunctor normalizer_functor =
+        PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(
+            filter_provider, filter, sun_sed_provider, m_solar_sed);
+  auto flux = normalizer_functor.getReferenceFlux();
+  return -2.5 * log10(flux / 3.631E9);
+}
+
+
 void ModelNormalizationConfig::initialize(const UserValues& args) {
   XYDataset::QualifiedName normalisation_filter("uninitialized"); 
   if (args.count(NORMALIZATION_FILTER) > 0) {
@@ -122,23 +134,10 @@ void ModelNormalizationConfig::initialize(const UserValues& args) {
   }
   
   m_bands = addNormalisationFilter(normalisation_filter, abs_mag_filters);
-
-  auto filter_provider  = getDependency<FilterProviderConfig>().getFilterDatasetProvider();
-  auto sun_sed_provider = getDependency<SedProviderConfig>().getSedDatasetProvider();
   
-  PhzModeling::NormalizationFunctor normalizer_pp_functor =
-        PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(
-            filter_provider, m_pp_band, sun_sed_provider, m_solar_sed);
-  auto pp_flux = normalizer_pp_functor.getReferenceFlux();
-  m_pp_solar_MAG_AB = -2.5 * log10(pp_flux / 3.631E9);
-  
-  auto& band = m_bands[0];
-  PhzModeling::NormalizationFunctor normalizer_functor =
-      PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(filter_provider, band,
-                                                                                    sun_sed_provider, m_solar_sed);
-  auto flux = normalizer_functor.getReferenceFlux();
+  m_pp_solar_MAG_AB = getSolarMagAB(m_pp_band);
 
-  m_solar_MAG_AB = -2.5 * log10(flux / 3.631E9);
+  m_solar_MAG_AB = getSolarMagAB(m_bands[0]);
   
 }
 

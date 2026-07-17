@@ -50,7 +50,7 @@ public:
   using ScaleFunctor      = std::function<double(const PhzDataModel::SourceResults&)>;
   using RegonIndexFunctor = std::function<int(const PhzDataModel::SourceResults&)>;
 
-  BestModel(PhzDataModel::GridType grid_type, std::map<XYDataset::QualifiedName, std::string> abs_mag_mapping={}, double solar_MAG=0.0);
+  BestModel(PhzDataModel::GridType grid_type, std::map<XYDataset::QualifiedName, std::string> abs_mag_mapping={},  std::map<XYDataset::QualifiedName,double> solar_MAG_map={});
 
   /**
    * @brief Destructor
@@ -68,7 +68,7 @@ private:
   ScaleFunctor         m_scale_functor;
   RegonIndexFunctor    m_region_index_functior;
   std::map<XYDataset::QualifiedName, std::string> m_abs_mag_mapping{};
-  double m_solar_MAG;
+   std::map<XYDataset::QualifiedName,double> m_solar_MAG_map;
 
 }; /* End of BestModel class */
 

@@ -65,11 +65,10 @@ void BestModelOutputConfig::initialize(const UserValues& args) {
   if (args.at(CREATE_OUTPUT_BEST_MODEL_FLAG).as<std::string>() == "YES") {
   
     auto abs_mag_config = getDependency<AbsMagOutConfig>().getAbsMagMapping();
-    double solar_MAG     = getDependency<ModelNormalizationConfig>().getSolarMagAB();
-  
+    std::map<XYDataset::QualifiedName,double> solar_MAG_map = getDependency<AbsMagOutConfig>().getSolarMagABMap();
   
     getDependency<OutputCatalogConfig>().addColumnHandler(
-        Euclid::make_unique<PhzOutput::ColumnHandlers::BestModel>(PhzDataModel::GridType::POSTERIOR, abs_mag_config, solar_MAG));
+        Euclid::make_unique<PhzOutput::ColumnHandlers::BestModel>(PhzDataModel::GridType::POSTERIOR, abs_mag_config, solar_MAG_map));
 
     if (getDependency<PhysicalParametersConfig>().getParamConfig().size() > 0) {
       getDependency<OutputCatalogConfig>().addColumnHandler(
