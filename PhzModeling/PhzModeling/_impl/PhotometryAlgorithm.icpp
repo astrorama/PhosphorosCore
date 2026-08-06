@@ -72,7 +72,7 @@ void PhotometryAlgorithm<ModelFluxAlgo>::operator()(
     auto d_scalings = (*model_begin).getDiffScalings();
     double ref_scaling = (*model_begin).getScaling();
     for(auto iter = d_scalings.begin(); iter != d_scalings.end(); ++iter){
-         *scaling_begin=(*iter)/ref_scaling;
+         *scaling_begin=ref_scaling/(*iter);
          ++scaling_begin;
     }
     

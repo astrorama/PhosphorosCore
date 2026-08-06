@@ -195,7 +195,7 @@ BOOST_FIXTURE_TEST_CASE(execution_test, PhotometryAlgorithm_Fixture) {
     ++model_vector_iterator;
   }
   
-  std::vector<double> expected_scaling {2, 1.66666666666666};
+  std::vector<double> expected_scaling {0.5, 0.6};
   auto iter_expected = expected_scaling.begin();  
   for(auto scaling : scaling_vector){
        BOOST_CHECK_CLOSE(scaling, *iter_expected, 0.001);
