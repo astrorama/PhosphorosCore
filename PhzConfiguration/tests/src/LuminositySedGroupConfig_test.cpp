@@ -54,6 +54,7 @@ struct LuminositySedGroupConfig_fixture : public ConfigManager_fixture {
   PhzDataModel::ModelAxesTuple                  axes = PhzDataModel::createAxesTuple(zs, ebvs, red_curves, seds);
 
   XYDataset::QualifiedName filter{"filter"};
+  XYDataset::QualifiedName solar_sed{"solar_sed"};
 
   std::map<std::string, PhzDataModel::PhotometryGrid> model_grid_map{};
 
@@ -75,7 +76,7 @@ struct LuminositySedGroupConfig_fixture : public ConfigManager_fixture {
 
     std::ofstream                    out{model_grid_file.string()};
     boost::archive::binary_oarchive  boa{out};
-    PhzDataModel::PhotometryGridInfo info{model_grid_map, {}, "OFF", filter, filter, {}};
+    PhzDataModel::PhotometryGridInfo info{model_grid_map, {}, "OFF", filter, filter, solar_sed, {}};
     boa << info;
     GridContainer::gridBinaryExport(out, model_grid_map.at(""));
   }

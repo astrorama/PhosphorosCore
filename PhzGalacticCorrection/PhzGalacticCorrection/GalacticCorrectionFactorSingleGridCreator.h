@@ -50,7 +50,7 @@ public:
                                       const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
                                       IgmAbsorptionFunction igm_absorption_function,
                                       NormalizationFunction normalization_function,
-                                      NormalizationFunction normalization_pp_function, double pp_normalization_value,
+                                      NormalizationFunction normalization_pp_function, 
                                       XYDataset::QualifiedName milky_way_reddening);
 
   virtual ~GalacticCorrectionSingleGridCreator();
@@ -67,7 +67,6 @@ private:
   IgmAbsorptionFunction                                       m_igm_absorption_function;
   NormalizationFunction                                       m_normalization_function;
   NormalizationFunction                                       m_pp_normalization_function;
-  double                                                      m_pp_normalization_value;
   XYDataset::QualifiedName                                    m_milky_way_reddening;
 };
 

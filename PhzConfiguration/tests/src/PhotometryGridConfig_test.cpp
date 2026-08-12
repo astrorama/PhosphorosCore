@@ -68,7 +68,7 @@ struct PhotometryGridConfig_fixture : public ConfigManager_fixture {
                            std::vector<std::string>{"Filter1", "Filter2", "Filter3"}, 
                            std::vector<std::string>{"S_Filter1", "S_Filter2"}}));
                            
-    PhotometryGridInfo info{grid_map, {{"Filter1"}, {"Filter2"}, {"Filter3"}}, "OFF", {"Filter1"}, {"Filter1"}, {{"S_Filter1"}, {"S_Filter2"}}}; 
+    PhotometryGridInfo info{grid_map, {{"Filter1"}, {"Filter2"}, {"Filter3"}}, "OFF", {"Filter1"}, {"Filter1"}, {"Sun_sed"}, {{"S_Filter1"}, {"S_Filter2"}}}; 
     {
       fs::create_directories(intermediate_dir / catalog_type / "ModelGrids");
       std::ofstream                   stream{(intermediate_dir / catalog_type / "ModelGrids" / filename).string()};

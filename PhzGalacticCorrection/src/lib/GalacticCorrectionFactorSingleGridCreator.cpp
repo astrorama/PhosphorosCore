@@ -102,7 +102,7 @@ GalacticCorrectionSingleGridCreator::GalacticCorrectionSingleGridCreator(
     std::shared_ptr<Euclid::XYDataset::XYDatasetProvider>       reddening_curve_provider,
     const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
     IgmAbsorptionFunction igm_absorption_function, NormalizationFunction normalization_function,
-    NormalizationFunction normalization_pp_function, double pp_normalization_value,
+    NormalizationFunction normalization_pp_function, 
     XYDataset::QualifiedName milky_way_reddening)
     : m_sed_provider{sed_provider}
     , m_reddening_curve_provider{reddening_curve_provider}
@@ -110,7 +110,6 @@ GalacticCorrectionSingleGridCreator::GalacticCorrectionSingleGridCreator(
     , m_igm_absorption_function{igm_absorption_function}
     , m_normalization_function{normalization_function}
     , m_pp_normalization_function{normalization_pp_function}
-    , m_pp_normalization_value{pp_normalization_value}
     , m_milky_way_reddening{milky_way_reddening} {}
 
 GalacticCorrectionSingleGridCreator::~GalacticCorrectionSingleGridCreator() {
@@ -227,7 +226,7 @@ GalacticCorrectionSingleGridCreator::createGrid(const PhzDataModel::ModelAxesTup
   // Create the model grid
   auto model_grid = PhzModeling::ModelDatasetGrid(
       parameter_space, std::move(sed_map), std::move(reddening_curve_map), reddening_function, redshift_function,
-      m_igm_absorption_function, {m_normalization_function}, m_normalization_function, m_pp_normalization_value);
+      m_igm_absorption_function, {m_normalization_function}, m_normalization_function, 0);
 
   // Create the photometry Grid
   std::vector<Euclid::XYDataset::QualifiedName> scaling_filters{};

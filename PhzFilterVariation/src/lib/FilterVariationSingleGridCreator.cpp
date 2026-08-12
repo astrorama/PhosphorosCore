@@ -236,14 +236,13 @@ FilterVariationSingleGridCreator::FilterVariationSingleGridCreator(
     std::shared_ptr<Euclid::XYDataset::XYDatasetProvider>       reddening_curve_provider,
     const std::shared_ptr<Euclid::XYDataset::XYDatasetProvider> filter_provider,
     IgmAbsorptionFunction igm_absorption_function, NormalizationFunction normalization_function,
-    NormalizationFunction normalization_pp_function, double pp_normalization_value, std::vector<double> delta_lambda)
+    NormalizationFunction normalization_pp_function, std::vector<double> delta_lambda)
     : m_sed_provider{sed_provider}
     , m_reddening_curve_provider{reddening_curve_provider}
     , m_filter_provider(filter_provider)
     , m_igm_absorption_function{igm_absorption_function}
     , m_normalization_function{normalization_function}
     , m_pp_normalization_function{normalization_pp_function}
-    , m_pp_normalization_value{pp_normalization_value}
     , m_delta_lambda{std::move(delta_lambda)} {}
 
 FilterVariationSingleGridCreator::~FilterVariationSingleGridCreator() {
@@ -291,7 +290,7 @@ FilterVariationSingleGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&
   // Create the model grid
   auto model_grid = PhzModeling::ModelDatasetGrid(
       parameter_space, std::move(sed_map), std::move(reddening_curve_map), reddening_function, redshift_function,
-      m_igm_absorption_function, {m_normalization_function}, m_pp_normalization_function, m_pp_normalization_value);
+      m_igm_absorption_function, {m_normalization_function}, m_pp_normalization_function, 0);
 
   // Create the photometry Grid
   std::vector<Euclid::XYDataset::QualifiedName> scaling_filters{};

@@ -33,6 +33,7 @@ public:
                      std::string arg_igm_method,
                      XYDataset::QualifiedName              arg_luminosity_filter_name,
                      XYDataset::QualifiedName              arg_luminosity_pp_filter_name,
+                     XYDataset::QualifiedName              arg_solar_sed,
                      std::vector<XYDataset::QualifiedName> arg_scaling_filter_names,
                      bool arg_cgm = false, 
                      double arg_cgm_A = 0,
@@ -42,6 +43,7 @@ public:
       , igm_method{std::move(arg_igm_method)}
       , luminosity_filter_name{std::move(arg_luminosity_filter_name)}
       , luminosity_pp_filter_name{std::move(arg_luminosity_pp_filter_name)}
+      , solar_sed{std::move(arg_solar_sed)}
       , scaling_filter_names{std::move(arg_scaling_filter_names)}
       , cgm{arg_cgm}
       , cgm_A{arg_cgm_A}
@@ -56,6 +58,7 @@ public:
   std::vector<XYDataset::QualifiedName> filter_names{};
   std::string igm_method{};
   
+  XYDataset::QualifiedName solar_sed{"NotSet"};
   XYDataset::QualifiedName luminosity_filter_name{"NotSet"};
   XYDataset::QualifiedName luminosity_pp_filter_name{"NotSet"};
   std::vector<XYDataset::QualifiedName> scaling_filter_names{};

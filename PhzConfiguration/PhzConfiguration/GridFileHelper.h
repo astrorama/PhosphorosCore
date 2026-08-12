@@ -44,10 +44,12 @@ namespace Euclid {
 namespace PhzConfiguration {
 
 template <typename OArchive>
-static void outputFunctionIgmStruct(const std::string& filename, const PhzConfiguration::IgmConfigStruct& igm_config,
-                                    const XYDataset::QualifiedName&                            luminosity_filter,
-                                    const XYDataset::QualifiedName&                            luminosity_pp_filter,
-                                    const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
+static void outputFunctionIgmStruct(const std::string& filename, 
+                                   const PhzConfiguration::IgmConfigStruct& igm_config,
+                                   const XYDataset::QualifiedName&                            luminosity_filter,
+                                   const XYDataset::QualifiedName&                            luminosity_pp_filter,
+                                   const XYDataset::QualifiedName&                            solar_sed,
+                                   const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
   auto                                  local_logger = Elements::Logging::getLogger("PhzOutput");
   std::ofstream                         out{filename};
   std::vector<XYDataset::QualifiedName> filter_list;
@@ -62,7 +64,7 @@ static void outputFunctionIgmStruct(const std::string& filename, const PhzConfig
   OArchive boa{out};
   // Store the info object describing the grids
   PhzDataModel::PhotometryGridInfo info{
-      grid_map,    filter_list,       igm_config.absorption_type, luminosity_filter, luminosity_pp_filter, scaling_filter_list,
+      grid_map,    filter_list,       igm_config.absorption_type, luminosity_filter, luminosity_pp_filter, solar_sed, scaling_filter_list,
       igm_config.add_cgm, igm_config.cgm_au,          igm_config.cgm_al, igm_config.cgm_c};
   boa << info;
   // Store the grids themselves
@@ -73,11 +75,13 @@ static void outputFunctionIgmStruct(const std::string& filename, const PhzConfig
 }
 
 template <typename OArchive>
-static void outputFunction(const std::string& filename, const PhzConfiguration::IgmConfig& igm_config,
-                           const XYDataset::QualifiedName&                            luminosity_filter,
-                           const XYDataset::QualifiedName&                            luminosity_pp_filter,
+static void outputFunction(const std::string&                  filename,
+                           const PhzConfiguration::IgmConfigStruct&  igm_config,
+                           const XYDataset::QualifiedName&     luminosity_filter,
+                           const XYDataset::QualifiedName&     luminosity_pp_filter,
+                           const XYDataset::QualifiedName&     solar_sed,
                            const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
-  outputFunctionIgmStruct<OArchive>(filename, igm_config.getIgmConfigStruct(), luminosity_filter, luminosity_pp_filter,
+  outputFunctionIgmStruct<OArchive>(filename, igm_config, luminosity_filter, luminosity_pp_filter, solar_sed,
                                     grid_map);
 }
 

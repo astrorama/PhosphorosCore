@@ -35,7 +35,6 @@
 #include "PhzConfiguration/GridFileHelper.h"
 #include "PhzConfiguration/GridSplitterConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PhzModelGrid2FitsConfig.h"
 #include "PhzDataModel/ArchiveFormat.h"
@@ -296,7 +295,9 @@ public:
       logger.info() << "Saving the slice into :" << slice_iterator->first.string();
       outputFunctionIgmStruct<boost::archive::text_oarchive>(slice_iterator->first.string(), igm_config,
                                                              gridinfo.luminosity_filter_name,
-                                                             gridinfo.luminosity_pp_filter_name, new_map);
+                                                             gridinfo.luminosity_pp_filter_name,
+                                                             gridinfo.solar_sed,
+                                                             new_map);
     }
 
     // export the grid list

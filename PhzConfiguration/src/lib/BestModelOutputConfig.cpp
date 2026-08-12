@@ -29,7 +29,7 @@
 #include "PhzOutput/PhzColumnHandlers/BestModelOnlyZ.h"
 #include <PhzOutput/PhzColumnHandlers/BestModel.h>
 #include "PhzConfiguration/AbsMagOutConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
 
 namespace po = boost::program_options;
 
@@ -41,7 +41,7 @@ static const std::string CREATE_OUTPUT_BEST_MODEL_FLAG{"create-output-best-model
 BestModelOutputConfig::BestModelOutputConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PhysicalParametersConfig>();
   declareDependency<OutputCatalogConfig>();
-  declareDependency<ModelNormalizationConfig>();
+  declareDependency<PhotometryGridConfig>();
   declareDependency<AbsMagOutConfig>();
 }
 

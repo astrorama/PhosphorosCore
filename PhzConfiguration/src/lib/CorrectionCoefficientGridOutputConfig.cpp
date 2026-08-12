@@ -29,12 +29,13 @@
 #include "PhzConfiguration/GridFileHelper.h"
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzDataModel/ArchiveFormat.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGrid.h"
 #include "PhzUtils/FileUtils.h"
 #include <boost/archive/text_oarchive.hpp>
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -52,8 +53,8 @@ CorrectionCoefficientGridOutputConfig::CorrectionCoefficientGridOutputConfig(lon
     : Configuration(manager_id) {
   declareDependency<CatalogTypeConfig>();
   declareDependency<IntermediateDirConfig>();
-  declareDependency<IgmConfig>();
-  declareDependency<ModelNormalizationConfig>();
+  declareDependency<PhotometryGridConfig>();
+  declareDependency<CosmologicalParameterConfig>();
 }
 
 auto CorrectionCoefficientGridOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -88,9 +89,9 @@ void CorrectionCoefficientGridOutputConfig::initialize(const UserValues& args) {
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
-  typedef std::function<void(const std::string&, IgmConfig&, XYDataset::QualifiedName&, XYDataset::QualifiedName&,
+  typedef std::function<void(const std::string&, IgmConfigStruct&, XYDataset::QualifiedName&, XYDataset::QualifiedName&, XYDataset::QualifiedName&,
                              const std::map<std::string, PhzDataModel::PhotometryGrid>&)>
-      InnerOutputFunction;
+  InnerOutputFunction;
 
   InnerOutputFunction inner_output_function;
 
@@ -114,11 +115,12 @@ void CorrectionCoefficientGridOutputConfig::initialize(const UserValues& args) {
   m_output_function = [this, filename,
                        inner_output_function](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
     auto local_logger  = Elements::Logging::getLogger("PhzOutput");
-    auto igm_config    = getDependency<IgmConfig>();
-    auto lum_filter    = getDependency<ModelNormalizationConfig>().getNormalizationFilters()[0];
-    auto lum_pp_filter = getDependency<ModelNormalizationConfig>().getPpNormalizationFilter();
+    auto igm_config    = getDependency<PhotometryGridConfig>().getIgmConfigStruct();
+    auto lum_filter    = getDependency<PhotometryGridConfig>().getNormalizationFilters()[0];
+    auto lum_pp_filter = getDependency<PhotometryGridConfig>().getPpNormalizationFilter();
+    auto solar_sed     = getDependency<PhotometryGridConfig>().getReferenceSolarSed();
 
-    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, grid_map);
+    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, solar_sed, grid_map);
     local_logger.info() << "Created the model grid in file " << filename;
   };
 }

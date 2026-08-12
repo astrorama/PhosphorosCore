@@ -28,7 +28,7 @@
 #include "PhzConfiguration/CatalogTypeConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzDataModel/ArchiveFormat.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGrid.h"
@@ -52,8 +52,7 @@ FilterVariationCoefficientGridOutputConfig::FilterVariationCoefficientGridOutput
     : Configuration(manager_id) {
   declareDependency<CatalogTypeConfig>();
   declareDependency<IntermediateDirConfig>();
-  declareDependency<IgmConfig>();
-  declareDependency<ModelNormalizationConfig>();
+  declareDependency<PhotometryGridConfig>();
 }
 
 auto FilterVariationCoefficientGridOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -81,8 +80,11 @@ static std::string getFilenameFromOptions(const std::map<std::string, po::variab
 }
 
 template <typename OArchive>
-static void outputFunction(const std::string& filename, IgmConfig& igm_config,
-                           XYDataset::QualifiedName& luminosity_filter, XYDataset::QualifiedName& luminosity_pp_filter,
+static void outputFunction(const std::string& filename, 
+                           IgmConfigStruct& igm_config,
+                           XYDataset::QualifiedName& luminosity_filter, 
+                           XYDataset::QualifiedName& luminosity_pp_filter, 
+                           XYDataset::QualifiedName& solar_sed,
                            const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
   auto                                  local_logger = Elements::Logging::getLogger("PhzOutput");
   std::ofstream                         out{filename};
@@ -99,7 +101,7 @@ static void outputFunction(const std::string& filename, IgmConfig& igm_config,
   
   OArchive boa{out};
   // Store the info object describing the grids
-  PhzDataModel::PhotometryGridInfo info{grid_map, filter_list, igm_config.getIgmAbsorptionType(), luminosity_filter,
+  PhzDataModel::PhotometryGridInfo info{grid_map, filter_list, igm_config.absorption_type, luminosity_filter, solar_sed,
                                         luminosity_pp_filter,  scaling_filter_list};
   boa << info;
   // Store the grids themselves
@@ -118,9 +120,9 @@ void FilterVariationCoefficientGridOutputConfig::initialize(const UserValues& ar
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
-  typedef std::function<void(const std::string&, IgmConfig&, XYDataset::QualifiedName&, XYDataset::QualifiedName&,
+  typedef std::function<void(const std::string&, IgmConfigStruct&, XYDataset::QualifiedName&, XYDataset::QualifiedName&, XYDataset::QualifiedName&,
                              const std::map<std::string, PhzDataModel::PhotometryGrid>&)>
-      InnerOutputFunction;
+  InnerOutputFunction;
 
   InnerOutputFunction inner_output_function;
 
@@ -144,11 +146,12 @@ void FilterVariationCoefficientGridOutputConfig::initialize(const UserValues& ar
   m_output_function = [this, filename,
                        inner_output_function](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
     auto local_logger  = Elements::Logging::getLogger("PhzOutput");
-    auto igm_config    = getDependency<IgmConfig>();
-    auto lum_filter    = getDependency<ModelNormalizationConfig>().getNormalizationFilters()[0];
-    auto lum_pp_filter = getDependency<ModelNormalizationConfig>().getPpNormalizationFilter();
+    auto igm_config    = getDependency<PhotometryGridConfig>().getIgmConfigStruct();
+    auto lum_filter    = getDependency<PhotometryGridConfig>().getNormalizationFilters()[0];
+    auto lum_pp_filter = getDependency<PhotometryGridConfig>().getPpNormalizationFilter();
+    auto solar_sed     = getDependency<PhotometryGridConfig>().getReferenceSolarSed();
 
-    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, grid_map);
+    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, solar_sed, grid_map);
     local_logger.info() << "Created the model grid in file " << filename;
   };
 }

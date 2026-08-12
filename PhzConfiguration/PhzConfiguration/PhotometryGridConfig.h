@@ -28,6 +28,8 @@
 #include "Configuration/Configuration.h"
 #include "PhzDataModel/PhotometryGrid.h"
 #include "PhzDataModel/PhotometryGridInfo.h"
+#include "PhzModeling/PhotometryGridCreator.h"
+#include "PhzConfiguration/IgmConfig.h"
 #include <map>
 #include <string>
 
@@ -101,10 +103,47 @@ public:
    *    If the instance in not yet initialized
    */
   const std::map<std::string, PhzDataModel::PhotometryGrid>& getPhotometryGrid() const;
+  
+  // Returns the band of the luminosity normalization
+  const  std::vector<XYDataset::QualifiedName>& getNormalizationFilters() const;
+
+  // Returns the band of the PP luminosity normalization
+  const XYDataset::QualifiedName& getPpNormalizationFilter() const;
+
+  // Returns the solar SED at 10 pc use as reference for luminosity normalization
+  const XYDataset::QualifiedName& getReferenceSolarSed() const;
+
+  double getSolarMagAB() const;
+
+  double getPpSolarMagAB() const;
+  
+  double getSolarMagAB(XYDataset::QualifiedName& filter);
+  
+  
+  const PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction& getIgmAbsorptionFunction();
+
+  const std::string& getIgmAbsorptionType() const;
+
+  bool   getCgmEnabled() const;
+  double getCGMAParam() const;
+  double getCGMaParam() const;
+  double getCGMcParam() const;
+  
+  const IgmConfigStruct& getIgmConfigStruct() const;
+
 
 private:
   PhzDataModel::PhotometryGridInfo                    m_info;
   std::map<std::string, PhzDataModel::PhotometryGrid> m_grids;
+  
+  XYDataset::QualifiedName m_solar_sed{"uninitialized"};
+  XYDataset::QualifiedName m_pp_band{"uninitialized"};
+  std::vector<XYDataset::QualifiedName> m_bands{};
+  double                   m_pp_solar_MAG_AB   = 0;
+  double                   m_solar_MAG_AB      = 0;
+  
+  PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction m_absorption_function;
+
 
 }; /* End of PhotometryGridConfig class */
 

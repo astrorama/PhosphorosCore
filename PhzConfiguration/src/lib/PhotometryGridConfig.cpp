@@ -42,6 +42,17 @@
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 
+#include "PhzConfiguration/FilterProviderConfig.h"
+#include "PhzConfiguration/SedProviderConfig.h"
+#include "PhzModeling/NormalizationFunctor.h"
+#include "PhzModeling/NormalizationFunctorFactory.h"
+
+#include "PhzModeling/CgmIgmFunctor.h"
+#include "PhzModeling/InoueIgmFunctor.h"
+#include "PhzModeling/MadauIgmFunctor.h"
+#include "PhzModeling/MeiksinIgmFunctor.h"
+#include "PhzModeling/NoIgmFunctor.h"
+
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
@@ -55,6 +66,8 @@ static const std::string MODEL_GRID_FILE{"model-grid-file"};
 PhotometryGridConfig::PhotometryGridConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<CatalogTypeConfig>();
   declareDependency<IntermediateDirConfig>();
+  declareDependency<FilterProviderConfig>();
+  declareDependency<SedProviderConfig>();
 
   // We add an extra dependency to the PhotometricBandMappingConfig. If the user
   // is loading a catalog with photometries, we want to have model grids with the
@@ -69,6 +82,9 @@ auto PhotometryGridConfig::getProgramOptions() -> std::map<std::string, OptionDe
              "The path and filename of the model grid file"}}}};
 }
 
+
+
+
 template <typename IArchive>
 static void readModelGridFile(std::ifstream& in, PhzDataModel::PhotometryGridInfo& info,
                               std::map<std::string, PhzDataModel::PhotometryGrid>& grids) {
@@ -78,6 +94,18 @@ static void readModelGridFile(std::ifstream& in, PhzDataModel::PhotometryGridInf
   for (auto& pair : info.region_axes_map) {
     grids.emplace(std::make_pair(pair.first, GridContainer::gridImport<PhzDataModel::PhotometryGrid, IArchive>(in)));
   }
+}
+
+
+double PhotometryGridConfig::getSolarMagAB(XYDataset::QualifiedName& filter) {
+  auto filter_provider  = getDependency<FilterProviderConfig>().getFilterDatasetProvider();
+  auto sun_sed_provider = getDependency<SedProviderConfig>().getSedDatasetProvider();
+  
+  PhzModeling::NormalizationFunctor normalizer_functor =
+        PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunctor(
+            filter_provider, filter, sun_sed_provider, m_solar_sed);
+  auto flux = normalizer_functor.getReferenceFlux();
+  return -2.5 * log10(flux / 3.631E9);
 }
 
 void PhotometryGridConfig::initialize(const UserValues& args) {
@@ -180,6 +208,45 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
       }
     }
   }
+  
+ m_pp_band = m_info.luminosity_pp_filter_name;
+ m_solar_sed  = m_info.solar_sed;
+ m_bands = m_info.scaling_filter_names;
+  
+  m_pp_solar_MAG_AB = getSolarMagAB(m_pp_band);
+
+  m_solar_MAG_AB = getSolarMagAB(m_bands[0]);
+  
+  
+   auto input_type = m_info.igm_method;
+  if (input_type == "OFF") {
+    m_absorption_function    = PhzModeling::NoIgmFunctor{};
+  }
+  
+  if (input_type == "MADAU") {
+    if (m_info.cgm) {
+      m_absorption_function =
+          PhzModeling::CgmIgmFunctor<PhzModeling::MadauIgmFunctor>(m_info.cgm_A, m_info.cgm_a, m_info.cgm_c);
+    } else {
+      m_absorption_function = PhzModeling::MadauIgmFunctor{};
+    }
+  }
+  if (input_type == "MEIKSIN") {
+    if (m_info.cgm) {
+      m_absorption_function =
+          PhzModeling::CgmIgmFunctor<PhzModeling::MeiksinIgmFunctor>(m_info.cgm_A, m_info.cgm_a, m_info.cgm_c);
+    } else {
+      m_absorption_function = PhzModeling::MeiksinIgmFunctor{};
+    }
+  }
+  if (input_type == "INOUE") {
+    if (m_info.cgm) {
+      m_absorption_function =
+          PhzModeling::CgmIgmFunctor<PhzModeling::InoueIgmFunctor>(m_info.cgm_A, m_info.cgm_a, m_info.cgm_c);
+    } else {
+      m_absorption_function = PhzModeling::InoueIgmFunctor{};
+    }
+  }
 }
 
 const PhzDataModel::PhotometryGridInfo& PhotometryGridConfig::getPhotometryGridInfo() const {
@@ -194,6 +261,109 @@ const std::map<std::string, PhzDataModel::PhotometryGrid>& PhotometryGridConfig:
     throw Elements::Exception() << "getPhotometryGrid() call on uninitialized PhotometryGridConfig";
   }
   return m_grids;
+}
+
+
+
+// Returns the band of the luminosity normalization
+const std::vector<XYDataset::QualifiedName>& PhotometryGridConfig::getNormalizationFilters() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getNormalizationFilter() on a not initialized instance.";
+  }
+  return m_bands;
+}
+
+const XYDataset::QualifiedName& PhotometryGridConfig::getPpNormalizationFilter() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getPpNormalizationFilter() on a not initialized instance.";
+  }
+  return m_pp_band;
+}
+
+// Returns the band of the luminosity normalization
+const XYDataset::QualifiedName& PhotometryGridConfig::getReferenceSolarSed() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getReferenceSolarSed() on a not initialized instance.";
+  }
+  return m_solar_sed;
+}
+
+double PhotometryGridConfig::getSolarMagAB() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getSolarMagAB() on a not initialized instance.";
+  }
+  return m_solar_MAG_AB;
+}
+
+double PhotometryGridConfig::getPpSolarMagAB() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getPpSolarMagAB() on a not initialized instance.";
+  }
+  return m_pp_solar_MAG_AB;
+}
+
+
+
+  const PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction& PhotometryGridConfig::getIgmAbsorptionFunction() {
+   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+      throw Elements::Exception() << "Call to getIgmAbsorptionFunction() on a not initialized instance.";
+   }
+      return m_absorption_function;
+  }
+  
+  
+  
+
+  const std::string& PhotometryGridConfig::getIgmAbsorptionType() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+      throw Elements::Exception() << "Call to getIgmAbsorptionType() on a not initialized instance.";
+   }
+      return m_info.igm_method;
+  }
+  
+  bool   PhotometryGridConfig::getCgmEnabled() const {
+   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+      throw Elements::Exception() << "Call to getCgmEnabled() on a not initialized instance.";
+   }
+      return m_info.cgm;
+  }
+  
+  double PhotometryGridConfig::getCGMAParam() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+      throw Elements::Exception() << "Call to getCGMAParam() on a not initialized instance.";
+   }
+      return m_info.cgm_A;
+  }
+  
+  double PhotometryGridConfig::getCGMaParam() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+        throw Elements::Exception() << "Call to getCGMaParam() on a not initialized instance.";
+   }
+      return m_info.cgm_a;
+  }
+  
+  double PhotometryGridConfig::getCGMcParam() const{
+   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+      throw Elements::Exception() << "Call to getCGMcParam() on a not initialized instance.";
+   }
+      return m_info.cgm_c;
+ }
+ 
+ 
+const IgmConfigStruct& PhotometryGridConfig::getIgmConfigStruct() const {
+  if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+    throw Elements::Exception() << "Call to getIgmConfigStruct() on a not initialized instance.";
+  }
+  
+  IgmConfigStruct igm_struct{};
+  
+  igm_struct.absorption_type = getIgmAbsorptionType();
+  igm_struct.add_cgm = getCgmEnabled();
+  igm_struct.cgm_au = getCGMAParam();
+  igm_struct.cgm_al = getCGMaParam();
+  igm_struct.cgm_c = getCGMcParam();
+
+  return igm_struct;
 }
 
 }  // namespace PhzConfiguration

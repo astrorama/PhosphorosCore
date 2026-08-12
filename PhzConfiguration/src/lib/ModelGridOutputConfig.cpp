@@ -89,9 +89,12 @@ void ModelGridOutputConfig::initialize(const UserValues& args) {
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
-  typedef std::function<void(const std::string&, IgmConfig&, XYDataset::QualifiedName&, XYDataset::QualifiedName&,
-                             const std::map<std::string, PhzDataModel::PhotometryGrid>&)>
-      InnerOutputFunction;
+  typedef std::function<void(const std::string&, 
+                             IgmConfigStruct&, 
+                             XYDataset::QualifiedName&, 
+                             XYDataset::QualifiedName&,
+                             XYDataset::QualifiedName&,
+                             const std::map<std::string, PhzDataModel::PhotometryGrid>&)> InnerOutputFunction;
 
   InnerOutputFunction inner_output_function;
 
@@ -114,10 +117,11 @@ void ModelGridOutputConfig::initialize(const UserValues& args) {
 
   m_output_function = [this, filename,
                        inner_output_function](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
-    auto igm_config    = getDependency<IgmConfig>();
+    auto igm_config    = getDependency<IgmConfig>().getIgmConfigStruct();
     auto lum_filter    = getDependency<ModelNormalizationConfig>().getNormalizationFilters()[0];
     auto lum_pp_filter = getDependency<ModelNormalizationConfig>().getPpNormalizationFilter();
-    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, grid_map);
+    auto solar_sed     = getDependency<ModelNormalizationConfig>().getReferenceSolarSed();
+    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, solar_sed, grid_map);
   };
 }
 

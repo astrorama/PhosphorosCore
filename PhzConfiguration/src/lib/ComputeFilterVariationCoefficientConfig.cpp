@@ -30,12 +30,12 @@
 #include "PhzConfiguration/FilterVariationCoefficientGridOutputConfig.h"
 #include "PhzConfiguration/FilterVariationConfig.h"
 #include "PhzConfiguration/MilkyWayReddeningConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/MultithreadConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PhzOutputDirConfig.h"
 #include "PhzConfiguration/ResultsDirConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhzUtils/FileUtils.h"
 #include <cstdlib>
 
@@ -51,6 +51,7 @@ ComputeFilterVariationCoefficientConfig::ComputeFilterVariationCoefficientConfig
     : Configuration(manager_id) {
   declareDependency<ResultsDirConfig>();
   declareDependency<PhotometryGridConfig>();
+  declareDependency<CosmologicalParameterConfig>();
   declareDependency<CatalogTypeConfig>();
   declareDependency<ResultsDirConfig>();
   declareDependency<SedProviderConfig>();
@@ -58,7 +59,6 @@ ComputeFilterVariationCoefficientConfig::ComputeFilterVariationCoefficientConfig
   declareDependency<FilterVariationCoefficientGridOutputConfig>();
   declareDependency<MultithreadConfig>();
   declareDependency<FilterProviderConfig>();
-  declareDependency<ModelNormalizationConfig>();
   declareDependency<FilterVariationConfig>();
 }
 

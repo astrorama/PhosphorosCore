@@ -26,7 +26,6 @@
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include <utility>
 
 
@@ -43,7 +42,6 @@ static Elements::Logging logger = Elements::Logging::getLogger("AbsMagOutConfig"
 
 AbsMagOutConfig::AbsMagOutConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PhotometryGridConfig>();
-  declareDependency<ModelNormalizationConfig>();
   
 }
 
@@ -95,7 +93,7 @@ void AbsMagOutConfig::initialize(const UserValues& args) {
           if (it != available_filters.end()) {
               logger.debug() << "Adding "<< pair.first << " : " <<pair.second;
               m_abs_mag_mapping.insert(pair) ;
-              m_solar_mag_ab_map.insert(std::make_pair(pair.first, getDependency<ModelNormalizationConfig>().getSolarMagAB( pair.first)));
+              m_solar_mag_ab_map.insert(std::make_pair(pair.first, getDependency<PhotometryGridConfig>().getSolarMagAB( pair.first)));
               
           } else {
           

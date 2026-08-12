@@ -33,11 +33,11 @@
 #include "PhzConfiguration/PhzOutputDirConfig.h"
 #include "PhzConfiguration/ResultsDirConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
 
 #include "PhzConfiguration/CorrectionCoefficientGridOutputConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/MilkyWayReddeningConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/MultithreadConfig.h"
 
 namespace po = boost::program_options;
@@ -52,6 +52,7 @@ ComputeModelGalacticCorrectionCoefficientConfig::ComputeModelGalacticCorrectionC
     : Configuration(manager_id) {
   declareDependency<ResultsDirConfig>();
   declareDependency<PhotometryGridConfig>();
+  //declareDependency<CosmologicalParameterConfig>();
   declareDependency<CatalogTypeConfig>();
   declareDependency<ResultsDirConfig>();
   declareDependency<SedProviderConfig>();
@@ -59,7 +60,6 @@ ComputeModelGalacticCorrectionCoefficientConfig::ComputeModelGalacticCorrectionC
   declareDependency<CorrectionCoefficientGridOutputConfig>();
   declareDependency<MultithreadConfig>();
   declareDependency<FilterProviderConfig>();
-  declareDependency<ModelNormalizationConfig>();
 }
 
 }  // namespace PhzConfiguration

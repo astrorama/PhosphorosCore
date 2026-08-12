@@ -30,8 +30,8 @@
 #include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
+#include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/MilkyWayReddeningConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/ReddeningProviderConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
@@ -91,16 +91,16 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
         config_manager.template getConfiguration<ReddeningProviderConfig>().getReddeningDatasetProvider();
     const auto& filter_provider =
         config_manager.template getConfiguration<FilterProviderConfig>().getFilterDatasetProvider();
-    auto& igm_abs_func = config_manager.template getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
+    auto& igm_abs_func = config_manager.template getConfiguration<PhotometryGridConfig>().getIgmAbsorptionFunction();
     auto  miky_way_reddening_curve =
         config_manager.template getConfiguration<MilkyWayReddeningConfig>().getMilkyWayReddeningCurve();
     auto output_function =
         config_manager.template getConfiguration<CorrectionCoefficientGridOutputConfig>().getOutputFunction();
     auto cosmology = config_manager.template getConfiguration<CosmologicalParameterConfig>().getCosmologicalParam();
 
-    auto lum_filter_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilters()[0];
-    auto lum_pp_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter();
-    auto sun_sed_name       = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
+    auto lum_filter_name    = config_manager.getConfiguration<PhotometryGridConfig>().getNormalizationFilters()[0];
+    auto lum_pp_filter_name = config_manager.getConfiguration<PhotometryGridConfig>().getPpNormalizationFilter();
+    auto sun_sed_name       = config_manager.getConfiguration<PhotometryGridConfig>().getReferenceSolarSed();
 
     auto normalizer_functor =
         Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
@@ -108,12 +108,6 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
     auto normalizer_pp_functor =
         Euclid::PhzModeling::NormalizationFunctorFactory::NormalizationFunctorFactory::GetFunction(
             filter_provider, lum_pp_filter_name, sed_provider, sun_sed_name);
-
-    double pp_normalization_value = 0;
-    if (!config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFromFilter()) {
-      pp_normalization_value = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationValue();
-    }
-
     std::map<std::string, PhzDataModel::PhotometryGrid> result_map{};
 
     // Compute the total number of models
@@ -124,7 +118,7 @@ class ComputeGalacticAbsorptionCoefficientGrid : public Elements::Program {
 
     PhzGalacticCorrection::GalacticCorrectionSingleGridCreator grid_creator{
         sed_provider,       reddening_provider,    filter_provider,        igm_abs_func,
-        normalizer_functor, normalizer_pp_functor, pp_normalization_value, miky_way_reddening_curve};
+        normalizer_functor, normalizer_pp_functor, miky_way_reddening_curve};
     Euclid::PhzExecutables::ProgressReporter progress_listener{logger, false};
     size_t                                   already_done = 0;
     for (auto& grid_pair : model_phot_grid.region_axes_map) {

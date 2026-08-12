@@ -78,6 +78,9 @@ void save(Archive& ar, const Euclid::PhzDataModel::PhotometryGridInfo& t, const 
 
   // Store the PP Luminosity Filter
   ar << t.luminosity_pp_filter_name.qualifiedName();
+  
+  // Store the Solar SUN
+  ar << t.solar_sed.qualifiedName();
 }
 
 template <typename Archive>
@@ -118,10 +121,16 @@ void load(Archive& ar, Euclid::PhzDataModel::PhotometryGridInfo& t, const unsign
   std::string lum_filter;
   ar >> lum_filter;
   t.luminosity_filter_name = Euclid::XYDataset::QualifiedName(lum_filter);
+  
   // Read PP Luminosity filter
   std::string lum_pp_filter;
   ar >> lum_pp_filter;
   t.luminosity_pp_filter_name = Euclid::XYDataset::QualifiedName(lum_pp_filter);
+  
+  // Read the Solar SED
+  std::string solar_sed;
+  ar >> solar_sed;
+  t.solar_sed = Euclid::XYDataset::QualifiedName(solar_sed);
 }
 
 template <typename Archive>
