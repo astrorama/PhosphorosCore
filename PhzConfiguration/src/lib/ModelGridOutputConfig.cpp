@@ -35,6 +35,8 @@
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzUtils/FileUtils.h"
 #include <boost/archive/text_oarchive.hpp>
+#include "PhysicsUtils/CosmologicalParameters.h"
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
@@ -56,6 +58,7 @@ ModelGridOutputConfig::ModelGridOutputConfig(long manager_id) : Configuration(ma
   declareDependency<IntermediateDirConfig>();
   declareDependency<IgmConfig>();
   declareDependency<ModelNormalizationConfig>();
+  declareDependency<CosmologicalParameterConfig>();
 }
 
 auto ModelGridOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -94,6 +97,7 @@ void ModelGridOutputConfig::initialize(const UserValues& args) {
                              XYDataset::QualifiedName&, 
                              XYDataset::QualifiedName&,
                              XYDataset::QualifiedName&,
+                             PhysicsUtils::CosmologicalParameters&,
                              const std::map<std::string, PhzDataModel::PhotometryGrid>&)> InnerOutputFunction;
 
   InnerOutputFunction inner_output_function;
@@ -121,7 +125,8 @@ void ModelGridOutputConfig::initialize(const UserValues& args) {
     auto lum_filter    = getDependency<ModelNormalizationConfig>().getNormalizationFilters()[0];
     auto lum_pp_filter = getDependency<ModelNormalizationConfig>().getPpNormalizationFilter();
     auto solar_sed     = getDependency<ModelNormalizationConfig>().getReferenceSolarSed();
-    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, solar_sed, grid_map);
+    auto cosmology     = getDependency<CosmologicalParameterConfig>().getCosmologicalParam();
+    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, solar_sed, cosmology, grid_map);
   };
 }
 

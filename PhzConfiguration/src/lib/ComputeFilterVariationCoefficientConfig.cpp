@@ -35,7 +35,6 @@
 #include "PhzConfiguration/PhzOutputDirConfig.h"
 #include "PhzConfiguration/ResultsDirConfig.h"
 #include "PhzConfiguration/SedProviderConfig.h"
-#include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhzUtils/FileUtils.h"
 #include <cstdlib>
 
@@ -51,7 +50,6 @@ ComputeFilterVariationCoefficientConfig::ComputeFilterVariationCoefficientConfig
     : Configuration(manager_id) {
   declareDependency<ResultsDirConfig>();
   declareDependency<PhotometryGridConfig>();
-  declareDependency<CosmologicalParameterConfig>();
   declareDependency<CatalogTypeConfig>();
   declareDependency<ResultsDirConfig>();
   declareDependency<SedProviderConfig>();

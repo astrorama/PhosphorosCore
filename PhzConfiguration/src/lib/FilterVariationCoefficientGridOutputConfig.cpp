@@ -36,6 +36,7 @@
 #include "PhzUtils/FileUtils.h"
 #include <boost/archive/text_oarchive.hpp>
 #include <fstream>
+#include "PhysicsUtils/CosmologicalParameters.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -85,6 +86,7 @@ static void outputFunction(const std::string& filename,
                            XYDataset::QualifiedName& luminosity_filter, 
                            XYDataset::QualifiedName& luminosity_pp_filter, 
                            XYDataset::QualifiedName& solar_sed,
+                           PhysicsUtils::CosmologicalParameters& cosmology,
                            const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
   auto                                  local_logger = Elements::Logging::getLogger("PhzOutput");
   std::ofstream                         out{filename};
@@ -102,7 +104,9 @@ static void outputFunction(const std::string& filename,
   OArchive boa{out};
   // Store the info object describing the grids
   PhzDataModel::PhotometryGridInfo info{grid_map, filter_list, igm_config.absorption_type, luminosity_filter, solar_sed,
-                                        luminosity_pp_filter,  scaling_filter_list};
+                                        luminosity_pp_filter,  scaling_filter_list, cosmology.getOmegaM(),
+                                         cosmology.getOmegaLambda(),
+                                         cosmology.getHubbleConstant()};
   boa << info;
   // Store the grids themselves
   for (auto& pair : grid_map) {
@@ -121,7 +125,7 @@ void FilterVariationCoefficientGridOutputConfig::initialize(const UserValues& ar
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
   typedef std::function<void(const std::string&, IgmConfigStruct&, XYDataset::QualifiedName&, XYDataset::QualifiedName&, XYDataset::QualifiedName&,
-                             const std::map<std::string, PhzDataModel::PhotometryGrid>&)>
+                           PhysicsUtils::CosmologicalParameters&,  const std::map<std::string, PhzDataModel::PhotometryGrid>&)>
   InnerOutputFunction;
 
   InnerOutputFunction inner_output_function;
@@ -150,8 +154,9 @@ void FilterVariationCoefficientGridOutputConfig::initialize(const UserValues& ar
     auto lum_filter    = getDependency<PhotometryGridConfig>().getNormalizationFilters()[0];
     auto lum_pp_filter = getDependency<PhotometryGridConfig>().getPpNormalizationFilter();
     auto solar_sed     = getDependency<PhotometryGridConfig>().getReferenceSolarSed();
+    auto cosmology     = getDependency<PhotometryGridConfig>().getCosmologicalParam();
 
-    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, solar_sed, grid_map);
+    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, solar_sed, cosmology, grid_map);
     local_logger.info() << "Created the model grid in file " << filename;
   };
 }

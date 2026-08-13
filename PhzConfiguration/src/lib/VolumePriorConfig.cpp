@@ -25,7 +25,6 @@
 #include "PhzConfiguration/VolumePriorConfig.h"
 #include "ElementsKernel/Exception.h"
 #include "ElementsKernel/Logging.h"
-#include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PriorConfig.h"
 #include "PhzLikelihood/VolumePrior.h"
@@ -43,7 +42,6 @@ static const std::string VOLUME_PRIOR_EFFECTIVENESS{"volume-prior-effectiveness"
 
 VolumePriorConfig::VolumePriorConfig(long manager_id) : Configuration(manager_id) {
   declareDependency<PriorConfig>();
-  declareDependency<CosmologicalParameterConfig>();
   declareDependency<PhotometryGridConfig>();
 }
 
@@ -81,7 +79,7 @@ void VolumePriorConfig::forceOn() {
 void VolumePriorConfig::internal_initialization() {
   if (!m_added) {
     logger.info() << "Adding the Volume prior";
-    auto&            cosmology = getDependency<CosmologicalParameterConfig>().getCosmologicalParam();
+    auto&            cosmology = getDependency<PhotometryGridConfig>().getCosmologicalParam();
     std::set<double> zs{};
     for (auto& pair : getDependency<PhotometryGridConfig>().getPhotometryGridInfo().region_axes_map) {
       for (auto z : std::get<PhzDataModel::ModelParameter::Z>(pair.second)) {

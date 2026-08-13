@@ -46,6 +46,7 @@ struct LuminositySedGroupConfig_fixture : public ConfigManager_fixture {
 
   Elements::TempDir temp_dir{};
   fs::path          model_grid_file = temp_dir.path() / "model_grid.dat";
+  fs::path          aux_dir = temp_dir.path() / "AuxiliaryData";
 
   std::vector<double>                           zs{0.};
   std::vector<double>                           ebvs{0.};
@@ -54,7 +55,7 @@ struct LuminositySedGroupConfig_fixture : public ConfigManager_fixture {
   PhzDataModel::ModelAxesTuple                  axes = PhzDataModel::createAxesTuple(zs, ebvs, red_curves, seds);
 
   XYDataset::QualifiedName filter{"filter"};
-  XYDataset::QualifiedName solar_sed{"solar_sed"};
+  XYDataset::QualifiedName solar_sed{"SolarSED"};
 
   std::map<std::string, PhzDataModel::PhotometryGrid> model_grid_map{};
 
@@ -65,6 +66,7 @@ struct LuminositySedGroupConfig_fixture : public ConfigManager_fixture {
     options_map                          = registerConfigAndGetDefaultOptionsMap<LuminositySedGroupConfig>();
     options_map[CATALOG_TYPE].value()    = boost::any{std::string{"CatalogType"}};
     options_map[MODEL_GRID_FILE].value() = boost::any{model_grid_file.string()};
+    options_map["aux-data-dir"].value()  = boost::any(aux_dir.string());
 
     PhzDataModel::PhotometryGrid model_grid{axes, std::vector<std::string>{"Filter1"}, std::vector<std::string>{"Filter1"}};
     auto                         filter_ptr = std::make_shared<std::vector<std::string>>();
@@ -76,9 +78,42 @@ struct LuminositySedGroupConfig_fixture : public ConfigManager_fixture {
 
     std::ofstream                    out{model_grid_file.string()};
     boost::archive::binary_oarchive  boa{out};
-    PhzDataModel::PhotometryGridInfo info{model_grid_map, {}, "OFF", filter, filter, solar_sed, {}};
+    PhzDataModel::PhotometryGridInfo info{model_grid_map, {filter}, "OFF", filter, filter, solar_sed, {filter}};
     boa << info;
     GridContainer::gridBinaryExport(out, model_grid_map.at(""));
+    
+    fs::create_directories(aux_dir / "SEDs");
+    std::ofstream sed_file((aux_dir / "SEDs" / "SolarSED.txt").string());
+    // Fill up file
+    sed_file << "\n";
+    sed_file << "5.0 4.6773816349972315e-17\n";
+      sed_file << "2400.0 8.459460715309274e-13\n";
+    sed_file << "10000.0 1.7553050982064957e-11\n";
+    sed_file << "20000.0 2.660001315993869e-12\n";
+    sed_file << "29999.0 6.003259498392725e-13\n";
+    sed_file.close();
+    
+    fs::create_directories(aux_dir / "Filters");
+    std::ofstream file1((aux_dir / "Filters" / "Filter1.txt").string());
+    // Fill up file
+    file1 << "\n";
+    file1 << "4.36919e+03 5.66790e-04\n";
+    file1 << "5.40858e+03 5.66790e-04\n";
+    file1 << "8.26690e+03 6.52903e-01\n";
+    file1 << "9.26631e+03 4.03881e-04\n";
+    file1 << "9.86596e+03 4.03881e-04\n";
+    file1.close();
+    
+    std::ofstream file2((aux_dir / "Filters" / "filter.txt").string());
+    // Fill up file
+    file2 << "\n";
+    file2 << "4.36919e+03 5.66790e-04\n";
+    file2 << "5.40858e+03 5.66790e-04\n";
+    file2 << "8.26690e+03 6.52903e-01\n";
+    file2 << "9.26631e+03 4.03881e-04\n";
+    file2 << "9.86596e+03 4.03881e-04\n";
+    file2.close();
+    
   }
 };
 

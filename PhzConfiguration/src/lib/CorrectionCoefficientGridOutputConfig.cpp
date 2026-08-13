@@ -35,7 +35,7 @@
 #include "PhzDataModel/serialization/PhotometryGrid.h"
 #include "PhzUtils/FileUtils.h"
 #include <boost/archive/text_oarchive.hpp>
-#include "PhzConfiguration/CosmologicalParameterConfig.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -54,7 +54,6 @@ CorrectionCoefficientGridOutputConfig::CorrectionCoefficientGridOutputConfig(lon
   declareDependency<CatalogTypeConfig>();
   declareDependency<IntermediateDirConfig>();
   declareDependency<PhotometryGridConfig>();
-  declareDependency<CosmologicalParameterConfig>();
 }
 
 auto CorrectionCoefficientGridOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -90,7 +89,7 @@ void CorrectionCoefficientGridOutputConfig::initialize(const UserValues& args) {
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
   typedef std::function<void(const std::string&, IgmConfigStruct&, XYDataset::QualifiedName&, XYDataset::QualifiedName&, XYDataset::QualifiedName&,
-                             const std::map<std::string, PhzDataModel::PhotometryGrid>&)>
+                           PhysicsUtils::CosmologicalParameters&, const std::map<std::string, PhzDataModel::PhotometryGrid>&)>
   InnerOutputFunction;
 
   InnerOutputFunction inner_output_function;
@@ -119,8 +118,9 @@ void CorrectionCoefficientGridOutputConfig::initialize(const UserValues& args) {
     auto lum_filter    = getDependency<PhotometryGridConfig>().getNormalizationFilters()[0];
     auto lum_pp_filter = getDependency<PhotometryGridConfig>().getPpNormalizationFilter();
     auto solar_sed     = getDependency<PhotometryGridConfig>().getReferenceSolarSed();
+    auto cosmology     = getDependency<PhotometryGridConfig>().getCosmologicalParam();
 
-    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, solar_sed, grid_map);
+    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, solar_sed, cosmology, grid_map);
     local_logger.info() << "Created the model grid in file " << filename;
   };
 }

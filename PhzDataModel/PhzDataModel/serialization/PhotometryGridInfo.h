@@ -65,13 +65,20 @@ void save(Archive& ar, const Euclid::PhzDataModel::PhotometryGridInfo& t, const 
     scaling_filter_names_as_strings.push_back(name.qualifiedName());
   }
   ar << scaling_filter_names_as_strings;
-
+  
+  // Store the cosmology
+  ar << t.omega_m;
+  ar << t.omega_lambda;
+  ar << t.h_0;
+  
+ 
   // Store the IGM type
   ar << t.igm_method;
   ar << t.cgm;
   ar << t.cgm_A;
   ar << t.cgm_a;
   ar << t.cgm_c;
+  
 
   // Store the Luminosity Filter
   ar << t.luminosity_filter_name.qualifiedName();
@@ -110,12 +117,18 @@ void load(Archive& ar, Euclid::PhzDataModel::PhotometryGridInfo& t, const unsign
     t.scaling_filter_names.push_back(name);
   }
   
+  // Read the cosmology
+  ar >> t.omega_m;
+  ar >> t.omega_lambda;
+  ar >> t.h_0;
+  
   // Read the IGM type
   ar >> t.igm_method;
   ar >> t.cgm;
   ar >> t.cgm_A;
   ar >> t.cgm_a;
   ar >> t.cgm_c;
+  
 
   // Read Luminosity filter
   std::string lum_filter;
@@ -131,6 +144,7 @@ void load(Archive& ar, Euclid::PhzDataModel::PhotometryGridInfo& t, const unsign
   std::string solar_sed;
   ar >> solar_sed;
   t.solar_sed = Euclid::XYDataset::QualifiedName(solar_sed);
+  
 }
 
 template <typename Archive>

@@ -41,6 +41,7 @@
 #include "PhzDataModel/serialization/PhotometryGrid.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGridToTable.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
 #include "Table/FitsWriter.h"
 #include "XYDataset/QualifiedName.h"
 #include <boost/algorithm/string/join.hpp>
@@ -292,11 +293,14 @@ public:
       igm_config.cgm_au          = gridinfo.cgm_A;
       igm_config.cgm_al          = gridinfo.cgm_a;
       igm_config.cgm_c           = gridinfo.cgm_c;
+      auto cosmo = Euclid::PhysicsUtils::CosmologicalParameters{gridinfo.omega_m,gridinfo.omega_lambda,gridinfo.h_0};
       logger.info() << "Saving the slice into :" << slice_iterator->first.string();
-      outputFunctionIgmStruct<boost::archive::text_oarchive>(slice_iterator->first.string(), igm_config,
+      outputFunctionIgmStruct<boost::archive::text_oarchive>(slice_iterator->first.string(), 
+                                                             igm_config,
                                                              gridinfo.luminosity_filter_name,
                                                              gridinfo.luminosity_pp_filter_name,
                                                              gridinfo.solar_sed,
+                                                             cosmo,
                                                              new_map);
     }
 

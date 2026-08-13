@@ -47,6 +47,7 @@ struct PhotometryGridConfig_fixture : public ConfigManager_fixture {
 
   Elements::TempDir temp_dir{};
   fs::path          intermediate_dir = temp_dir.path() / "Intermediate";
+  fs::path          aux_dir = temp_dir.path() / "AuxiliaryData";
   std::string       catalog_type{"CatalogType"};
   std::string       filename{"model_grid.dat"};
   fs::path          relative                 = fs::path{"relative"} / filename;
@@ -68,7 +69,7 @@ struct PhotometryGridConfig_fixture : public ConfigManager_fixture {
                            std::vector<std::string>{"Filter1", "Filter2", "Filter3"}, 
                            std::vector<std::string>{"S_Filter1", "S_Filter2"}}));
                            
-    PhotometryGridInfo info{grid_map, {{"Filter1"}, {"Filter2"}, {"Filter3"}}, "OFF", {"Filter1"}, {"Filter1"}, {"Sun_sed"}, {{"S_Filter1"}, {"S_Filter2"}}}; 
+    PhotometryGridInfo info{grid_map, {{"Filter1"}, {"Filter2"}, {"Filter3"}}, "OFF", {"Filter1"}, {"Filter1"}, {"SolarSED"}, {{"S_Filter1"}, {"S_Filter2"}}}; 
     {
       fs::create_directories(intermediate_dir / catalog_type / "ModelGrids");
       std::ofstream                   stream{(intermediate_dir / catalog_type / "ModelGrids" / filename).string()};
@@ -104,8 +105,42 @@ struct PhotometryGridConfig_fixture : public ConfigManager_fixture {
     }
 
     options_map["intermediate-products-dir"].value() = boost::any(intermediate_dir.string());
+    options_map["aux-data-dir"].value()              = boost::any(aux_dir.string());
     options_map["catalog-type"].value()              = boost::any(catalog_type);
     options_map[MODEL_GRID_FILE].value()             = boost::any(filename);
+    
+    
+    fs::create_directories(aux_dir / "SEDs");
+    std::ofstream sed_file((aux_dir / "SEDs" / "SolarSED.txt").string());
+    // Fill up file
+    sed_file << "\n";
+    sed_file << "5.0 4.6773816349972315e-17\n";
+      sed_file << "2400.0 8.459460715309274e-13\n";
+    sed_file << "10000.0 1.7553050982064957e-11\n";
+    sed_file << "20000.0 2.660001315993869e-12\n";
+    sed_file << "29999.0 6.003259498392725e-13\n";
+    sed_file.close();
+    
+    fs::create_directories(aux_dir / "Filters");
+    std::ofstream file1((aux_dir / "Filters" / "Filter1.txt").string());
+    // Fill up file
+    file1 << "\n";
+    file1 << "4.36919e+03 5.66790e-04\n";
+    file1 << "5.40858e+03 5.66790e-04\n";
+    file1 << "8.26690e+03 6.52903e-01\n";
+    file1 << "9.26631e+03 4.03881e-04\n";
+    file1 << "9.86596e+03 4.03881e-04\n";
+    file1.close();
+    
+     std::ofstream file2((aux_dir / "Filters" / "S_Filter1.txt").string());
+    // Fill up file
+    file2 << "\n";
+    file2 << "4.36919e+03 5.66790e-04\n";
+    file2 << "5.40858e+03 5.66790e-04\n";
+    file2 << "8.26690e+03 6.52903e-01\n";
+    file2 << "9.26631e+03 4.03881e-04\n";
+    file2 << "9.86596e+03 4.03881e-04\n";
+    file2.close();
   }
 };
 

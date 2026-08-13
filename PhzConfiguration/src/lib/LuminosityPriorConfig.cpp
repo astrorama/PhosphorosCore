@@ -27,7 +27,6 @@
 #include "ElementsKernel/Logging.h"
 #include "GridContainer/serialize.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
-#include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/LuminosityFunctionConfig.h"
 #include "PhzConfiguration/LuminositySedGroupConfig.h"
@@ -71,7 +70,6 @@ LuminosityPriorConfig::LuminosityPriorConfig(long manager_id) : Configuration(ma
   declareDependency<LuminosityFunctionConfig>();
   declareDependency<LuminositySedGroupConfig>();
   declareDependency<PhotometryGridConfig>();
-  declareDependency<CosmologicalParameterConfig>();
   declareDependency<ScaleFactorMarginalizationConfig>();
   declareDependency<VolumePriorConfig>();
 }

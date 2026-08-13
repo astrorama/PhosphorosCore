@@ -32,7 +32,6 @@
 #include "PhzConfiguration/ModelGridModificationConfig.h"
 #include "PhzConfiguration/ObservationConditionColumnConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
-#include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhzLikelihood/FilterShiftProcessModelGridFunctor.h"
 
 namespace po = boost::program_options;
@@ -47,7 +46,6 @@ FilterVariationModelGridModifConfig::FilterVariationModelGridModifConfig(long ma
   declareDependency<ObservationConditionColumnConfig>();
   declareDependency<ModelGridModificationConfig>();
   declareDependency<PhotometryGridConfig>();
-  declareDependency<CosmologicalParameterConfig>();
 }
 
 void FilterVariationModelGridModifConfig::postInitialize(const UserValues& /* args */) {

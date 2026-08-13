@@ -59,7 +59,7 @@ namespace fs = boost::filesystem;
 namespace Euclid {
 namespace PhzConfiguration {
 
-static Elements::Logging logger = Elements::Logging::getLogger("PhzConfiguration");
+static Elements::Logging logger = Elements::Logging::getLogger("PhotometryGridConfig");
 
 static const std::string MODEL_GRID_FILE{"model-grid-file"};
 
@@ -247,6 +247,24 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
       m_absorption_function = PhzModeling::InoueIgmFunctor{};
     }
   }
+  
+  
+  IgmConfigStruct igm_struct{}; 
+  
+  igm_struct.absorption_type = m_info.igm_method;
+  igm_struct.add_cgm = m_info.cgm;
+  igm_struct.cgm_au = m_info.cgm_A;
+  igm_struct.cgm_al = m_info.cgm_a;
+  igm_struct.cgm_c =  m_info.cgm_c;
+  
+  
+  m_igm_struct =  igm_struct; 
+  
+  
+  m_cosmological_param   = PhysicsUtils::CosmologicalParameters(m_info.omega_m, m_info.omega_lambda, m_info.h_0);
+  
+  
+  logger.info()<<"Initialization completed for PhotometryGridConfig";
 }
 
 const PhzDataModel::PhotometryGridInfo& PhotometryGridConfig::getPhotometryGridInfo() const {
@@ -354,17 +372,18 @@ const IgmConfigStruct& PhotometryGridConfig::getIgmConfigStruct() const {
   if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
     throw Elements::Exception() << "Call to getIgmConfigStruct() on a not initialized instance.";
   }
-  
-  IgmConfigStruct igm_struct{};
-  
-  igm_struct.absorption_type = getIgmAbsorptionType();
-  igm_struct.add_cgm = getCgmEnabled();
-  igm_struct.cgm_au = getCGMAParam();
-  igm_struct.cgm_al = getCGMaParam();
-  igm_struct.cgm_c = getCGMcParam();
 
-  return igm_struct;
+  return m_igm_struct;
 }
+
+
+  const PhysicsUtils::CosmologicalParameters& PhotometryGridConfig::getCosmologicalParam(){
+    if (getCurrentState() < Configuration::Configuration::State::INITIALIZED) {
+      throw Elements::Exception() << "Call to getCosmologicalParam() on a not initialized instance.";
+    }
+    
+    return m_cosmological_param;
+  }
 
 }  // namespace PhzConfiguration
 }  // namespace Euclid

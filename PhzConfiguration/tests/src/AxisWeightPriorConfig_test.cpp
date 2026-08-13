@@ -32,6 +32,7 @@
 #include "PhzLikelihood/AxisWeightPrior.h"
 #include <boost/test/unit_test.hpp>
 #include <fstream>
+#include <filesystem>
 
 using namespace Euclid;
 using namespace Euclid::PhzDataModel;
@@ -71,7 +72,7 @@ struct AxisWeightPriorConfig_fixture : public ConfigManager_fixture {
     std::string                                         model_grid_file = (temp_dir.path() / "model_grid.dat").string();
     std::map<std::string, PhzDataModel::PhotometryGrid> grid_map{};
     grid_map.emplace("", PhotometryGrid{axes, std::vector<std::string>{"Filter1"}, std::vector<std::string>{"Filter1"}});
-    PhotometryGridInfo info{grid_map,{}, "OFF", {"Filter1"}, {"Filter1"}, {"SolarSED"}, {}};
+    PhotometryGridInfo info{grid_map,{{"Filter1"}}, "OFF", {"Filter1"}, {"Filter1"}, {"SolarSED"}, {{"Filter1"}}};
 
     std::ofstream                   out{model_grid_file};
     boost::archive::binary_oarchive boa{out};
@@ -82,6 +83,30 @@ struct AxisWeightPriorConfig_fixture : public ConfigManager_fixture {
     fs::create_directories(prior_dir);
     fs::create_directories(prior_dir / "sed");
     fs::create_directories(prior_dir / "red-curve");
+    
+    fs::create_directories(temp_dir.path() / "SEDs");
+    std::ofstream sed_file((temp_dir.path() / "SEDs" / "SolarSED.txt").string());
+    // Fill up file
+    sed_file << "\n";
+    sed_file << "5.0 4.6773816349972315e-17\n";
+      sed_file << "2400.0 8.459460715309274e-13\n";
+    sed_file << "10000.0 1.7553050982064957e-11\n";
+    sed_file << "20000.0 2.660001315993869e-12\n";
+    sed_file << "29999.0 6.003259498392725e-13\n";
+    sed_file.close();
+    
+    fs::create_directories(temp_dir.path() / "Filters");
+    std::ofstream file1((temp_dir.path() / "Filters" / "Filter1.txt").string());
+    // Fill up file
+    file1 << "\n";
+    file1 << "4.36919e+03 5.66790e-04\n";
+    file1 << "5.40858e+03 5.66790e-04\n";
+    file1 << "8.26690e+03 6.52903e-01\n";
+    file1 << "9.26631e+03 4.03881e-04\n";
+    file1 << "9.86596e+03 4.03881e-04\n";
+    file1.close();
+    
+    
 
     std::ofstream sed_out{(prior_dir / "sed" / "sed_prior.txt").string()};
     sed_out << "sed1 0.01\n";
@@ -126,11 +151,15 @@ BOOST_FIXTURE_TEST_CASE(check_options, AxisWeightPriorConfig_fixture) {
 //-----------------------------------------------------------------------------
 
 BOOST_FIXTURE_TEST_CASE(sed_prior, AxisWeightPriorConfig_fixture) {
+  std::filesystem::path filepath =  temp_dir.path().string();
+  bool filepathExists = std::filesystem::is_directory(filepath.parent_path());
+  BOOST_CHECK(filepathExists);
 
   // Given
   options_map[AXIS_WEIGHT_PRIOR + "-sed"].value() = boost::any{std::vector<std::string>{{"sed_prior"}}};
+  BOOST_CHECK(true);
   config_manager.initialize(options_map);
-
+  BOOST_CHECK(true);
   // When
   auto prior_list = config_manager.getConfiguration<PriorConfig>().getPriors();
   for (auto& prior : prior_list) {

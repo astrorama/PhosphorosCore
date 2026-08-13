@@ -30,6 +30,7 @@
 #include "PhzDataModel/PhotometryGridInfo.h"
 #include "PhzModeling/PhotometryGridCreator.h"
 #include "PhzConfiguration/IgmConfig.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
 #include <map>
 #include <string>
 
@@ -130,6 +131,8 @@ public:
   double getCGMcParam() const;
   
   const IgmConfigStruct& getIgmConfigStruct() const;
+  
+  const PhysicsUtils::CosmologicalParameters& getCosmologicalParam();
 
 
 private:
@@ -143,6 +146,9 @@ private:
   double                   m_solar_MAG_AB      = 0;
   
   PhzModeling::PhotometryGridCreator::IgmAbsorptionFunction m_absorption_function;
+  
+  PhysicsUtils::CosmologicalParameters m_cosmological_param;
+  IgmConfigStruct m_igm_struct;
 
 
 }; /* End of PhotometryGridConfig class */
