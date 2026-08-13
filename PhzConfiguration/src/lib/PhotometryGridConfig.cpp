@@ -264,7 +264,7 @@ void PhotometryGridConfig::initialize(const UserValues& args) {
   m_cosmological_param   = PhysicsUtils::CosmologicalParameters(m_info.omega_m, m_info.omega_lambda, m_info.h_0);
   
   
-  logger.info()<<"Initialization completed for PhotometryGridConfig";
+  logger.debug()<<"Initialization completed for PhotometryGridConfig";
 }
 
 const PhzDataModel::PhotometryGridInfo& PhotometryGridConfig::getPhotometryGridInfo() const {
