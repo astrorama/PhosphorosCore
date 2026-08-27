@@ -36,12 +36,12 @@ ModelDatasetGenerator::ModelDatasetGenerator(
     const PhzDataModel::ModelAxesTuple&                                             parameter_space,
     const std::map<XYDataset::QualifiedName, PhzDataModel::Sed>&                    sed_map,
     const std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>>& reddening_curve_map,
-    size_t current_index, 
-    const ReddeningFunction& reddening_function, 
+    size_t current_index,
+    const ReddeningFunction& reddening_function,
     const RedshiftFunction& redshift_function,
     const IgmAbsorptionFunction& igm_function,
     const std::vector<NormalizationFunction>& normalization_functions,
-    const NormalizationFunction& pp_normalization_function, 
+    const NormalizationFunction& pp_normalization_function,
     double sed_normalization_value)
     : m_index_helper{GridContainer::makeGridIndexHelper(parameter_space)}
     , m_parameter_space(parameter_space)
@@ -149,7 +149,7 @@ PhzDataModel::Sed& ModelDatasetGenerator::operator*() {
   size_t new_z_index = m_index_helper.axisIndex(PhzDataModel::ModelParameter::Z, m_current_index);
 
   // We check if we need to recalculate the SED (for the scaling)
-  if (new_sed_index != m_current_sed_index || !m_current_sed || !m_current_pp_norm_sed) {
+  if (new_sed_index != m_current_sed_index || !m_current_pp_norm_sed) {
     auto& sed_name = std::get<PhzDataModel::ModelParameter::SED>(m_parameter_space)[new_sed_index];
     auto pp_norm_sed = m_pp_normalization_function(PhzDataModel::Sed(m_sed_map.at(sed_name)));
     m_current_pp_norm_sed.reset(new PhzDataModel::Sed(pp_norm_sed));
@@ -168,56 +168,53 @@ PhzDataModel::Sed& ModelDatasetGenerator::operator*() {
     // Redden and normalize the model
     auto reddened = PhzDataModel::Sed(
         m_reddening_function(m_sed_map.at(sed_name), *(m_reddening_curve_map.at(reddening_curve_name)), ebv));
-    
+
     m_current_reddened_sed.reset(new PhzDataModel::Sed(m_normalization_functions[0](reddened)));
-    std::vector<double> scallings {};
-    bool first=true;
+    std::vector<double> scalings {};
     for (auto norm_function : m_normalization_functions){
-        if (first){
-            scallings.push_back(m_current_reddened_sed->getScaling());
-            first=false;
-        } else {
-            auto norm_sed = norm_function(reddened);
-            scallings.push_back(norm_sed.getScaling());
-        }  
+        auto norm_sed = norm_function(reddened);
+        scalings.push_back(norm_sed.getScaling());
     }
-    m_current_reddened_sed->setDiffScalings(scallings);
+    m_current_reddened_sed->setDiffScalings(scalings);
   }
-  
+
+  // Check if we need to recompute the actual model
   if (new_sed_index != m_current_sed_index || new_reddening_curve_index != m_current_reddening_curve_index ||
       new_ebv_index != m_current_ebv_index || new_z_index != m_current_z_index || !m_current_redshifted_sed) {
     double            z              = std::get<PhzDataModel::ModelParameter::Z>(m_parameter_space)[new_z_index];
     PhzDataModel::Sed redshifted_sed = m_redshift_function(*m_current_reddened_sed, z);
     auto              igm_sed        = m_igm_function(redshifted_sed, z);
-    std::vector<double>d_scallings     = m_current_reddened_sed->getDiffScalings();
-    if (!std::isfinite(1.0 / d_scallings[0] ) || !std::isfinite( d_scallings[0])) {
+    // Check if the Luminosity scaling is valid (finite)
+    std::vector<double>d_scalings     = m_current_reddened_sed->getDiffScalings();
+    if (!std::isfinite(1.0 / d_scalings[0] ) || !std::isfinite( d_scalings[0])) {
       auto& sed_name = std::get<PhzDataModel::ModelParameter::SED>(m_parameter_space)[new_sed_index];
       throw Elements::Exception()
           << "The normalisation of a model for SED=" << sed_name
           << " failed. The root cause could be that the normalization filter do not overlap the SED.";
     }
-    
-    double pp_scalling = m_current_pp_norm_sed->getScaling();
+
+    // Compute the PP Luminosity scaling
+    double pp_scaling = m_current_pp_norm_sed->getScaling();
     if (m_sed_normalization_value > 0) {
-      pp_scalling = m_sed_normalization_value;
+      pp_scaling = m_sed_normalization_value;
     } else {
-      if (!std::isfinite(1.0 / pp_scalling) || !std::isfinite(pp_scalling)) {
+      if (!std::isfinite(1.0 / pp_scaling) || !std::isfinite(pp_scaling)) {
         auto& sed_name = std::get<PhzDataModel::ModelParameter::SED>(m_parameter_space)[new_sed_index];
         throw Elements::Exception()
             << "The PP normalisation of a model for SED=" << sed_name
             << " failed. The root cause could be that the PP normalization filter do not overlap the SED.";
       }
     }
-    
+
     /////////////////////////////////////////////////////////////////////////////////////////
-    /// To avoid propagating the model grid to the luminosity prior, we keep the scaling as 
-    /// the luminosity scaling. We put the pp_scaling at the first of the diff scaling. 
-    /// To implement this we swap the first element of the d_scalings with the pp_scaling 
+    /// To avoid propagating the model grid to the luminosity prior, we keep the scaling as
+    /// the luminosity scaling. We put the pp_scaling at the first of the diff scaling.
+    /// To implement this we swap the first element of the d_scalings with the pp_scaling
     /////////////////////////////////////////////////////////////////////////////////////////
-    double scaling = d_scallings[0];
-    d_scallings[0] = pp_scalling;
+    double scaling = d_scalings[0];
+    d_scalings[0] = pp_scaling;
     igm_sed.setScaling(scaling);
-    igm_sed.setDiffScalings(d_scallings);
+    igm_sed.setDiffScalings(d_scalings);
     m_current_redshifted_sed.reset(new PhzDataModel::Sed(igm_sed));
   }
   m_current_sed_index             = new_sed_index;

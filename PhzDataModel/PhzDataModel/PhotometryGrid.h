@@ -31,7 +31,8 @@
 #include <cassert>
 #include <memory>
 #include <vector>
-#include <iterator>
+#include <iterator>#include <algorithm>
+
 
 namespace Euclid {
 namespace PhzDataModel {

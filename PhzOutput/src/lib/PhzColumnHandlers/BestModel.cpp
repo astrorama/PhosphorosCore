@@ -46,11 +46,11 @@ std::vector<Table::ColumnInfo::info_type> BestModel::getColumnInfoList() const {
       Table::ColumnInfo::info_type(m_column_prefix + "Scale", typeid(double)),
       Table::ColumnInfo::info_type(m_column_prefix + "Corr", typeid(double)),
       Table::ColumnInfo::info_type(m_column_prefix + "Reference-Luminosity", typeid(double))};
-      
+
   for (auto mapping : m_abs_mag_mapping) {
      columns.push_back(Table::ColumnInfo::info_type(mapping.second, typeid(double)));
   }
-      
+
   return columns;
 }
 
@@ -71,12 +71,12 @@ std::vector<Table::Row::cell_type> BestModel::convertResults(const SourceCatalog
   auto    z                 = best_model.axisValue<PhzDataModel::ModelParameter::Z>();
   int64_t z_index           = best_model.axisIndex<PhzDataModel::ModelParameter::Z>();
   auto    scale             = m_scale_functor(results);
-  
-  
+
+
   auto correction_iter_begin = (*best_model).scaling_cbegin();
   auto correction_iter_end = (*best_model).scaling_cend();
-  double correction_factor = 1.0; // For retro-compatibility 
-  if (correction_iter_begin != correction_iter_end) {   
+  double correction_factor = 1.0; // For retro-compatibility
+  if (correction_iter_begin != correction_iter_end) {
     // logger.info()<< "Correction factor 0";
     correction_factor = *correction_iter_begin;  // the PP correction factor is the first of the Diff_scaling
   }
@@ -85,13 +85,13 @@ std::vector<Table::Row::cell_type> BestModel::convertResults(const SourceCatalog
 
   auto row = std::vector<Table::Row::cell_type>{region_index, sed, sed_index, reddening_curve, red_index,         ebv,
                                                 ebv_index, z, z_index, scale, correction_factor, ref_lum};
-                                            
+
   for (auto mapping : m_abs_mag_mapping) {
      double correction = (*best_model).scaling_find(mapping.first.qualifiedName());
      double luminosity = scale * correction;
      double mag = getMagFromSolarLum(luminosity, m_solar_MAG_map.at(mapping.first));
      row.push_back(mag);
-  } 
+  }
   return row;
 }
 
@@ -110,7 +110,7 @@ BestModel::BestModel(PhzDataModel::GridType grid_type, std::map<XYDataset::Quali
     };
     break;
   case PhzDataModel::GridType::POSTERIOR:
-  
+
     m_abs_mag_mapping=abs_mag_mapping;
     m_column_prefix          = "";
     m_model_iterator_functor = [](const PhzDataModel::SourceResults& results) {

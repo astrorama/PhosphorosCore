@@ -140,12 +140,12 @@ template <typename CellIter, typename ScalingIter>
 class ParallelJob {
 
 public:
-  ParallelJob(PhotometryAlgorithm<ModelFluxAlgorithm>& photometry_algo, 
+  ParallelJob(PhotometryAlgorithm<ModelFluxAlgorithm>& photometry_algo,
               ModelDatasetGrid::iterator model_begin,
-              ModelDatasetGrid::iterator model_end, 
-              CellIter photometry_begin,   
+              ModelDatasetGrid::iterator model_end,
+              CellIter photometry_begin,
               ScalingIter scaling_begin,
-              std::atomic<size_t>& progress, 
+              std::atomic<size_t>& progress,
               std::atomic<uint>& done_counter)
       : m_photometry_algo(photometry_algo)
       , m_model_begin(model_begin)
@@ -175,8 +175,8 @@ private:
   PhotometryAlgorithm<ModelFluxAlgorithm>& m_photometry_algo;
   ModelDatasetGrid::iterator               m_model_begin;
   ModelDatasetGrid::iterator               m_model_end;
-  CellIter                                 m_photometry_begin; 
-  ScalingIter                              m_scaling_begin; 
+  CellIter                                 m_photometry_begin;
+  ScalingIter                              m_scaling_begin;
   std::atomic<size_t>&                     m_progress;
   std::atomic<uint>&                       m_done_counter;
 };
@@ -209,7 +209,7 @@ PhotometryGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&           
 
   // Create the photometry Grid
   auto photometry_grid = PhzDataModel::PhotometryGrid(parameter_space, filter_name_list, scaling_filter_name_list);
-  
+
   // Define the algo
 
   auto photometry_algo = createPhotometryAlgorithm(std::move(flux_model_algo), std::move(filter_map), filter_name_list);
@@ -229,10 +229,8 @@ PhotometryGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&           
   auto        model_iter      = model_grid.begin();
   auto        end_model_iter  = model_grid.begin();
   auto        photometry_iter = photometry_grid.begin();
-  
-  // DBG testing access to the scaling see PhotometriyGridTest for comparison
-  auto scaling_iter = (*photometry_iter).scaling_begin();
-  
+  auto        scaling_iter = (*photometry_iter).scaling_begin();
+
   std::size_t step            = total_models / threads;
   for (uint i = 0; i < threads; ++i) {
     std::advance(end_model_iter, step);
@@ -240,6 +238,7 @@ PhotometryGridCreator::createGrid(const PhzDataModel::ModelAxesTuple&           
                                                                  photometry_iter, scaling_iter, progress, done_counter}));
     model_iter = end_model_iter;
     std::advance(photometry_iter, step);
+    scaling_iter = (*photometry_iter).scaling_begin();
   }
   futures.push_back(std::async(std::launch::async, ParallelJob{photometry_algo, model_iter, model_grid.end(),
                                                                photometry_iter, scaling_iter, progress, done_counter}));
