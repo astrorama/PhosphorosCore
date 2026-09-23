@@ -10,3 +10,7 @@ elements_add_unit_test(MergeProvider_test tests/src/MergeProvider_test.cpp
                      TYPE Boost)
           
           
+elements_install_python_modules()
+
+elements_add_python_program(PHZ_BuildXYDatasetSet XYDatasetSet.BuildXYDatasetSet)
+          
