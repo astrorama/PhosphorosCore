@@ -113,7 +113,7 @@ static std::vector<std::filesystem::path> getRecursiveDirectoryContents(const st
     return sampling_vector;
  }
  
- static std::vector<double> getValues(const std::filesystem::path& path, std::string& name) {
+ static std::vector<double> getValues(const std::filesystem::path& path, const std::string& name) {
     auto fits = make_unique<CCfits::FITS>(path, CCfits::RWmode::Read);
     const CCfits::ExtHDU& values_table_hdu = fits->extension(2);
     auto table = Table::FitsReader{values_table_hdu}.read();
@@ -125,6 +125,21 @@ static std::vector<std::filesystem::path> getRecursiveDirectoryContents(const st
     }
     
     throw Elements::Exception() << "The DataSet " << name <<  " is not present in file "<< path.string();
+ }
+ 
+ static std::string getparam(const std::filesystem::path& path,const std::string& name, const std::string& param) {
+    auto fits = make_unique<CCfits::FITS>(path, CCfits::RWmode::Read);
+    const CCfits::ExtHDU& values_table_hdu = fits->extension(3);
+    auto table = Table::FitsReader{values_table_hdu}.read();
+    for (auto row_iter = table.begin(); row_iter!= table.end(); ++row_iter) {
+        if ( boost::get<std::string>((*row_iter)[0]) == name) {
+          if ( boost::get<std::string>((*row_iter)[1]) == param) {
+             return  boost::get<std::string>((*row_iter)[2]);
+          }
+        }
+    }
+    
+    return "";
  }
  
  FileSetProvider::FileSetProvider(const std::string& root_path) : XYDatasetProvider(), m_root_path(root_path) {
@@ -190,8 +205,12 @@ static std::vector<std::filesystem::path> getRecursiveDirectoryContents(const st
  }
 
  std::string  FileSetProvider::getParameter(const XYDataset::QualifiedName& qualified_name, const std::string& key_word) {
-   // TODO
-    return{};
+   auto dataset_name = qualified_name.datasetName();
+   auto file_path_str = m_root_path + "/" + qualified_name.qualifiedName();
+   std::filesystem::path file_path(file_path_str);
+   file_path_str = file_path.parent_path().string() + ".fits";
+   std::filesystem::path fspath(file_path_str);
+   return getparam(fspath, dataset_name, key_word);
  }
 
 } /* namespace XYDatasetSet */
