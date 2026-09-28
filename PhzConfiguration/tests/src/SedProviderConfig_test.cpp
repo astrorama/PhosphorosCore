@@ -80,8 +80,9 @@ BOOST_FIXTURE_TEST_CASE(getSedDatasetProvider_function_test, ConfigManager_fixtu
 
   // Fill up options
   options_map["aux-data-dir"].value() = boost::any(base_directory.string());
-
+  BOOST_CHECK(true);
   config_manager.initialize(options_map);
+  BOOST_CHECK(true);
   auto result = config_manager.getConfiguration<SedProviderConfig>().getSedDatasetProvider();
 
   BOOST_CHECK(result != nullptr);

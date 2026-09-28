@@ -27,6 +27,9 @@
 #include "XYDataset/AsciiParser.h"
 #include "XYDataset/FileParser.h"
 #include "XYDataset/FileSystemProvider.h"
+#include "XYDataset/CachedProvider.h"
+#include "XYDatasetSet/FileSetProvider.h"
+#include "XYDatasetSet/MergeProvider.h"
 #include <boost/filesystem/operations.hpp>
 #include <cstdlib>
 
@@ -43,8 +46,14 @@ ReddeningProviderConfig::ReddeningProviderConfig(long manager_id) : Configuratio
 void ReddeningProviderConfig::initialize(const UserValues&) {
   fs::path                               result = getDependency<AuxDataDirConfig>().getAuxDataDir() / "ReddeningCurves";
   std::unique_ptr<XYDataset::FileParser> file_parser{new XYDataset::AsciiParser{}};
-  m_reddening_provider = std::shared_ptr<XYDataset::XYDatasetProvider>{
-      new XYDataset::FileSystemProvider{result.string(), std::move(file_parser)}};
+  
+  auto     fs_provider = Euclid::make_unique<XYDataset::FileSystemProvider>(result.string(), std::move(file_parser));
+  auto     set_provider = Euclid::make_unique<XYDatasetSet::FileSetProvider>(result.string());
+  std::vector<std::unique_ptr<Euclid::XYDataset::XYDatasetProvider>> provider_vector;
+  provider_vector.push_back(std::move(fs_provider));
+  provider_vector.push_back(std::move(set_provider));
+  auto     merge_provider = Euclid::make_unique<XYDatasetSet::MergeProvider>(std::move(provider_vector));
+  m_reddening_provider    = std::make_shared<XYDataset::CachedProvider>(std::move(merge_provider));
 }
 
 const std::shared_ptr<XYDataset::XYDatasetProvider> ReddeningProviderConfig::getReddeningDatasetProvider() {

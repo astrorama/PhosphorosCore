@@ -31,6 +31,9 @@
 #include "PhzLuminosity/SchechterLuminosityFunction.h"
 #include "XYDataset/AsciiParser.h"
 #include "XYDataset/FileSystemProvider.h"
+#include "XYDataset/CachedProvider.h"
+#include "XYDatasetSet/FileSetProvider.h"
+#include "XYDatasetSet/MergeProvider.h"
 #include <cstdlib>
 
 namespace po = boost::program_options;
@@ -138,11 +141,15 @@ void LuminosityFunctionConfig::initialize(const UserValues& args) {
       // Custom function
       std::string curve_name = getOptionWithCheck<std::string>(args, LUMINOSITY_FUNCTION_CURVE_NAME + "-" + functionId);
       auto        dataset_identifier = XYDataset::QualifiedName{curve_name};
-      std::unique_ptr<XYDataset::FileParser> fp{new XYDataset::AsciiParser{}};
-
+      std::unique_ptr<XYDataset::FileParser> file_parser{new XYDataset::AsciiParser{}};
       auto path = getDependency<AuxDataDirConfig>().getAuxDataDir() / "LuminosityFunctionCurves";
-      XYDataset::FileSystemProvider fsp(path.string(), std::move(fp));
-      auto                          dataset_ptr = fsp.getDataset(dataset_identifier);
+      auto     fs_provider = Euclid::make_unique<XYDataset::FileSystemProvider>(path.string(), std::move(file_parser));
+      auto     set_provider = Euclid::make_unique<XYDatasetSet::FileSetProvider>(path.string());
+      std::vector<std::unique_ptr<Euclid::XYDataset::XYDatasetProvider>> provider_vector;
+      provider_vector.push_back(std::move(fs_provider));
+      provider_vector.push_back(std::move(set_provider));
+      auto     merge_provider = XYDatasetSet::MergeProvider(std::move(provider_vector));
+      auto     dataset_ptr = merge_provider.getDataset(dataset_identifier);
 
       if (!dataset_ptr) {
         throw Elements::Exception() << "The Luminosity Function Curve '" << curve_name << "' was not found in "

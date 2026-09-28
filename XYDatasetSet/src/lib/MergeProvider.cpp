@@ -63,9 +63,12 @@ namespace XYDatasetSet {
           complete.insert(complete.end(), partial.begin(), partial.end());
       }
       return complete;
-   } else {
+   } else if (m_group_lookup.count(group)){
      int idx = m_group_lookup.at(group);
      return m_provider_list[idx]->listContents(group);
+   } else {
+      logger.warn()<<"Group "<< group << " is not known ";
+      return {};
    }
  }
 
