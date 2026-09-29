@@ -190,6 +190,7 @@ def writeDataset(dataset, path, name_keyword="NAME"):
                fh.write(f'# {key} : {val.strip()}\n') 
         for idx in range(len(dataset.x)):
             fh.write(f'{dataset.x[idx]} {dataset.y[idx]}\n') 
+    return file_name
 
 def checkSampling(dataset_list, resample):
     alligned = True

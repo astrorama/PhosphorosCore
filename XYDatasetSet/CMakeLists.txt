@@ -16,4 +16,5 @@ elements_add_unit_test(FileSetProvider_test tests/src/FileSetProvider_test.cpp
 elements_install_python_modules()
 
 elements_add_python_program(PHZ_BuildXYDatasetSet XYDatasetSet.BuildXYDatasetSet)
+elements_add_python_program(PHZ_SplitXYDatasetSet XYDatasetSet.SplitXYDatasetSet)
           
