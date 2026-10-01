@@ -28,8 +28,8 @@ logger = Logging.getLogger('XYDatasetSetTools')
 
 class XYDataset:
     def __init__(self, x, y, name, keywords={}):
-        self.x = x
-        self.y = y
+        self.x = np.array(x)
+        self.y = np.array(y)
         if len(x)!=len(y):
             raise Exception('x and y should have the same size')
         self.name = name
