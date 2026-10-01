@@ -140,8 +140,10 @@ def listDataset(folder):
     return results;
             
 
-def readDataset(root_path, name):
-    datasets = listDataset(root_path)
+def readDataset(root_path, name, datasets_in=None):
+    datasets = datasets_in
+    if not datasets:
+        datasets = listDataset(root_path)
     if not name in datasets:
         raise KeyError(f'The datased named {name} is not present under path {root_path}')
         

@@ -65,7 +65,7 @@ def mainMethod(args):
     
     logger.info('Create the output files')
     files_names = []
-    for ds in [DatasetTool.readDataset(input_folder, nm) for nm in names]:
+    for ds in [DatasetTool.readDataset(input_folder, nm, ds_dict) for nm in names]:
         files_names.append(DatasetTool.writeDataset(ds,out_folder).replace(out_folder,''))
     
     logger.info('Add the order file')

@@ -91,7 +91,7 @@ def mainMethod(args):
         for nm in ds_dict:
             if ds_dict[nm] == file_name:
                 name=nm
-                dataset_list.append(DatasetTool.readDataset(args.input_dir, name))
+                dataset_list.append(DatasetTool.readDataset(args.input_dir, name, ds_dict))
                 break
         
         
