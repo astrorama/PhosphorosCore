@@ -271,6 +271,15 @@ class TestXYDatasetSetTools(object):
             
             handler.writeDatasetSet([dataset_1,dataset_2], os.path.join(dir_path,'base_folder/sub_folder/test.fits'))
             
+            dataset_3 = handler.XYDataset([1,2,3,4,5,6],[0,0,0,1,1,0],'titi',{'PARAMETER':'METALLICITY=0*L+0.007[M/H];TAU=0*L+0.3[Gyr]'})
+            
+
+            raised = False
+            try:
+                handler.writeDatasetSet([dataset_1,dataset_2,dataset_3], os.path.join(dir_path,'base_folder/sub_folder/test.fits'))
+            except Exception:
+                raised = True
+            assert raised
             
             
     

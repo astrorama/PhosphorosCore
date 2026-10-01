@@ -253,6 +253,9 @@ def buildHduList(dataset_list):
     sampling_hdu = fits.BinTableHDU(data=buildSamplingTable(dataset_list[0].x), name='SAMPLING')
     
     names = [ds.name.split('/')[-1] for ds in dataset_list]
+    
+    if len(names)!=len(np.unique(names)):
+        raise Exception("Multiple Dataset With the same name cannot be saved in a single set.")
     values = [ds.y for ds in dataset_list]
     values_hdu = fits.BinTableHDU(data=buildValuesTable(values, names), name='VALUES')
     

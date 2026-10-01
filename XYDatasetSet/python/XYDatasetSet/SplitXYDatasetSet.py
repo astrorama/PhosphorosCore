@@ -70,8 +70,8 @@ def mainMethod(args):
     
     logger.info('Add the order file')
     with open(out_folder+'/order.txt', 'w') as fh:
-        for names in files_names:
-            fh.write(f'{names}\n') 
+        for name in files_names:
+            fh.write(f'{name.split('/')[-1]}\n') 
     
     
     
