@@ -30,7 +30,6 @@
 #include "PhzConfiguration/FilterVariationCoefficientGridOutputConfig.h"
 #include "PhzConfiguration/FilterVariationConfig.h"
 #include "PhzConfiguration/MilkyWayReddeningConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/MultithreadConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PhzOutputDirConfig.h"
@@ -58,7 +57,6 @@ ComputeFilterVariationCoefficientConfig::ComputeFilterVariationCoefficientConfig
   declareDependency<FilterVariationCoefficientGridOutputConfig>();
   declareDependency<MultithreadConfig>();
   declareDependency<FilterProviderConfig>();
-  declareDependency<ModelNormalizationConfig>();
   declareDependency<FilterVariationConfig>();
 }
 

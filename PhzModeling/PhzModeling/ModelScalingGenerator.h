@@ -241,8 +241,8 @@ private:
   size_t m_current_reddening_curve_index{0};
   size_t m_current_ebv_index{0};
 
-  // The latest calculated scalling
-  double m_scalling = -1;
+  // The latest calculated scaling
+  double m_scaling = -1;
 
   // map with the SED datasets the generator uses
   const std::map<XYDataset::QualifiedName, XYDataset::XYDataset>& m_sed_map;

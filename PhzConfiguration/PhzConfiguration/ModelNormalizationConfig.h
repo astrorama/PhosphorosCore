@@ -65,7 +65,7 @@ public:
   void initialize(const UserValues& args) override;
 
   // Returns the band of the luminosity normalization
-  const XYDataset::QualifiedName& getNormalizationFilter() const;
+  const  std::vector<XYDataset::QualifiedName>& getNormalizationFilters() const;
 
   // Returns the type of PP normalization
   bool getPpNormalizationFromFilter() const;
@@ -82,14 +82,16 @@ public:
   double getSolarMagAB() const;
 
   double getPpSolarMagAB() const;
+  
+  double getSolarMagAB(XYDataset::QualifiedName& filter);
 
 private:
-  XYDataset::QualifiedName m_band{"uninitialized"};
-  XYDataset::QualifiedName m_pp_band{"uninitialized"};
   XYDataset::QualifiedName m_solar_sed{"uninitialized"};
-  double                   m_solar_MAG_AB      = 0;
-  double                   m_pp_solar_MAG_AB   = 0;
+  XYDataset::QualifiedName m_pp_band{"uninitialized"};
+  std::vector<XYDataset::QualifiedName> m_bands{};
   double                   m_SED_normalization = 0;
+  double                   m_pp_solar_MAG_AB   = 0;
+  double                   m_solar_MAG_AB       =0;
 
 }; /* End of ComputeModelGridConfig class */
 

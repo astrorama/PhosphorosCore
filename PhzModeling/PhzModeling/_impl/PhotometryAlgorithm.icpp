@@ -7,9 +7,14 @@
 #ifdef PHOTOMETRYALGO_IMPL
 
 #include "PhzUtils/Multithreading.h"
+#include <algorithm>
+
+
 
 namespace Euclid {
 namespace PhzModeling {
+
+
 
 std::vector<PhzDataModel::FilterInfo> manageFilters (
           const std::vector<XYDataset::QualifiedName>& filter_name_list,
@@ -54,11 +59,14 @@ PhotometryAlgorithm<ModelFluxAlgo>::PhotometryAlgorithm(ModelFluxAlgo model_flux
 }
 
 template<typename ModelFluxAlgo>
-template<typename ModelIterator,typename PhotometryIterator, typename Monitor>
+template<typename ModelIterator,typename PhotometryIterator, typename ScalingIterator, typename Monitor>
 void PhotometryAlgorithm<ModelFluxAlgo>::operator()(
-                            ModelIterator model_begin,ModelIterator model_end,
-                            PhotometryIterator photometry_begin, Monitor& monitor) const{
-
+                            ModelIterator model_begin,
+                            ModelIterator model_end,
+                            PhotometryIterator photometry_begin,
+                            ScalingIterator scaling_begin,
+                            Monitor& monitor) const{
+  int pos = 0;
   while (model_begin!=model_end){
     if (PhzUtils::getStopThreadsFlag()) {
       throw Elements::Exception() << "Stopped by the user";
@@ -66,28 +74,44 @@ void PhotometryAlgorithm<ModelFluxAlgo>::operator()(
 
     std::vector<SourceCatalog::FluxErrorPair> fluxes {m_filter_name_shared_vector->size(), {0., 0.}};
 
-    m_model_flux_agorithm(*model_begin,m_filter_info_vector.begin(),m_filter_info_vector.end(),fluxes.begin());
+    m_model_flux_agorithm(*model_begin, m_filter_info_vector.begin(), m_filter_info_vector.end(), fluxes.begin());
 
-    // Store the differential scaling of the model in the first error
-    if (fluxes.size()>0){
-      	fluxes[0].error = (*model_begin).getScaling() / (*model_begin).getDiffScaling();
-    }
+    // Store the differential scaling of the model. We have (see ModelDatasetGenerator L210)
+    // getScaling => norm after scaling with the Lum Filter
+    // getDiffScalings[0] => norm from PP filter before reddening
+    // getDiffScalings[1+] => norm after scaling with the ABS MAG filters
+    // we store the ratio between the refernece (luminosity filter reddened) and the other cases
+
+    auto d_scalings = (*model_begin).getDiffScalings();
+    double ref_scaling = (*model_begin).getScaling();
+
+    std::vector<double> dif_scaling(d_scalings.size());
+    std::transform(d_scalings.begin(), d_scalings.end(), dif_scaling.begin(),
+                   [ref_scaling](double a) {
+                       return ref_scaling / a;
+                   });
+
+
+
+    auto copy_iter = scaling_begin;
+    std::copy(dif_scaling.begin(), dif_scaling.end(), copy_iter);
 
     *photometry_begin=SourceCatalog::Photometry(m_filter_name_shared_vector, std::move(fluxes));
 
     ++model_begin;
     ++photometry_begin;
+    std::advance(scaling_begin, dif_scaling.size());
     ++monitor;
   }
 }
 
 template<typename ModelFluxAlgo>
-template<typename ModelIterator,typename PhotometryIterator>
+template<typename ModelIterator,typename PhotometryIterator, typename ScalingIterator>
 void PhotometryAlgorithm<ModelFluxAlgo>::operator()(
                             ModelIterator model_begin,ModelIterator model_end,
-                            PhotometryIterator photometry_begin) const {
+                            PhotometryIterator photometry_begin, ScalingIterator scaling_begin) const {
   int monitor {0};
-  this->operator()(model_begin, model_end, photometry_begin, monitor);
+  this->operator()(model_begin, model_end, photometry_begin, scaling_begin, monitor);
 }
 
 

@@ -27,7 +27,6 @@
 #include "ElementsKernel/Logging.h"
 #include "GridContainer/serialize.h"
 #include "PhzConfiguration/CatalogTypeConfig.h"
-#include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include "PhzConfiguration/IntermediateDirConfig.h"
 #include "PhzConfiguration/LuminosityFunctionConfig.h"
 #include "PhzConfiguration/LuminositySedGroupConfig.h"
@@ -41,7 +40,6 @@
 #include <cstdlib>
 #include <fstream>
 
-#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/ScaleFactorMarginalizationConfig.h"
 
 #include "PhzDataModel/PhotometryGridInfo.h"
@@ -72,9 +70,7 @@ LuminosityPriorConfig::LuminosityPriorConfig(long manager_id) : Configuration(ma
   declareDependency<LuminosityFunctionConfig>();
   declareDependency<LuminositySedGroupConfig>();
   declareDependency<PhotometryGridConfig>();
-  declareDependency<CosmologicalParameterConfig>();
   declareDependency<ScaleFactorMarginalizationConfig>();
-  declareDependency<ModelNormalizationConfig>();
   declareDependency<VolumePriorConfig>();
 }
 
@@ -127,7 +123,7 @@ void LuminosityPriorConfig::initialize(const UserValues& args) {
               pair.first, pair.second->clone()});
     }
 
-    double solar_MAG     = getDependency<ModelNormalizationConfig>().getSolarMagAB();
+    double solar_MAG     = getDependency<PhotometryGridConfig>().getSolarMagAB();
     double effectiveness = args.at(LUMINOSITY_PRIOR_EFFECTIVENESS).as<double>();
     std::shared_ptr<PhzLuminosity::LuminosityPrior> prior_ptr{
         new PhzLuminosity::LuminosityPrior{getDependency<LuminositySedGroupConfig>().getLuminositySedGroupManager(),

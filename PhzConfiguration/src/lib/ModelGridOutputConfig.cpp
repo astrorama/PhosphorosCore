@@ -35,6 +35,8 @@
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzUtils/FileUtils.h"
 #include <boost/archive/text_oarchive.hpp>
+#include "PhysicsUtils/CosmologicalParameters.h"
+#include "PhzConfiguration/CosmologicalParameterConfig.h"
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
@@ -56,6 +58,7 @@ ModelGridOutputConfig::ModelGridOutputConfig(long manager_id) : Configuration(ma
   declareDependency<IntermediateDirConfig>();
   declareDependency<IgmConfig>();
   declareDependency<ModelNormalizationConfig>();
+  declareDependency<CosmologicalParameterConfig>();
 }
 
 auto ModelGridOutputConfig::getProgramOptions() -> std::map<std::string, OptionDescriptionList> {
@@ -89,9 +92,13 @@ void ModelGridOutputConfig::initialize(const UserValues& args) {
   // Check directory and write permissions
   Euclid::PhzUtils::checkCreateDirectoryWithFile(filename);
 
-  typedef std::function<void(const std::string&, IgmConfig&, XYDataset::QualifiedName&, XYDataset::QualifiedName&,
-                             const std::map<std::string, PhzDataModel::PhotometryGrid>&)>
-      InnerOutputFunction;
+  typedef std::function<void(const std::string&, 
+                             IgmConfigStruct&, 
+                             XYDataset::QualifiedName&, 
+                             XYDataset::QualifiedName&,
+                             XYDataset::QualifiedName&,
+                             PhysicsUtils::CosmologicalParameters&,
+                             const std::map<std::string, PhzDataModel::PhotometryGrid>&)> InnerOutputFunction;
 
   InnerOutputFunction inner_output_function;
 
@@ -114,10 +121,12 @@ void ModelGridOutputConfig::initialize(const UserValues& args) {
 
   m_output_function = [this, filename,
                        inner_output_function](const std::map<std::string, PhzDataModel::PhotometryGrid>& grid_map) {
-    auto igm_config    = getDependency<IgmConfig>();
-    auto lum_filter    = getDependency<ModelNormalizationConfig>().getNormalizationFilter();
+    auto igm_config    = getDependency<IgmConfig>().getIgmConfigStruct();
+    auto lum_filter    = getDependency<ModelNormalizationConfig>().getNormalizationFilters()[0];
     auto lum_pp_filter = getDependency<ModelNormalizationConfig>().getPpNormalizationFilter();
-    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, grid_map);
+    auto solar_sed     = getDependency<ModelNormalizationConfig>().getReferenceSolarSed();
+    auto cosmology     = getDependency<CosmologicalParameterConfig>().getCosmologicalParam();
+    inner_output_function(filename, igm_config, lum_filter, lum_pp_filter, solar_sed, cosmology, grid_map);
   };
 }
 

@@ -35,13 +35,13 @@
 #include "PhzConfiguration/GridFileHelper.h"
 #include "PhzConfiguration/GridSplitterConfig.h"
 #include "PhzConfiguration/IgmConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/PhotometryGridConfig.h"
 #include "PhzConfiguration/PhzModelGrid2FitsConfig.h"
 #include "PhzDataModel/ArchiveFormat.h"
 #include "PhzDataModel/serialization/PhotometryGrid.h"
 #include "PhzDataModel/serialization/PhotometryGridInfo.h"
 #include "PhzDataModel/serialization/PhotometryGridToTable.h"
+#include "PhysicsUtils/CosmologicalParameters.h"
 #include "Table/FitsWriter.h"
 #include "XYDataset/QualifiedName.h"
 #include <boost/algorithm/string/join.hpp>
@@ -182,7 +182,7 @@ public:
               std::move(new_z_Axis), std::move(ebv_axis), std::move(red_axis), std::move(sed_axis));
 
           // create the grid
-          Euclid::PhzDataModel::PhotometryGrid sliced_grid(new_axes, gridinfo.filter_names);
+          Euclid::PhzDataModel::PhotometryGrid sliced_grid(new_axes, gridinfo.filter_names, gridinfo.scaling_filter_names);
 
           // copy values from the slices into the grid
           for (size_t value_index = 0; value_index < slice_iterator->second.size(); ++value_index) {
@@ -264,7 +264,7 @@ public:
                 Euclid::PhzDataModel::createAxesTuple(z_axis, ebv_axis, red_axis, new_SED_Axis);
 
             // create the grid
-            Euclid::PhzDataModel::PhotometryGrid sliced_grid(new_axes, gridinfo.filter_names);
+            Euclid::PhzDataModel::PhotometryGrid sliced_grid(new_axes, gridinfo.filter_names, gridinfo.scaling_filter_names);
 
             // copy values from the slices into the grid
 
@@ -293,10 +293,15 @@ public:
       igm_config.cgm_au          = gridinfo.cgm_A;
       igm_config.cgm_al          = gridinfo.cgm_a;
       igm_config.cgm_c           = gridinfo.cgm_c;
+      auto cosmo = Euclid::PhysicsUtils::CosmologicalParameters{gridinfo.omega_m,gridinfo.omega_lambda,gridinfo.h_0};
       logger.info() << "Saving the slice into :" << slice_iterator->first.string();
-      outputFunctionIgmStruct<boost::archive::text_oarchive>(slice_iterator->first.string(), igm_config,
+      outputFunctionIgmStruct<boost::archive::text_oarchive>(slice_iterator->first.string(), 
+                                                             igm_config,
                                                              gridinfo.luminosity_filter_name,
-                                                             gridinfo.luminosity_pp_filter_name, new_map);
+                                                             gridinfo.luminosity_pp_filter_name,
+                                                             gridinfo.solar_sed,
+                                                             cosmo,
+                                                             new_map);
     }
 
     // export the grid list

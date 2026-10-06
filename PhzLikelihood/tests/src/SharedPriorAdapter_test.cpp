@@ -45,7 +45,7 @@ struct SharedPriorAdaptor_Fixture {
   // Create the Grids
   RegionResults         results{};
   DoubleGrid&           scale_factor_grid = results.set<RegionResultType::SCALE_FACTOR_GRID>(parameter_space);
-  PhotometryGrid        photometry_grid{parameter_space, *filter_name_vector_ptr};
+  PhotometryGrid        photometry_grid{parameter_space, *filter_name_vector_ptr, *filter_name_vector_ptr};
   const PhotometryGrid& photometry_grid_ref =
       results.set<RegionResultType::MODEL_GRID_REFERENCE>(photometry_grid).get();
   DoubleGrid& posterior_grid = results.set<RegionResultType::POSTERIOR_LOG_GRID>(parameter_space);

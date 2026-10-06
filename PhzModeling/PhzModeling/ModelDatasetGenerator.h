@@ -94,9 +94,12 @@ public:
       const PhzDataModel::ModelAxesTuple&                                             parameter_space,
       const std::map<XYDataset::QualifiedName, PhzDataModel::Sed>&                    sed_map,
       const std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>>& reddening_curve_map,
-      size_t current_index, const ReddeningFunction& reddening_function, const RedshiftFunction& redshift_function,
-      const IgmAbsorptionFunction& igm_function, const NormalizationFunction& normalization_function,
-      const NormalizationFunction& pp_normalization_function, double sed_normalization_value);
+      size_t current_index, const ReddeningFunction& reddening_function, 
+      const RedshiftFunction& redshift_function,
+      const IgmAbsorptionFunction& igm_function, 
+      const std::vector<NormalizationFunction>& normalization_functions,
+      const NormalizationFunction& pp_normalization_function, 
+      double sed_normalization_value);
 
   /**
    * @brief Copy constructor.
@@ -269,7 +272,7 @@ private:
   ReddeningFunction     m_reddening_function;
   RedshiftFunction      m_redshift_function;
   IgmAbsorptionFunction m_igm_function;
-  NormalizationFunction m_normalization_function;
+  std::vector<NormalizationFunction> m_normalization_functions;
   NormalizationFunction m_pp_normalization_function;
   double                m_sed_normalization_value;
 

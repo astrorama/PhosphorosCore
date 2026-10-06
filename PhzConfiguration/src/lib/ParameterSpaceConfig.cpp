@@ -101,6 +101,7 @@ static void checkForOverlaps(const std::map<std::string, std::vector<XYDataset::
                              const std::map<std::string, std::vector<XYDataset::QualifiedName>>& red_curve_map,
                              const std::map<std::string, std::vector<double>>&                   ebv_map,
                              const std::map<std::string, std::vector<double>>&                   z_map) {
+                         
   for (auto sed_first = sed_map.begin(); sed_first != sed_map.end(); ++sed_first) {
     auto sed_second = sed_first;
     ++sed_second;
@@ -120,13 +121,16 @@ static void checkForOverlaps(const std::map<std::string, std::vector<XYDataset::
 }
 
 void ParameterSpaceConfig::initialize(const UserValues&) {
+
   auto sed_map       = getDependency<SedConfig>().getSedList();
   auto red_curve_map = getDependency<ReddeningConfig>().getReddeningCurveList();
   auto ebv_map       = getDependency<ReddeningConfig>().getEbvList();
   auto z_map         = getDependency<RedshiftConfig>().getZList();
 
   checkForMissingCoordinates(sed_map, red_curve_map, ebv_map, z_map);
+  logger.info()<<"checkForOverlaps";
   checkForOverlaps(sed_map, red_curve_map, ebv_map, z_map);
+  
 
   std::map<std::string, PhzDataModel::ModelAxesTuple> result{};
   for (auto& sed_pair : sed_map) {

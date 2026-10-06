@@ -2,6 +2,7 @@ elements_subdir(PhzConfiguration)
 
 elements_depends_on_subdirs(ElementsKernel)
 elements_depends_on_subdirs(XYDataset)
+elements_depends_on_subdirs(XYDatasetSet)
 elements_depends_on_subdirs(MathUtils)
 elements_depends_on_subdirs(PhysicsUtils)
 elements_depends_on_subdirs(PhzDataModel)
@@ -37,8 +38,8 @@ endif ()
 elements_add_library(PhzConfiguration ${CONFIG_SRC}
         LINK_LIBRARIES
         XYDataset PhzDataModel PhzOutput PhzPhotometricCorrection PhzNzPrior PhzLikelihood
-        PhzModeling PhzUtils PhzLuminosity ElementsKernel Configuration ${PHZ_REF_SAMPLE_TARGET}
-        INCLUDE_DIRS XYDataset MathUtils PhzDataModel PhzUtils PhzLuminosity PhzNzPrior
+        PhzModeling PhzUtils PhzLuminosity XYDatasetSet ElementsKernel Configuration ${PHZ_REF_SAMPLE_TARGET}
+        INCLUDE_DIRS XYDataset MathUtils PhzDataModel PhzUtils PhzLuminosity PhzNzPrior XYDatasetSet
         PUBLIC_HEADERS PhzConfiguration)
 
 if (${CMAKE_VERSION} VERSION_GREATER "3.16.0" OR ${CMAKE_VERSION} VERSION_EQUAL "3.16.0")

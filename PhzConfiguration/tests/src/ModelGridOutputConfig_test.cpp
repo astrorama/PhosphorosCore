@@ -231,7 +231,11 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunction_test, T, archive_types, Model
   options_map["filter-name"].value()              = std::vector<std::string>{};
   options_map["filter-name"].template as<std::vector<std::string>>().push_back("filter1");
   options_map["filter-name"].template as<std::vector<std::string>>().push_back("filter2");
+  options_map["abs-mag-filters"].value()              = std::vector<std::string>{};
   std::string filter_lum                         = "filter_1";
+  options_map["abs-mag-filters"].template as<std::vector<std::string>>().push_back("filter1");
+  options_map["abs-mag-filters"].template as<std::vector<std::string>>().push_back("filter2");
+  options_map["abs-mag-filters"].template as<std::vector<std::string>>().push_back("filter3");
   options_map["normalization-filter"].value()    = boost::any(filter_lum);
   options_map["normalization-solar-sed"].value() = boost::any(solar_sed);
 
@@ -240,7 +244,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunction_test, T, archive_types, Model
   auto output_func = config_manager.getConfiguration<ModelGridOutputConfig>().getOutputFunction();
 
   auto                                 axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1};
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1, *filter_1};
   original_grid(0, 0, 0, 0) = photometry_1;
   original_grid(1, 0, 0, 0) = photometry_2;
   original_grid(0, 1, 0, 0) = photometry_3;
@@ -251,10 +255,12 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunction_test, T, archive_types, Model
   output_func(grid_map);
 
   // Read the binary file created
+  BOOST_WARN_MESSAGE(true, "Read the grid");
   std::ifstream ifs{};
   ifs.open(test_file.string(), std::ios::binary);
   typename T::iarchive                     ia(ifs);
   Euclid::PhzDataModel::PhotometryGridInfo info;
+  BOOST_WARN_MESSAGE(true, "Load the grid info");
   ia >> info;
   auto retrieved_grid = GridContainer::gridImport<PhzDataModel::PhotometryGrid, typename T::iarchive>(ifs);
 
@@ -293,7 +299,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionRelative_test, T, archive_type
   auto output_func = config_manager.getConfiguration<ModelGridOutputConfig>().getOutputFunction();
 
   auto                                 axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1};
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1, *filter_2};
   original_grid(0, 0, 0, 0) = photometry_1;
   original_grid(1, 0, 0, 0) = photometry_2;
   original_grid(0, 1, 0, 0) = photometry_3;
@@ -317,6 +323,11 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionRelative_test, T, archive_type
   BOOST_CHECK_EQUAL("filter1", info.filter_names[0].qualifiedName());
   BOOST_CHECK_EQUAL("filter2", info.filter_names[1].qualifiedName());
   BOOST_CHECK_EQUAL("filter_1", info.luminosity_filter_name.qualifiedName());
+  
+  BOOST_CHECK_EQUAL("filter1", info.scaling_filter_names[0].qualifiedName());
+  BOOST_CHECK_EQUAL("filter2", info.scaling_filter_names[1].qualifiedName());
+  BOOST_CHECK_EQUAL("filter3", info.scaling_filter_names[2].qualifiedName());
+  
   BOOST_CHECK_EQUAL(4, retrieved_grid.size());
 }
 
@@ -344,7 +355,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(getOutputFunctionDefault_test, T, archive_types
   auto output_func = config_manager.getConfiguration<ModelGridOutputConfig>().getOutputFunction();
 
   auto                                 axes = Euclid::PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1};
+  Euclid::PhzDataModel::PhotometryGrid original_grid{axes, *filter_1, *filter_1};
   original_grid(0, 0, 0, 0) = photometry_1;
   original_grid(1, 0, 0, 0) = photometry_2;
   original_grid(0, 1, 0, 0) = photometry_3;

@@ -27,19 +27,19 @@
 namespace Euclid {
 namespace PhzDataModel {
 
-	Sed::Sed(std::vector<std::pair<double, double>> values, double scaling, double diff_scaling) :
+	Sed::Sed(std::vector<std::pair<double, double>> values, double scaling, std::vector<double> diff_scaling) :
 		XYDataset::XYDataset(std::move(values)), m_scaling{scaling}, m_diff_scaling{diff_scaling}{}
 
 
-	Sed::Sed(const Euclid::XYDataset::XYDataset& other, double scaling, double diff_scaling) :
+	Sed::Sed(const Euclid::XYDataset::XYDataset& other, double scaling, std::vector<double> diff_scaling) :
 		 XYDataset::XYDataset(other),m_scaling{scaling}, m_diff_scaling{diff_scaling}{}
 
-	Sed Sed::factory(std::vector<std::pair<double, double>> vector_pair, double scaling, double diff_scaling){
+	Sed Sed::factory(std::vector<std::pair<double, double>> vector_pair, double scaling, std::vector<double> diff_scaling){
 		auto xy = XYDataset::factory(vector_pair);
 		return Sed(xy,scaling, diff_scaling);
 	}
 
-	Sed Sed::factory(const std::vector<double>& x, const std::vector<double>& y, double scaling, double diff_scaling){
+	Sed Sed::factory(const std::vector<double>& x, const std::vector<double>& y, double scaling, std::vector<double> diff_scaling){
 		auto xy = XYDataset::factory(x, y);
 		return Sed(xy,scaling, diff_scaling);
 	}
@@ -52,12 +52,21 @@ namespace PhzDataModel {
 		return m_scaling;
 	}
 
-	void Sed::setDiffScaling(double new_diff_scaling){
-		m_diff_scaling=new_diff_scaling;
+	void Sed::setDiffScaling(size_t index, double new_diff_scaling){
+	      m_diff_scaling[index] = new_diff_scaling;
 	}
-
-	const double& Sed::getDiffScaling() const{
-		return m_diff_scaling;
+	
+	void Sed::setDiffScalings(std::vector<double> new_diff_scalings){
+	      m_diff_scaling = new_diff_scalings;
 	}
+	
+	const double& Sed::getDiffScaling(size_t index) const{
+	      return m_diff_scaling[index];
+	}
+	
+	const std::vector<double>& Sed::getDiffScalings() const{
+	      return m_diff_scaling;
+	}
+	
 }
 }

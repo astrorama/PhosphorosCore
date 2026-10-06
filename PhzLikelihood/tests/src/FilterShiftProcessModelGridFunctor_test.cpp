@@ -40,7 +40,7 @@ struct FilterShiftFixture {
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
 
   std::map<std::string, PhzDataModel::PhotometryGrid> photo_grid_map, corr_grid_map;
-  PhzDataModel::PhotometryGrid                        model_grid{axes, *filters};
+  PhzDataModel::PhotometryGrid                        model_grid{axes, *filters, *filters};
 
   std::vector<std::shared_ptr<SourceCatalog::Attribute>> attributeVector_1{};
   std::vector<std::shared_ptr<SourceCatalog::Attribute>> attributeVector_2{
@@ -50,8 +50,8 @@ struct FilterShiftFixture {
   SourceCatalog::Source source_2{2, attributeVector_2};
 
   FilterShiftFixture() {
-    PhzDataModel::PhotometryGrid photo_grid{axes, *filters};
-    PhzDataModel::PhotometryGrid corr_grid{axes, *filters};
+    PhzDataModel::PhotometryGrid photo_grid{axes, *filters, *filters};
+    PhzDataModel::PhotometryGrid corr_grid{axes, *filters, *filters};
 
     photo_grid.at(0, 0, 0, 0) = SourceCatalog::Photometry(filters, values);
     corr_grid.at(0, 0, 0, 0)  = SourceCatalog::Photometry(filters, coeff);

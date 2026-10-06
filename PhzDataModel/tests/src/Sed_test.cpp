@@ -53,12 +53,14 @@ BOOST_FIXTURE_TEST_CASE(MoveConstructor_test, Sed_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing the move constructor");
   BOOST_TEST_MESSAGE(" ");
 
-  auto sed = Euclid::PhzDataModel::Sed::factory(vector_pair,2.0,3.0);
+  auto sed = Euclid::PhzDataModel::Sed::factory(vector_pair,2.0,{3.0,4.0,5.0});
   auto sed_move(std::move(sed));
 
   BOOST_CHECK(3 == sed_move.size());
   BOOST_CHECK(2.0 == sed_move.getScaling());
-  BOOST_CHECK(3.0 == sed_move.getDiffScaling());
+  BOOST_CHECK(3.0 == sed_move.getDiffScaling(0));
+  BOOST_CHECK(4.0 == sed_move.getDiffScaling(1));
+  BOOST_CHECK(5.0 == sed_move.getDiffScaling(2));
 }
 
 //-----------------------------------------------------------------------------
@@ -71,11 +73,13 @@ BOOST_FIXTURE_TEST_CASE(Constructor1_test, Sed_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing the first constructor (with the vector pair)");
   BOOST_TEST_MESSAGE(" ");
 
-  auto sed = Euclid::PhzDataModel::Sed::factory(vector_pair, 2.0,3.0);
+  auto sed = Euclid::PhzDataModel::Sed::factory(vector_pair, 2.0,{3.0,4.0,5.0});
 
   BOOST_CHECK(3 == sed.size());
   BOOST_CHECK(2.0 == sed.getScaling());
-  BOOST_CHECK(3.0 == sed.getDiffScaling());
+  BOOST_CHECK(3.0 == sed.getDiffScaling(0));
+  BOOST_CHECK(4.0 == sed.getDiffScaling(1));
+  BOOST_CHECK(5.0 == sed.getDiffScaling(2));
 }
 
 //-----------------------------------------------------------------------------
@@ -88,11 +92,13 @@ BOOST_FIXTURE_TEST_CASE(Constructor2_test, Sed_Fixture) {
   BOOST_TEST_MESSAGE("--> Testing the second constructor (with 2 vectors)");
   BOOST_TEST_MESSAGE(" ");
 
-  auto sed = Euclid::PhzDataModel::Sed::factory(vector1, vector2, 2.0, 3.0);
+  auto sed = Euclid::PhzDataModel::Sed::factory(vector1, vector2, 2.0, {3.0,4.0,5.0});
 
   BOOST_CHECK(5 == sed.size());
   BOOST_CHECK(2.0 == sed.getScaling());
-  BOOST_CHECK(3.0 == sed.getDiffScaling());
+  BOOST_CHECK(3.0 == sed.getDiffScaling(0));
+  BOOST_CHECK(4.0 == sed.getDiffScaling(1));
+  BOOST_CHECK(5.0 == sed.getDiffScaling(2));
 }
 
 //-----------------------------------------------------------------------------
@@ -189,15 +195,15 @@ BOOST_FIXTURE_TEST_CASE(Access_test, Sed_Fixture) {
 
   auto sed = Euclid::PhzDataModel::Sed::factory(vector_pair);
   BOOST_CHECK(1.0 == sed.getScaling());
-  BOOST_CHECK(1.0 == sed.getDiffScaling());
+  BOOST_CHECK(1.0 == sed.getDiffScaling(0));
 
   sed.setScaling(2.0);
   BOOST_CHECK(2.0 == sed.getScaling());
-  BOOST_CHECK(1.0 == sed.getDiffScaling());
+  BOOST_CHECK(1.0 == sed.getDiffScaling(0));
 
-  sed.setDiffScaling(3.0);
+  sed.setDiffScaling(0, 3.0);
   BOOST_CHECK(2.0 == sed.getScaling());
-  BOOST_CHECK(3.0 == sed.getDiffScaling());
+  BOOST_CHECK(3.0 == sed.getDiffScaling(0));
 
 }
 
@@ -209,13 +215,13 @@ BOOST_FIXTURE_TEST_CASE(MoveXYDatasetConstructor_test, Sed_Fixture) {
 
   auto xy = Euclid::XYDataset::XYDataset::factory(vector_pair);
 
-  auto sed = Euclid::PhzDataModel::Sed(xy, 2.0, 3.0);
+  auto sed = Euclid::PhzDataModel::Sed(xy, 2.0, {3.0,4.0,5.0});
 
   BOOST_CHECK(3 == sed.size());
   BOOST_CHECK(2.0 == sed.getScaling());
-  BOOST_CHECK(3.0 == sed.getDiffScaling());
-
-
+  BOOST_CHECK(3.0 == sed.getDiffScaling(0));
+  BOOST_CHECK(4.0 == sed.getDiffScaling(1));
+  BOOST_CHECK(5.0 == sed.getDiffScaling(2));
 }
 
 
@@ -226,13 +232,15 @@ BOOST_FIXTURE_TEST_CASE(MoveXYDatasetConstructor_test, Sed_Fixture) {
 BOOST_FIXTURE_TEST_CASE(Pointer_test, Sed_Fixture) {
 
   auto xy = Euclid::XYDataset::XYDataset::factory(vector_pair);
-  auto sed = Euclid::PhzDataModel::Sed(xy, 2.0, 3.0);
+  auto sed = Euclid::PhzDataModel::Sed(xy, 2.0, {3.0,4.0,5.0});
 
   Euclid::PhzDataModel::Sed* sed_ptr = new Euclid::PhzDataModel::Sed(sed);
 
   BOOST_CHECK(3 == sed_ptr->size());
   BOOST_CHECK(2.0 == sed_ptr->getScaling());
-  BOOST_CHECK(3.0 == sed_ptr->getDiffScaling());
+  BOOST_CHECK(3.0 == sed_ptr->getDiffScaling(0));
+  BOOST_CHECK(4.0 == sed_ptr->getDiffScaling(1));
+  BOOST_CHECK(5.0 == sed_ptr->getDiffScaling(2));
 
 
 }

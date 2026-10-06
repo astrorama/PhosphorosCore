@@ -63,8 +63,8 @@ struct SourcePhzFunctor_Fixture {
   SourceCatalog::Source sourceNeg = SourceCatalog::Source(1, attibuteVectorNeg);
 
   PhzDataModel::ModelAxesTuple axes = PhzDataModel::createAxesTuple(zs, ebvs, reddeing_curves, seds);
-  PhzDataModel::PhotometryGrid photo_grid{axes, *filters};
-  PhzDataModel::PhotometryGrid ref_photo_grid{axes, *filters};
+  PhzDataModel::PhotometryGrid photo_grid{axes, *filters, *filters};
+  PhzDataModel::PhotometryGrid ref_photo_grid{axes, *filters, *filters};
 
   PhzDataModel::PhotometricCorrectionMap correctionMap{{XYDataset::QualifiedName{"filter_1"}, 1.0},
                                                        {XYDataset::QualifiedName{"filter_2"}, 2.0},

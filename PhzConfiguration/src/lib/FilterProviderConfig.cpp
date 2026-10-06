@@ -26,6 +26,8 @@
 #include "XYDataset/CachedProvider.h"
 #include "XYDataset/FileParser.h"
 #include "XYDataset/FileSystemProvider.h"
+#include "XYDatasetSet/FileSetProvider.h"
+#include "XYDatasetSet/MergeProvider.h"
 
 #include "PhzConfiguration/AuxDataDirConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
@@ -48,7 +50,12 @@ void FilterProviderConfig::initialize(const UserValues&) {
   auto path        = getDependency<AuxDataDirConfig>().getAuxDataDir() / "Filters";
   auto file_parser = Euclid::make_unique<XYDataset::AsciiParser>();
   auto fs_provider = Euclid::make_unique<XYDataset::FileSystemProvider>(path.string(), std::move(file_parser));
-  m_provider       = Euclid::make_unique<XYDataset::CachedProvider>(std::move(fs_provider));
+  auto set_provider = Euclid::make_unique<XYDatasetSet::FileSetProvider>(path.string());  
+  std::vector<std::unique_ptr<Euclid::XYDataset::XYDatasetProvider>> provider_vector;
+  provider_vector.push_back(std::move(fs_provider));
+  provider_vector.push_back(std::move(set_provider));
+  auto merge_provider = Euclid::make_unique<XYDatasetSet::MergeProvider>(std::move(provider_vector));
+  m_provider       = Euclid::make_unique<XYDataset::CachedProvider>(std::move(merge_provider));
 }
 
 }  // namespace PhzConfiguration

@@ -59,13 +59,13 @@ ModelScalingGenerator::ModelScalingGenerator(const ModelScalingGenerator& other)
 
 ModelScalingGenerator& ModelScalingGenerator::operator=(const ModelScalingGenerator& other) {
   m_current_index = other.m_current_index;
-  m_scalling      = -1;
+  m_scaling      = -1;
   return *this;
 }
 
 ModelScalingGenerator& ModelScalingGenerator::operator=(size_t other) {
   m_current_index = other;
-  m_scalling      = -1;
+  m_scaling      = -1;
   return *this;
 }
 
@@ -135,7 +135,7 @@ double& ModelScalingGenerator::operator*() {
 
   // We check if we need to recalculate the reddened SED
   if (new_sed_index != m_current_sed_index || new_reddening_curve_index != m_current_reddening_curve_index ||
-      new_ebv_index != m_current_ebv_index || m_scalling < 0) {
+      new_ebv_index != m_current_ebv_index || m_scaling < 0) {
 
     auto& reddening_curve_name =
         std::get<PhzDataModel::ModelParameter::REDDENING_CURVE>(m_parameter_space)[new_reddening_curve_index];
@@ -146,8 +146,8 @@ double& ModelScalingGenerator::operator*() {
     // Redden and normalize the model
     auto reddened = PhzDataModel::Sed(
         m_reddening_function(m_sed_map.at(sed_name), *(m_reddening_curve_map.at(reddening_curve_name)), ebv));
-    m_scalling = m_normalization_functor.getNormalizationFactor(reddened);
-    if (!std::isfinite(1.0 / m_scalling) || !std::isfinite(m_scalling)) {
+    m_scaling = m_normalization_functor.getNormalizationFactor(reddened);
+    if (!std::isfinite(1.0 / m_scaling) || !std::isfinite(m_scaling)) {
       throw Elements::Exception()
           << "The normalisation of a model for SED=" << sed_name
           << " failed. The root cause could be that the normalization filter do not overlap the SED.";
@@ -157,7 +157,7 @@ double& ModelScalingGenerator::operator*() {
   m_current_sed_index             = new_sed_index;
   m_current_reddening_curve_index = new_reddening_curve_index;
   m_current_ebv_index             = new_ebv_index;
-  return m_scalling;
+  return m_scaling;
 }
 
 }  // end of namespace PhzModeling

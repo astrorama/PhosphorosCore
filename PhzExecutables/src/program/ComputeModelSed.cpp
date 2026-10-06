@@ -84,7 +84,7 @@ class ComputeModelSed : public Elements::Program {
     }
     auto& igm_function = config_manager.getConfiguration<IgmConfig>().getIgmAbsorptionFunction();
 
-    auto lum_filter_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilter();
+    auto lum_filter_name    = config_manager.getConfiguration<ModelNormalizationConfig>().getNormalizationFilters()[0];
     auto lum_pp_filter_name = config_manager.getConfiguration<ModelNormalizationConfig>().getPpNormalizationFilter();
     auto sun_sed_name       = config_manager.getConfiguration<ModelNormalizationConfig>().getReferenceSolarSed();
 
@@ -109,7 +109,7 @@ class ComputeModelSed : public Elements::Program {
     auto             redshiftFunctor = config_manager.getConfiguration<RedshiftFunctorConfig>().getRedshiftFunctor();
     ModelDatasetGrid grid{grid_axes,           std::move(sed_map),     std::move(red_curve_map),
                           ExtinctionFunctor{}, redshiftFunctor,        igm_function,
-                          normalizer_function, normalizer_pp_function, pp_normalization_value};
+                         {normalizer_function}, normalizer_pp_function, pp_normalization_value};
 
     ModelScalingGrid scaling_grid{grid_axes, std::move(sed_map_2), std::move(red_curve_map_2), ExtinctionFunctor{},
                                   normalizer_functor};

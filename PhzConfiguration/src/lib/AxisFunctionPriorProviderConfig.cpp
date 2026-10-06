@@ -27,6 +27,8 @@
 #include "XYDataset/AsciiParser.h"
 #include "XYDataset/FileParser.h"
 #include "XYDataset/FileSystemProvider.h"
+#include "XYDatasetSet/FileSetProvider.h"
+#include "XYDatasetSet/MergeProvider.h"
 #include <boost/filesystem/operations.hpp>
 
 namespace po = boost::program_options;
@@ -42,8 +44,14 @@ AxisFunctionPriorProviderConfig::AxisFunctionPriorProviderConfig(long manager_id
 void AxisFunctionPriorProviderConfig::initialize(const UserValues&) {
   fs::path                               dir = getDependency<AuxDataDirConfig>().getAuxDataDir() / "AxisPriors";
   std::unique_ptr<XYDataset::FileParser> file_parser{new XYDataset::AsciiParser{}};
-  m_provider = std::shared_ptr<XYDataset::XYDatasetProvider>{
-      new XYDataset::FileSystemProvider{dir.string(), std::move(file_parser)}};
+
+  auto     fs_provider = Euclid::make_unique<XYDataset::FileSystemProvider>(dir.string(), std::move(file_parser));
+  auto     set_provider = Euclid::make_unique<XYDatasetSet::FileSetProvider>(dir.string());
+  std::vector<std::unique_ptr<Euclid::XYDataset::XYDatasetProvider>> provider_vector;
+  provider_vector.push_back(std::move(fs_provider));
+  provider_vector.push_back(std::move(set_provider));
+  auto     merge_provider = std::make_unique<Euclid::XYDatasetSet::MergeProvider>(std::move(provider_vector));
+  m_provider = std::shared_ptr<Euclid::XYDataset::XYDatasetProvider>(std::move(merge_provider));
 }
 
 const std::shared_ptr<XYDataset::XYDatasetProvider>

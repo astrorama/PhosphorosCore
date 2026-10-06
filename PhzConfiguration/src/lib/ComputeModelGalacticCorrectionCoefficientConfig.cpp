@@ -37,7 +37,6 @@
 #include "PhzConfiguration/CorrectionCoefficientGridOutputConfig.h"
 #include "PhzConfiguration/FilterProviderConfig.h"
 #include "PhzConfiguration/MilkyWayReddeningConfig.h"
-#include "PhzConfiguration/ModelNormalizationConfig.h"
 #include "PhzConfiguration/MultithreadConfig.h"
 
 namespace po = boost::program_options;
@@ -59,7 +58,6 @@ ComputeModelGalacticCorrectionCoefficientConfig::ComputeModelGalacticCorrectionC
   declareDependency<CorrectionCoefficientGridOutputConfig>();
   declareDependency<MultithreadConfig>();
   declareDependency<FilterProviderConfig>();
-  declareDependency<ModelNormalizationConfig>();
 }
 
 }  // namespace PhzConfiguration

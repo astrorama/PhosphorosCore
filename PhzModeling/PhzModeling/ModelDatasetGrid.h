@@ -115,7 +115,7 @@ public:
                    std::map<XYDataset::QualifiedName, XYDataset::XYDataset>                 sed_map,
                    std::map<XYDataset::QualifiedName, std::unique_ptr<MathUtils::Function>> reddening_curve_map,
                    ReddeningFunction reddening_function, RedshiftFunction redshift_function,
-                   IgmAbsorptionFunction igm_function, NormalizationFunction normalization_function,
+                   IgmAbsorptionFunction igm_function, std::vector<NormalizationFunction> normalization_functions,
                    NormalizationFunction pp_normalization_function, double pp_normalization_value);
 
   /**
@@ -136,7 +136,7 @@ private:
   ReddeningFunction                                                        m_reddening_function;
   RedshiftFunction                                                         m_redshift_function;
   IgmAbsorptionFunction                                                    m_igm_function;
-  NormalizationFunction                                                    m_normalization_function;
+  std::vector<NormalizationFunction>                                       m_normalization_functions;
   NormalizationFunction                                                    m_pp_normalization_function;
   double                                                                   m_pp_normalization_value;
 };
