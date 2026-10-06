@@ -129,10 +129,22 @@ def listDataset(folder):
                                         content.append(line)
                             if len(content)>2:
                                 path = os.path.join(base_name, filename)
-                                name = os.path.join(base_name,os.path.splitext(filename)[0])
+                                cmp = path.split('/')
+                                if len(cmp)>1:
+                                    cmp=cmp[-2]
+                                else:
+                                    cmp=''                                
+                                name =  os.path.splitext(filename)[0]
                                 name_from_file = [l.split(':')[1].strip() for l in header if l.startswith('# NAME :') or l.startswith('# Filter name :')]
                                 if len(name_from_file)>0:
-                                    name = os.path.join(base_name,name_from_file[0])
+                                    name = name_from_file[0] #os.path.join(base_name,name_from_file[0])
+                                    
+                                if cmp!='':
+                                    name = os.path.join(cmp,name)
+                                name_cmp = name.split('/')
+                                if len(name_cmp)>2:
+                                    name_cmp=name_cmp[-2:]
+                                name = '/'.join(name_cmp)
                                 results[name]=path
                     except:
                         pass

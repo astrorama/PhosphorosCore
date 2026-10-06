@@ -107,6 +107,7 @@ class TestXYDatasetSetTools(object):
                                  'base_folder/file_1/f1':'base_folder/file_1.fits',
                                  'base_folder/file_1/f2':'base_folder/file_1.fits',
                                  'base_folder/file_1/f3':'base_folder/file_1.fits',
+                                 'test/name_sample_sed.i':'base_folder/sub_folder/sample_sed_2.dat',
                                  'base_folder/sub_folder/file_2/f4':'base_folder/sub_folder/file_2.fits',
                                  'base_folder/sub_folder/file_2/f5':'base_folder/sub_folder/file_2.fits',
                                  'base_folder/sub_folder/file_2/f6':'base_folder/sub_folder/file_2.fits'}
@@ -158,11 +159,12 @@ class TestXYDatasetSetTools(object):
             with zipfile.ZipFile(zip_file, 'r') as zip_ref:
                 zip_ref.extractall(dir_path)
                 
-            dataset = handler.XYDataset([1,2,3,4,5,6],[6,5,4,3,2,1],'base_folder/sub_folder/toto',{'PARAMETER':'METALLICITY=0*L+0.009[M/H] ;TAU=0*L+0.4[Gyr]'})
+            dataset = handler.XYDataset([1,2,3,4,5,6],[6,5,4,3,2,1],'toto',{'PARAMETER':'METALLICITY=0*L+0.009[M/H] ;TAU=0*L+0.4[Gyr]'})
             
             handler.writeDataset(dataset, os.path.join(dir_path,'base_folder/sub_folder'))
-            
-            readed_dataset = handler.readDataset(dir_path, 'base_folder/sub_folder/toto')
+            for ds in handler.listDataset(dir_path):
+                print(ds)
+            readed_dataset = handler.readDataset(dir_path, 'sub_folder/toto')
             
             assert np.array_equal(readed_dataset.x, [1,2,3,4,5,6])
             assert np.array_equal(readed_dataset.y, [6,5,4,3,2,1])
